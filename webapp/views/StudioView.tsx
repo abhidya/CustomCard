@@ -206,6 +206,7 @@ export function StudioView({
   }
 
   function startAiGeneration(panelId?: CardPanel["id"] | CardPanel["id"][]) {
+    if (aiRequiresSignIn) return;
     setTemplateReviewStarted(false);
     onGenerateAi(panelId);
   }
@@ -321,6 +322,7 @@ export function StudioView({
                   <PanelEditor
                     aiActive={aiActive}
                     aiLoading={aiLoading}
+                    aiRequiresSignIn={aiRequiresSignIn}
                     edited={hasPanelOverride(panelOverrides, panel.id)}
                     onPanelEdit={onPanelEdit}
                     onPanelGenerate={startAiGeneration}
@@ -613,6 +615,7 @@ export function StudioView({
               activePanelId={activePanel}
               aiActive={aiActive}
               aiLoading={aiLoading}
+              aiRequiresSignIn={aiRequiresSignIn}
               minContextReady={minContextReady}
               onGenerateSelected={() => startAiGeneration(generationPanelIds)}
               onGenerateWhole={() => startAiGeneration()}
@@ -761,6 +764,7 @@ function GenerationScopePanel({
   selectedPanels,
   activePanelId,
   aiLoading,
+  aiRequiresSignIn,
   aiActive,
   minContextReady,
   onTogglePanel,
@@ -771,6 +775,7 @@ function GenerationScopePanel({
   selectedPanels: CardPanel[];
   activePanelId: CardPanel["id"];
   aiLoading: boolean;
+  aiRequiresSignIn: boolean;
   aiActive: boolean;
   minContextReady: boolean;
   onTogglePanel: (panelId: CardPanel["id"]) => void;
@@ -791,8 +796,9 @@ function GenerationScopePanel({
         <div className="generationScope-actions">
           <button
             className="btn btn-ink btn-sm"
-            disabled={aiLoading || !minContextReady}
+            disabled={aiLoading || !minContextReady || aiRequiresSignIn}
             onClick={onGenerateWhole}
+            title={aiRequiresSignIn ? "Sign in to generate with AI." : undefined}
             type="button"
           >
             <RefreshCw size={14} />
@@ -800,8 +806,9 @@ function GenerationScopePanel({
           </button>
           <button
             className="btn btn-ghost btn-sm"
-            disabled={aiLoading || !minContextReady || selectedCount === 0}
+            disabled={aiLoading || !minContextReady || selectedCount === 0 || aiRequiresSignIn}
             onClick={onGenerateSelected}
+            title={aiRequiresSignIn ? "Sign in to generate with AI." : undefined}
             type="button"
           >
             <RefreshCw size={14} />
@@ -856,6 +863,7 @@ function PanelEditor({
   panelStatus,
   aiActive,
   aiLoading,
+  aiRequiresSignIn,
   edited,
   sensitive,
   onPanelEdit,
@@ -866,6 +874,7 @@ function PanelEditor({
   panelStatus: AiPanelGenerationStatus | undefined;
   aiActive: boolean;
   aiLoading: boolean;
+  aiRequiresSignIn: boolean;
   edited: boolean;
   sensitive: boolean;
   onPanelEdit: (panelId: CardPanel["id"], patch: PanelOverride) => void;
@@ -1057,9 +1066,9 @@ function PanelEditor({
         ))}
         <button
           className="btn btn-ghost btn-sm"
-          disabled={aiLoading}
+          disabled={aiLoading || aiRequiresSignIn}
           onClick={() => onPanelGenerate(panel.id)}
-          title="Regenerate only the selected panel."
+          title={aiRequiresSignIn ? "Sign in to regenerate this panel with AI." : "Regenerate only the selected panel."}
           type="button"
         >
           <RefreshCw size={14} />

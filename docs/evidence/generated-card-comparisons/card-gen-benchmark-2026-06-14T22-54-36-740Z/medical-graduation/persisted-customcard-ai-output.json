@@ -1,0 +1,84 @@
+{
+  "status": "provider-unavailable",
+  "detail": "AI provider returned 404.",
+  "error": "AI provider returned 404.",
+  "user_content_only": false,
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "",
+      "model": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 5000,
+      "per_request_budget_cents": 5,
+      "queue_enabled": false,
+      "fallback_queue_enabled": false,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": [],
+      "provider_failure": "AI provider returned 404."
+    }
+  },
+  "provider_call_events": [
+    {
+      "id": "provider-call-34896d78",
+      "tenant_id": "benchmark-medical-graduation-2026-06-14T22-54-36-740Z",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "provider": "Cloudflare",
+      "capability": "text-chat",
+      "status": "reserved",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 5,
+      "rate_limit_window_start": "2026-06-14T22:54:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "cloudflare-workers-ai-chat",
+        "fallbackAdapterId": "",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-dbfb979f",
+      "tenant_id": "benchmark-medical-graduation-2026-06-14T22-54-36-740Z",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "provider": "Cloudflare",
+      "capability": "text-chat",
+      "status": "failed",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 5,
+      "rate_limit_window_start": "2026-06-14T22:54:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "cloudflare-workers-ai-chat",
+        "fallbackAdapterId": "",
+        "localAdapter": false,
+        "costGateEvent": true,
+        "providerFailure": "AI provider returned 404."
+      }
+    }
+  ],
+  "ai_cost_gate": {
+    "event_count": 2,
+    "reserved_or_spent_cents": 5,
+    "actual_spend_cents": 0,
+    "request_units": 1,
+    "live_network_calls": true,
+    "blocked_reasons": []
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

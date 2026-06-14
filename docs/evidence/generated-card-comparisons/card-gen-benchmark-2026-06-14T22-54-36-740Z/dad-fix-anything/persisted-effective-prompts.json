@@ -1,0 +1,28 @@
+{
+  "fixture": "dad-fix-anything",
+  "category": "Father's Day repair-themed card",
+  "competitor": {
+    "competitor": "Greetings Island",
+    "category": "Free template card maker",
+    "sourcePage": "https://www.greetingsisland.com/",
+    "localFile": "greetings-island-fathers-day-preview.jpeg",
+    "sha256": "5489a5a21f2af0814ee9707fc75e9c4bd4bb90aca4a868e74b53af336caf9979"
+  },
+  "requestBody": {
+    "sender": "Manny",
+    "recipient": "Dad",
+    "relationship": "child to father",
+    "occasion": "Father's Day",
+    "tone": "warm, funny, sincere, practical love",
+    "style": "clean printable workshop illustration, blueprint details, golden yellow and green accents",
+    "language": "English",
+    "personal_note": "Make a card for a dad who fixes everything around the house. Avoid copying competitor jokes; make it about steady presence and practical love.",
+    "memory_notes": [
+      "Dad shows love by fixing the small things before anyone asks.",
+      "The card should feel printable, cheerful, and original.",
+      "Use tools as symbols, not a cluttered hardware-store scene."
+    ]
+  },
+  "cardCopyModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+  "panelPrompts": []
+}

@@ -151,6 +151,15 @@ describeWithChrome("CustomCard UI smoke", () => {
         const panelCount = document.querySelectorAll(".pagetab img").length;
         const objectFaceCount = document.querySelectorAll(".studioObject-face").length;
         const generationTargetCount = document.querySelectorAll(".generationTarget").length;
+        const generateWholeButton = [...document.querySelectorAll("button")].find((node) =>
+          node.textContent?.includes("Generate whole card")
+        );
+        const improveSelectedButton = [...document.querySelectorAll("button")].find((node) =>
+          node.textContent?.includes("Improve 1 selected face")
+        );
+        const regeneratePanelButton = [...document.querySelectorAll("button")].find((node) =>
+          node.textContent?.includes("Regenerate this panel")
+        );
         const studioObjectText = document.querySelector(".studioObject")?.textContent;
         const generationScopeText = document.querySelector(".generationScope")?.textContent;
         await clickByText("Continue to proof checks");
@@ -170,6 +179,9 @@ describeWithChrome("CustomCard UI smoke", () => {
           panelCount,
           objectFaceCount,
           generationTargetCount,
+          generateWholeDisabledSignedOut: generateWholeButton ? generateWholeButton.disabled : false,
+          improveSelectedDisabledSignedOut: improveSelectedButton ? improveSelectedButton.disabled : false,
+          regeneratePanelDisabledSignedOut: regeneratePanelButton ? regeneratePanelButton.disabled : false,
           studioObjectText,
           generationScopeText,
           checkoutButtonEnabledAfterApproval: checkoutButton ? !checkoutButton.disabled : false,
@@ -197,6 +209,9 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.panelCount).toBe(4);
     expect(result.objectFaceCount).toBe(4);
     expect(result.generationTargetCount).toBe(4);
+    expect(result.generateWholeDisabledSignedOut).toBe(true);
+    expect(result.improveSelectedDisabledSignedOut).toBe(true);
+    expect(result.regeneratePanelDisabledSignedOut).toBe(true);
     expect(result.studioObjectText).toContain("Folded card object");
     expect(result.generationScopeText).toContain("Choose what to improve");
     expect(result.generationScopeText).toContain("Current proof");
