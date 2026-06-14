@@ -1,0 +1,84 @@
+{
+  "uid": "customcard-orr-dependencies",
+  "title": "CustomCard ORR Dependencies",
+  "tags": ["customcard", "orr", "dependencies"],
+  "timezone": "utc",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "dependency",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "customcard-prometheus" },
+        "query": "label_values(customcard_dependency_up, dependency)",
+        "includeAll": true,
+        "multi": true
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Critical dependency availability",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "customcard-prometheus" },
+      "fieldConfig": { "defaults": { "min": 0, "max": 1, "unit": "percentunit" } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "customcard_dependency_up{tier=\"critical\", dependency=~\"$dependency\"}",
+          "legendFormat": "{{dependency}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Non-critical dependency availability",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "customcard-prometheus" },
+      "fieldConfig": { "defaults": { "min": 0, "max": 1, "unit": "percentunit" } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "customcard_dependency_up{tier=\"non-critical\", dependency=~\"$dependency\"}",
+          "legendFormat": "{{dependency}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "30d availability SLO (critical)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "customcard-prometheus" },
+      "fieldConfig": { "defaults": { "min": 0, "max": 1, "unit": "percentunit" } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "customcard:dependency_availability:ratio30d{tier=\"critical\"}",
+          "legendFormat": "{{dependency}}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "API ingress 5xx error ratio",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "customcard-prometheus" },
+      "fieldConfig": { "defaults": { "min": 0, "unit": "percentunit", "thresholds": { "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 0.005 } ] } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "customcard_http_request_error_ratio",
+          "legendFormat": "5xx ratio"
+        }
+      ]
+    }
+  ]
+}

@@ -35,6 +35,8 @@ export default defineConfig(() => ({
         "src/aiProviderReadinessData.mjs",
         "src/observabilityReadiness.ts",
         "src/observabilityReadinessData.mjs",
+        "src/metricsPlatform.ts",
+        "src/metricsPlatformData.mjs",
         "src/retailFulfillmentReadiness.ts",
         "src/retailFulfillmentReadinessData.mjs",
         "src/paymentReadiness.ts",

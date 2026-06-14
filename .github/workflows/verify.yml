@@ -91,6 +91,9 @@ jobs:
       - name: Validate observability readiness
         run: npm run observability:doctor
 
+      - name: Validate metrics platform readiness
+        run: npm run metrics:doctor
+
       - name: Validate retail fulfillment readiness
         run: npm run retail:doctor
 
