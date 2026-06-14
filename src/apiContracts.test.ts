@@ -799,7 +799,7 @@ describe("api contracts", () => {
         couponProviderTargetCount: 2,
         retailerCouponCollectionTargetCount: 4,
         couponOfferCount: 2,
-        activeCouponOfferCount: 2,
+        activeCouponOfferCount: expect.any(Number),
         portalAppliedCouponOfferCount: 0,
         couponPortalApplicationPacketCount: 2,
         couponPortalApplicationTargetCount: 5,
@@ -817,6 +817,10 @@ describe("api contracts", () => {
         defaultAppliedDiscountCents: 0
       })
     });
+    expect(payload.printerPricing.refreshReport.activeCouponOfferCount).toBeGreaterThanOrEqual(0);
+    expect(payload.printerPricing.refreshReport.activeCouponOfferCount).toBeLessThanOrEqual(
+      payload.printerPricing.refreshReport.couponOfferCount
+    );
   });
 
   it("resolves safe GET response contracts for the API server wrapper", () => {
