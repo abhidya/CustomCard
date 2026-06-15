@@ -42,17 +42,17 @@ describe("benchmark results model", () => {
     const model = buildBenchmarkResultsModel(benchmarkResultRecords);
 
     expect(model.summary.totalRuns).toBeGreaterThanOrEqual(5);
-    expect(model.latestRuns[0].runId).toBe("model-benchmark-20260613-210736-deepai-typography-live");
-    expect(model.summary.gradedRuns).toBe(1);
+    expect(model.latestRuns[0].runId).toBe("model-benchmark-20260614-fixed-provider-requests");
+    expect(model.summary.gradedRuns).toBe(2);
     expect(model.summary.failedRuns).toBe(3);
-    expect(model.summary.bestProductScore).toBe(45);
+    expect(model.summary.bestProductScore).toBe(66);
     expect(model.recommendation).toMatchObject({
       label: "No customer-quality recommendation",
       status: "blocked",
-      productScore: 45,
-      contractScore: 86
+      productScore: 66,
+      contractScore: 94
     });
-    expect(model.remainingBlockers.join(" ")).toContain("DeepAI quality remains below");
+    expect(model.remainingBlockers.join(" ")).toContain("Generic landscape");
   });
 
   it("filters benchmark history by provider, phase, score, status, and evidence text", () => {
@@ -60,7 +60,7 @@ describe("benchmark results model", () => {
 
     expect(filterBenchmarkResults(model.records, { provider: "openai-responses-chat" })).toHaveLength(1);
     expect(filterBenchmarkResults(model.records, { phase: "typography" })).toHaveLength(1);
-    expect(filterBenchmarkResults(model.records, { minProductScore: 40 })).toHaveLength(1);
+    expect(filterBenchmarkResults(model.records, { minProductScore: 40 })).toHaveLength(2);
     expect(filterBenchmarkResults(model.records, { minProductScore: 80 })).toHaveLength(0);
     expect(filterBenchmarkResults(model.records, { status: "failed" })).toHaveLength(3);
     expect(filterBenchmarkResults(model.records, { query: "429" })).toHaveLength(1);
@@ -70,8 +70,10 @@ describe("benchmark results model", () => {
   });
 
   it("allows a high-quality scored provider route to become the recommendation", () => {
+    const baseline = benchmarkResultRecords.find((record) => record.id === "cloudflare-deepai-prompt-repair-v6-20260613");
+    expect(baseline).toBeDefined();
     const promoted: BenchmarkResultRecord = {
-      ...benchmarkResultRecords[4],
+      ...baseline!,
       id: "promoted-provider",
       productScore: 91,
       contractScore: 95,

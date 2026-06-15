@@ -33,6 +33,7 @@ export default defineConfig(() => ({
         "src/externalAuditReadinessData.mjs",
         "src/aiProviderReadiness.ts",
         "src/aiProviderReadinessData.mjs",
+        "src/aiProviderControlPlane.ts",
         "src/observabilityReadiness.ts",
         "src/observabilityReadinessData.mjs",
         "src/metricsPlatform.ts",

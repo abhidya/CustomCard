@@ -2,17 +2,15 @@ import { useSignIn, useSignUp } from "@clerk/clerk-expo";
 import React, { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { AppButton, Card, FormField, InlineNotice } from "../../components";
+import { AppButton, Card, FormField } from "../../components";
 import { Screen } from "../../components/Screen";
 import { appConfig } from "../../config/env";
 import { devLog } from "../../lib/api/redact";
-import { useAppSession } from "../../lib/auth/AuthProvider";
 import { requireEmail, requireText } from "../../forms/validation";
-import { colors, spacing, typography } from "../../theme";
+import { colors, radius, spacing, typography } from "../../theme";
 
 export function SignInScreen() {
   const config = appConfig();
-  const session = useAppSession();
 
   return (
     <Screen>
@@ -20,28 +18,18 @@ export function SignInScreen() {
         <Text style={styles.heroEyebrow}>Your card assistant</Text>
         <Text style={styles.heroTitle}>CustomCard</Text>
         <Text style={styles.heroSubtitle}>
-          Turn the moments you already have planned into printed cards — reviewed and approved by
-          you before anything is ordered.
+          Sign in to turn planned moments into reviewed, print-ready cards before a purchase
+          begins.
         </Text>
       </View>
 
-      {config.clerkPublishableKey ? (
-        <ClerkEmailCodeForm />
-      ) : config.devSessionSignInAllowed ? (
-        <DevTokenForm />
-      ) : (
-        <InlineNotice
-          tone="warn"
-          text="Sign-in is not configured for this build. Set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY and rebuild."
-        />
-      )}
+      <View style={styles.trustRow}>
+        <Text style={styles.trustPill}>{config.appEnv.toUpperCase()}</Text>
+        <Text style={styles.trustPill}>Secure account sign-in</Text>
+        <Text style={styles.trustPill}>No automatic orders</Text>
+      </View>
 
-      {session.mode === "dev-token" ? (
-        <Text style={styles.devHint}>
-          Development build connected to {config.apiBaseUrl}. Real accounts use Clerk in configured
-          builds.
-        </Text>
-      ) : null}
+      <ClerkEmailCodeForm />
     </Screen>
   );
 }
@@ -183,49 +171,6 @@ function ClerkEmailCodeForm() {
   );
 }
 
-/** Development-only sign-in against the local memory-runtime API. */
-function DevTokenForm() {
-  const session = useAppSession();
-  const [token, setToken] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  async function submit() {
-    setBusy(true);
-    setError(null);
-    try {
-      await session.signInWithDevToken(token);
-    } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Could not save the token.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <Card>
-      <Text style={typography.heading}>Local development sign-in</Text>
-      <Text style={typography.body}>
-        Paste the customer session token configured on your local API server
-        (CUSTOMCARD_CUSTOMER_SESSION_TOKEN).
-      </Text>
-      <FormField
-        label="Local API session token"
-        value={token}
-        onChangeText={(value) => {
-          setToken(value);
-          setError(null);
-        }}
-        autoCapitalize="none"
-        secureTextEntry
-        error={error}
-        testID="dev-token-input"
-      />
-      <AppButton label="Connect" onPress={() => void submit()} loading={busy} />
-    </Card>
-  );
-}
-
 function isIdentifierNotFound(error: unknown): boolean {
   const errors = (error as { errors?: { code?: string }[] })?.errors;
   return Boolean(errors?.some((entry) => entry.code === "form_identifier_not_found"));
@@ -254,5 +199,17 @@ const styles = StyleSheet.create({
   },
   heroTitle: { color: colors.textOnBrand, fontSize: 34, fontWeight: "900" },
   heroSubtitle: { color: colors.textOnBrandMuted, fontSize: 15, lineHeight: 22 },
-  devHint: { ...typography.body, fontSize: 12, textAlign: "center" }
+  trustRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  trustPill: {
+    overflow: "hidden",
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    color: colors.brandInkOnSoft,
+    fontSize: 12,
+    fontWeight: "900",
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs
+  }
 });

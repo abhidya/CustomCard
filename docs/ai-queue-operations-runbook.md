@@ -49,6 +49,15 @@ Provider fallback configuration:
 - If customer-chat provider config is missing, disabled, rate-limited, over budget, or fails, the service returns blank `assistant_message` with provider evidence.
 - Fallback responses preserve `provider_failure`, `provider_call_events`, and `ai_cost_gate.blocked_reasons`; they do not silently hide provider failure evidence or invent local content.
 
+Provider control plane:
+
+- Runtime provider models, prompt profiles, route policies, benchmark runs, and benchmark grades are defined by `src/aiProviderControlPlane.ts` and persisted by `infra/migrations/005_ai_provider_control_plane.sql`.
+- Workers must resolve route policy at lease time, not at customer request time, so admins can change provider/model/prompt settings without redeploying web code.
+- `ai_route_policies.customer_error_policy` must remain `generic-status-only`; provider messages stay in admin evidence and never become customer-facing failure copy.
+- `ai_route_policies.queue_required` must remain true for image-generation policies.
+- `ai_benchmark_grades` is the promotion source of truth. DeepAI `text2img` standard currently has 66/100 product and 94/100 contract evidence, so it remains below the customer promotion gate even though the provider request contract is fixed.
+- Run `npm run ai:control-plane:doctor` after provider catalog, prompt profile, route policy, benchmark grade, or promotion-gate edits.
+
 ## Metrics
 
 | Metric | Source | Warn | Page | Owner |

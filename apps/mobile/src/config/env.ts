@@ -1,14 +1,12 @@
 import Constants from "expo-constants";
 
-export type AppEnv = "development" | "staging" | "production";
+export type AppEnv = "qa" | "production";
 
 export interface AppConfig {
   apiBaseUrl: string;
   appEnv: AppEnv;
   clerkPublishableKey: string;
   realOrderKillSwitch: "disabled" | "enabled";
-  /** True when the dev-only local session-token sign-in may be offered. */
-  devSessionSignInAllowed: boolean;
 }
 
 interface RawExtra {
@@ -22,30 +20,34 @@ export class ConfigError extends Error {}
 
 export function resolveAppConfig(
   extra: RawExtra | undefined = Constants.expoConfig?.extra as RawExtra | undefined,
-  isDevBuild: boolean = __DEV__
+  _isDevBuild: boolean = __DEV__
 ): AppConfig {
   const apiBaseUrl = normalizeBaseUrl(String(extra?.apiBaseUrl ?? ""));
-  const appEnv = normalizeEnv(String(extra?.appEnv ?? "development"));
+  const appEnv = normalizeEnv(String(extra?.appEnv ?? ""));
 
   if (!apiBaseUrl) {
     throw new ConfigError("CUSTOMCARD_API_BASE_URL is required for the mobile app shell.");
   }
-  if (!/^https?:\/\//.test(apiBaseUrl)) {
-    throw new ConfigError("API base URL must be an http(s) URL.");
+  if (!apiBaseUrl.startsWith("https://")) {
+    throw new ConfigError("CUSTOMCARD_API_BASE_URL must be an https:// API base URL.");
   }
-  // HTTPS only outside local development. Cleartext production API traffic is
-  // never allowed (see SECURITY.md).
-  if (apiBaseUrl.startsWith("http://") && !(isDevBuild && appEnv === "development")) {
-    throw new ConfigError("Non-development builds require an https:// API base URL.");
+  if (!appEnv) {
+    throw new ConfigError("CUSTOMCARD_APP_ENV must be qa or production.");
   }
 
   const clerkPublishableKey = String(extra?.clerkPublishableKey ?? "").trim();
+  if (!/^pk_(test|live)_/.test(clerkPublishableKey)) {
+    throw new ConfigError("EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY must be a Clerk publishable key.");
+  }
+  if (appEnv === "production" && !clerkPublishableKey.startsWith("pk_live_")) {
+    throw new ConfigError("Production mobile builds require a Clerk live publishable key.");
+  }
+
   return {
     apiBaseUrl,
     appEnv,
     clerkPublishableKey,
-    realOrderKillSwitch: extra?.realOrderKillSwitch === "enabled" ? "enabled" : "disabled",
-    devSessionSignInAllowed: isDevBuild && appEnv === "development"
+    realOrderKillSwitch: extra?.realOrderKillSwitch === "enabled" ? "enabled" : "disabled"
   };
 }
 
@@ -53,9 +55,11 @@ function normalizeBaseUrl(value: string): string {
   return value.trim().replace(/\/+$/, "");
 }
 
-function normalizeEnv(value: string): AppEnv {
-  if (value === "production" || value === "staging") return value;
-  return "development";
+function normalizeEnv(value: string): AppEnv | null {
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "qa" || normalized === "staging" || normalized === "preview") return "qa";
+  if (normalized === "production" || normalized === "prod") return "production";
+  return null;
 }
 
 let cached: AppConfig | null = null;

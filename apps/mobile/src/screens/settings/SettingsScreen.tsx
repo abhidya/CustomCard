@@ -40,11 +40,7 @@ export function SettingsScreen() {
       <SectionHeading title="Account" />
       <Card>
         <Text style={typography.heading}>{session.userLabel ?? "Signed in"}</Text>
-        <Text style={typography.body}>
-          {session.mode === "clerk"
-            ? "Signed in with your CustomCard account."
-            : "Local development session."}
-        </Text>
+        <Text style={typography.body}>Signed in with your CustomCard account.</Text>
         <AppButton
           label="Sign out"
           variant="danger"

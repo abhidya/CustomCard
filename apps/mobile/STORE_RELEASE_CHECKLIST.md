@@ -100,7 +100,7 @@ Derived from `SECURITY.md`. Configure in App Store Connect → App Privacy:
 Device E2E automation is not available in this repo; run this manual pass on at
 least one iOS and one Android device/simulator before release:
 
-1. [ ] Launch → sign in (Clerk email code on a real build; dev token locally).
+1. [ ] Launch → sign in with Clerk email code on the QA or production build.
 2. [ ] Home loads today's card, the queue, and the "confirm before checkout"
        banner; pull-to-refresh works.
 3. [ ] Events → Import an event: paste an invite, see a card opportunity.

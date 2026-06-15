@@ -410,6 +410,18 @@ export default function App() {
   const draftProgress = buildDraftProgressState(draftInput, validation.passed);
   const hasProgress = draftProgress.hasMeaningfulProgress || inviteText.trim().length > 0;
 
+  // Guest work lives only in memory by design (no device persistence). Warn before a
+  // refresh or tab close discards an in-progress card a guest hasn't signed in to save.
+  useEffect(() => {
+    if (isSignedIn || !hasProgress) return undefined;
+    const warnBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warnBeforeUnload);
+    return () => window.removeEventListener("beforeunload", warnBeforeUnload);
+  }, [hasProgress, isSignedIn]);
+
   return (
     <div
       className="shell"

@@ -13,7 +13,7 @@ The app never decides these gates itself; it reads them from API responses
 
 | Capability | App behaviour today | Backend gate / runtime | What turns it on |
 | --- | --- | --- | --- |
-| **Sign-in** | ✅ Live. Real Clerk email-code auth. | `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` (app) + `CLERK_JWT_KEY`/`CLERK_ISSUER` (API). | Configured for the `model-bluejay-21` dev instance. |
+| **Sign-in** | ✅ Live. Real Clerk email-code auth. | `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` (app) + `CLERK_JWT_KEY`/`CLERK_ISSUER` (API). | Configured for the `model-bluejay-21` QA instance. |
 | **Import / events / memories / drafts / projects / render packets** | ✅ Live against the API (durable in Postgres runtime; in-memory locally). | Always on; `customer-session` auth. | Already live. |
 | **AI card copy & artwork** | Deterministic fallback (`browser-svg-renderer` / `deterministic-customer-chat`). Real copy structure, no paid model call. | Server `aiFlowConfig` live gate: `CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_WORKERS_AI_*` tokens, plus rate-limit + budget + fallback gates. Response field `ai_flow.card_copy.live_provider_calls_enabled`. | Set the Cloudflare Workers AI creds + enable flags in the API env; the gate flips and the same screen shows live output. |
 | **Live retail price quotes** | Estimate-only; `retail-printers/operations/start` returns `status: "blocked"`, `liveQuoteEnabled: false`. | `REAL_ORDER_KILL_SWITCH` + provider certification gates server-side. | Provider cert + flip the kill switch (release owner). |

@@ -7,6 +7,7 @@ const appConfigSource = readFileSync(resolve(mobileRoot, "app.config.js"), "utf8
 const customerExperienceSource = readFileSync(resolve(mobileRoot, "src/customerExperience.ts"), "utf8");
 const eas = JSON.parse(readFileSync(resolve(mobileRoot, "eas.json"), "utf8"));
 const packageJson = JSON.parse(readFileSync(resolve(mobileRoot, "package.json"), "utf8"));
+const buildProfiles = eas.build ?? {};
 
 const checks = [
   checkIncludes("app-config", "platform-identifiers", appConfigSource, [
@@ -17,26 +18,41 @@ const checks = [
   ]),
   checkIncludes("app-config", "runtime-env-resolution", appConfigSource, [
     "process.env.CUSTOMCARD_API_BASE_URL",
+    "process.env.CUSTOMCARD_APP_ENV",
+    "process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY",
     "CUSTOMCARD_API_BASE_URL is required",
+    "CUSTOMCARD_APP_ENV must be qa or production",
+    "Clerk publishable key",
     "realOrderKillSwitch",
     'process.env.REAL_ORDER_KILL_SWITCH ?? "disabled"'
   ]),
-  checkProfile("eas-build", "development-profile", eas.build?.development, {
-    channel: "development",
+  checkProfile("eas-build", "development-profile", resolveBuildProfile("development"), {
+    channel: "qa",
     distribution: "internal",
     developmentClient: true,
+    appEnv: "qa",
     realOrderKillSwitch: "disabled"
   }),
-  checkProfile("eas-build", "preview-profile", eas.build?.preview, {
-    channel: "preview",
+  checkProfile("eas-build", "qa-profile", resolveBuildProfile("qa"), {
+    channel: "qa",
     distribution: "internal",
     iosSimulator: true,
     androidBuildType: "apk",
+    appEnv: "qa",
     realOrderKillSwitch: "disabled"
   }),
-  checkProfile("eas-build", "production-profile", eas.build?.production, {
+  checkProfile("eas-build", "preview-profile", resolveBuildProfile("preview"), {
+    channel: "qa",
+    distribution: "internal",
+    iosSimulator: true,
+    androidBuildType: "apk",
+    appEnv: "qa",
+    realOrderKillSwitch: "disabled"
+  }),
+  checkProfile("eas-build", "production-profile", resolveBuildProfile("production"), {
     channel: "production",
     autoIncrement: true,
+    appEnv: "production",
     realOrderKillSwitch: "disabled"
   }),
   checkIncludes("package", "release-doctor-script", JSON.stringify(packageJson, null, 2), [
@@ -88,7 +104,7 @@ console.log(
       service: "customcard-mobile-release-doctor",
       status: failed.length === 0 ? "ready" : "blocked",
       platforms: ["ios", "android"],
-      nativeBuildProfiles: ["development", "preview", "production"],
+      nativeBuildProfiles: ["development", "qa", "preview", "production"],
       proofBoundary: "repo-local-contract",
       blockedLiveProofs: ["native-emulator-render", "signed-native-artifact", "app-store-review", "live-retail-order"],
       signedArtifactBuilt: false,
@@ -118,6 +134,9 @@ function checkProfile(lane, id, profile, expected) {
       missing.push(`android.buildType ${expected.androidBuildType}`);
     }
     if (expected.autoIncrement && profile.autoIncrement !== true) missing.push("autoIncrement true");
+    if (expected.appEnv && profile.env?.CUSTOMCARD_APP_ENV !== expected.appEnv) {
+      missing.push(`CUSTOMCARD_APP_ENV ${expected.appEnv}`);
+    }
     if (expected.realOrderKillSwitch && profile.env?.REAL_ORDER_KILL_SWITCH !== expected.realOrderKillSwitch) {
       missing.push(`REAL_ORDER_KILL_SWITCH ${expected.realOrderKillSwitch}`);
     }
@@ -128,6 +147,29 @@ function checkProfile(lane, id, profile, expected) {
     lane,
     passed: missing.length === 0,
     detail: missing.length === 0 ? "Mobile native build profile is release-ready." : `Missing mobile build profile signals: ${missing.join(", ")}`
+  };
+}
+
+function resolveBuildProfile(name, seen = new Set()) {
+  const profile = buildProfiles[name];
+  if (!profile || !profile.extends || seen.has(name)) return profile;
+  seen.add(name);
+  const parent = resolveBuildProfile(profile.extends, seen) ?? {};
+  return {
+    ...parent,
+    ...profile,
+    env: {
+      ...(parent.env ?? {}),
+      ...(profile.env ?? {})
+    },
+    ios: {
+      ...(parent.ios ?? {}),
+      ...(profile.ios ?? {})
+    },
+    android: {
+      ...(parent.android ?? {}),
+      ...(profile.android ?? {})
+    }
   };
 }
 

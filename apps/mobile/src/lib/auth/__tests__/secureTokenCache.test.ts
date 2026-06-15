@@ -1,6 +1,6 @@
 import * as SecureStore from "expo-secure-store";
 
-import { devSessionTokenStore, secureTokenCache } from "../secureTokenCache";
+import { secureTokenCache } from "../secureTokenCache";
 
 describe("secureTokenCache", () => {
   it("stores and retrieves tokens via the OS secure store only", async () => {
@@ -21,12 +21,5 @@ describe("secureTokenCache", () => {
       new Error("keystore unavailable")
     );
     expect(await secureTokenCache.getToken("anything")).toBeNull();
-  });
-
-  it("round-trips the dev session token through secure storage", async () => {
-    await devSessionTokenStore.save("local-dev-token");
-    expect(await devSessionTokenStore.get()).toBe("local-dev-token");
-    await devSessionTokenStore.clear();
-    expect(await devSessionTokenStore.get()).toBeNull();
   });
 });

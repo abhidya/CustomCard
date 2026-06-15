@@ -1,5 +1,6 @@
 export const runtimeModes = Object.freeze(["contract", "memory", "postgres"]);
 export const productionEnvNames = Object.freeze(["prod", "production"]);
+export const mobileAppEnvNames = Object.freeze(["qa", "production"]);
 
 export const durableRuntimeRequiredEnv = Object.freeze([
   "CUSTOMCARD_ENV",
@@ -13,7 +14,11 @@ export const durableRuntimeRequiredEnv = Object.freeze([
 
 export const workerRequiredEnv = durableRuntimeRequiredEnv;
 
-export const mobileRequiredEnv = Object.freeze(["CUSTOMCARD_API_BASE_URL"]);
+export const mobileRequiredEnv = Object.freeze([
+  "CUSTOMCARD_API_BASE_URL",
+  "CUSTOMCARD_APP_ENV",
+  "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY"
+]);
 
 export const runtimePlaceholderPattern = /replace-me|placeholder|changeme|__set_|example/i;
 
@@ -91,8 +96,33 @@ export function validateWorkerRuntimeEnv(env = process.env, { requirePostgres = 
 }
 
 export function validateMobileRuntimeEnv(env = process.env) {
-  return [
+  const blockers = [
     ...missingEnv(env, mobileRequiredEnv).map((key) => `Mobile shell missing env: ${key}`),
     ...placeholderEnv(env, mobileRequiredEnv).map((key) => `Mobile shell has placeholder env: ${key}`)
   ];
+  const appEnv = normalizeMobileAppEnv(env.CUSTOMCARD_APP_ENV);
+  const apiBaseUrl = String(env.CUSTOMCARD_API_BASE_URL ?? "").trim();
+  const clerkPublishableKey = String(env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "").trim();
+
+  if (env.CUSTOMCARD_APP_ENV && !appEnv) {
+    blockers.push("Mobile shell CUSTOMCARD_APP_ENV must be qa or production.");
+  }
+  if (apiBaseUrl && !apiBaseUrl.startsWith("https://")) {
+    blockers.push("Mobile shell CUSTOMCARD_API_BASE_URL must be an https:// URL.");
+  }
+  if (clerkPublishableKey && !/^pk_(test|live)_/.test(clerkPublishableKey)) {
+    blockers.push("Mobile shell EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY must be a Clerk publishable key.");
+  }
+  if (appEnv === "production" && clerkPublishableKey && !clerkPublishableKey.startsWith("pk_live_")) {
+    blockers.push("Mobile production shell requires a Clerk live publishable key.");
+  }
+
+  return blockers;
+}
+
+export function normalizeMobileAppEnv(value) {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  if (normalized === "qa" || normalized === "staging" || normalized === "preview") return "qa";
+  if (normalized === "production" || normalized === "prod") return "production";
+  return "";
 }

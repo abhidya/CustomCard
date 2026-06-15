@@ -17,6 +17,23 @@ jest.mock("../../lib/auth/AuthProvider", () => ({
   notifySessionInvalid: jest.fn()
 }));
 
+jest.mock("@clerk/clerk-expo", () => ({
+  useSignIn: () => ({
+    isLoaded: true,
+    signIn: { create: jest.fn() },
+    setActive: jest.fn()
+  }),
+  useSignUp: () => ({
+    isLoaded: true,
+    signUp: {
+      create: jest.fn(),
+      prepareEmailAddressVerification: jest.fn(),
+      attemptEmailAddressVerification: jest.fn()
+    },
+    setActive: jest.fn()
+  })
+}));
+
 jest.mock("../../lib/api/ApiProvider", () => ({
   useApi: () => ({
     // Lazy require: jest.mock factories cannot close over imports.
@@ -56,11 +73,9 @@ async function renderNavigator() {
 function session(overrides: Partial<AppSession>): AppSession {
   return {
     status: "signedOut",
-    mode: "dev-token",
     userLabel: null,
     getToken: async () => null,
     signOut: async () => {},
-    signInWithDevToken: async () => {},
     ...overrides
   };
 }
@@ -76,7 +91,7 @@ describe("RootNavigator auth gate", () => {
     mockSession = session({ status: "signedOut" });
     await renderNavigator();
 
-    expect(await screen.findByText("Local development sign-in")).toBeTruthy();
+    expect(await screen.findByText("Sign in or create an account")).toBeTruthy();
     expect(screen.queryByText("Cards to review")).toBeNull();
   });
 
@@ -89,6 +104,5 @@ describe("RootNavigator auth gate", () => {
     await renderNavigator();
 
     expect((await screen.findAllByText(/Sara and Ahmed · Anniversary/)).length).toBeGreaterThan(0);
-    expect(screen.queryByText("Local development sign-in")).toBeNull();
   });
 });

@@ -2,6 +2,70 @@ import type { BenchmarkResultRecord } from "./benchmarkResults";
 
 export const benchmarkResultRecords: BenchmarkResultRecord[] = [
   {
+    id: "deepai-fixed-provider-requests-20260614",
+    runId: "model-benchmark-20260614-fixed-provider-requests",
+    createdAtIso: "2026-06-14T23:42:00.000Z",
+    phase: "pipeline-quality",
+    storyId: "sympathy-quiet-support",
+    status: "succeeded",
+    statusCode: 200,
+    textCandidateId: "text-cloudflare-baseline",
+    textProvider: "cloudflare-workers-ai-chat",
+    textModel: "@cf/meta/llama-3.1-8b-instruct-fast",
+    imageCandidateId: "image-deepai-text2img",
+    imageProvider: "deepai-text2img-image",
+    imageModel: "text2img",
+    panelCount: 4,
+    providerCallCount: 4,
+    nativePanelCount: 4,
+    productScore: 66,
+    contractScore: 94,
+    tier: "C+ / rough proof, not customer-ready",
+    gradeStatus: "manual",
+    aiNotes: [
+      "DeepAI native request capture used form-data with negative_prompt, width, height, and image_generator_version.",
+      "Provider statuses were 200 for all four panel requests."
+    ],
+    humanNotes: [
+      "Contract quality improved materially after fixing provider request shape.",
+      "Visible product remains generic sympathy stationery and should not be customer promoted."
+    ],
+    blockers: [
+      "Generic landscape/card-template feel.",
+      "Weak front/back text contrast.",
+      "Inside-right tree overlaps the heading area.",
+      "Limited practical-care specificity in the artwork."
+    ],
+    evidence: {
+      outputDir: "docs/evidence/generated-card-comparisons/model-benchmark-20260614-fixed-provider-requests",
+      summaryPath:
+        "docs/evidence/generated-card-comparisons/model-benchmark-20260614-fixed-provider-requests/pipeline-quality-deepai-negative-prompt-summary.json",
+      providerHttpPath:
+        "docs/evidence/generated-card-comparisons/model-benchmark-20260614-fixed-provider-requests/pipeline-quality-deepai-negative-prompt-provider-http.json",
+      runDir:
+        "docs/evidence/generated-card-comparisons/model-benchmark-20260614-fixed-provider-requests/pipeline-quality-deepai-negative-prompt/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img",
+      manualGradePath:
+        "docs/evidence/generated-card-comparisons/model-benchmark-20260614-fixed-provider-requests/pipeline-quality-deepai-negative-prompt/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/manual-grade.md",
+      contactSheetPath:
+        "docs/evidence/generated-card-comparisons/model-benchmark-20260614-fixed-provider-requests/pipeline-quality-deepai-negative-prompt/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/contact-sheet.png",
+      previewPaths: [
+        "docs/evidence/generated-card-comparisons/model-benchmark-20260614-fixed-provider-requests/pipeline-quality-deepai-negative-prompt/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/preview-front.png",
+        "docs/evidence/generated-card-comparisons/model-benchmark-20260614-fixed-provider-requests/pipeline-quality-deepai-negative-prompt/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/preview-inside-left.png",
+        "docs/evidence/generated-card-comparisons/model-benchmark-20260614-fixed-provider-requests/pipeline-quality-deepai-negative-prompt/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/preview-inside-right.png",
+        "docs/evidence/generated-card-comparisons/model-benchmark-20260614-fixed-provider-requests/pipeline-quality-deepai-negative-prompt/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/preview-back.png"
+      ],
+      promptPaths: [
+        "docs/evidence/generated-card-comparisons/model-benchmark-20260614-fixed-provider-requests/pipeline-quality-deepai-negative-prompt/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/effective-provider-requests.json"
+      ],
+      payloadPaths: [
+        "docs/evidence/generated-card-comparisons/model-benchmark-20260614-fixed-provider-requests/pipeline-quality-deepai-negative-prompt/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/payload.json",
+        "docs/evidence/generated-card-comparisons/model-benchmark-20260614-fixed-provider-requests/pipeline-quality-deepai-negative-prompt/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/run-result.json",
+        "docs/evidence/generated-card-comparisons/model-benchmark-20260614-fixed-provider-requests/pipeline-quality-deepai-negative-prompt/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/effective-provider-requests.json"
+      ],
+      failurePaths: []
+    }
+  },
+  {
     id: "deepai-typography-live-20260614-010736",
     runId: "model-benchmark-20260613-210736-deepai-typography-live",
     createdAtIso: "2026-06-14T01:07:36.597Z",

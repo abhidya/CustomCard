@@ -36,15 +36,3 @@ export const secureTokenCache: TokenCache = {
     }
   }
 };
-
-const DEV_SESSION_TOKEN_KEY = "customcard.devSessionToken";
-
-/**
- * Development-only session token storage for the local memory-runtime API.
- * Never used in release builds (guarded by `devSessionSignInAllowed`).
- */
-export const devSessionTokenStore = {
-  get: () => secureTokenCache.getToken(DEV_SESSION_TOKEN_KEY),
-  save: (token: string) => secureTokenCache.saveToken(DEV_SESSION_TOKEN_KEY, token),
-  clear: () => secureTokenCache.clearToken?.(DEV_SESSION_TOKEN_KEY) ?? Promise.resolve()
-};

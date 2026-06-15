@@ -6,8 +6,7 @@ Security posture for the CustomCard mobile app, aligned with OWASP MASVS basics.
 
 - Authentication tokens are stored **only** in OS-backed secure storage
   (`expo-secure-store`, i.e. iOS Keychain / Android Keystore) via
-  `src/lib/auth/secureTokenCache.ts`, used both as Clerk's `tokenCache` and for
-  the dev-only local session token.
+  `src/lib/auth/secureTokenCache.ts`, used as Clerk's `tokenCache`.
 - Tokens are **never** written to AsyncStorage, Redux/MMKV persistence, plain
   files, logs, URLs, deep links, analytics, or crash reports.
 - Secure-storage failures fail closed: a read error returns "no token"
@@ -25,13 +24,15 @@ Security posture for the CustomCard mobile app, aligned with OWASP MASVS basics.
   enabled in Clerk uses **Authorization Code + PKCE** (handled by Clerk).
 - The app holds only the Clerk **publishable** key (public by design). The Clerk
   secret key and JWKS verification material live server-side only.
+- The app has no local bearer-token sign-in path; customer session tokens used
+  by backend tests are not accepted through the mobile UI.
 - No custom cryptography is implemented anywhere in the app.
 
 ## Network security
 
-- **HTTPS only.** `src/config/env.ts` rejects a non-`https://` API base URL for
-  any build that is not a local development build in the `development`
-  environment. `http://127.0.0.1` is allowed only for local dev.
+- **HTTPS only.** `src/config/env.ts` rejects every non-`https://` API base URL.
+  Mobile builds are configured for QA or production API deployments, not local
+  cleartext API traffic.
 - Android cleartext traffic is disabled (`android.usesCleartextTraffic: false`
   in `app.config.js`); iOS ATS is left at its secure default.
 - Every request carries a 20s timeout (`AbortController`) and the API base URL

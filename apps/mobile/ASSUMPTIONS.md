@@ -16,7 +16,7 @@ open. Each is the safest reasonable default for the existing backend.
   JWT (the backend verifies it offline against `CLERK_JWT_KEY` and bridges it to
   a durable `auth_sessions` row). The app therefore uses Clerk's hosted identity
   (`@clerk/clerk-expo`) and sends the Clerk session token as the bearer.
-- **Configured dev Clerk instance:** `model-bluejay-21`. The publishable key
+- **Configured QA Clerk instance:** `model-bluejay-21`. The publishable key
   (`pk_test_…`, public) is wired via `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` so the
   app performs real email-code sign-in. The instance's JWKS PEM and issuer are
   backend deployment config; the Clerk secret key is never used by or stored in
@@ -26,10 +26,10 @@ open. Each is the safest reasonable default for the existing backend.
   both. No password is collected on device. OAuth/OIDC social providers can be
   added through the Clerk dashboard without app changes; when used, Clerk
   performs Authorization Code + PKCE.
-- **Local development sign-in:** when no Clerk publishable key is configured and
-  the build is a development build in the `development` environment, the app
-  accepts the local API's `CUSTOMCARD_CUSTOMER_SESSION_TOKEN` directly. This
-  path is compiled out of release builds by the `devSessionSignInAllowed` guard.
+- **No local token sign-in:** mobile builds require a Clerk publishable key and
+  use Clerk email-code auth in QA and production. Local memory-runtime bearer
+  tokens remain backend test fixtures only; they are not accepted through the app
+  UI.
 
 ## Workflow mapping
 
@@ -76,10 +76,10 @@ open. Each is the safest reasonable default for the existing backend.
 
 ## Tooling
 
-- **Expo SDK 55 / React Native 0.84 / React 19.2.** React packages
-  (`react`, `react-dom`, `react-test-renderer`) are pinned to `19.2.3` to match
-  the renderer bundled with React Native 0.84.1; a mismatch otherwise breaks the
-  test renderer. See `package.json` `overrides`.
+- **Expo SDK 55 / React Native 0.83.6 / React 19.2.0.** React packages
+  (`react`, `react-dom`, `react-test-renderer`) are pinned to `19.2.0` to match
+  Expo Go's native runtime; a mismatch otherwise breaks simulator launch. See
+  `package.json` `overrides`.
 - **App icon and splash are generated placeholders** (solid brand color with a
   centered mark) produced by `scripts/generate-placeholder-assets.mjs`. They are
   valid PNGs so builds succeed, but must be replaced with real brand artwork

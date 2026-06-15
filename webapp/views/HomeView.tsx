@@ -84,13 +84,14 @@ const trustPoints = [
   "Saved personal details are yours to edit or delete at any time."
 ];
 
+// One example per distinct artwork. Wedding and anniversary share the same art asset,
+// so they're shown as a single honest example rather than the identical card twice.
 const exampleCards = [
   { label: "Birthday", category: "birthday", imageUrl: cardImageByCategory.birthday },
   { label: "Graduation", category: "graduation", imageUrl: cardImageByCategory.graduation },
-  { label: "Wedding", category: "wedding", imageUrl: cardImageByCategory.wedding },
+  { label: "Wedding & anniversary", category: "wedding", imageUrl: cardImageByCategory.wedding },
   { label: "Thank you", category: "thank-you", imageUrl: cardImageByCategory["thank-you"] },
   { label: "Sympathy", category: "sympathy", imageUrl: cardImageByCategory.sympathy },
-  { label: "Anniversary", category: "anniversary", imageUrl: cardImageByCategory.anniversary },
   { label: "Friendship", category: "friendship", imageUrl: cardImageByCategory.friendship }
 ];
 

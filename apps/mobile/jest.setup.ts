@@ -35,9 +35,9 @@ jest.mock("expo-constants", () => ({
   default: {
     expoConfig: {
       extra: {
-        apiBaseUrl: "http://127.0.0.1:8787",
-        appEnv: "development",
-        clerkPublishableKey: "",
+        apiBaseUrl: "https://api.qa.customcard.example",
+        appEnv: "qa",
+        clerkPublishableKey: "pk_test_customcard_qa",
         realOrderKillSwitch: "disabled"
       }
     }

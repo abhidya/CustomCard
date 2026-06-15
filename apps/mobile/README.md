@@ -17,8 +17,7 @@ every purchase is confirmed by the customer on the print shop's own site.
 - Node 20+ and npm
 - For device/simulator runs: the Expo tooling (installed as a dev dependency)
   plus Xcode (iOS) and/or Android Studio (Android)
-- A running CustomCard API (local memory runtime, local Vite middleware, or a
-  hosted deployment)
+- A running QA or production CustomCard API over HTTPS
 
 ## Setup
 
@@ -38,21 +37,20 @@ surfaced to the app via `expo-constants`.
 
 | Variable                            | Required          | Purpose                                                            |
 | ----------------------------------- | ----------------- | ------------------------------------------------------------------ |
-| `CUSTOMCARD_API_BASE_URL`           | yes               | API base URL. Must be `https://` for any non-development build.    |
-| `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` | for real sign-in  | Clerk **publishable** key (`pk_test_`/`pk_live_`).                 |
-| `CUSTOMCARD_APP_ENV`                | no                | `development` \| `staging` \| `production` (default `development`). |
+| `CUSTOMCARD_API_BASE_URL`           | yes               | HTTPS API base URL for QA or production.                           |
+| `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` | yes               | Clerk **publishable** key (`pk_test_` for QA, `pk_live_` for prod). |
+| `CUSTOMCARD_APP_ENV`                | yes               | `qa` \| `production` (`staging`/`preview` aliases normalize to `qa`). |
 | `REAL_ORDER_KILL_SWITCH`            | no                | Mirrors the backend safety gate; keep `disabled`.                  |
 | `EAS_PROJECT_ID`                    | for EAS builds    | Set by `eas init`, or via EAS environment variables.               |
 
-When `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` is unset **and** the build is a local
-development build pointed at `development`, the app offers a dev-only sign-in
-that accepts the local API's `CUSTOMCARD_CUSTOMER_SESSION_TOKEN`. Release builds
-require Clerk and never expose that path.
+The mobile app always uses Clerk email-code auth. It does not expose a local
+session-token sign-in path. Production builds require a `pk_live_` Clerk
+publishable key.
 
 #### Configured Clerk instance
 
-This project's development Clerk instance is `model-bluejay-21`. The **publishable
-key** (public by design) enables real email-code sign-in in the app:
+This project's QA Clerk instance is `model-bluejay-21`. The **publishable key**
+(public by design) enables real email-code sign-in in QA builds:
 
 ```
 EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_bW9kZWwtYmx1ZWpheS0yMS5jbGVyay5hY2NvdW50cy5kZXYk
@@ -68,29 +66,19 @@ and keys.
 
 ## Run
 
-Start a CustomCard API first. The quickest is the in-memory runtime from the
-repo root:
-
-```sh
-# from repo root
-CUSTOMCARD_API_RUNTIME=memory \
-AUTH_SESSION_SECRET=test-auth-session-secret-32-chars \
-CUSTOMCARD_CUSTOMER_SESSION_TOKEN=test-customer-session-token \
-CUSTOMCARD_ADMIN_SESSION_TOKEN=test-admin-session-token \
-PORT=8787 node scripts/api-server.mjs
-```
-
-Then launch the app:
+Point the app at a QA or production HTTPS API, then launch it:
 
 ```sh
 cd apps/mobile
-CUSTOMCARD_API_BASE_URL=http://127.0.0.1:8787 REAL_ORDER_KILL_SWITCH=disabled npm run start
+CUSTOMCARD_APP_ENV=qa \
+CUSTOMCARD_API_BASE_URL=https://api.qa.customcard.test \
+EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_... \
+REAL_ORDER_KILL_SWITCH=disabled npm run start
 # or: npm run ios   /   npm run android
 ```
 
-In Expo Go (or a simulator), sign in with the dev token
-(`test-customer-session-token`) to exercise the full workflow against the memory
-runtime.
+In Expo Go or a simulator, sign in with a Clerk email code. Local memory-runtime
+session tokens are only for backend contract tests, not for app sign-in.
 
 > Note: a desktop browser pointed at the Expo dev server shows a JSON manifest —
 > that is Expo metadata, not the app UI. Use Expo Go or a simulator.
@@ -114,14 +102,14 @@ prove the request/response models match the server. It is skipped unless
 `CUSTOMCARD_LIVE_API_URL` is set:
 
 ```sh
-# terminal 1 (repo root): start the in-memory API
+# terminal 1 (repo root): start a test API with backend-only bearer fixtures
 CUSTOMCARD_API_RUNTIME=memory AUTH_SESSION_SECRET=test-auth-session-secret-32-chars \
-CUSTOMCARD_CUSTOMER_SESSION_TOKEN=test-customer-session-token \
-CUSTOMCARD_ADMIN_SESSION_TOKEN=test-admin-session-token PORT=8787 node scripts/api-server.mjs
+CUSTOMCARD_CUSTOMER_SESSION_TOKEN=<backend-test-token> \
+CUSTOMCARD_ADMIN_SESSION_TOKEN=<backend-admin-token> PORT=8787 node scripts/api-server.mjs
 
 # terminal 2 (apps/mobile): run it against the live server
 CUSTOMCARD_LIVE_API_URL=http://127.0.0.1:8787 \
-CUSTOMCARD_LIVE_API_TOKEN=test-customer-session-token npx jest liveApi
+CUSTOMCARD_LIVE_API_TOKEN=<backend-test-token> npx jest liveApi
 ```
 
 ### Repo-root checks
@@ -145,9 +133,10 @@ contract test (against the in-memory runtime) on every change under
 
 ## Build & submit (EAS)
 
-`eas.json` defines `development`, `preview`, and `production` profiles for both
-platforms. Build/submit require an Expo account, EAS CLI, and platform signing
-credentials configured outside this repo.
+`eas.json` defines `development`, `qa`, `preview`, and `production` profiles.
+The development and preview profiles both target the QA app environment. Build
+and submit require an Expo account, EAS CLI, and platform signing credentials
+configured outside this repo.
 
 ```sh
 npm install -g eas-cli
@@ -196,10 +185,9 @@ apps/mobile/
    └─ customerExperience.ts     # deterministic customer snapshot (shared contract)
 ```
 
-- **Auth/session**: `AuthProvider` wraps Clerk when a publishable key is present
-  and falls back to the dev-token provider locally. Tokens live only in
-  `expo-secure-store` (Keychain/Keystore). A 401 from the API clears cached data
-  and signs the user out.
+- **Auth/session**: `AuthProvider` wraps Clerk for every build. Tokens live only
+  in `expo-secure-store` (Keychain/Keystore). A 401 from the API clears cached
+  data and signs the user out.
 - **API client**: `createHttpClient` injects the bearer token, adds an
   `X-Idempotency-Key` to every mutation, applies a request timeout, classifies
   errors, and redacts sensitive data from logs/error messages. `endpoints.ts`

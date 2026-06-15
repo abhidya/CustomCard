@@ -7,14 +7,15 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "development",
+      "channel": "qa",
       "env": {
+        "CUSTOMCARD_APP_ENV": "qa",
         "REAL_ORDER_KILL_SWITCH": "disabled"
       }
     },
-    "preview": {
+    "qa": {
       "distribution": "internal",
-      "channel": "preview",
+      "channel": "qa",
       "ios": {
         "simulator": true
       },
@@ -22,13 +23,19 @@
         "buildType": "apk"
       },
       "env": {
+        "CUSTOMCARD_APP_ENV": "qa",
         "REAL_ORDER_KILL_SWITCH": "disabled"
       }
+    },
+    "preview": {
+      "extends": "qa",
+      "channel": "qa"
     },
     "production": {
       "channel": "production",
       "autoIncrement": true,
       "env": {
+        "CUSTOMCARD_APP_ENV": "production",
         "REAL_ORDER_KILL_SWITCH": "disabled"
       }
     },

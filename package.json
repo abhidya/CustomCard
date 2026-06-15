@@ -51,6 +51,7 @@
     "e2e:coverage:doctor": "node scripts/e2e-coverage-doctor.mjs",
     "ai:doctor": "node scripts/ai-provider-readiness-doctor.mjs",
     "ai:queue:doctor": "node scripts/ai-queue-operations-doctor.mjs",
+    "ai:control-plane:doctor": "node scripts/ai-provider-control-plane-doctor.mjs",
     "observability:doctor": "node scripts/observability-readiness-doctor.mjs",
     "metrics:doctor": "node scripts/metrics-platform-doctor.mjs",
     "retail:doctor": "node scripts/retail-fulfillment-readiness-doctor.mjs",

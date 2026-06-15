@@ -89,6 +89,9 @@ jobs:
       - name: Validate AI queue operations readiness
         run: npm run ai:queue:doctor
 
+      - name: Validate AI provider control plane
+        run: npm run ai:control-plane:doctor
+
       - name: Validate observability readiness
         run: npm run observability:doctor
 

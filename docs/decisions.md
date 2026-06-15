@@ -471,3 +471,24 @@ adapter errors and keeps D025 provider-failure evidence easier to protect.
 Rejected: moving prompts, provider HTTP request bodies, response repair, and
 Evidence shaping all at once. That would make one high-risk refactor out of four
 separate seams.
+
+## D031: Treat AI Provider Routing As A Runtime Control Plane
+
+Decision: add `src/aiProviderControlPlane.ts` and
+`infra/migrations/005_ai_provider_control_plane.sql` as the contract for AI
+provider model catalog rows, prompt profiles, route policies, benchmark runs, and
+benchmark grades. The control plane keeps generation requests provider-agnostic:
+workers resolve the latest trusted route policy, reserve budget/rate capacity,
+call the selected adapter, and preserve provider evidence without exposing
+provider-specific errors to customers.
+
+Reason: CustomCard's product is greeting-card expertise plus AI-provider
+configuration expertise, not a hard dependency on one model vendor. Provider
+choice, prompt settings, rate limits, budgets, and promotion gates must be
+changeable as runtime data so operators can react to price, credits, quality, and
+provider outages without redeploying the service.
+
+Rejected: promoting a provider from ad hoc visual impressions or static adapter
+defaults. Latest DeepAI fixed-provider evidence improved to 66/94, but the
+visible product score remains below the customer-quality gate, so it stays a
+candidate with persisted evidence rather than a default customer route.

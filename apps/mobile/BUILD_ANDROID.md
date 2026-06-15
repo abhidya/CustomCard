@@ -14,8 +14,8 @@ in git. There are two ways to produce an installable build.
   with the SDK installed.
 
 Provide non-secret config via env / EAS environment variables:
-`CUSTOMCARD_API_BASE_URL` (https in non-dev), `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`,
-`CUSTOMCARD_APP_ENV`, `REAL_ORDER_KILL_SWITCH=disabled`.
+`CUSTOMCARD_API_BASE_URL` (https), `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`,
+`CUSTOMCARD_APP_ENV=qa|production`, `REAL_ORDER_KILL_SWITCH=disabled`.
 
 ## Android APK
 
