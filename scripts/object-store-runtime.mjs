@@ -1125,6 +1125,9 @@ function resolvePublicBaseUrl(env, { productionRuntime = false } = {}) {
 
 function resolveHostedArtifactPublicBaseUrl(env) {
   if (env.CUSTOMCARD_PUBLIC_BASE_URL) return `${trimTrailingSlash(env.CUSTOMCARD_PUBLIC_BASE_URL)}/api/artifacts`;
+  if (isVercelProductionRuntime(env) && env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${env.VERCEL_PROJECT_PRODUCTION_URL.replace(/^https?:\/\//, "").replace(/\/+$/, "")}/api/artifacts`;
+  }
   if (env.VERCEL_URL) return `https://${env.VERCEL_URL.replace(/^https?:\/\//, "").replace(/\/+$/, "")}/api/artifacts`;
   return "";
 }
@@ -1153,6 +1156,11 @@ function isProductionRuntime(env) {
   const customCardEnv = String(env.CUSTOMCARD_ENV ?? "").trim().toLowerCase();
   const nodeEnv = String(env.NODE_ENV ?? "").trim().toLowerCase();
   return customCardEnv === "prod" || customCardEnv === "production" || nodeEnv === "production";
+}
+
+function isVercelProductionRuntime(env) {
+  const vercelTargetEnv = String(env.VERCEL_TARGET_ENV ?? env.VERCEL_ENV ?? "").trim().toLowerCase();
+  return vercelTargetEnv === "production";
 }
 
 function isSupportedEndpoint(value, { productionRuntime = false } = {}) {

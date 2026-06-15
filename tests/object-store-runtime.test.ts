@@ -76,7 +76,9 @@ describe("object store runtime", () => {
         NODE_ENV: "production",
         OBJECT_STORE_URL: "https://example-account.r2.cloudflarestorage.com",
         OBJECT_STORE_PUBLIC_BASE_URL: "http://127.0.0.1:4173/api/artifacts",
-        VERCEL_URL: "customcard-three.vercel.app"
+        VERCEL_TARGET_ENV: "production",
+        VERCEL_PROJECT_PRODUCTION_URL: "customcard-three.vercel.app",
+        VERCEL_URL: "customcard-5tflubh6n-world-prize-s-projects.vercel.app"
       }
     });
 
