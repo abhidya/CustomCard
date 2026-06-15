@@ -308,14 +308,13 @@ describe("customer shell server render", () => {
       }
     });
 
-    it("keeps the internal business landing away from non-admin visitors", () => {
+    it("renders the hidden business landing for direct links without adding it to customer nav", () => {
       const { html, text } = renderShell({ search: "?view=business" });
 
-      // Non-admins get the customer home, not internal readiness commentary.
-      expect(text).toContain("Make the card you meant to send.");
-      expect(text).not.toContain("For customer lifecycle teams");
-      expect(text).not.toContain("What this page needs");
-      expect(text).not.toContain("No live CRM writes");
+      expect(text).toContain("For customer lifecycle teams");
+      expect(text).toContain("No live CRM writes");
+      expect(text).toContain("Human approval required");
+      expect(text).not.toContain("Make the card you meant to send.");
       expect(html).not.toContain(">Business<");
       expect(html).not.toContain("navlink-admin");
 
