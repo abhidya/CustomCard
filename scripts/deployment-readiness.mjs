@@ -8,6 +8,7 @@ const files = {
   envExample: "infra/env/.env.example",
   vercel: "vercel.json",
   vercelApiHandler: "api/[...path].js",
+  vercelArtifactsHandler: "api/artifacts.js",
   vercelArtifactHandler: "api/artifacts/[...path].js",
   vercelAiCardGenerateHandler: "api/ai/card/generate.js",
   vercelAiChatRespondHandler: "api/ai/chat/respond.js",
@@ -139,13 +140,15 @@ const checks = [
   checkIncludes("vercel", "vercel-static-api-routing", contents.vercel, [
     '"buildCommand": "npm run build"',
     '"outputDirectory": "dist"',
+    '"source": "/api/artifacts/(.*)"',
+    '"destination": "/api/artifacts?objectKey=$1"',
     '"source": "/api/(.*)"',
     '"destination": "/api/$1"',
     '"source": "/oauth/callback"',
     '"destination": "/api/oauth/callback"',
     '"destination": "/index.html"'
   ]),
-  checkIncludes("vercel", "vercel-serverless-api-handler", `${contents.vercelApiHandler}\n${contents.vercelArtifactHandler}\n${contents.vercelAiCardGenerateHandler}\n${contents.vercelAiChatRespondHandler}\n${contents.apiServer}\n${contents.apiRuntime}`, [
+  checkIncludes("vercel", "vercel-serverless-api-handler", `${contents.vercelApiHandler}\n${contents.vercelArtifactsHandler}\n${contents.vercelArtifactHandler}\n${contents.vercelAiCardGenerateHandler}\n${contents.vercelAiChatRespondHandler}\n${contents.apiServer}\n${contents.apiRuntime}`, [
     "handleApiRequest",
     "export async function handleApiRequest",
     "CUSTOMCARD_API_RUNTIME",

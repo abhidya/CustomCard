@@ -2555,6 +2555,14 @@ describe("api server wrapper", () => {
       expect(artifactResponse.headers.get("content-type")).toBe("image/svg+xml");
       expect(await artifactResponse.text()).toContain("Stored card");
 
+      const signedArtifactUrl = new URL(payload.signedArtifactUrls[0].url);
+      const rewrittenArtifactUrl = new URL(`http://127.0.0.1:${port}/api/artifacts${signedArtifactUrl.search}`);
+      rewrittenArtifactUrl.searchParams.set("objectKey", signedArtifactUrl.pathname.replace(/^\/api\/artifacts\//, ""));
+      const rewrittenArtifactResponse = await fetch(rewrittenArtifactUrl);
+      expect(rewrittenArtifactResponse.status).toBe(200);
+      expect(rewrittenArtifactResponse.headers.get("content-type")).toBe("image/svg+xml");
+      expect(await rewrittenArtifactResponse.text()).toContain("Stored card");
+
       const bucket = await getJson(
         port,
         "/api/admin/artifacts/bucket?prefix=projects/project-r2-api&limit=10&sort=key&order=asc",

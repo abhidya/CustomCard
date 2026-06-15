@@ -9,6 +9,12 @@ function read(path: string): string {
 }
 
 const shellDoctorTimeoutMs = 15_000;
+const validMobileDoctorEnv = {
+  CUSTOMCARD_API_BASE_URL: "https://api.customcard.test",
+  CUSTOMCARD_APP_ENV: "qa",
+  EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_customcard",
+  REAL_ORDER_KILL_SWITCH: "disabled"
+};
 
 describe("production infrastructure contract", () => {
   it("defines durable tables for users, providers, memory, orders, consent, and audit", () => {
@@ -607,6 +613,7 @@ describe("production infrastructure contract", () => {
       rewrites: Array<{ source: string; destination: string }>;
     };
     const handler = read("api/[...path].js");
+    const artifactsHandler = read("api/artifacts.js");
     const artifactHandler = read("api/artifacts/[...path].js");
     const calendarStartHandler = read("api/calendar/connections/start.js");
     const oauthCallbackHandler = read("api/oauth/callback.js");
@@ -627,11 +634,13 @@ describe("production infrastructure contract", () => {
       outputDirectory: "dist"
     });
     expect(vercel.rewrites).toEqual([
+      { source: "/api/artifacts/(.*)", destination: "/api/artifacts?objectKey=$1" },
       { source: "/api/(.*)", destination: "/api/$1" },
       { source: "/oauth/callback", destination: "/api/oauth/callback" },
       { source: "/((?!api/).*)", destination: "/index.html" }
     ]);
     expect(handler).toContain("handleApiRequest");
+    expect(artifactsHandler).toContain("handleApiRequest");
     expect(artifactHandler).toContain("handleApiRequest");
     expect(`${calendarStartHandler}\n${oauthCallbackHandler}`).toContain("handleApiRequest");
     expect(`${aiCardGenerateHandler}\n${aiChatRespondHandler}`).toContain("handleApiRequest");
@@ -1593,7 +1602,7 @@ describe("production infrastructure contract", () => {
     expect(mobileExperience).toContain("Live AI and automatic orders stay off");
     const doctorOutput = execFileSync("node", ["apps/mobile/scripts/doctor.mjs"], {
       encoding: "utf8",
-      env: { ...process.env, CUSTOMCARD_API_BASE_URL: "http://127.0.0.1:5173", REAL_ORDER_KILL_SWITCH: "disabled" },
+      env: { ...process.env, ...validMobileDoctorEnv },
       stdio: ["ignore", "pipe", "pipe"]
     });
     expect(doctorOutput).toContain("customer experience contract");

@@ -31,13 +31,13 @@ export function createApiRouteFamilies(deps) {
 
   return {
     async handlePreAuthRoute({ path, request, requestUrl, response }) {
-      if (!path.startsWith("/api/artifacts/")) return false;
+      const artifactObjectKey = readArtifactObjectKey(path, requestUrl);
+      if (!artifactObjectKey) return false;
       if (request.method !== "GET") {
         sendJson(response, 405, { service: "customcard-api", status: "method-not-allowed", path });
         return true;
       }
-      const objectKey = decodeArtifactObjectKey(path);
-      const artifact = await apiRuntime.readArtifact({ objectKey, query: requestUrl.searchParams });
+      const artifact = await apiRuntime.readArtifact({ objectKey: artifactObjectKey, query: requestUrl.searchParams });
       if (artifact.body) {
         sendArtifact(response, artifact);
       } else {
@@ -76,6 +76,12 @@ export function createApiRouteFamilies(deps) {
       return true;
     }
   };
+
+  function readArtifactObjectKey(path, requestUrl) {
+    if (path.startsWith("/api/artifacts/")) return decodeArtifactObjectKey(path);
+    if (path === "/api/artifacts") return String(requestUrl.searchParams.get("objectKey") ?? "");
+    return "";
+  }
 
   async function handlePublicGalleryRoute({ path, request, response }) {
     if (path !== "/api/public/featured-cards" || request.method !== "GET") return false;
