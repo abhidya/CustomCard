@@ -1,4 +1,4 @@
-import { CheckCircle2, ClipboardList, Download, ExternalLink, FileDown, ShieldCheck } from "lucide-react";
+import { CheckCircle2, ClipboardList, Download, ExternalLink, FileDown, Pencil, ShieldCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { CardPanel } from "../../src/customerWorkflow";
 import { PanelArt } from "../ui";
@@ -73,6 +73,9 @@ export function PrintView({
   const rtlReview = panels.some((candidate) => candidate.rtl);
   const approvalBlocked = overflowPanels.length > 0 || panels.length < 4;
   const proofApproved = isProofApproved(proofChecklist) && !approvalBlocked;
+  // The four per-panel review checks live on the panels themselves (review next to
+  // its object); names / crop / final approval are the closing gate below.
+  const finalApprovalItems = proofChecklistItems.filter((item) => !item.id.startsWith("panel-"));
   const fieldIssues = validateCheckoutCustomer(checkoutCustomer);
   useEffect(() => {
     onCardEventRef.current = onCardEvent;
@@ -273,43 +276,72 @@ export function PrintView({
           <section className="panelcard printsection proofgrid" aria-label="Print proof panels">
             <div className="proofgridHead">
               <h2>Your print proof</h2>
-              <button
-                aria-pressed={showTrimGuides}
-                className="btn btn-ghost btn-sm"
-                onClick={() => setShowTrimGuides((current) => !current)}
-                type="button"
-              >
-                Show trim / safe area
-              </button>
+              <div className="proofgridHeadActions">
+                {onBackToDesign ? (
+                  <button className="btn btn-ghost btn-sm" onClick={onBackToDesign} type="button">
+                    <Pencil size={14} />
+                    Edit card
+                  </button>
+                ) : null}
+                <button
+                  aria-pressed={showTrimGuides}
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => setShowTrimGuides((current) => !current)}
+                  type="button"
+                >
+                  Show trim / safe area
+                </button>
+              </div>
             </div>
-            <p>All four panels of your 5 × 7 folded card, exactly as they print.</p>
+            <p>All four panels of your 5 × 7 folded card, exactly as they print. Confirm each one as you review it.</p>
             <div className="proofpanels" data-trim={showTrimGuides}>
-              {panels.map((panel) => (
-                <figure className="proofpanel" data-overflow={panel.overflowRisk} key={panel.id}>
-                  <div className="proofpanelFrame">
-                    <PanelArt panel={panel} />
-                    {showTrimGuides ? (
-                      <span aria-hidden="true" className="proofTrimOverlay">
-                        <i className="proofTrimLine" />
-                        <i className="proofSafeLine" />
-                      </span>
+              {panels.map((panel) => {
+                const reviewItem = proofChecklistItems.find((item) => item.id === `panel-${panel.id}`);
+                const reviewed = reviewItem ? proofChecklist[reviewItem.id] === true : false;
+                return (
+                  <figure className="proofpanel" data-overflow={panel.overflowRisk} data-reviewed={reviewed} key={panel.id}>
+                    <div className="proofpanelFrame">
+                      <PanelArt panel={panel} />
+                      {showTrimGuides ? (
+                        <span aria-hidden="true" className="proofTrimOverlay">
+                          <i className="proofTrimLine" />
+                          <i className="proofSafeLine" />
+                        </span>
+                      ) : null}
+                    </div>
+                    <figcaption>
+                      <strong>{panel.label}</strong>
+                      {panel.overflowRisk ? <small className="proofpanelWarn">Too much text</small> : null}
+                    </figcaption>
+                    {reviewItem ? (
+                      <label className="proofcheck proofcheck-panel" data-on={reviewed}>
+                        <input
+                          aria-label={reviewItem.label}
+                          checked={reviewed}
+                          onChange={() => setProofChecklist((current) => toggleProofChecklistItem(current, reviewItem.id))}
+                          type="checkbox"
+                        />
+                        <span>{reviewItem.label}</span>
+                      </label>
                     ) : null}
-                  </div>
-                  <figcaption>
-                    <strong>{panel.label}</strong>
-                    {panel.overflowRisk ? <small className="proofpanelWarn">Too much text</small> : null}
-                  </figcaption>
-                </figure>
-              ))}
+                  </figure>
+                );
+              })}
             </div>
             {showTrimGuides ? (
               <small className="filemeta">Guides are preview-only — they never appear in the printed card or the saved files.</small>
             ) : null}
           </section>
 
-          <section className="panelcard printsection proofapproval" aria-label="Proof approval checklist">
-            <h2>Approve your proof</h2>
-            <p>This page is the print proof — what you see in the panels is exactly what prints. Check every line before checkout.</p>
+          <section className="panelcard printsection proofapproval" data-approved={proofApproved} aria-label="Proof approval">
+            <div className="proofapprovalHead">
+              <h2>Approve your proof</h2>
+              <span className="proofprogress" data-approved={proofApproved} aria-live="polite">
+                <CheckCircle2 size={16} />
+                {proofApprovalProgressLabel(proofChecklist)}
+              </span>
+            </div>
+            <p>What you see in the panels above is exactly what prints. Confirm the last details, then approve.</p>
             {overflowPanels.length > 0 ? (
               <div className="proofwarning" role="alert">
                 Text may not fit on: {overflowPanels.map((candidate) => candidate.label).join(", ")}. Shorten it in the
@@ -322,8 +354,13 @@ export function PrintView({
               </div>
             ) : null}
             <div className="proofchecklist">
-              {proofChecklistItems.map((item) => (
-                <label className="proofcheck" key={item.id}>
+              {finalApprovalItems.map((item) => (
+                <label
+                  className="proofcheck"
+                  data-approve={item.id === "approve" ? true : undefined}
+                  data-on={proofChecklist[item.id] === true}
+                  key={item.id}
+                >
                   <input
                     aria-label={item.label}
                     checked={proofChecklist[item.id] === true}
@@ -333,10 +370,6 @@ export function PrintView({
                   <span>{item.label}</span>
                 </label>
               ))}
-            </div>
-            <div className="proofprogress" data-approved={proofApproved} aria-live="polite">
-              <CheckCircle2 size={16} />
-              {proofApprovalProgressLabel(proofChecklist)}
             </div>
           </section>
 

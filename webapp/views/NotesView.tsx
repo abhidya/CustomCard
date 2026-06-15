@@ -1,4 +1,4 @@
-import { ArrowRight, Eye } from "lucide-react";
+import { ArrowRight, Eye, Pencil } from "lucide-react";
 import type { CardDraft, CardHistoryEntry, CardLifecycleStatus } from "../../src/customerWorkflow";
 import type { DraftProgressStatus } from "../draftProgress";
 import { PanelArt } from "../ui";
@@ -86,13 +86,20 @@ export function NotesView({
             </div>
             <div className="carditem-actions">
               {draftStatus === "ready-for-review" ? (
-                <button className="btn btn-primary btn-sm" onClick={onReviewProof} type="button">
-                  <Eye size={14} />
-                  Review proof
-                </button>
+                <>
+                  <button className="btn btn-primary btn-sm" onClick={onReviewProof} type="button">
+                    <Eye size={14} />
+                    Review proof
+                  </button>
+                  <button className="btn btn-ghost btn-sm" onClick={onResume} type="button">
+                    <Pencil size={14} />
+                    Edit card
+                  </button>
+                </>
               ) : (
                 <button className="btn btn-primary btn-sm" onClick={onResume} type="button">
-                  Continue
+                  <Pencil size={14} />
+                  Continue editing
                   <ArrowRight size={14} />
                 </button>
               )}

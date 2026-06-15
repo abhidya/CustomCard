@@ -133,6 +133,24 @@ input, textarea, select { font-family: inherit; }
 /* Default placeholder gray (#757575) fails WCAG on the warm surfaces (~4.2:1).
    Use the theme ink ramp so placeholders clear 4.5:1 in every theme. */
 input::placeholder, textarea::placeholder { color: var(--ink-faint); opacity: 1; }
+/* Checkboxes and radios must never inherit the legacy full-width text-input reset
+   (src/styles.css sets input{width:100%;min-height:40px;border;...}). Without this,
+   any checkbox that forgets an explicit size balloons to fill its row and crushes
+   its label. Reset once, globally, so the whole class of bug cannot recur. */
+input[type="checkbox"],
+input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  min-width: 0;
+  min-height: 0;
+  flex: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  accent-color: var(--accent);
+}
 a { color: inherit; }
 ::selection { background: var(--accent); color: var(--accent-contrast); }
 
@@ -1582,6 +1600,7 @@ a { color: inherit; }
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-l);
   display: grid; place-items: center;
+  transition: border-color 0.25s var(--ease);
 }
 .stage-frame[data-panel-status="artwork-loading"],
 .stage-frame[data-panel-status="queued"] {
@@ -1838,9 +1857,10 @@ a { color: inherit; }
   text-align: center;
 }
 .setupPreview img {
-  width: min(340px, 90%);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-card);
+  width: min(330px, 88%);
+  border-radius: 10px;
+  box-shadow: 0 1px 0 #ffffff80 inset, var(--shadow-pop);
+  transform: rotate(-0.8deg);
 }
 .setupPreview div {
   display: grid;
@@ -1906,8 +1926,8 @@ a { color: inherit; }
   max-width: 100%;
   text-align: center;
 }
-.pagetab[data-on="true"] { border-color: var(--ink); box-shadow: var(--shadow-card); }
-.pagetab:hover { border-color: var(--ink-soft); }
+.pagetab[data-on="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft), var(--shadow-card); }
+.pagetab:hover:not([data-on="true"]) { border-color: var(--ink-soft); }
 .pagetab[data-status="queued"] img,
 .pagetab[data-status="artwork-loading"] img {
   opacity: 0.58;
@@ -1948,10 +1968,11 @@ a { color: inherit; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: 16px;
   min-width: 0;
-  padding: 14px 16px;
-  border: 1px solid var(--line);
+  margin-top: 4px;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
   border-radius: var(--radius);
   background: var(--surface);
   box-shadow: var(--shadow-card);
@@ -2252,12 +2273,15 @@ a { color: inherit; }
 
 .airow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .aibutton {
-  display: inline-flex; align-items: center; gap: 8px;
+  display: inline-flex; align-items: center; gap: 9px;
   flex: none;
   white-space: nowrap;
-  border: 1px solid var(--line); border-radius: 999px;
-  background: linear-gradient(120deg, var(--accent-soft), var(--second-soft));
-  color: var(--ink); padding: 9px 18px; font-size: 14px; font-weight: 600;
+  border: 1.5px solid color-mix(in srgb, var(--accent) 52%, var(--line));
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent-soft) 82%, var(--surface)), color-mix(in srgb, var(--second-soft) 82%, var(--surface)));
+  color: var(--ink); padding: 11px 21px; font-size: 14.5px; font-weight: 700;
+  box-shadow: var(--shadow-card);
   transition: all 0.2s var(--ease);
 }
 .aibutton-logo {
@@ -2267,8 +2291,8 @@ a { color: inherit; }
   border-radius: 50%;
   object-fit: cover;
 }
-.aibutton:hover:not(:disabled) { border-color: var(--accent); transform: translateY(-1px); }
-.aibutton:disabled { opacity: 0.55; cursor: default; }
+.aibutton:hover:not(:disabled) { border-color: var(--accent); box-shadow: var(--shadow-pop); transform: translateY(-1px); }
+.aibutton:disabled { opacity: 0.55; cursor: default; box-shadow: none; }
 .ainote { flex: 1 1 220px; font-size: 12.5px; color: var(--ink-faint); line-height: 1.35; }
 
 @media (max-width: 620px) {
@@ -3581,30 +3605,69 @@ a { color: inherit; }
 /* ============================================================
    Proof approval checklist
    ============================================================ */
-.proofapproval p { font-size: 13.5px; color: var(--ink-soft); }
-.proofchecklist { display: grid; gap: 9px; margin: 14px 0; }
+.proofapproval { transition: border-color 0.2s var(--ease), background-color 0.2s var(--ease); }
+.proofapproval[data-approved="true"] {
+  border-color: color-mix(in srgb, var(--second) 46%, var(--line));
+  background: linear-gradient(180deg, var(--surface), var(--second-soft));
+}
+.proofapprovalHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.proofapprovalHead h2 { margin: 0; }
+.proofapproval p { font-size: 13.5px; color: var(--ink-soft); margin: 0; }
+.proofchecklist { display: grid; gap: 8px; margin: 4px 0 0; }
 .proofcheck {
   display: flex;
   align-items: flex-start;
   gap: 10px;
   font-size: 14px;
-  line-height: 1.45;
-  padding: 10px 12px;
+  line-height: 1.4;
+  padding: 11px 13px;
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-s);
   background: var(--surface);
+  color: var(--ink-soft);
   cursor: pointer;
+  transition: border-color 0.16s var(--ease), background-color 0.16s var(--ease), color 0.16s var(--ease);
 }
 .proofcheck:hover { border-color: var(--ink-soft); }
-.proofcheck input { margin-top: 2px; accent-color: var(--accent); width: 16px; height: 16px; }
+.proofcheck input { margin-top: 1px; accent-color: var(--second); }
+.proofcheck span { min-width: 0; overflow-wrap: anywhere; }
+.proofcheck[data-on="true"] {
+  border-color: color-mix(in srgb, var(--second) 40%, var(--line));
+  background: var(--second-soft);
+  color: var(--ink);
+}
+.proofcheck[data-approve] { font-weight: 720; color: var(--ink); }
+.proofcheck[data-approve] input { accent-color: var(--accent); }
+.proofcheck[data-approve][data-on="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
 .proofprogress {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
+  gap: 7px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--line-soft);
+  background: var(--surface-alt);
+  font-size: 12.5px;
+  font-weight: 680;
   color: var(--ink-faint);
+  transition: all 0.2s var(--ease);
 }
-.proofprogress[data-approved="true"] { color: var(--second); font-weight: 600; }
+.proofprogress svg { color: var(--ink-faint); }
+.proofprogress[data-approved="true"] {
+  border-color: color-mix(in srgb, var(--second) 44%, var(--line));
+  background: var(--second-soft);
+  color: var(--second);
+}
+.proofprogress[data-approved="true"] svg { color: var(--second); }
 
 /* ============================================================
    Checkout validation + hints
@@ -4323,16 +4386,53 @@ a { color: inherit; }
 }
 
 /* ---------- Print proof grid ---------- */
-.proofgridHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.proofgridHead { display: flex; align-items: center; justify-content: space-between; gap: 10px 14px; flex-wrap: wrap; }
+.proofgridHead h2 { margin: 0; }
+.proofgridHeadActions { display: flex; gap: 8px; flex-wrap: wrap; }
 .proofgridHead .btn { min-height: 40px; }
 .proofpanels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 12px; }
 @media (max-width: 980px) { .proofpanels { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 480px) { .proofpanels { grid-template-columns: 1fr; } }
-.proofpanel { margin: 0; display: grid; gap: 7px; }
+.proofpanel { margin: 0; display: grid; gap: 7px; align-content: start; }
 .proofpanel figcaption { display: flex; align-items: baseline; gap: 8px; font-size: 13px; }
 .proofpanelWarn { color: var(--warn, #a4581f); font-weight: 700; }
-.proofpanelFrame { position: relative; border: 1px solid var(--line); border-radius: var(--radius-s); overflow: hidden; }
+.proofpanelFrame {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  overflow: hidden;
+  transition: border-color 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
 .proofpanelFrame img { display: block; width: 100%; height: auto; }
+.proofpanel[data-reviewed="true"] .proofpanelFrame {
+  border-color: color-mix(in srgb, var(--second) 52%, var(--line));
+  box-shadow: 0 0 0 2px var(--second-soft);
+}
+.proofpanel[data-reviewed="true"] .proofpanelFrame::after {
+  content: "✓";
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--second);
+  color: var(--accent-contrast);
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: var(--shadow-card);
+}
+/* Per-panel review check sits on the panel — review next to its object. */
+.proofcheck-panel {
+  padding: 7px 9px;
+  gap: 7px;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 640;
+  line-height: 1.3;
+}
 .proofTrimOverlay { position: absolute; inset: 0; pointer-events: none; }
 .proofTrimOverlay .proofTrimLine {
   position: absolute; inset: 3%; border: 1.5px dashed #c2484f; border-radius: 2px; display: block;
