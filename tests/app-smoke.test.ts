@@ -453,7 +453,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);
 
-  it("gates adapter readiness behind authenticated admin access", async () => {
+  it("does not expose a standalone adapter readiness route", async () => {
     const sessionId = await createPage(1280, 900, "?view=adapters");
     const result = await evaluate(
       sessionId,
@@ -468,9 +468,10 @@ describeWithChrome("CustomCard UI smoke", () => {
       }))()`
     );
 
-    expect(result.h1).toBe("Adapters");
-    expect(result.text).toContain("Private operations");
-    expect(result.text).toMatch(/Sign in required|Checking account access|Admin access required/);
+    expect(result.h1).not.toBe("Adapters");
+    expect(result.text).toContain("Make the card you meant to send.");
+    expect(result.text).not.toContain("Private operations");
+    expect(result.text).not.toMatch(/Sign in required|Checking account access|Admin access required/);
     expect(result.text).not.toContain("Local workspace auth");
     expect(result.text).not.toContain("Dry run: blocked by gates");
     expect(result.adapterRows).toBe(0);

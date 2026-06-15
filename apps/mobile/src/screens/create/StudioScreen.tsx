@@ -11,7 +11,8 @@ import { useCardDraft } from "./useCardDraft";
 
 export function StudioScreen() {
   const navigation = useNavigation();
-  const { form, setField, fieldErrors, result, generate, saveDraft, submit } = useCardDraft();
+  const { form, setField, fieldErrors, result, generate, saveDraft, submit, requiresSignIn } =
+    useCardDraft();
 
   return (
     <Screen>
@@ -79,7 +80,14 @@ export function StudioScreen() {
           error={fieldErrors.personalNote}
           testID="studio-note"
         />
-        <AppButton label="Draft my card" onPress={submit} loading={generate.isPending} />
+        {requiresSignIn ? (
+          <InlineNotice text="You can fill out the card as a guest. Sign in only when you're ready to generate and save it." />
+        ) : null}
+        <AppButton
+          label={requiresSignIn ? "Sign in to draft with AI" : "Draft my card"}
+          onPress={requiresSignIn ? () => navigation.navigate("SignIn") : submit}
+          loading={generate.isPending}
+        />
         {generate.isError ? (
           <InlineNotice tone="warn" text={userMessageForError(generate.error)} />
         ) : null}

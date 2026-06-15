@@ -4,6 +4,7 @@ import { render, screen, userEvent, waitFor } from "@testing-library/react-nativ
 import React from "react";
 
 import type { CustomCardApi } from "../../lib/api/endpoints";
+import type { AppSession } from "../../lib/auth/AuthProvider";
 import type { CardGenerateResponse, DraftStateCurrentResponse } from "../../lib/api/types";
 import { StudioScreen } from "../create/StudioScreen";
 
@@ -52,10 +53,25 @@ const generated: CardGenerateResponse = {
 };
 
 const mockApi: Partial<CustomCardApi> = {};
+let mockSession: AppSession;
 
 jest.mock("../../lib/api/ApiProvider", () => ({
   useApi: () => mockApi
 }));
+
+jest.mock("../../lib/auth/AuthProvider", () => ({
+  useAppSession: () => mockSession
+}));
+
+function session(overrides: Partial<AppSession> = {}): AppSession {
+  return {
+    status: "signedIn",
+    userLabel: "person@example.com",
+    getToken: async () => "token",
+    signOut: async () => {},
+    ...overrides
+  };
+}
 
 async function renderStudio() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -70,6 +86,7 @@ async function renderStudio() {
 
 describe("StudioScreen", () => {
   beforeEach(() => {
+    mockSession = session();
     mockApi.getCurrentDraftState = jest.fn(async () => emptyDraft);
     mockApi.saveDraftState = jest.fn(async () => ({
       service: "customcard-api",

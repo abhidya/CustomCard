@@ -488,7 +488,6 @@ h3 {
 .opportunityCard,
 .previewColumn,
 .handoffPanel,
-.adaptersView,
 .surfaceCard,
 .customerStartCard,
 .eventQueueCard,
@@ -504,7 +503,6 @@ h3 {
 .toolPanel,
 .previewColumn,
 .handoffPanel,
-.adaptersView,
 .surfaceCard,
 .customerStartCard,
 .eventQueueCard,
@@ -3057,56 +3055,11 @@ h3 {
   grid-column: 1 / -1;
 }
 
-.adapterMatrix {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.adapterToolbar {
-  display: grid;
-  grid-template-columns: minmax(220px, 1.4fr) minmax(150px, 0.7fr) minmax(180px, 0.9fr) auto;
-  gap: 10px;
-  align-items: end;
-  margin-bottom: 14px;
-  padding: 12px;
-  border: 1px solid #d9e2e4;
-  border-radius: 8px;
-  background: #f8fbfa;
-}
-
-.adapterToolbar label {
-  display: grid;
-  gap: 5px;
-  min-width: 0;
-}
-
-.adapterToolbar label > span,
 .searchField > span {
   color: #52656b;
   font-size: 0.74rem;
   font-weight: 820;
   text-transform: uppercase;
-}
-
-.adapterToolbar input,
-.adapterToolbar select {
-  min-width: 0;
-  width: 100%;
-  height: 38px;
-  border: 1px solid #ccd8dc;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #23343a;
-  font: inherit;
-}
-
-.adapterToolbar input {
-  padding: 0 10px 0 34px;
-}
-
-.adapterToolbar select {
-  padding: 0 9px;
 }
 
 .searchField {
@@ -3645,14 +3598,6 @@ h3 {
     grid-template-columns: repeat(2, minmax(132px, 1fr));
   }
 
-  .adapterMatrix {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .adapterToolbar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .adapterToolbarCount {
     justify-items: start;
     place-items: center start;
@@ -3783,9 +3728,7 @@ h3 {
   .workspaceSummary,
   .operationStartGrid,
   .chatComposer,
-  .downloadGrid,
-  .adapterToolbar,
-  .adapterMatrix {
+  .downloadGrid {
     grid-template-columns: minmax(0, 1fr);
   }
 

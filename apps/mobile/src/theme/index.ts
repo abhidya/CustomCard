@@ -2,23 +2,24 @@
 // contrast on their intended surfaces (dark ink on light surfaces, light text
 // on the deep-green brand surface).
 export const colors = {
-  brand: "#172927",
-  brandSoft: "#cde9df",
-  brandInkOnSoft: "#123a32",
-  background: "#f3f6f7",
-  surface: "#ffffff",
-  surfaceMuted: "#edf6f3",
-  border: "#d5dee0",
-  ink: "#172124",
-  inkMuted: "#4d5c61",
-  inkSubtle: "#5d6c72",
+  brand: "#b3472c",
+  brandSoft: "#b3472c1a",
+  brandInkOnSoft: "#93351e",
+  background: "#f6f1e6",
+  surface: "#fdfaf3",
+  surfaceMuted: "#f9f4e9",
+  border: "#d9cfb9",
+  ink: "#231d12",
+  inkMuted: "#5c5343",
+  inkSubtle: "#6e6553",
+  inkFaint: "#6e6553",
   danger: "#8c2f23",
   dangerSurface: "#fff1ee",
-  success: "#1d5c43",
+  success: "#33685a",
   warning: "#7a4a12",
   warningSurface: "#fdf3e4",
-  textOnBrand: "#ffffff",
-  textOnBrandMuted: "#d8e7e4"
+  textOnBrand: "#fff6ec",
+  textOnBrandMuted: "#f5d8c8"
 } as const;
 
 export const spacing = {

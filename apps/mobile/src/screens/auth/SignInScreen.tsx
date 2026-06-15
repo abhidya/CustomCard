@@ -1,4 +1,4 @@
-import { useSignIn, useSignUp } from "@clerk/clerk-expo";
+import { useSignIn, useSignUp, useSSO } from "@clerk/clerk-expo";
 import React, { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
@@ -18,8 +18,7 @@ export function SignInScreen() {
         <Text style={styles.heroEyebrow}>Your card assistant</Text>
         <Text style={styles.heroTitle}>CustomCard</Text>
         <Text style={styles.heroSubtitle}>
-          Sign in to turn planned moments into reviewed, print-ready cards before a purchase
-          begins.
+          Sign in to turn planned moments into reviewed, print-ready cards before a purchase begins.
         </Text>
       </View>
 
@@ -29,8 +28,67 @@ export function SignInScreen() {
         <Text style={styles.trustPill}>No automatic orders</Text>
       </View>
 
-      <ClerkEmailCodeForm />
+      <Card>
+        <ClerkOAuthButtons />
+        <View style={styles.dividerRow}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>or use email</Text>
+          <View style={styles.dividerLine} />
+        </View>
+        <ClerkEmailCodeForm />
+      </Card>
     </Screen>
+  );
+}
+
+const oauthOptions = [
+  { label: "Continue with Google", strategy: "oauth_google" },
+  { label: "Continue with Apple", strategy: "oauth_apple" }
+] as const;
+
+function ClerkOAuthButtons() {
+  const { startSSOFlow } = useSSO();
+  const [busyStrategy, setBusyStrategy] = useState<
+    (typeof oauthOptions)[number]["strategy"] | null
+  >(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function startOAuth(option: (typeof oauthOptions)[number]) {
+    setBusyStrategy(option.strategy);
+    setError(null);
+    try {
+      const { createdSessionId, setActive, authSessionResult } = await startSSOFlow({
+        strategy: option.strategy
+      });
+      if (createdSessionId && setActive) {
+        await setActive({ session: createdSessionId });
+        return;
+      }
+      if (authSessionResult?.type && authSessionResult.type !== "cancel") {
+        setError(`${option.label} did not finish. Try again or use email.`);
+      }
+    } catch (oauthError) {
+      setError(clerkMessage(oauthError, `${option.label} is not available right now.`));
+    } finally {
+      setBusyStrategy(null);
+    }
+  }
+
+  return (
+    <View style={styles.oauthGroup}>
+      <Text style={typography.heading}>Sign in or create an account</Text>
+      {oauthOptions.map((option) => (
+        <AppButton
+          key={option.strategy}
+          label={option.label}
+          variant="secondary"
+          loading={busyStrategy === option.strategy}
+          disabled={Boolean(busyStrategy)}
+          onPress={() => void startOAuth(option)}
+        />
+      ))}
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+    </View>
   );
 }
 
@@ -118,9 +176,9 @@ function ClerkEmailCodeForm() {
   }
 
   return (
-    <Card>
+    <View style={styles.emailGroup}>
       <Text style={typography.heading}>
-        {phase === "email" ? "Sign in or create an account" : "Check your email"}
+        {phase === "email" ? "Email sign-in" : "Check your email"}
       </Text>
       {phase === "email" ? (
         <>
@@ -167,7 +225,7 @@ function ClerkEmailCodeForm() {
           />
         </>
       )}
-    </Card>
+    </View>
   );
 }
 
@@ -211,5 +269,26 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs
+  },
+  oauthGroup: { gap: spacing.md },
+  emailGroup: { gap: spacing.md },
+  dividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    marginVertical: spacing.sm
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border
+  },
+  dividerText: {
+    ...typography.label,
+    color: colors.inkSubtle
+  },
+  errorText: {
+    fontSize: 13,
+    color: colors.danger
   }
 });

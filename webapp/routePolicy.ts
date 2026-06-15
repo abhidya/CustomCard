@@ -21,12 +21,11 @@ export const customerNavItems: NavItem[] = [
 export const adminNavItems: NavItem[] = [
   { id: "admin", label: "Admin" },
   { id: "business", label: "B2B" },
-  { id: "adapters", label: "Adapters" },
   { id: "legal", label: "Legal" }
 ];
 
 export function isAdminRoute(view: ViewId): boolean {
-  return view === "admin" || view === "adapters" || view === "legal";
+  return view === "admin" || view === "legal";
 }
 
 export function isBusinessRoute(view: ViewId): boolean {
@@ -149,12 +148,12 @@ export function buildAppShellViewModel({
 
 export function getAdminTargetLabel(view: ViewId): string {
   if (view === "legal") return "Legal docs";
-  return view === "adapters" ? "Adapters" : "Admin panel";
+  return "Admin panel";
 }
 
 export function getAdminSurfaceHeading(view: ViewId): string {
   if (view === "legal") return "Legal readiness and policy docs";
-  return view === "adapters" ? "Adapter readiness" : "Admin panel";
+  return "Admin panel";
 }
 
 export function canEnterAdminSurface(access: AdminAccessPolicy): boolean {

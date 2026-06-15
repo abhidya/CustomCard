@@ -20,7 +20,8 @@ export function SettingsScreen() {
 
   const bootstrap = useQuery({
     queryKey: ["mobile-bootstrap"],
-    queryFn: () => api.getMobileBootstrap(Platform.OS)
+    queryFn: () => api.getMobileBootstrap(Platform.OS),
+    enabled: session.status === "signedIn"
   });
 
   async function signOut() {
@@ -39,14 +40,31 @@ export function SettingsScreen() {
     <Screen>
       <SectionHeading title="Account" />
       <Card>
-        <Text style={typography.heading}>{session.userLabel ?? "Signed in"}</Text>
-        <Text style={typography.body}>Signed in with your CustomCard account.</Text>
-        <AppButton
-          label="Sign out"
-          variant="danger"
-          loading={signingOut}
-          onPress={() => void signOut()}
-        />
+        {session.status === "signedIn" ? (
+          <>
+            <Text style={typography.heading}>{session.userLabel ?? "Signed in"}</Text>
+            <Text style={typography.body}>Signed in with your CustomCard account.</Text>
+            <AppButton
+              label="Sign out"
+              variant="danger"
+              loading={signingOut}
+              onPress={() => void signOut()}
+            />
+          </>
+        ) : (
+          <>
+            <Text style={typography.heading}>Create first, sign in when it matters.</Text>
+            <Text style={typography.body}>
+              Browse the app and start a card as a guest. Sign in to generate, save, import, or
+              manage account data.
+            </Text>
+            <AppButton
+              label={session.status === "loading" ? "Checking account..." : "Sign in"}
+              disabled={session.status === "loading"}
+              onPress={() => navigation.navigate("SignIn")}
+            />
+          </>
+        )}
       </Card>
 
       <SectionHeading title="Privacy & data" />

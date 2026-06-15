@@ -1,4 +1,4 @@
-import { LockKeyhole, Settings, ShieldCheck } from "lucide-react";
+import { LockKeyhole, ShieldCheck } from "lucide-react";
 import { Show, SignInButton, SignUpButton, UserButton, useAuth, useUser } from "@clerk/react";
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
@@ -507,18 +507,6 @@ export default function App() {
                 />
               </AdminLazyPanel>
             }
-            adaptersPanel={
-              <AdminLazyPanel>
-                <AdminOperationalView
-                  activeView={activeView}
-                  aiFlowConfigs={aiFlowConfigs}
-                  aiGenerationJobs={aiGenerationJobs}
-                  aiFlowSummary={aiFlowSummary}
-                  getAdminApiToken={getCustomerApiToken}
-                  onAiFlowConfigsChange={setAiFlowConfigs}
-                />
-              </AdminLazyPanel>
-            }
             legalPanel={
               <AdminLazyPanel>
                 <AdminOperationalView
@@ -742,13 +730,11 @@ function AdminRoute({
   access,
   activeView,
   adminPanel,
-  adaptersPanel,
   legalPanel
 }: {
   access: AdminAccess;
   activeView: ViewId;
   adminPanel: ReactNode;
-  adaptersPanel: ReactNode;
   legalPanel: ReactNode;
 }) {
   if (!canEnterAdminSurface(access)) {
@@ -760,7 +746,7 @@ function AdminRoute({
     <section className="adminSurface reveal">
       <div className="adminSurfaceHead">
         <span className="adminBadge">
-          {activeView === "adapters" ? <Settings size={16} /> : <ShieldCheck size={16} />}
+          <ShieldCheck size={16} />
           Staff/Admin preview
         </span>
         <div>
@@ -769,7 +755,7 @@ function AdminRoute({
         </div>
       </div>
       <div className="adminLegacySurface">
-        {activeView === "adapters" ? adaptersPanel : activeView === "legal" ? legalPanel : adminPanel}
+        {activeView === "legal" ? legalPanel : adminPanel}
       </div>
     </section>
   );

@@ -4,8 +4,6 @@ import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 
-import { LoadingState } from "../components";
-import { useAppSession } from "../lib/auth/AuthProvider";
 import { colors } from "../theme";
 import { ChatScreen } from "../screens/create/ChatScreen";
 import { StudioScreen } from "../screens/create/StudioScreen";
@@ -39,10 +37,10 @@ const navTheme = {
 };
 
 const tabIcons: Record<keyof MainTabParamList, keyof typeof Ionicons.glyphMap> = {
-  Home: "home",
+  Home: "create",
   Create: "color-wand",
   Events: "calendar",
-  Print: "print",
+  Print: "albums",
   Settings: "settings"
 };
 
@@ -62,85 +60,62 @@ function MainTabs() {
         )
       })}
     >
-      <Tabs.Screen name="Home" component={HomeScreen} options={{ title: "Today" }} />
-      <Tabs.Screen name="Create" component={StudioScreen} options={{ title: "Card studio" }} />
+      <Tabs.Screen name="Home" component={HomeScreen} options={{ title: "Create" }} />
+      <Tabs.Screen name="Create" component={StudioScreen} options={{ title: "Design" }} />
       <Tabs.Screen name="Events" component={EventsScreen} options={{ title: "Events" }} />
-      <Tabs.Screen name="Print" component={PrintScreen} options={{ title: "Proof & print" }} />
+      <Tabs.Screen name="Print" component={PrintScreen} options={{ title: "My cards" }} />
       <Tabs.Screen name="Settings" component={SettingsScreen} options={{ title: "Settings" }} />
     </Tabs.Navigator>
   );
 }
 
-/**
- * Auth-gated navigation. Signed-out users can only reach the sign-in screen;
- * customer workflow screens are mounted only for an authenticated session.
- */
 export function RootNavigator({
   WorkflowGuideScreen
 }: {
   WorkflowGuideScreen: React.ComponentType;
 }) {
-  const session = useAppSession();
-
-  if (session.status === "loading") {
-    return <LoadingState label="Checking your session…" />;
-  }
-
   return (
     <NavigationContainer theme={navTheme}>
       <Stack.Navigator screenOptions={{ headerTitleStyle: { fontWeight: "900" } }}>
-        {session.status === "signedIn" ? (
-          <>
-            <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
-            <Stack.Screen
-              name="ImportEvent"
-              component={ImportEventScreen}
-              options={{ title: "Import an event" }}
-            />
-            <Stack.Screen
-              name="CalendarConnect"
-              component={CalendarConnectScreen}
-              options={{ title: "Calendar options" }}
-            />
-            <Stack.Screen
-              name="Chat"
-              component={ChatScreen}
-              options={{ title: "Card assistant" }}
-            />
-            <Stack.Screen
-              name="Memories"
-              component={MemoriesScreen}
-              options={{ title: "Memory review" }}
-            />
-            <Stack.Screen
-              name="PrintOptions"
-              component={PrintOptionsScreen}
-              options={{ title: "Print options" }}
-            />
-            <Stack.Screen
-              name="Checkout"
-              component={CheckoutScreen}
-              options={{ title: "Checkout" }}
-            />
-            <Stack.Screen
-              name="Handoff"
-              component={HandoffScreen}
-              options={{ title: "Finish manually" }}
-            />
-            <Stack.Screen
-              name="Privacy"
-              component={PrivacyScreen}
-              options={{ title: "Privacy & data" }}
-            />
-            <Stack.Screen
-              name="WorkflowGuide"
-              component={WorkflowGuideScreen}
-              options={{ title: "How it works" }}
-            />
-          </>
-        ) : (
-          <Stack.Screen name="SignIn" component={SignInScreen} options={{ headerShown: false }} />
-        )}
+        <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
+        <Stack.Screen name="SignIn" component={SignInScreen} options={{ headerShown: false }} />
+        <Stack.Screen
+          name="ImportEvent"
+          component={ImportEventScreen}
+          options={{ title: "Import an event" }}
+        />
+        <Stack.Screen
+          name="CalendarConnect"
+          component={CalendarConnectScreen}
+          options={{ title: "Calendar options" }}
+        />
+        <Stack.Screen name="Chat" component={ChatScreen} options={{ title: "Card assistant" }} />
+        <Stack.Screen
+          name="Memories"
+          component={MemoriesScreen}
+          options={{ title: "Memory review" }}
+        />
+        <Stack.Screen
+          name="PrintOptions"
+          component={PrintOptionsScreen}
+          options={{ title: "Print options" }}
+        />
+        <Stack.Screen name="Checkout" component={CheckoutScreen} options={{ title: "Checkout" }} />
+        <Stack.Screen
+          name="Handoff"
+          component={HandoffScreen}
+          options={{ title: "Finish manually" }}
+        />
+        <Stack.Screen
+          name="Privacy"
+          component={PrivacyScreen}
+          options={{ title: "Privacy & data" }}
+        />
+        <Stack.Screen
+          name="WorkflowGuide"
+          component={WorkflowGuideScreen}
+          options={{ title: "How it works" }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

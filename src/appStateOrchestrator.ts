@@ -74,7 +74,7 @@ export const reviewerDraftOptions: {
   vendors: ["walgreens", "cvs", "fedex", "walmart", "staples", "office-depot", "local-print-shop"]
 };
 
-export type ViewId = "customer" | "mobile" | "opportunities" | "studio" | "memory" | "people" | "handoff" | "settings" | "business" | "legal" | "admin" | "adapters";
+export type ViewId = "customer" | "mobile" | "opportunities" | "studio" | "memory" | "people" | "handoff" | "settings" | "business" | "legal" | "admin";
 
 const cardGenerationEndpoint = resolveCardGenerationEndpoint(import.meta.env);
 
@@ -165,7 +165,7 @@ export interface AppState {
 export function initialViewFromLocation(): ViewId {
   if (typeof window === "undefined") return "customer";
   const requestedView = new URLSearchParams(window.location.search).get("view");
-  const viewIds = new Set<ViewId>(["customer", "mobile", "opportunities", "studio", "memory", "people", "handoff", "settings", "business", "legal", "admin", "adapters"]);
+  const viewIds = new Set<ViewId>(["customer", "mobile", "opportunities", "studio", "memory", "people", "handoff", "settings", "business", "legal", "admin"]);
   if (requestedView && viewIds.has(requestedView as ViewId)) return requestedView as ViewId;
   if (window.location.pathname.replace(/\/+$/, "") === "/business") return "business";
   const hashView = window.location.hash.replace(/^#\/?/, "");

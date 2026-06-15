@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { AdminPanelView, AdaptersView } from "../src/App";
+import { AdminPanelView } from "../src/App";
 import type { AiFlowAdminConfig, AiFlowConfigSummary } from "../src/aiFlowConfig";
 import type { AiGenerationJobEvidence } from "../src/aiGenerationJobs";
 import { buildAdminPanelModel, providerCatalog } from "../src/providerCatalog";
@@ -28,10 +28,6 @@ export default function AdminOperationalView({
   onAiFlowConfigsChange: (configs: AiFlowAdminConfig[]) => void;
 }) {
   const operationalState = useAdminOperationalState();
-
-  if (activeView === "adapters") {
-    return <AdaptersView runtimeReadiness={operationalState.runtimeReadiness} />;
-  }
 
   if (activeView === "legal") {
     return (

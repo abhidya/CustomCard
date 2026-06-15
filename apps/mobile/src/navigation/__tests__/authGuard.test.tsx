@@ -1,6 +1,6 @@
 /**
- * Navigation guard tests: signed-out sessions only see the sign-in screen;
- * signed-in sessions land on the authenticated tabs.
+ * Navigation tests: the customer shell is visible before sign-in, while
+ * account-backed data appears for signed-in sessions.
  */
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react-native";
@@ -18,6 +18,9 @@ jest.mock("../../lib/auth/AuthProvider", () => ({
 }));
 
 jest.mock("@clerk/clerk-expo", () => ({
+  useSSO: () => ({
+    startSSOFlow: jest.fn()
+  }),
   useSignIn: () => ({
     isLoaded: true,
     signIn: { create: jest.fn() },
@@ -80,18 +83,20 @@ function session(overrides: Partial<AppSession>): AppSession {
   };
 }
 
-describe("RootNavigator auth gate", () => {
-  it("shows a loading state while the session is resolving", async () => {
+describe("RootNavigator customer shell", () => {
+  it("keeps the customer landing visible while the session is resolving", async () => {
     mockSession = session({ status: "loading" });
     await renderNavigator();
-    expect(await screen.findByLabelText("Checking your session…")).toBeTruthy();
+    expect(await screen.findByText("Make the card you meant to send.")).toBeTruthy();
+    expect(screen.getByText("See example cards")).toBeTruthy();
   });
 
-  it("keeps signed-out users on the sign-in screen", async () => {
+  it("shows the customer create surface for signed-out users", async () => {
     mockSession = session({ status: "signedOut" });
     await renderNavigator();
 
-    expect(await screen.findByText("Sign in or create an account")).toBeTruthy();
+    expect(await screen.findByText("Make the card you meant to send.")).toBeTruthy();
+    expect(screen.getByText("Make my card now")).toBeTruthy();
     expect(screen.queryByText("Cards to review")).toBeNull();
   });
 

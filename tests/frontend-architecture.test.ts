@@ -85,7 +85,7 @@ describe("frontend architecture seams", () => {
     expect(appSource).not.toContain("../src/App");
     expect(appSource).not.toContain("providerCatalog");
     expect(appStateSource).not.toContain("providerCatalog");
-    expect(adminSource).toContain('import { AdminPanelView, AdaptersView } from "../src/App"');
+    expect(adminSource).toContain('import { AdminPanelView } from "../src/App"');
     expect(adminSource).toContain("buildRuntimeReadinessMap");
   });
 
@@ -100,7 +100,6 @@ describe("frontend architecture seams", () => {
 
   it("keeps route visibility policy out of the app shell render logic", () => {
     expect(resolveVisibleCustomerView("admin")).toBe("customer");
-    expect(resolveVisibleCustomerView("adapters")).toBe("customer");
     expect(resolveVisibleCustomerView("legal")).toBe("customer");
     expect(resolveVisibleCustomerView("business")).toBe("customer");
     expect(resolveVisibleCustomerView("opportunities")).toBe("opportunities");
@@ -116,7 +115,7 @@ describe("frontend architecture seams", () => {
     expect(resolveVisibleCustomerView("settings")).toBe("settings");
     expect(resolveVisibleCustomerView("people")).toBe("people");
     expect(customerNavItems.map((item) => item.label)).toEqual(["Create", "My cards", "People", "Settings"]);
-    expect(adminNavItems.map((item) => item.label)).toEqual(["Admin", "B2B", "Adapters", "Legal"]);
+    expect(adminNavItems.map((item) => item.label)).toEqual(["Admin", "B2B", "Legal"]);
 
     expect(shouldShowCustomerCta("customer")).toBe(false);
     expect(shouldShowCustomerCta("studio")).toBe(false);
@@ -179,10 +178,8 @@ describe("frontend architecture seams", () => {
   });
 
   it("keeps admin gate labels and statuses behind one policy interface", () => {
-    expect(getAdminTargetLabel("adapters")).toBe("Adapters");
     expect(getAdminTargetLabel("legal")).toBe("Legal docs");
     expect(getAdminTargetLabel("admin")).toBe("Admin panel");
-    expect(getAdminSurfaceHeading("adapters")).toBe("Adapter readiness");
     expect(getAdminSurfaceHeading("legal")).toBe("Legal readiness and policy docs");
     expect(getAdminSurfaceHeading("admin")).toBe("Admin panel");
 

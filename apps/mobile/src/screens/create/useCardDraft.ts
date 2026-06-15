@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useToast } from "../../components/Toast";
 import { userMessageForError } from "../../lib/api/errors";
 import { useApi } from "../../lib/api/ApiProvider";
+import { useAppSession } from "../../lib/auth/AuthProvider";
 import type { CardGenerateResponse } from "../../lib/api/types";
 import { hasErrors, optionalText, requireText, type FieldErrors } from "../../forms/validation";
 import { OCCASIONS, STYLES, TONES } from "./cardOptions";
@@ -37,7 +38,9 @@ const initialForm: CardForm = {
  */
 export function useCardDraft() {
   const api = useApi();
+  const session = useAppSession();
   const toast = useToast();
+  const signedIn = session.status === "signedIn";
 
   const [form, setForm] = useState<CardForm>(initialForm);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors<CardField>>({});
@@ -49,7 +52,11 @@ export function useCardDraft() {
   };
 
   // Resume the latest server-side draft so the app stays stateless.
-  const draft = useQuery({ queryKey: ["draft-state"], queryFn: () => api.getCurrentDraftState() });
+  const draft = useQuery({
+    queryKey: ["draft-state"],
+    queryFn: () => api.getCurrentDraftState(),
+    enabled: signedIn
+  });
 
   useEffect(() => {
     if (hydratedFromDraft || !draft.data?.draftState) return;
@@ -114,6 +121,10 @@ export function useCardDraft() {
     };
     setFieldErrors(errors);
     if (hasErrors(errors)) return;
+    if (!signedIn) {
+      toast.show("Sign in to generate and save this card.", "error");
+      return;
+    }
     setResult(null);
     // Persist the draft, then generate; a draft autosave failure must not block
     // generation.
@@ -121,5 +132,14 @@ export function useCardDraft() {
     generate.mutate();
   }
 
-  return { form, setField, fieldErrors, result, generate, saveDraft, submit };
+  return {
+    form,
+    setField,
+    fieldErrors,
+    result,
+    generate,
+    saveDraft,
+    submit,
+    requiresSignIn: !signedIn
+  };
 }

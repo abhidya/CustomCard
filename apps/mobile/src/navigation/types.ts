@@ -2,15 +2,15 @@ import type { NavigatorScreenParams } from "@react-navigation/native";
 
 export type MainTabParamList = {
   Home: undefined;
-  Create: undefined;
-  Events: undefined;
   Print: undefined;
+  People: undefined;
   Settings: undefined;
 };
 
 export type RootStackParamList = {
   SignIn: undefined;
   MainTabs: NavigatorScreenParams<MainTabParamList>;
+  Studio: undefined;
   ImportEvent: undefined;
   CalendarConnect: undefined;
   Chat: { recipientName?: string } | undefined;

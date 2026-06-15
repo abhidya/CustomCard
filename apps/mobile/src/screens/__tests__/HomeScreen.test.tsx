@@ -5,14 +5,30 @@ import React from "react";
 
 import { ApiError } from "../../lib/api/errors";
 import type { CustomCardApi } from "../../lib/api/endpoints";
+import type { AppSession } from "../../lib/auth/AuthProvider";
 import { mobileBootstrapFixture } from "../../lib/api/__tests__/fixtures";
 import { HomeScreen } from "../home/HomeScreen";
 
 const mockApi: Partial<CustomCardApi> = {};
+let mockSession: AppSession;
 
 jest.mock("../../lib/api/ApiProvider", () => ({
   useApi: () => mockApi
 }));
+
+jest.mock("../../lib/auth/AuthProvider", () => ({
+  useAppSession: () => mockSession
+}));
+
+function session(overrides: Partial<AppSession> = {}): AppSession {
+  return {
+    status: "signedIn",
+    userLabel: "person@example.com",
+    getToken: async () => "token",
+    signOut: async () => {},
+    ...overrides
+  };
+}
 
 async function renderHome() {
   const queryClient = new QueryClient({
@@ -28,6 +44,21 @@ async function renderHome() {
 }
 
 describe("HomeScreen", () => {
+  beforeEach(() => {
+    mockSession = session();
+  });
+
+  it("renders the customer create landing for signed-out users", async () => {
+    mockSession = session({ status: "signedOut", userLabel: null, getToken: async () => null });
+    mockApi.getMobileBootstrap = jest.fn(async () => mobileBootstrapFixture);
+
+    await renderHome();
+
+    expect(await screen.findByText("Make the card you meant to send.")).toBeTruthy();
+    expect(screen.getByText("Make my card now")).toBeTruthy();
+    expect(mockApi.getMobileBootstrap).not.toHaveBeenCalled();
+  });
+
   it("shows a loading state while the bootstrap is pending", async () => {
     mockApi.getMobileBootstrap = jest.fn(() => new Promise(() => {}));
     await renderHome();

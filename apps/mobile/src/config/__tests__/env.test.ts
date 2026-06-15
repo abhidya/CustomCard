@@ -15,9 +15,9 @@ describe("resolveAppConfig", () => {
   });
 
   it("normalizes QA environment aliases", () => {
-    expect(resolveAppConfig({ ...base, appEnv: "qa", clerkPublishableKey: "pk_test_x" }).appEnv).toBe(
-      "qa"
-    );
+    expect(
+      resolveAppConfig({ ...base, appEnv: "qa", clerkPublishableKey: "pk_test_x" }).appEnv
+    ).toBe("qa");
     expect(
       resolveAppConfig({ ...base, appEnv: "staging", clerkPublishableKey: "pk_test_x" }).appEnv
     ).toBe("qa");

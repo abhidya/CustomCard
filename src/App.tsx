@@ -26,11 +26,8 @@ import { type ReadinessSummary } from "./readinessSummary";
 import {
   capabilityLabels,
   providerCatalog,
-  providerStatusLabel,
   type AdminPanelModel,
-  type ProviderAdapter,
-  type ProviderCapability,
-  type ProviderStatus
+  type ProviderAdapter
 } from "./providerCatalog";
 import {
   type LocalizationReadinessSummary,
@@ -80,8 +77,6 @@ import {
   RetailFulfillmentReadinessList,
   ReviewerDbSeedReadinessList
 } from "./adminReadinessRenderer";
-type AdapterStatusFilter = ProviderStatus | "all";
-type AdapterCapabilityFilter = ProviderCapability | "all";
 type AdminPortalStatusFilter = AdminPortalStatus | "all";
 type BenchmarkStatusFilter = BenchmarkStatus | "all";
 type BenchmarkPhaseFilter = BenchmarkPhase | "all";
@@ -1656,117 +1651,6 @@ function AdminOperationTaskRow({ sourceLabel, task }: { sourceLabel: string; tas
   );
 }
 
-export function AdaptersView({ runtimeReadiness }: { runtimeReadiness: Map<string, RuntimeReadiness> }) {
-  const [statusFilter, setStatusFilter] = useState<AdapterStatusFilter>("all");
-  const [capabilityFilter, setCapabilityFilter] = useState<AdapterCapabilityFilter>("all");
-  const [query, setQuery] = useState("");
-  const normalizedQuery = query.trim().toLowerCase();
-  const sortedAdapters = useMemo(
-    () =>
-      providerCatalog
-        .filter((adapter) => statusFilter === "all" || adapter.status === statusFilter)
-        .filter((adapter) => capabilityFilter === "all" || adapter.capability === capabilityFilter)
-        .filter((adapter) => {
-          if (!normalizedQuery) return true;
-          return [adapter.label, adapter.provider, adapter.detail, adapter.lane, capabilityLabels[adapter.capability]]
-            .join(" ")
-            .toLowerCase()
-            .includes(normalizedQuery);
-        })
-        .sort((first, second) => first.priority - second.priority || first.label.localeCompare(second.label)),
-    [capabilityFilter, normalizedQuery, statusFilter]
-  );
-
-  return (
-    <section className="adaptersView">
-      <div className="sectionHeader">
-        <div>
-          <p className="eyebrow">Coverage</p>
-          <h2>Adapter readiness</h2>
-        </div>
-        <StatusChip icon={ShieldCheck} label={`${providerCatalog.length} adapters`} tone="green" />
-      </div>
-
-      <div className="adapterToolbar" aria-label="Adapter filters">
-        <label className="searchField">
-          <Search size={16} />
-          <span>Search adapters</span>
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Provider, capability, lane"
-          />
-        </label>
-        <label>
-          <span>Status</span>
-          <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as AdapterStatusFilter)}>
-            <option value="all">All statuses</option>
-            <option value="ready-local">Ready local</option>
-            <option value="credential-gated">Credential gated</option>
-            <option value="contract-only">Contract only</option>
-            <option value="blocked">Blocked</option>
-          </select>
-        </label>
-        <label>
-          <span>Capability</span>
-          <select
-            value={capabilityFilter}
-            onChange={(event) => setCapabilityFilter(event.target.value as AdapterCapabilityFilter)}
-          >
-            <option value="all">All capabilities</option>
-            {(Object.keys(capabilityLabels) as ProviderCapability[]).map((capability) => (
-              <option key={capability} value={capability}>
-                {capabilityLabels[capability]}
-              </option>
-            ))}
-          </select>
-        </label>
-        <div className="adapterToolbarCount">
-          <strong>{sortedAdapters.length}</strong>
-          <span>shown</span>
-        </div>
-      </div>
-
-      <div className="adapterMatrix">
-        {sortedAdapters.map((adapter) => {
-          const readiness = runtimeReadiness.get(adapter.id);
-
-          return (
-            <article
-              className={`adapterRow ${adapter.status}`}
-              key={adapter.id}
-            >
-              {adapterIcon(adapter)}
-              <div>
-                <strong>{adapter.label}</strong>
-                <span>
-                  {capabilityLabels[adapter.capability]} - {adapter.detail}
-                </span>
-                <small>{adapter.provider}</small>
-                {readiness && (
-                  <small className="runtimeHint">
-                    Dry run: {runtimeModeLabel(readiness.mode)}
-                    {readiness.missingCredentials.length > 0
-                      ? ` - missing ${readiness.missingCredentials.slice(0, 2).join(", ")}`
-                      : ""}
-                  </small>
-                )}
-              </div>
-              <em>{providerStatusLabel(adapter.status)}</em>
-            </article>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-function adapterIcon(adapter: ProviderAdapter) {
-  if (adapter.status === "ready-local") return <CircleCheck size={19} />;
-  if (adapter.status === "blocked") return <XCircle size={19} />;
-  return <Lock size={19} />;
-}
-
 function providerAdapterLabel(adapterId: string): string {
   const adapter = providerCatalog.find((candidate) => candidate.id === adapterId);
   return adapter ? adapter.label : formatOption(adapterId);
@@ -1867,15 +1751,6 @@ function adminOperationStatusLabel(status: AdminOperationTask["status"]): string
     "repo-local-ready": "Local ready"
   };
   return labels[status];
-}
-
-function runtimeModeLabel(mode: RuntimeReadiness["mode"]): string {
-  const labels: Record<RuntimeReadiness["mode"], string> = {
-    blocked: "blocked by gates",
-    "local-result": "local fallback ready",
-    "prepared-request": "request contract ready"
-  };
-  return labels[mode];
 }
 
 function benchmarkStatusLabel(status: BenchmarkStatus): string {
