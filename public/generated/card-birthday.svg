@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 2100" role="img" aria-label="Birthday card front artwork">
+  <defs>
+    <radialGradient id="bd-tl" cx="18%" cy="14%" r="55%">
+      <stop offset="0%" stop-color="#e9a64a" stop-opacity=".55"/>
+      <stop offset="60%" stop-color="#e9a64a" stop-opacity=".12"/>
+      <stop offset="100%" stop-color="#e9a64a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bd-br" cx="86%" cy="90%" r="48%">
+      <stop offset="0%" stop-color="#c0512e" stop-opacity=".4"/>
+      <stop offset="100%" stop-color="#c0512e" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1500" height="2100" fill="#faf3e1"/>
+  <rect width="1500" height="2100" fill="url(#bd-tl)"/>
+  <rect width="1500" height="2100" fill="url(#bd-br)"/>
+  <!-- celebratory confetti, clustered to corners; center kept open -->
+  <g>
+    <circle cx="250" cy="280" r="58" fill="#e0902f" opacity=".92"/>
+    <circle cx="430" cy="200" r="30" fill="#c0512e" opacity=".9"/>
+    <circle cx="360" cy="470" r="20" fill="#33685a" opacity=".8"/>
+    <circle cx="180" cy="430" r="24" fill="#c0512e" opacity=".7"/>
+    <circle cx="470" cy="330" r="15" fill="#e0902f" opacity=".75"/>
+    <circle cx="300" cy="150" r="13" fill="#33685a" opacity=".6"/>
+  </g>
+  <g>
+    <rect x="1230" y="250" width="34" height="34" rx="7" fill="#c0512e" opacity=".85" transform="rotate(18 1247 267)"/>
+    <circle cx="1330" cy="340" r="26" fill="#e0902f" opacity=".85"/>
+    <circle cx="1180" cy="360" r="15" fill="#33685a" opacity=".7"/>
+    <circle cx="1300" cy="220" r="12" fill="#c0512e" opacity=".6"/>
+  </g>
+  <!-- ribbon flourish, lower right -->
+  <g fill="none" stroke-linecap="round">
+    <path d="M960 1900 C1110 1780, 1230 1900, 1370 1750" stroke="#c0512e" stroke-width="16" opacity=".6"/>
+    <path d="M1030 1980 C1170 1900, 1250 1985, 1380 1895" stroke="#e0902f" stroke-width="11" opacity=".55"/>
+  </g>
+  <g>
+    <rect x="300" y="1860" width="26" height="26" rx="6" fill="#e0902f" opacity=".6" transform="rotate(24 313 1873)"/>
+    <circle cx="225" cy="1790" r="11" fill="#c0512e" opacity=".5"/>
+  </g>
+</svg>

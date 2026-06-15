@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 2100" role="img" aria-label="Friendship card front artwork">
+  <defs>
+    <radialGradient id="fr-tl" cx="16%" cy="16%" r="52%">
+      <stop offset="0%" stop-color="#6f88a8" stop-opacity=".32"/>
+      <stop offset="100%" stop-color="#6f88a8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="fr-br" cx="86%" cy="86%" r="50%">
+      <stop offset="0%" stop-color="#e3b34c" stop-opacity=".3"/>
+      <stop offset="100%" stop-color="#e3b34c" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1500" height="2100" fill="#f8f1e1"/>
+  <rect width="1500" height="2100" fill="url(#fr-tl)"/>
+  <rect width="1500" height="2100" fill="url(#fr-br)"/>
+  <!-- soft blue ribbon sweeping the upper-left -->
+  <path d="M120 470 C 320 300, 470 360, 560 220" fill="none" stroke="#6f88a8" stroke-width="16" stroke-linecap="round" opacity=".6"/>
+  <!-- gold sparkles, scattered to corners -->
+  <g fill="#e0a838">
+    <path d="M300 250 L322 322 L394 344 L322 366 L300 438 L278 366 L206 344 L278 322 Z" opacity=".9"/>
+    <path d="M470 430 L484 478 L532 492 L484 506 L470 554 L456 506 L408 492 L456 478 Z" opacity=".8"/>
+    <path d="M1300 1820 L1320 1884 L1384 1904 L1320 1924 L1300 1988 L1280 1924 L1216 1904 L1280 1884 Z" opacity=".85"/>
+    <path d="M1140 1700 L1152 1742 L1194 1754 L1152 1766 L1140 1808 L1128 1766 L1086 1754 L1128 1742 Z" opacity=".7"/>
+  </g>
+  <!-- small sage leaves near the sparkles -->
+  <g fill="#6f8a6a" opacity=".62">
+    <ellipse cx="210" cy="430" rx="40" ry="16" transform="rotate(-26 210 430)"/>
+    <ellipse cx="1230" cy="1960" rx="38" ry="15" transform="rotate(40 1230 1960)"/>
+    <ellipse cx="1390" cy="1840" rx="34" ry="14" transform="rotate(-44 1390 1840)"/>
+  </g>
+  <!-- blue accent dots -->
+  <g fill="#6f88a8">
+    <circle cx="420" cy="210" r="16" opacity=".55"/>
+    <circle cx="1180" cy="1900" r="14" opacity=".5"/>
+  </g>
+</svg>
