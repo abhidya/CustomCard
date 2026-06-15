@@ -11,7 +11,7 @@ export const durableRuntimeRequiredEnv = Object.freeze([
   "REAL_ORDER_KILL_SWITCH"
 ]);
 
-export const workerRequiredEnv = Object.freeze([...durableRuntimeRequiredEnv, "QUEUE_URL"]);
+export const workerRequiredEnv = durableRuntimeRequiredEnv;
 
 export const mobileRequiredEnv = Object.freeze(["CUSTOMCARD_API_BASE_URL"]);
 
