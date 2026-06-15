@@ -34,13 +34,13 @@ const lowerPhotoText: CardTextLayout = {
 const fillCenter: CardImagePlacement = { frame: "fill", focus: "center" };
 
 export const cardImageByCategory: Record<string, string> = {
-  birthday: "/generated/card-birthday.svg",
-  graduation: "/generated/card-graduation.svg",
-  wedding: "/generated/card-wedding-anniversary.svg",
-  anniversary: "/generated/card-wedding-anniversary.svg",
-  "thank-you": "/generated/card-thank-you.svg",
-  sympathy: "/generated/card-sympathy.svg",
-  friendship: "/generated/card-friendship.svg",
+  birthday: "/generated/card-birthday.jpg",
+  graduation: "/generated/card-graduation.jpg",
+  wedding: "/generated/card-wedding-anniversary.jpg",
+  anniversary: "/generated/card-wedding-anniversary.jpg",
+  "thank-you": "/generated/card-thank-you.jpg",
+  sympathy: "/generated/card-sympathy.jpg",
+  friendship: "/generated/card-friendship.jpg",
   custom: "/generated/card-default-botanical.webp"
 };
 
