@@ -423,12 +423,12 @@ export function ImportSection({
 /** Standalone route (?view=opportunities) — kept for deep links and calendar redirects. */
 export function EventsView(props: ImportSectionProps) {
   return (
-    <>
+    <div className="importView">
       <header className="pagehead reveal">
         <h1>Never miss a moment</h1>
         <p>Connect your calendar or paste an invite — we&rsquo;ll turn it into a card to send.</p>
       </header>
       <ImportSection {...props} />
-    </>
+    </div>
   );
 }

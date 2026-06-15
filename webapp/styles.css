@@ -278,6 +278,9 @@ a { color: inherit; }
 
 /* ---------- Import flow (Google-first) ---------- */
 .importFlow { display: grid; gap: 16px; max-width: 660px; }
+/* Standalone import route: center the focused single-task column instead of
+   stranding it against the left edge of the wide shell. */
+.importView { display: grid; gap: 16px; max-width: 660px; margin-inline: auto; }
 .importPrimary { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .importPrimaryNote { font-size: 13px; color: var(--ink-faint); max-width: 320px; line-height: 1.4; }
 .oppInline {
@@ -4173,7 +4176,7 @@ a { color: inherit; }
     gap: 10px;
   }
   .landingHeroStage {
-    width: min(280px, 74vw);
+    width: min(256px, 70vw);
   }
   .landingHeroCard.landingHeroProductImage {
     border-radius: var(--radius);
