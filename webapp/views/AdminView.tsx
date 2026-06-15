@@ -348,6 +348,22 @@ export function AdminView({
           <small className="opsFoot">Measured from this browser{lastRunAt ? ` · last run ${lastRunAt}` : ""}.</small>
         </section>
 
+        {/* ---- Users ---- */}
+        <section className="panelcard opsCard">
+          <div className="opsCardHead">
+            <h2>Users</h2>
+            <Users size={16} />
+          </div>
+          <p className="opsNote">
+            Accounts, sessions, bans, and roles are managed in Clerk. Admin access is granted by the{" "}
+            <code>admin</code> role or the configured email allowlist.
+          </p>
+          <a className="btn btn-ghost btn-sm" href="https://dashboard.clerk.com" rel="noreferrer" target="_blank">
+            Open Clerk user management
+            <ExternalLink size={13} />
+          </a>
+        </section>
+
         {/* ---- Card gallery curation ---- */}
         <AdminCardGalleryView getAdminApiToken={getAdminApiToken} />
 
@@ -579,22 +595,6 @@ export function AdminView({
               <BucketRawObjectList objects={sortedBucketObjects} />
             </details>
           ) : null}
-        </section>
-
-        {/* ---- Users ---- */}
-        <section className="panelcard opsCard">
-          <div className="opsCardHead">
-            <h2>Users</h2>
-            <Users size={16} />
-          </div>
-          <p className="opsNote">
-            Accounts, sessions, bans, and roles are managed in Clerk. Admin access is granted by the{" "}
-            <code>admin</code> role or the configured email allowlist.
-          </p>
-          <a className="btn btn-ghost btn-sm" href="https://dashboard.clerk.com" rel="noreferrer" target="_blank">
-            Open Clerk user management
-            <ExternalLink size={13} />
-          </a>
         </section>
 
         {/* ---- Provider policy ---- */}

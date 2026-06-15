@@ -537,6 +537,12 @@ a { color: inherit; }
   background: var(--surface-alt);
 }
 
+/* In the default 2-up facts grid, let a lone trailing fact span the row
+   instead of orphaning at half width (e.g. Service's "Retail orders"). */
+.opsFacts:not(.opsFacts-four):not(.opsFacts-five) li:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
 .opsFacts span,
 .opsFoot,
 .opsNote,
