@@ -2,6 +2,7 @@ import { Activity, ChevronDown, ChevronLeft, ChevronRight, ExternalLink, FileJso
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { AiFlowAdminConfig, AiFlowConfigSummary } from "../../src/aiFlowConfig";
 import type { AiGenerationJobEvidence } from "../../src/aiGenerationJobs";
+import { fetchBrowser, requestBrowserJson } from "../../src/browserRequestAdapter";
 import { resolveCardGenerationEndpoint } from "../../src/browserGatePolicy";
 import { providerCatalog } from "../../src/providerCatalog";
 import { AdminCardGalleryView } from "./AdminCardGalleryView";
@@ -96,7 +97,7 @@ function buildProbeTargets(): ProbeTarget[] {
 async function probe(url: string): Promise<ProbeResult> {
   const start = performance.now();
   try {
-    const response = await fetch(url, { cache: "no-store" });
+    const response = await fetchBrowser(url, { cache: "no-store" });
     return { ms: Math.round(performance.now() - start), ok: response.ok, status: response.status };
   } catch {
     return { ms: Math.round(performance.now() - start), ok: false };
@@ -174,15 +175,12 @@ export function AdminView({
     if (cursor) params.set("cursor", cursor);
     setBucketLoading(true);
     setBucketError("");
-    const headers = new Headers();
-    Promise.resolve(getAdminApiToken?.())
-      .then((token) => {
-        if (token) headers.set("Authorization", `Bearer ${token}`);
-        return fetch(`/api/admin/artifacts/bucket?${params.toString()}`, { cache: "no-store", headers });
-      })
-      .then(async (response) => {
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(payload.status || `Bucket viewer returned HTTP ${response.status}`);
+    requestBrowserJson<BucketViewerPayload & { status?: string }>(`/api/admin/artifacts/bucket?${params.toString()}`, {
+      cache: "no-store",
+      getToken: getAdminApiToken
+    })
+      .then(({ payload, response }) => {
+        if (!response.ok) throw new Error(payload?.status || `Bucket viewer returned HTTP ${response.status}`);
         setBucketPayload(payload as BucketViewerPayload);
         setBucketPageIndex(pageIndex);
         setBucketCursorHistory(cursorHistory);
@@ -239,7 +237,7 @@ export function AdminView({
       ...current,
       [artifact.objectKey]: current[artifact.objectKey] ?? { status: "loading" }
     }));
-    void fetch(url, { cache: "no-store" })
+    void fetchBrowser(url, { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const text = await response.text();

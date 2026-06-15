@@ -38,6 +38,7 @@ import {
   type GalleryStage,
   type ReviewChecklistState
 } from "../adminCardGalleryWorkflow";
+import { getBrowserJson, postBrowserJson } from "../../src/browserRequestAdapter";
 
 /**
  * Admin "Card gallery" curation surface.
@@ -68,16 +69,14 @@ export function AdminCardGalleryView({
   const loadGallery = useCallback(async () => {
     setLoading(true);
     try {
-      const token = await getAdminApiToken?.();
-      const response = await fetch("/api/admin/card-gallery", {
+      const payload = await getBrowserJson<GalleryPayload>("/api/admin/card-gallery", {
         cache: "no-store",
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined
+        getToken: getAdminApiToken
       });
-      if (!response.ok) {
+      if (!payload) {
         setStatusLine("Gallery repository is not available yet.");
         return;
       }
-      const payload = await response.json() as GalleryPayload;
       setEntries(payload.entries ?? []);
       setCandidates(payload.candidates ?? []);
       setStatusLine(payload.galleryReadStatus?.ok === false ? payload.galleryReadStatus.message ?? "Gallery repository is not fully available yet." : "");
@@ -95,19 +94,12 @@ export function AdminCardGalleryView({
   const saveEntry = useCallback(
     async (body: Record<string, unknown>) => {
       try {
-        const token = await getAdminApiToken?.();
-        const response = await fetch("/api/admin/card-gallery", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Idempotency-Key": `card-gallery-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
-          },
-          body: JSON.stringify(body)
+        const { payload, response } = await postBrowserJson<{ status?: string }>("/api/admin/card-gallery", body, {
+          getToken: getAdminApiToken,
+          idempotencyKey: `card-gallery-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
         });
         if (!response.ok) {
-          const detail = await response.json().catch(() => ({})) as { status?: string };
-          setStatusLine(`Save failed: ${detail.status ?? `HTTP ${response.status}`}`);
+          setStatusLine(`Save failed: ${payload?.status ?? `HTTP ${response.status}`}`);
           return false;
         }
         setStatusLine("Saved.");

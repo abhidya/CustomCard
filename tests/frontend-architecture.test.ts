@@ -67,6 +67,13 @@ const defaultDraftInput: CardDraftInput = {
   useMemory: true
 };
 
+function readAuthorizationHeader(headers: RequestInit["headers"]): string | undefined {
+  if (!headers) return undefined;
+  if (headers instanceof Headers) return headers.get("Authorization") ?? undefined;
+  if (Array.isArray(headers)) return headers.find(([name]) => name.toLowerCase() === "authorization")?.[1];
+  return "Authorization" in headers ? String(headers.Authorization) : undefined;
+}
+
 describe("frontend architecture seams", () => {
   it("keeps legacy admin views lazy-loaded outside the customer shell chunk", () => {
     const appSource = readFileSync(new URL("../webapp/App.tsx", import.meta.url), "utf8");
@@ -517,7 +524,7 @@ describe("frontend architecture seams", () => {
       calls.push({
         url: String(url),
         body,
-        authorization: init?.headers && "Authorization" in init.headers ? String(init.headers.Authorization) : undefined
+        authorization: readAuthorizationHeader(init?.headers)
       });
       if (String(url).endsWith("/status")) {
         return { ok: true, json: async () => ({ ok: true, status: "walgreens-checkout-ready" }) };

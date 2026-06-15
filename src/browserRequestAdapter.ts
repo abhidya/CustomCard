@@ -81,7 +81,7 @@ export async function fetchBrowser(
     idempotencyKey,
     method = body === undefined ? "GET" : "POST",
     requireToken = false
-  }: BrowserJsonRequestOptions = {}
+}: BrowserJsonRequestOptions = {}
 ): Promise<Response> {
   return fetchImpl(path, {
     cache,

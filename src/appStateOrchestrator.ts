@@ -1,13 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
-import { buildFulfillmentRecommendations, type FulfillmentRecommendationSet } from "./fulfillmentRecommendation";
 import {
   buildOpportunity,
-  buildVendorHandoff,
-  buildCustomerChatSession,
-  generateCardDraft,
   getDefaultDraftInput,
   parseFreeImport,
-  validateCardDraft,
   type CardDraft,
   type CardDraftInput,
   type CardOpportunity,
@@ -26,8 +21,7 @@ import {
 } from "./customerWorkflow";
 import { getSupportedLocale, summarizeLocalizationReadiness, type LocalizationReadinessSummary, type SupportedLocale, type SupportedLocaleCode } from "./localization";
 import { buildCalendarConnectionStartPackets, type CalendarConnectionStartPacket } from "./onboardingCalendar";
-import { buildPrinterPricingComparison } from "./printerPricing";
-import { buildPrintExportPackage, type PrintExportPackage } from "./printExport";
+import { buildCardDraftSession, type CardDraftSession } from "./cardDraftSession";
 import {
   buildBrowserAiFlowSummary,
   loadBrowserAiFlowAdminConfigs,
@@ -45,13 +39,13 @@ import {
   type AiGenerationJobEvidence
 } from "./aiGenerationJobs";
 import {
-  applyPanelOverrides,
   clearPanelOverride,
   emptyPanelOverrides,
   setPanelOverride,
   type PanelOverride,
   type PanelOverrides
 } from "./panelEdits";
+import { buildBrowserIdempotencyKey, buildBrowserRequestHeaders, fetchBrowser } from "./browserRequestAdapter";
 import { resolveCardGenerationEndpoint } from "./browserGatePolicy";
 // --- Bootstrap constants (canonical home; reviewerBootstrap.ts re-exports these) ---
 
@@ -140,10 +134,11 @@ export interface AppState {
 
   memories: LocalWorkspace["memories"];
   signal: ReturnType<typeof parseFreeImport>;
-  pricingComparison: ReturnType<typeof buildPrinterPricingComparison>;
+  cardDraftSession: CardDraftSession;
+  pricingComparison: CardDraftSession["pricingComparison"];
   opportunity: CardOpportunity;
   /** Deterministic template draft — the base the AI request and "revert" use. */
-  draft: ReturnType<typeof generateCardDraft>;
+  draft: CardDraftSession["draft"];
   templateDraft: CardDraft;
   /**
    * The one draft every downstream artifact is built from: AI draft when
@@ -157,8 +152,8 @@ export interface AppState {
   /** Validation/handoff/print package are built from activeDraft — what you see is what exports. */
   validation: CardValidation;
   handoff: VendorHandoff;
-  fulfillmentRecommendationSet: FulfillmentRecommendationSet;
-  printPackage: PrintExportPackage;
+  fulfillmentRecommendationSet: CardDraftSession["fulfillmentRecommendationSet"];
+  printPackage: CardDraftSession["printPackage"];
   localizationSummary: LocalizationReadinessSummary;
   selectedLocale: SupportedLocale;
   approvedMemoryNotes: string[];
@@ -247,15 +242,6 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
     }
   }, [draftInput]);
 
-  const draft = useMemo(() => generateCardDraft(draftInput, memories), [draftInput, memories]);
-  // One active draft drives everything the customer sees, approves, and exports:
-  // AI draft when present, template otherwise, with exact panel edits applied.
-  const activeDraft = useMemo(() => applyPanelOverrides(aiDraft ?? draft, panelOverrides), [aiDraft, draft, panelOverrides]);
-  const validation = useMemo(() => validateCardDraft(activeDraft), [activeDraft]);
-  const handoff = useMemo(() => buildVendorHandoff(vendorId, validation), [vendorId, validation]);
-  const pricingComparison = useMemo(() => buildPrinterPricingComparison(vendorId), [vendorId]);
-  const fulfillmentRecommendationSet = useMemo(() => buildFulfillmentRecommendations(pricingComparison), [pricingComparison]);
-  const printPackage = useMemo(() => buildPrintExportPackage(activeDraft, validation, handoff), [activeDraft, validation, handoff]);
   const updatePanelOverride = useCallback((panelId: CardPanel["id"], patch: PanelOverride) => {
     setPanelOverrides((current) => setPanelOverride(current, panelId, patch));
   }, []);
@@ -264,17 +250,32 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
   }, []);
   const localizationSummary = useMemo(() => summarizeLocalizationReadiness(), []);
   const selectedLocale = useMemo(() => getSupportedLocale(localeCode), [localeCode]);
-  const approvedMemoryNotes = useMemo(
-    () => memories.filter((m) => m.approved).map((m) => m.note),
-    [memories]
-  );
-  const fulfillmentContext = useMemo(
+  const cardDraftSession = useMemo(
     () =>
-      fulfillmentRecommendationSet.recommendations
-        .map((r) => `${r.label}: ${r.subtotalLabel} at ${r.vendorName}`)
-        .join("; "),
-    [fulfillmentRecommendationSet]
+      buildCardDraftSession({
+        aiDraft,
+        customerChatMessages,
+        draftInput,
+        memories,
+        opportunity,
+        panelOverrides,
+        selectedLocale,
+        vendorId
+      }),
+    [aiDraft, customerChatMessages, draftInput, memories, opportunity, panelOverrides, selectedLocale, vendorId]
   );
+  const {
+    activeDraft,
+    approvedMemoryNotes,
+    customerChatSession,
+    draft,
+    fulfillmentContext,
+    fulfillmentRecommendationSet,
+    handoff,
+    pricingComparison,
+    printPackage,
+    validation
+  } = cardDraftSession;
   const calendarConnectionStartPackets = useMemo(() => buildCalendarConnectionStartPackets(), []);
   const aiFlowSummary = useMemo(() => buildBrowserAiFlowSummary(aiFlowConfigs), [aiFlowConfigs]);
   const setAiFlowConfigs = useCallback((configs: AiFlowAdminConfig[]) => {
@@ -282,21 +283,6 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
     setAiFlowConfigsState(normalized);
     saveBrowserAiFlowAdminConfigs(normalized);
   }, []);
-  // Chat starts empty: the conversation belongs to the customer, not a scripted transcript.
-  const customerChatSession = useMemo(
-    () =>
-      buildCustomerChatSession(
-        {
-          recipientName: opportunity.recipient,
-          customerMessage: "",
-          approvedMemoryNotes,
-          locale: selectedLocale.locale,
-          fulfillmentContext
-        },
-        customerChatMessages ?? []
-      ),
-    [approvedMemoryNotes, customerChatMessages, fulfillmentContext, opportunity.recipient, selectedLocale.locale]
-  );
 
   const triggerAiCardGen = useCallback((targetPanelId?: CardPanel["id"] | CardPanel["id"][]) => {
     if (aiCardGenLoading) return;
@@ -319,7 +305,6 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
       personal_note: draftInput.personalNote,
       memory_notes: approvedMemoryNotes
     };
-    const body = JSON.stringify(baseBody);
     setAiCardGenLoading(true);
     setAiStale(false);
     setAiPanelGenerationProgress(progressForPanels(requestPanels, "queued"));
@@ -332,10 +317,10 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
     );
     buildAiCardGenerationHeaders(getCustomerApiToken)
       .then((headers) =>
-        fetch(cardGenerationEndpoint.requestUrl, {
+        fetchBrowser(cardGenerationEndpoint.requestUrl, {
           method: "POST",
           headers,
-          body
+          body: baseBody
         })
       )
       .then(readAiGenerationResponse)
@@ -510,12 +495,13 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
     aiFlowSummary,
     memories,
     signal,
+    cardDraftSession,
     pricingComparison,
     opportunity,
     draft,
-    templateDraft: draft,
+    templateDraft: cardDraftSession.templateDraft,
     activeDraft,
-    activePanels: activeDraft.panels,
+    activePanels: cardDraftSession.activePanels,
     panelOverrides,
     updatePanelOverride,
     revertPanelOverride,
@@ -574,24 +560,19 @@ function safeLayoutEnum<T extends string>(value: unknown, allowed: readonly T[])
   return (allowed as readonly string[]).includes(normalized) ? (normalized as T) : undefined;
 }
 
-function buildIdempotencyKey(prefix: string): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return `${prefix}-${crypto.randomUUID()}`;
-  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-}
-
 export async function buildAiCardGenerationHeaders(
   getCustomerApiToken?: CustomerApiTokenProvider
 ): Promise<Headers> {
-  const headers = new Headers({
-    "Content-Type": "application/json",
-    "X-Idempotency-Key": buildIdempotencyKey("card-gen")
-  });
-  const token = await getCustomerApiToken?.();
-  if (!token) {
+  try {
+    return await buildBrowserRequestHeaders({
+      contentType: "application/json",
+      getToken: getCustomerApiToken,
+      idempotencyKey: buildBrowserIdempotencyKey("card-gen"),
+      requireToken: true
+    });
+  } catch {
     throw new Error("AI card generation needs an active signed-in session.");
   }
-  headers.set("Authorization", `Bearer ${token}`);
-  return headers;
 }
 
 export async function readAiGenerationResponse(response: Response): Promise<AiGenerationApiResult> {
@@ -665,7 +646,7 @@ async function pollQueuedAiGenerationJob({
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     if (attempt > 0) await wait(Math.min(10, Math.max(1, retryAfterSeconds)) * 1000);
     const headers = await buildCustomerAuthorizationHeaders(getCustomerApiToken);
-    const response = await fetch(path, { cache: "no-store", headers });
+    const response = await fetchBrowser(path, { cache: "no-store", headers });
     const status = await readAiGenerationJobStatusResponse(response);
     if (status.status === "ready") return status.result;
 
@@ -691,9 +672,11 @@ function readCompletedAiGenerationPayload(payload: Record<string, unknown>): AiG
 }
 
 async function buildCustomerAuthorizationHeaders(getCustomerApiToken?: CustomerApiTokenProvider): Promise<Headers> {
-  const token = await getCustomerApiToken?.();
-  if (!token) throw new Error("AI card generation needs an active signed-in session.");
-  return new Headers({ Authorization: `Bearer ${token}` });
+  try {
+    return await buildBrowserRequestHeaders({ getToken: getCustomerApiToken, requireToken: true });
+  } catch {
+    throw new Error("AI card generation needs an active signed-in session.");
+  }
 }
 
 function normalizeAiJobStatusUrl(statusUrl: string | undefined, jobId: string | undefined): string {

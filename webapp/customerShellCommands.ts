@@ -7,6 +7,12 @@ import type {
 } from "../src/customerWorkflow";
 import type { SupportedLocaleCode } from "../src/localization";
 import type { PrintExportFile, PrintExportPackage } from "../src/printExport";
+import {
+  buildBrowserIdempotencyKey,
+  buildBrowserRequestHeaders,
+  getBrowserJson,
+  postBrowserJson
+} from "../src/browserRequestAdapter";
 import { buildDraftProgressState } from "./draftProgress";
 
 export interface DraftAutosaveInput {
@@ -186,10 +192,7 @@ export function useDraftAutosave({
 }
 
 export async function getCustomerJson(getToken: () => Promise<string | null>, path: string): Promise<Record<string, unknown> | undefined> {
-  const headers = await buildCustomerHeaders(getToken);
-  const response = await fetch(path, { headers });
-  if (!response.ok) return undefined;
-  return response.json() as Promise<Record<string, unknown>>;
+  return getBrowserJson(path, { getToken });
 }
 
 export async function postCustomerMutation(
@@ -198,36 +201,20 @@ export async function postCustomerMutation(
   body: Record<string, unknown>,
   options: { idempotencyKey?: string } = {}
 ): Promise<void> {
-  const headers = await buildCustomerHeaders(getToken);
-  headers.set("Content-Type", "application/json");
-  headers.set("X-Idempotency-Key", options.idempotencyKey ?? buildBrowserIdempotencyKey(path));
-  const response = await fetch(path, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(body)
+  const { payload, response } = await postBrowserJson<{ status?: unknown }>(path, body, {
+    getToken,
+    idempotencyKey: options.idempotencyKey
   });
   if (!response.ok) {
-    const detail = await response.json().catch(() => ({})) as { status?: unknown };
-    throw new Error(String(detail.status ?? `customer-mutation-http-${response.status}`));
+    throw new Error(String(payload?.status ?? `customer-mutation-http-${response.status}`));
   }
 }
 
 export async function buildCustomerHeaders(getToken: () => Promise<string | null>): Promise<Headers> {
-  const headers = new Headers();
-  try {
-    const token = await getToken();
-    if (token) headers.set("Authorization", `Bearer ${token}`);
-  } catch {
-    /* signed-in UI stays usable while the API session recovers */
-  }
-  return headers;
+  return buildBrowserRequestHeaders({ getToken });
 }
 
-export function buildBrowserIdempotencyKey(path: string): string {
-  const routeSlug = path.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "mutation";
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return `${routeSlug}-${crypto.randomUUID()}`;
-  return `${routeSlug}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-}
+export { buildBrowserIdempotencyKey };
 
 export function buildDraftAutosaveIdempotencyKey(path: string, snapshot: string): string {
   const routeSlug = path.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "draft-autosave";

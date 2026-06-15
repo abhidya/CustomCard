@@ -130,17 +130,13 @@ export default function App() {
     cardGenAvailable,
     memories,
     signal,
-    pricingComparison,
+    cardDraftSession,
     opportunity,
-    draft,
-    activeDraft,
     panelOverrides,
     updatePanelOverride,
     revertPanelOverride,
-    validation,
-    handoff,
-    printPackage
   } = state;
+  const { activeDraft, draft, handoff, pricingComparison, printPackage, validation } = cardDraftSession;
 
   const viewportWidth = useViewportWidth();
   const shellView = useMemo(

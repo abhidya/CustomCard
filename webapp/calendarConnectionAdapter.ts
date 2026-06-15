@@ -1,4 +1,5 @@
 import type { CalendarConnectionStartPacket } from "../src/onboardingCalendar";
+import { getBrowserJson, postBrowserJson } from "../src/browserRequestAdapter";
 
 export interface CalendarConnectionStatus {
   tone: "ok" | "warn";
@@ -73,16 +74,13 @@ export async function fetchCustomerConnections(
   getCustomerApiToken?: () => Promise<string | undefined>
 ): Promise<{ connection?: CustomerConnection; opportunities: ImportedOpportunity[] } | undefined> {
   try {
-    const token = await getCustomerApiToken?.();
-    if (!token) return undefined;
-    const response = await fetch("/api/customer/connections", {
-      headers: { Authorization: `Bearer ${token}` }
+    const payload = await getBrowserJson<CustomerConnectionsPayload>("/api/customer/connections", {
+      getToken: getCustomerApiToken,
+      requireToken: true
     });
-    if (!response.ok) return undefined;
-    const payload = await response.json() as CustomerConnectionsPayload;
     return {
-      connection: payload.connections?.find((candidate) => candidate.provider === "google_calendar"),
-      opportunities: payload.opportunities ?? []
+      connection: payload?.connections?.find((candidate) => candidate.provider === "google_calendar"),
+      opportunities: payload?.opportunities ?? []
     };
   } catch {
     return undefined;
@@ -96,22 +94,19 @@ export async function startGoogleCalendarConnection({
   mode = "connect"
 }: StartGoogleCalendarConnectionInput): Promise<CalendarConnectionResult> {
   try {
-    const token = await getCustomerApiToken?.();
-    const response = await fetch("/api/calendar/connections/start", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Idempotency-Key": `calendar-google-${Date.now()}`,
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify({
+    const { payload, response } = await postBrowserJson<CalendarConnectionStartPayload>(
+      "/api/calendar/connections/start",
+      {
         calendarChoiceId: "google-calendar-events",
         returnTo,
         mode,
         ...(mode === "reconnect" ? { forceReconnect: true } : {})
-      })
-    });
-    const payload = await response.json().catch(() => undefined) as CalendarConnectionStartPayload | undefined;
+      },
+      {
+        getToken: getCustomerApiToken,
+        idempotencyKey: `calendar-google-${Date.now()}`
+      }
+    );
     return resolveCalendarConnectionResult(response.ok, response.status, payload, { isSignedIn });
   } catch {
     return {

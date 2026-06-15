@@ -12,6 +12,7 @@ import {
   WandSparkles
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { getBrowserJson } from "../../src/browserRequestAdapter";
 import type { CardDraft } from "../../src/customerWorkflow";
 import { cardImageByCategory } from "../cardTemplates";
 import { PanelArt } from "../ui";
@@ -115,9 +116,8 @@ export function HomeView({
   const [featuredCategories, setFeaturedCategories] = useState<FeaturedCategory[]>([]);
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/public/featured-cards")
-      .then((response) => (response.ok ? response.json() : undefined))
-      .then((payload: { categories?: FeaturedCategory[] } | undefined) => {
+    getBrowserJson<{ categories?: FeaturedCategory[] }>("/api/public/featured-cards")
+      .then((payload) => {
         if (!cancelled && payload?.categories?.length) setFeaturedCategories(payload.categories);
       })
       .catch(() => undefined);

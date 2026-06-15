@@ -1,5 +1,6 @@
 import type { CardPanel } from "../src/customerWorkflow";
 import type { PrintExportPackage } from "../src/printExport";
+import { requestBrowserJson } from "../src/browserRequestAdapter";
 import type { CheckoutCustomer } from "./checkoutModel";
 import { panelToJpegBase64 } from "./panelMediaAdapter";
 
@@ -52,17 +53,12 @@ export async function createWalgreensCheckoutSession({
   fetchImpl = fetch,
   renderPanel = panelToJpegBase64
 }: CreateWalgreensCheckoutSessionInput): Promise<WalgreensCheckoutSession> {
-  const token = await getCustomerApiToken?.();
-  const headers = {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {})
-  };
   const images: string[] = [];
-  const statusResponse = await fetchImpl("/api/walgreens/checkout/status", {
+  const { payload: statusPayload, response: statusResponse } = await requestBrowserJson<StatusPayload>("/api/walgreens/checkout/status", {
+    fetchImpl,
+    getToken: getCustomerApiToken,
     method: "GET",
-    headers
   });
-  const statusPayload = await statusResponse.json().catch(() => undefined) as StatusPayload | undefined;
 
   if (!statusResponse.ok || !statusPayload?.ok) {
     throw new Error(getWalgreensCheckoutError(statusPayload, "Walgreens checkout is not ready.", statusResponse.status));
@@ -70,12 +66,12 @@ export async function createWalgreensCheckoutSession({
 
   for (const panel of panels) {
     const imageBase64 = await renderPanel(panel);
-    const uploadResponse = await fetchImpl("/api/walgreens/checkout/upload", {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ imageBase64 })
+    const { payload: uploadPayload, response: uploadResponse } = await requestBrowserJson<UploadPayload>("/api/walgreens/checkout/upload", {
+      body: { imageBase64 },
+      fetchImpl,
+      getToken: getCustomerApiToken,
+      method: "POST"
     });
-    const uploadPayload = await uploadResponse.json().catch(() => undefined) as UploadPayload | undefined;
 
     if (!uploadResponse.ok || !uploadPayload?.ok || !uploadPayload.imageUrl) {
       throw new Error(getWalgreensCheckoutError(uploadPayload, "Walgreens image upload is not ready.", uploadResponse.status));
@@ -83,16 +79,16 @@ export async function createWalgreensCheckoutSession({
     images.push(uploadPayload.imageUrl);
   }
 
-  const sessionResponse = await fetchImpl("/api/walgreens/checkout/session", {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
+  const { payload: sessionPayload, response: sessionResponse } = await requestBrowserJson<SessionPayload>("/api/walgreens/checkout/session", {
+    body: {
       customer: checkoutCustomer,
       images,
       affNotes: `CustomCard ${printPackage.draftId}`
-    })
+    },
+    fetchImpl,
+    getToken: getCustomerApiToken,
+    method: "POST"
   });
-  const sessionPayload = await sessionResponse.json().catch(() => undefined) as SessionPayload | undefined;
 
   if (!sessionResponse.ok || !sessionPayload?.ok || !sessionPayload.checkoutUrl) {
     throw new Error(getWalgreensCheckoutError(sessionPayload, "Walgreens checkout is not ready.", sessionResponse.status));

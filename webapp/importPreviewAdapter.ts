@@ -4,6 +4,8 @@
  * and parsed consistently server-side. Local parsing stays as offline fallback.
  */
 
+import { postBrowserJson } from "../src/browserRequestAdapter";
+
 export interface ServerImportOpportunity {
   opportunityId: string;
   eventId: string;
@@ -29,31 +31,28 @@ export async function requestServerImportPreview(
   const text = rawImportText.trim();
   if (!text) return undefined;
   try {
-    const token = await getCustomerApiToken?.();
-    if (!token) return undefined;
-    const response = await fetch("/api/import-preview", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Idempotency-Key": `import-preview-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        sourceKind: text.includes("BEGIN:VCALENDAR") || text.includes("BEGIN:VEVENT") ? "ics-paste" : "invite-paste",
-        rawImportText: text
-      })
-    });
-    if (!response.ok) return undefined;
-    const payload = await response.json() as {
+    const { payload, response } = await postBrowserJson<{
       opportunities?: ServerImportOpportunity[];
       warnings?: string[];
       importParser?: { evidenceSummary?: string[]; parsedFromRawText?: boolean };
-    };
+    }>(
+      "/api/import-preview",
+      {
+        sourceKind: text.includes("BEGIN:VCALENDAR") || text.includes("BEGIN:VEVENT") ? "ics-paste" : "invite-paste",
+        rawImportText: text
+      },
+      {
+        getToken: getCustomerApiToken,
+        idempotencyKey: `import-preview-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+        requireToken: true
+      }
+    );
+    if (!response.ok) return undefined;
     return {
-      opportunities: payload.opportunities ?? [],
-      warnings: payload.warnings ?? [],
-      evidenceSummary: payload.importParser?.evidenceSummary ?? [],
-      parsedFromRawText: Boolean(payload.importParser?.parsedFromRawText)
+      opportunities: payload?.opportunities ?? [],
+      warnings: payload?.warnings ?? [],
+      evidenceSummary: payload?.importParser?.evidenceSummary ?? [],
+      parsedFromRawText: Boolean(payload?.importParser?.parsedFromRawText)
     };
   } catch {
     return undefined;
