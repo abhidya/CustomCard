@@ -75,7 +75,7 @@ const checks = [
     'href="#main-content"',
     'aria-label="CustomCard navigation"',
     'id="main-content"',
-    'aria-label="Checkout status"',
+    'aria-label="Print-shop payment status"',
     "aria-label={`${capability.label} ready-local adapter coverage`}"
   ]),
   checkIncludes("accessibility", "skip-link-focus-style", `${contents.styles}\n${contents.webappStyles}`, [

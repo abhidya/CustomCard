@@ -69,18 +69,18 @@ const howItWorksSteps = [
   },
   {
     icon: <Store size={18} />,
-    title: "Continue to Walgreens",
-    body: "Walgreens handles the store, the price, and the payment. Pickup is often same-day — Walgreens confirms the time at checkout."
+    title: "Finish at a print shop",
+    body: "Download print-ready files, choose your preferred print shop, and confirm the final price before ordering."
   }
 ];
 
 const trustPoints = [
-  "Free to create. Pay Walgreens only if you print.",
-  "Walgreens handles payment and final checkout.",
-  "Designing and saving a manual print package can start without an account.",
-  "AI generation, saved history, Google Calendar, and Walgreens checkout require an account.",
+  "Free to create. Pay the print shop only if you print.",
+  "You choose the printer and confirm payment directly with them.",
+  "Designing and saving a print package can start without an account.",
+  "AI generation, saved history, and Google Calendar require an account.",
   "Calendar connections are optional and separate from creating an account.",
-  "You review every word before checkout.",
+  "You review every word before creating the print-shop package.",
   "Saved personal details are yours to edit or delete at any time."
 ];
 
@@ -138,7 +138,7 @@ export function HomeView({
           </h1>
           <p>
             Start with a name, occasion, messy note, invite, or calendar event. CustomCard helps turn it into a
-            personal 5 × 7 card you can edit, review, and print through Walgreens.
+            personal 5 × 7 card you can edit, review, and print through your preferred print shop.
           </p>
           <div className="landingHeroActions">
             <button className="btn btn-primary" onClick={onCreate} type="button">

@@ -118,7 +118,7 @@ export function SettingsView({
               you choose to save them.
             </p>
             <p>
-              Walgreens handles payment and final checkout. CustomCard never sees or stores your payment details.
+              You pay the print shop directly. CustomCard never sees or stores your payment details.
             </p>
             <label className="settingconsent">
               <input

@@ -34,6 +34,7 @@ const doctorManifest = defineDoctorManifest({
     mobileExperience: "apps/mobile/src/customerExperience.ts",
     mobileDoctor: "apps/mobile/scripts/doctor.mjs",
     mobileReleaseDoctor: "apps/mobile/scripts/release-doctor.mjs",
+    mobileNativeInstallProof: "apps/mobile/scripts/native-install-proof.mjs",
     appConfig: "apps/mobile/app.config.js",
     eas: "apps/mobile/eas.json",
     apiContracts: "src/apiContracts.ts",
@@ -43,6 +44,8 @@ const doctorManifest = defineDoctorManifest({
     iosSmokeEvidence: "docs/evidence/mobile-render/2026-06-15-ios-prod-review-smoke.md",
     iosReleaseEvidence: "docs/evidence/mobile-render/2026-06-15-ios-release-simulator-home.md",
     iosViewportEvidence: "docs/evidence/mobile-render/2026-06-15-ios-release-viewport-screenshots.md",
+    iosNativeInstallStaleEvidence: "docs/evidence/mobile-render/2026-06-15-ios-native-install-stale-proof.json",
+    iosNativeExportCurrentEvidence: "docs/evidence/mobile-render/2026-06-15-ios-native-export-current-proof.json",
     docs: "docs/platform-expansion-design.md"
   },
   docsKeys: ["docs"]
@@ -63,8 +66,8 @@ const checks = [
   checkExact("register", "artifact-blocked-count", summary.artifactBlocked, 1),
   checkExact("register", "viewport-profile-count", summary.viewportProfiles, 4),
   checkExact("register", "native-build-profile-count", summary.nativeBuildProfiles, 3),
-  checkExact("register", "evidence-artifact-count", summary.evidenceArtifacts, 9),
-  checkExact("register", "emulator-smoke-evidence-artifact-count", summary.emulatorSmokeEvidenceArtifacts, 9),
+  checkExact("register", "evidence-artifact-count", summary.evidenceArtifacts, 11),
+  checkExact("register", "emulator-smoke-evidence-artifact-count", summary.emulatorSmokeEvidenceArtifacts, 11),
   checkExact("register", "no-emulator-proof-claim", summary.emulatorRenderProofs, 0),
   checkExact("register", "no-signed-artifact-claim", summary.signedArtifacts, 0),
   checkExact("register", "no-live-external-network", summary.externalNetworkCalls, 0),
@@ -176,6 +179,43 @@ const checks = [
     ]
   }),
   checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "evidence",
+    id: "ios-native-install-stale-evidence-boundary",
+    sourceKeys: ["mobileNativeInstallProof", "iosNativeInstallStaleEvidence"],
+    signals: [
+      "customcard-mobile-native-install-proof",
+      "CUSTOMCARD_MOBILE_NATIVE_INSTALL_PROOF=enabled",
+      "CUSTOMCARD_MOBILE_APP_BUNDLE_PATH",
+      "CUSTOMCARD_MOBILE_SIMULATOR_UDID",
+      "print through your preferred print shop",
+      "\"status\": \"blocked\"",
+      "\"bundlePathFingerprint\"",
+      "\"valuesRedacted\": true",
+      "\"realOrdersEnabled\": false",
+      "Finish manually",
+      "print through Walgreens",
+      "request local regeneration"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "evidence",
+    id: "ios-native-export-current-evidence-boundary",
+    sourceKeys: ["mobileNativeInstallProof", "iosNativeExportCurrentEvidence"],
+    signals: [
+      "CUSTOMCARD_MOBILE_MAIN_BUNDLE_PATH",
+      "CUSTOMCARD_MOBILE_APP_CONFIG_PATH",
+      "\"scope\": \"exported-native-js-bundle\"",
+      "\"status\": \"ready\"",
+      "\"mainBundlePathFingerprint\"",
+      "\"valuesRedacted\": true",
+      "\"realOrdersEnabled\": false",
+      "\"presentStaleSignals\": []",
+      "\"missingCurrentSignals\": []",
+      "print through your preferred print shop",
+      "Finish at a print shop"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
     lane: "mobile-source",
     id: "native-mobile-render-source-signals",
     sourceKeys: ["mobileApp", "mobileExperience"],
@@ -240,7 +280,14 @@ const checks = [
   checkDoctorDocs(
     doctorManifest,
     contents,
-    ["iOS Expo Go smoke", "tooling-free Release", "compact, standard, large, and tablet Release", "not a complete emulator render proof matrix"],
+    [
+      "iOS Expo Go smoke",
+      "tooling-free Release",
+      "compact, standard, large, and tablet Release",
+      "guarded stale native-install proof",
+      "fresh exported iOS JS bundle",
+      "not a complete emulator render proof"
+    ],
     { id: "mobile-render-readiness-docs" }
   ),
   checkDoctorScriptedAndGated(doctorManifest, contents, { id: "mobile-render-doctor-scripted-and-gated" }),

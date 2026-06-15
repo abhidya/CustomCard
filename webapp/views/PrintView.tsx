@@ -1,17 +1,9 @@
 import { CheckCircle2, ClipboardList, Download, ExternalLink, FileDown, Pencil, ShieldCheck } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { CardPanel } from "../../src/customerWorkflow";
 import { PanelArt } from "../ui";
-import type { PrinterPriceEstimate, PrinterPricingComparison } from "../../src/printerPricing";
+import type { PrinterPricingComparison } from "../../src/printerPricing";
 import type { PrintExportPackage } from "../../src/printExport";
-import {
-  buildCheckoutCustomer,
-  mergeCheckoutCustomerDefaults,
-  updateCheckoutCustomerField,
-  validateCheckoutCustomer,
-  type CheckoutCustomerDefaults,
-  type CheckoutCustomerField
-} from "../checkoutModel";
 import {
   emptyProofChecklistState,
   isProofApproved,
@@ -20,7 +12,6 @@ import {
   toggleProofChecklistItem,
   type ProofChecklistState
 } from "../proofApproval";
-import { createWalgreensCheckoutSession } from "../walgreensCheckoutAdapter";
 
 const speedLabels: Record<string, string> = {
   "same-day": "Same-day pickup",
@@ -32,8 +23,6 @@ const speedLabels: Record<string, string> = {
 export function PrintView({
   panels,
   proofSignature,
-  checkoutCustomerDefaults,
-  getCustomerApiToken,
   pricingComparison,
   printPackage,
   onCardEvent,
@@ -46,29 +35,17 @@ export function PrintView({
   panels: CardPanel[];
   /** Signature of everything that would print (text, art, layout, image, fit); any change resets approval. */
   proofSignature: string;
-  checkoutCustomerDefaults?: CheckoutCustomerDefaults;
-  getCustomerApiToken?: () => Promise<string | undefined>;
   pricingComparison: PrinterPricingComparison;
   printPackage: PrintExportPackage;
-  onCardEvent?: (status: "ready-to-print" | "walgreens-checkout-started" | "returned-from-walgreens") => void;
+  onCardEvent?: (status: "ready-to-print") => void;
   onBackToDesign?: () => void;
   onDownloadPackage: () => void | Promise<void>;
   onDownloadPanels: () => void | Promise<void>;
   onCopyChecklist: () => void;
   manualUploadSteps: string[];
 }) {
-  const [checkoutCustomer, setCheckoutCustomer] = useState(() => buildCheckoutCustomer(checkoutCustomerDefaults));
-  const [checkoutStatus, setCheckoutStatus] = useState<{
-    tone: "ok" | "warn";
-    title: string;
-    detail: string;
-    checkoutUrl?: string;
-  } | null>(null);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [proofChecklist, setProofChecklist] = useState<ProofChecklistState>(emptyProofChecklistState);
-  const [showFieldIssues, setShowFieldIssues] = useState(false);
   const [showTrimGuides, setShowTrimGuides] = useState(false);
-  const onCardEventRef = useRef(onCardEvent);
   const overflowPanels = panels.filter((candidate) => candidate.overflowRisk);
   const rtlReview = panels.some((candidate) => candidate.rtl);
   const approvalBlocked = overflowPanels.length > 0 || panels.length < 4;
@@ -76,111 +53,34 @@ export function PrintView({
   // The four per-panel review checks live on the panels themselves (review next to
   // its object); names / crop / final approval are the closing gate below.
   const finalApprovalItems = proofChecklistItems.filter((item) => !item.id.startsWith("panel-"));
-  const fieldIssues = validateCheckoutCustomer(checkoutCustomer);
-  useEffect(() => {
-    onCardEventRef.current = onCardEvent;
-  }, [onCardEvent]);
   useEffect(() => {
     setProofChecklist(emptyProofChecklistState);
   }, [proofSignature]);
   // Real lifecycle events: status history is driven by what actually happened.
   useEffect(() => {
-    if (proofApproved) onCardEventRef.current?.("ready-to-print");
-  }, [proofApproved]);
-  useEffect(() => {
-    function onWalgreensReturn(event: MessageEvent) {
-      const source = (event.data as { source?: string } | undefined)?.source ?? "";
-      if (source === "customcard-walgreens-checkout") {
-        onCardEventRef.current?.("returned-from-walgreens");
-      }
-    }
-    window.addEventListener("message", onWalgreensReturn);
-    return () => window.removeEventListener("message", onWalgreensReturn);
-  }, []);
-  const estimateByVendor = new Map<string, PrinterPriceEstimate>();
-  for (const estimate of pricingComparison.rankedKnownPrices) {
-    if (!estimateByVendor.has(estimate.observation.vendorId)) {
-      estimateByVendor.set(estimate.observation.vendorId, estimate);
-    }
-  }
-
-  const walgreensEstimate = estimateByVendor.get("walgreens");
-  const walgreensOption = pricingComparison.selectedVendorOptions.find((option) => option.observation.vendorId === "walgreens");
+    if (proofApproved) onCardEvent?.("ready-to-print");
+  }, [onCardEvent, proofApproved]);
+  const recommendedEstimate = pricingComparison.rankedKnownPrices[0];
+  const recommendedOption = pricingComparison.selectedVendorOptions.find(
+    (option) => option.observation.vendorId === recommendedEstimate?.observation.vendorId
+  );
   const selectedCoupon =
-    walgreensOption &&
-    (walgreensOption.couponApplication.status === "applied" || walgreensOption.couponApplication.status === "portal-evidence-required")
-      ? walgreensOption.couponApplication.offer
+    recommendedOption &&
+    (recommendedOption.couponApplication.status === "applied" ||
+      recommendedOption.couponApplication.status === "portal-evidence-required")
+      ? recommendedOption.couponApplication.offer
       : undefined;
-  const canUseWalgreensCheckout = printPackage.manifest.passed;
-  const walgreensUploadUrl = walgreensEstimate?.observation.source.url;
-
-  useEffect(() => {
-    setCheckoutCustomer((current) => mergeCheckoutCustomerDefaults(current, checkoutCustomerDefaults));
-  }, [
-    checkoutCustomerDefaults?.email,
-    checkoutCustomerDefaults?.firstName,
-    checkoutCustomerDefaults?.lastName,
-    checkoutCustomerDefaults?.name,
-    checkoutCustomerDefaults?.phone
-  ]);
-
-  function updateCheckoutCustomer(field: CheckoutCustomerField, value: string) {
-    setCheckoutCustomer((current) => updateCheckoutCustomerField(current, field, value));
-  }
-
-  async function openWalgreensCheckout() {
-    if (!canUseWalgreensCheckout || !proofApproved || checkoutLoading) return;
-    if (fieldIssues.length > 0) {
-      setShowFieldIssues(true);
-      return;
-    }
-    setCheckoutLoading(true);
-    setCheckoutStatus({
-      tone: "warn",
-      title: "Preparing Walgreens checkout",
-      detail: "Getting your card ready for Walgreens…"
-    });
-
-    try {
-      const session = await createWalgreensCheckoutSession({
-        checkoutCustomer,
-        getCustomerApiToken,
-        panels,
-        printPackage
-      });
-
-      const popup = window.open(
-        session.checkoutUrl,
-        "customcard-walgreens-checkout",
-        `popup=yes,width=${session.window?.width ?? 540},height=${session.window?.height ?? 620}`
-      );
-      if (!popup) {
-        window.location.assign(session.checkoutUrl);
-      }
-      setCheckoutStatus({
-        tone: "ok",
-        title: "Walgreens checkout opened",
-        detail: "Review store, price, crop, pickup, terms, and payment inside Walgreens before placing the order.",
-        checkoutUrl: session.checkoutUrl
-      });
-      onCardEvent?.("walgreens-checkout-started");
-    } catch (error) {
-      setCheckoutStatus({
-        tone: "warn",
-        title: "Walgreens checkout didn't open",
-        detail:
-          "We couldn't open Walgreens checkout. Your card is safe — try again, or download the print package below and upload it at walgreens.com."
-      });
-    } finally {
-      setCheckoutLoading(false);
-    }
-  }
+  const recommendedVendorName = recommendedEstimate?.observation.vendorName ?? "Your print shop";
+  const recommendedUploadUrl = recommendedEstimate?.observation.source.url;
+  const recommendedPickupLabel = recommendedEstimate
+    ? speedLabels[recommendedEstimate.observation.speed] ?? recommendedEstimate.observation.speed
+    : "Confirm with the print shop";
 
   return (
     <>
       <header className="pagehead reveal">
-        <h1>Print at Walgreens</h1>
-        <p>Approve your proof, then continue to Walgreens — they handle the store, the payment, and the pickup.</p>
+        <h1>Finish at a print shop</h1>
+        <p>Approve your proof, then download the print package and upload it to your preferred print shop.</p>
         {onBackToDesign ? (
           <button className="backlink" onClick={onBackToDesign} type="button">
             ← Back to design
@@ -191,9 +91,9 @@ export function PrintView({
       <div className="print">
         <div className="printpane reveal reveal-2">
           <section className="panelcard printsection">
-            <h2>Walgreens print details</h2>
+            <h2>Print-shop details</h2>
             <img
-              alt="Printed card panels and Walgreens handoff preview"
+              alt="Printed card panels and print-shop package preview"
               className="printHandoffFulfillmentImage"
               decoding="async"
               loading="lazy"
@@ -201,8 +101,8 @@ export function PrintView({
             />
             <div className="partnercheckout">
               <div>
-                <span>Printed by</span>
-                <strong>Walgreens</strong>
+                <span>Best available option</span>
+                <strong>{recommendedVendorName}</strong>
               </div>
               <div>
                 <span>Card</span>
@@ -210,31 +110,30 @@ export function PrintView({
               </div>
               <div>
                 <span>Estimated price</span>
-                <strong>{walgreensEstimate?.effectiveSubtotalLabel ?? "Confirmed at checkout"}</strong>
+                <strong>{recommendedEstimate?.effectiveSubtotalLabel ?? "Confirmed by print shop"}</strong>
               </div>
               <div>
                 <span>Pickup</span>
-                <strong>{walgreensEstimate ? speedLabels[walgreensEstimate.observation.speed] ?? walgreensEstimate.observation.speed : "Choose at Walgreens"}</strong>
+                <strong>{recommendedPickupLabel}</strong>
               </div>
             </div>
-            {selectedCoupon && walgreensOption ? (
+            {selectedCoupon && recommendedOption ? (
               <div className="coupon">
                 <span className="couponcode">{selectedCoupon.code}</span>
                 <div>
                   <strong>{selectedCoupon.discountPercent}% off card products</strong>
                   <small>
-                    Enter it at Walgreens checkout by {selectedCoupon.endsAtIso.slice(0, 10)} — the
-                    store applies the final discount.
+                    Enter it at {recommendedVendorName} by {selectedCoupon.endsAtIso.slice(0, 10)} — the shop applies the final discount.
                   </small>
                 </div>
               </div>
             ) : null}
-            <p>Walgreens confirms the final total, crop, pickup store, and payment before the order is placed.</p>
+            <p>{recommendedVendorName} confirms the final total, crop, pickup details, and payment before you place an order.</p>
           </section>
 
           <details className="panelcard printsection printsection-manual moreoptions">
-            <summary>Having trouble? More options</summary>
-            <h2>Manual Walgreens upload</h2>
+            <summary>Download print files</summary>
+            <h2>Print file package</h2>
             <p>Save one package with ready-to-upload images, a PDF proof, and step-by-step upload instructions.</p>
             <div className="downloadrow">
               <button
@@ -250,9 +149,9 @@ export function PrintView({
                 <FileDown size={16} />
                 Save upload panels
               </button>
-              {walgreensUploadUrl ? (
-                <a className="btn btn-ghost" href={walgreensUploadUrl} rel="noreferrer" target="_blank">
-                  Open Walgreens upload
+              {recommendedUploadUrl ? (
+                <a className="btn btn-ghost" href={recommendedUploadUrl} rel="noreferrer" target="_blank">
+                  Open print shop
                   <ExternalLink size={16} />
                 </a>
               ) : null}
@@ -374,83 +273,27 @@ export function PrintView({
           </section>
 
           <section className="panelcard printsection">
-            <h2>Send to Walgreens</h2>
+            <h2>Print-shop package</h2>
             <div className="checkoutbox">
               <p>
-                Walgreens handles product selection, store pickup, terms, payment, and final order. CustomCard prepares
-                your approved print files.
+                CustomCard prepares your approved files. You choose the print shop, confirm the final price, and place the order yourself.
               </p>
-              <div className="checkoutgrid">
-                <label>
-                  <span>First name</span>
-                  <input
-                    autoComplete="given-name"
-                    onChange={(event) => updateCheckoutCustomer("firstName", event.target.value)}
-                    value={checkoutCustomer.firstName}
-                  />
-                </label>
-                <label>
-                  <span>Last name</span>
-                  <input
-                    autoComplete="family-name"
-                    onChange={(event) => updateCheckoutCustomer("lastName", event.target.value)}
-                    value={checkoutCustomer.lastName}
-                  />
-                </label>
-                <label>
-                  <span>Email</span>
-                  <input
-                    autoComplete="email"
-                    inputMode="email"
-                    onChange={(event) => updateCheckoutCustomer("email", event.target.value)}
-                    value={checkoutCustomer.email}
-                  />
-                </label>
-                <label>
-                  <span>Phone</span>
-                  <input
-                    autoComplete="tel"
-                    inputMode="tel"
-                    onChange={(event) => updateCheckoutCustomer("phone", event.target.value)}
-                    placeholder="10 digits"
-                    value={checkoutCustomer.phone}
-                  />
-                </label>
-              </div>
-              {showFieldIssues && fieldIssues.length > 0 ? (
-                <ul className="checkoutissues" aria-live="polite">
-                  {fieldIssues.map((issue) => (
-                    <li key={issue.field}>{issue.message}</li>
-                  ))}
-                </ul>
-              ) : null}
               <button
                 className="btn btn-primary"
-                disabled={!canUseWalgreensCheckout || !proofApproved || checkoutLoading}
-                onClick={openWalgreensCheckout}
+                disabled={!printPackage.manifest.passed || !proofApproved}
+                onClick={() => void onDownloadPackage()}
                 type="button"
               >
-                {checkoutLoading ? "Preparing..." : "Continue to Walgreens"}
-                <ExternalLink size={16} />
+                Download print package
+                <Download size={16} />
               </button>
               {!proofApproved ? (
-                <span className="checkouthint">Finish the proof approval checklist to unlock Walgreens checkout.</span>
-              ) : null}
-              {checkoutStatus ? (
-                <div className={`checkoutstatus checkoutstatus-${checkoutStatus.tone}`} aria-live="polite">
-                  <strong>{checkoutStatus.title}</strong>
-                  <span>{checkoutStatus.detail}</span>
-                  {checkoutStatus.checkoutUrl ? (
-                    <a href={checkoutStatus.checkoutUrl} rel="noreferrer" target="_blank">
-                      Reopen Walgreens
-                    </a>
-                  ) : null}
-                </div>
+                <span className="checkouthint">Finish the proof approval checklist to unlock the print-shop package.</span>
               ) : null}
             </div>
-            <div className="trustline" aria-label="Checkout status">
+            <div className="trustline" aria-label="Print-shop payment status">
               <ShieldCheck size={16} />
-              Walgreens handles payment. CustomCard does not collect card details.
+              You pay the print shop directly. CustomCard does not collect card details.
             </div>
           </section>
         </div>

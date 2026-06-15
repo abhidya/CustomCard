@@ -183,14 +183,8 @@ export function FinishStep({ pipeline }: { pipeline: PrintPipeline }) {
             })
           }
         />
-        <AppButton
-          label="Walgreens hosted checkout"
-          variant="secondary"
-          disabled={!proofApproved}
-          onPress={() => navigation.navigate("Checkout")}
-        />
         {!proofApproved ? (
-          <InlineNotice text="Approve proof first — print estimates and checkout unlock after approval." />
+          <InlineNotice text="Approve proof first — print estimates and print-shop handoff unlock after approval." />
         ) : null}
       </Card>
     </>

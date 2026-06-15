@@ -84,7 +84,7 @@ export function resolveActiveCustomerNavView(view: ViewId): ViewId {
 }
 
 export function shouldShowCustomerCta(view: ViewId): boolean {
-  // Print owns proof approval, package download, and Walgreens checkout in context.
+  // Print owns proof approval and package download in context.
   return false;
 }
 

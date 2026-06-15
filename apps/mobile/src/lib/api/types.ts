@@ -559,7 +559,7 @@ export interface FeaturedCardsResponse {
 }
 
 // ---------------------------------------------------------------------------
-// Walgreens hosted checkout
+// Legacy hosted checkout contracts retained for backend API compatibility.
 
 export interface WalgreensStatusResponse {
   service: string;

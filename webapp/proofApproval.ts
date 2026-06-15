@@ -2,8 +2,8 @@ import type { CardDraft, CardPanel } from "../src/customerWorkflow";
 
 /**
  * Proof approval policy: the customer must explicitly confirm every panel of
- * the 2D print proof before the Walgreens checkout unlocks. The proof view is
- * the source of truth for what prints; this checklist is the human gate.
+ * the 2D print proof before the print-shop package unlocks. The proof view is the
+ * source of truth for what prints; this checklist is the human gate.
  */
 
 export interface ProofChecklistItem {

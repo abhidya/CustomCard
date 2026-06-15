@@ -259,12 +259,13 @@ it after each meaningful implementation pass.
   data, or PCI approval claims.
 - Mobile render readiness is checked by `npm run mobile:render:doctor`, which
   verifies the 8-item mobile render readiness register, 21 screen sections, 4
-  viewport profiles, 3 native build profiles, 9 evidence artifacts including a
+  viewport profiles, 3 native build profiles, 11 evidence artifacts including a
   tooling-free iOS Release simulator home screenshot plus compact, standard,
-  large, and tablet Release viewport screenshots, admin/API surfaces, docs, CI
-  wiring, and zero full emulator render proof claims, signed artifact claims,
-  live provider calls, external network calls, or real orders. It is not a full
-  emulator render proof matrix or signed native build.
+  large, and tablet Release viewport screenshots plus a guarded stale
+  native-install proof and a fresh exported iOS JS bundle proof, admin/API
+  surfaces, docs, CI wiring, and zero full emulator render proof claims, signed
+  artifact claims, live provider calls, external network calls, or real orders.
+  It is not a full emulator render proof matrix or signed native build.
 - `npm run mobile:release:doctor` covers the Expo/EAS native release contract:
   iOS/Android identifiers, development/preview/production build profiles,
   environment-sourced API URL, disabled real-order kill switch, and no hardcoded
@@ -459,7 +460,7 @@ npm run mobile:render:doctor
 Result: passed. The JSON report marked register, tests, mobile-source,
 native-profiles, surfaces, docs, CI, and evidence lanes `ready`; it verified 8
 mobile render readiness items, 21 screen sections, 4 viewport profiles, 3 native
-build profiles, 9 evidence artifacts, zero full emulator render proof claims,
+build profiles, 11 evidence artifacts, zero full emulator render proof claims,
 zero signed artifact claims, zero live provider calls, zero external network
 calls, and zero real orders.
 
@@ -850,9 +851,12 @@ documentation claims found during the audit were corrected.
 - No physical print certification.
 - No external legal/security/privacy/accessibility audit.
 - Tooling-free iOS Release simulator home, compact-phone, standard-phone,
-  large-phone, and tablet screenshots are attached, but no print/RTL render
-  matrix, EAS cloud artifact, or signed iOS/Android artifact is attached; mobile
-  render readiness, EAS profile, and release-doctor contracts are covered.
+  large-phone, and tablet screenshots are attached, and a guarded native-install
+  proof blocks stale simulator bundles from counting as current release
+  evidence. A fresh exported iOS JS bundle now proves current print-shop copy can
+  be embedded, but no print/RTL render matrix, current installed native app, EAS
+  cloud artifact, or signed iOS/Android artifact is attached; mobile render
+  readiness, EAS profile, and release-doctor contracts are covered.
 - Provider docs were checked at the contract/link level only; no vendor sandbox
   credentials or market/commercial terms were verified.
 - Browser UI smoke tests are not included in the V8 unit coverage percentages;

@@ -89,13 +89,14 @@ describe("frontend architecture seams", () => {
     expect(adminSource).toContain("buildRuntimeReadinessMap");
   });
 
-  it("keeps PrintView lifecycle events lint-clean without hook dependency bypasses", () => {
+  it("keeps PrintView proof lifecycle lint-clean without checkout return listeners", () => {
     const printViewSource = readFileSync(new URL("../webapp/views/PrintView.tsx", import.meta.url), "utf8");
 
     expect(printViewSource).not.toContain("eslint-disable-next-line react-hooks/exhaustive-deps");
-    expect(printViewSource).toContain("const onCardEventRef = useRef(onCardEvent)");
-    expect(printViewSource).toContain('onCardEventRef.current?.("ready-to-print")');
-    expect(printViewSource).toContain('onCardEventRef.current?.("returned-from-walgreens")');
+    expect(printViewSource).not.toContain("useRef");
+    expect(printViewSource).toContain('onCardEvent?.("ready-to-print")');
+    expect(printViewSource).not.toContain("returned-from-walgreens");
+    expect(printViewSource).not.toContain("createWalgreensCheckoutSession");
   });
 
   it("keeps route visibility policy out of the app shell render logic", () => {

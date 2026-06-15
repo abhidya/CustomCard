@@ -57,6 +57,7 @@
     "retail:doctor": "node scripts/retail-fulfillment-readiness-doctor.mjs",
     "payment:doctor": "node scripts/payment-readiness-doctor.mjs",
     "mobile:render:doctor": "node scripts/mobile-render-readiness-doctor.mjs",
+    "mobile:native:install:proof": "node apps/mobile/scripts/native-install-proof.mjs",
     "hosted:api:doctor": "node scripts/hosted-api-readiness-doctor.mjs",
     "hosted:env:inventory": "node scripts/hosted-vercel-env-inventory.mjs",
     "hosted:env:repair": "node scripts/hosted-vercel-env-repair.mjs",

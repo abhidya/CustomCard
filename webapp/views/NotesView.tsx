@@ -12,8 +12,8 @@ const draftStatusLabels: Record<DraftProgressStatus, string> = {
 const lifecycleStatusLabels: Record<CardLifecycleStatus, string> = {
   draft: "Draft",
   "ready-to-print": "Ready to print",
-  "walgreens-checkout-started": "Walgreens checkout started",
-  "returned-from-walgreens": "Back from Walgreens",
+  "walgreens-checkout-started": "Print-shop handoff started",
+  "returned-from-walgreens": "Back from print shop",
   downloaded: "Downloaded"
 };
 

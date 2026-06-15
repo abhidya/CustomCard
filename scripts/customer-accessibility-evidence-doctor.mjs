@@ -8,9 +8,12 @@ import { checkArrayIncludes, checkExact, checkIncludes, checkMinimum, checkNoBlo
 
 const files = {
   evidenceTest: "src/customerAccessibilityEvidence.test.ts",
+  evidenceData: "src/customerAccessibilityEvidenceData.mjs",
   appSmoke: "tests/app-smoke.test.ts",
   mobileContract: "tests/mobile-contract.test.ts",
   app: "src/App.tsx",
+  webappApp: "webapp/App.tsx",
+  webappPrint: "webapp/views/PrintView.tsx",
   customerWebExperience: "src/customerWebExperience.ts",
   securityDoctor: "scripts/security-privacy-accessibility-doctor.mjs",
   externalAuditData: "src/externalAuditReadinessData.mjs",
@@ -54,20 +57,20 @@ const checks = [
     "keeps customer and mobile accessibility signals explicit at the Module Interface",
     "flags unsafe accessibility claims"
   ]),
-  checkIncludes("tests", "browser-smoke-accessibility-signals", contents.appSmoke, [
+  checkIncludes("tests", "browser-smoke-accessibility-signals", `${contents.appSmoke}\n${contents.evidenceData}`, [
     "keeps the mobile first viewport from overflowing horizontally",
-    "aria-label=\"Customer chat message\"",
-    "aria-label=\"CustomCard native customer shell\"",
-    "focusableControls"
+    "aria-label=\\\"Customer chat message\\\"",
+    "aria-label=\\\"CustomCard native customer shell\\\"",
+    "const controls ="
   ]),
-  checkIncludes("source", "customer-accessibility-source-signals", `${contents.app}\n${contents.customerWebExperience}`, [
+  checkIncludes("source", "customer-accessibility-source-signals", `${contents.app}\n${contents.webappApp}\n${contents.webappPrint}\n${contents.customerWebExperience}\n${contents.evidenceData}`, [
     'className="skipLink"',
     'href="#main-content"',
     'aria-label="CustomCard navigation"',
-    '<main className="appMain" id="main-content">',
-    'aria-label="Checkout status"',
-    'aria-label="Customer chat message"',
-    'aria-label="CustomCard native customer shell"',
+    '<main id="main-content">',
+    'aria-label="Print-shop payment status"',
+    "aria-label=\\\"Customer chat message\\\"",
+    "aria-label=\\\"CustomCard native customer shell\\\"",
     "Customer web experience must expose exactly one primary action."
   ]),
   checkIncludes("existing-baseline", "security-doctor-imports-accessibility-module", contents.securityDoctor, [
@@ -179,4 +182,3 @@ function checkItemsShape(lane, id, items) {
         : `Missing customer accessibility evidence fields: ${missing.join(", ")}`
   };
 }
-

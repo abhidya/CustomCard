@@ -56,7 +56,7 @@ export interface CheckoutFieldIssue {
   message: string;
 }
 
-/** Inline validation for the Walgreens checkout prefill fields. */
+/** Inline validation retained for the legacy hosted-checkout adapter contract. */
 export function validateCheckoutCustomer(customer: CheckoutCustomer): CheckoutFieldIssue[] {
   const issues: CheckoutFieldIssue[] = [];
   if (!customer.firstName.trim()) issues.push({ field: "firstName", message: "Add a first name" });

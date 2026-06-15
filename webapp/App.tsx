@@ -165,15 +165,6 @@ export default function App() {
     }),
     [customerEmail, draftInput.sender, user?.fullName]
   );
-  const checkoutProfile = {
-    // Blank when we only have the placeholder default, so the form shows real placeholders.
-    name: user?.fullName ?? (draftInput.sender === "Local User" ? "" : draftInput.sender),
-    firstName: user?.firstName ?? undefined,
-    lastName: user?.lastName ?? undefined,
-    email: customerEmail,
-    phone: user?.primaryPhoneNumber?.phoneNumber ?? user?.phoneNumbers?.[0]?.phoneNumber ?? ""
-  };
-
   const getCustomerApiToken = useCallback(async () => {
     try {
       return (await getToken()) ?? undefined;
@@ -290,7 +281,7 @@ export default function App() {
     );
   }
 
-  /** Real card lifecycle events: proof approval, Walgreens checkout, downloads. */
+  /** Real card lifecycle events: proof approval and downloads. */
   function handleCardEvent(status: CardLifecycleStatus) {
     const base = ensureWorkspace();
     const existing = (base.cardHistory ?? []).some((entry) => entry.id === displayDraft.id);
@@ -628,8 +619,6 @@ export default function App() {
 
         {!isAdminView && visibleCustomerView === "handoff" ? (
           <PrintView
-            checkoutCustomerDefaults={checkoutProfile}
-            getCustomerApiToken={getCustomerApiToken}
             onBackToDesign={() => openView("studio")}
             onCardEvent={handleCardEvent}
             onCopyChecklist={copyChecklist}

@@ -53,10 +53,9 @@ open. Each is the safest reasonable default for the existing backend.
 - **Print**: `POST /api/card-projects` → `POST /api/render-packets` →
   `POST /api/vendor-handoff/manual`. The retail price-check operation id is
   `fetch-price`; live quotes/orders remain disabled server-side.
-- **Checkout**: Walgreens hosted checkout
-  (`/api/walgreens/checkout/status|upload|session`). The app only checks
-  readiness, sends contact details once to pre-fill the hosted page, and opens
-  it in the browser. Payment/ordering happen on Walgreens' site.
+- **Print handoff**: `POST /api/vendor-handoff/manual`. The app prepares
+  print files only after explicit customer approval. Payment and ordering happen
+  directly with the print shop the customer chooses.
 - **Privacy**: `POST /api/data-requests` for export/delete with explicit
   consent and region.
 

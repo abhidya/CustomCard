@@ -20,8 +20,8 @@ export const customerAccessibilityEvidenceItems = [
       "className=\"skipLink\"",
       "href=\"#main-content\"",
       "aria-label=\"CustomCard navigation\"",
-      "<main className=\"appMain\" id=\"main-content\">",
-      "aria-label=\"Checkout status\""
+      "<main id=\"main-content\">",
+      "aria-label=\"Print-shop payment status\""
     ],
     currentEvidence: ["security:doctor semantic-app-shell", "app-smoke customer route render", "skip-link focus CSS"],
     requiredEvidence: ["External WCAG audit report", "Screen-reader landmark transcript"],

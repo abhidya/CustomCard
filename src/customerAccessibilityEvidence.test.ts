@@ -58,7 +58,7 @@ describe("customer accessibility evidence", () => {
       customerVisible: true,
       externalAuditAttached: false
     });
-    expect(shell?.sourceSignals).toEqual(expect.arrayContaining(["className=\"skipLink\"", "<main className=\"appMain\" id=\"main-content\">"]));
+    expect(shell?.sourceSignals).toEqual(expect.arrayContaining(["className=\"skipLink\"", "<main id=\"main-content\">"]));
     expect(forms?.sourceSignals).toEqual(expect.arrayContaining(["aria-label=\"Customer chat message\"", "input[placeholder], textarea[placeholder]"]));
     expect(actions?.currentEvidence).toEqual(expect.arrayContaining(["customerWebExperience validation", "proof-first print-flow tests"]));
     expect(mobile?.sourceSignals).toEqual(

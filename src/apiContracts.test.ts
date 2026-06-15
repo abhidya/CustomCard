@@ -365,7 +365,7 @@ describe("api contracts", () => {
       hostedTokenVerificationProofs: 0,
       backupPolicies: 0,
       deploymentProtectionBypasses: 1,
-      evidenceArtifacts: 10,
+      evidenceArtifacts: 11,
       realOrdersEnabled: 0,
       liveProviderCalls: 0,
       blockers: []
@@ -424,8 +424,8 @@ describe("api contracts", () => {
       artifactBlocked: 1,
       viewportProfiles: 4,
       nativeBuildProfiles: 3,
-      evidenceArtifacts: 9,
-      emulatorSmokeEvidenceArtifacts: 9,
+      evidenceArtifacts: 11,
+      emulatorSmokeEvidenceArtifacts: 11,
       emulatorRenderProofs: 0,
       signedArtifacts: 0,
       realOrdersEnabled: 0,
@@ -741,8 +741,8 @@ describe("api contracts", () => {
       total: 8,
       screenSections: 21,
       viewportProfiles: 4,
-      evidenceArtifacts: 9,
-      emulatorSmokeEvidenceArtifacts: 9,
+      evidenceArtifacts: 11,
+      emulatorSmokeEvidenceArtifacts: 11,
       emulatorRenderProofs: 0,
       signedArtifacts: 0
     });
@@ -884,8 +884,8 @@ describe("api contracts", () => {
       },
       mobileRenderReadiness: {
         total: 8,
-        evidenceArtifacts: 9,
-        emulatorSmokeEvidenceArtifacts: 9,
+        evidenceArtifacts: 11,
+        emulatorSmokeEvidenceArtifacts: 11,
         emulatorRenderProofs: 0,
         signedArtifacts: 0
       },

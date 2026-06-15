@@ -82,7 +82,7 @@ Security posture for the CustomCard mobile app, aligned with OWASP MASVS basics.
 | Event metadata (title, recipient, date) | Yes | No (server-side) | Create card opportunities | No |
 | Approved memory notes | Yes | No (server-side) | Personalize cards | No |
 | Card drafts / projects / print files | Yes | No (server-side) | Produce the card | Print shop only on explicit handoff |
-| Contact info for checkout (name/email/phone) | Transient | No | Pre-fill Walgreens hosted checkout | Walgreens (only when the user proceeds) |
+| Contact info for print orders | Not collected by the app | No | Customer enters details directly with the print shop | Print shop selected by the customer |
 | Device identifiers / location / contacts | No | — | — | — |
 
 See `STORE_RELEASE_CHECKLIST.md` for the exact Apple App Privacy and Google Play

@@ -11,7 +11,6 @@ import { CalendarConnectScreen } from "../screens/events/CalendarConnectScreen";
 import { ImportEventScreen } from "../screens/events/ImportEventScreen";
 import { HomeScreen } from "../screens/home/HomeScreen";
 import { MemoriesScreen } from "../screens/memories/MemoriesScreen";
-import { CheckoutScreen } from "../screens/print/CheckoutScreen";
 import { HandoffScreen } from "../screens/print/HandoffScreen";
 import { PrintOptionsScreen } from "../screens/print/PrintOptionsScreen";
 import { PrintScreen } from "../screens/print/PrintScreen";
@@ -61,7 +60,6 @@ export const customCardLinking: LinkingOptions<RootStackParamList> = {
       Chat: "chat",
       Memories: "memories",
       PrintOptions: "print-options",
-      Checkout: "checkout",
       Handoff: "handoff",
       Privacy: "privacy",
       WorkflowGuide: "guide/:focus?"
@@ -125,7 +123,6 @@ export function RootNavigator({
           component={PrintOptionsScreen}
           options={{ title: "Print options" }}
         />
-        <Stack.Screen name="Checkout" component={CheckoutScreen} options={{ title: "Checkout" }} />
         <Stack.Screen
           name="Handoff"
           component={HandoffScreen}

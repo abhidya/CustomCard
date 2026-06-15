@@ -1,0 +1,105 @@
+{
+  "service": "customcard-mobile-native-install-proof",
+  "status": "blocked",
+  "scope": "local-simulator-native-install",
+  "checkedAt": "2026-06-15T20:42:25.981Z",
+  "bundle": {
+    "bundleId": "com.customcard.app",
+    "simulatorUdidConfigured": false,
+    "bundlePathConfigured": true,
+    "bundlePathResolved": true,
+    "bundlePathFingerprint": "f2be4f04f38f",
+    "mainBundleFound": true,
+    "mainBundleBytes": 5413582
+  },
+  "appConfig": {
+    "present": true,
+    "appEnv": "qa",
+    "apiBaseUrlConfigured": true,
+    "clerkPublishableKeyKind": "test",
+    "oauthRedirectConfigured": true,
+    "realOrderKillSwitch": "disabled"
+  },
+  "currentSignals": [
+    {
+      "signal": "print through your preferred print shop",
+      "present": false
+    },
+    {
+      "signal": "Finish at a print shop",
+      "present": false
+    },
+    {
+      "signal": "Draft again",
+      "present": false
+    },
+    {
+      "signal": "The card assistant",
+      "present": false
+    },
+    {
+      "signal": "secure Google Calendar connection is still pending",
+      "present": false
+    }
+  ],
+  "staleSignals": [
+    {
+      "signal": "print through Walgreens",
+      "present": true
+    },
+    {
+      "signal": "Finish manually",
+      "present": true
+    },
+    {
+      "signal": "Server-gated",
+      "present": true
+    },
+    {
+      "signal": "Local scripted assistant",
+      "present": true
+    },
+    {
+      "signal": "Regenerate locally",
+      "present": true
+    },
+    {
+      "signal": "Manual upload stays active",
+      "present": true
+    },
+    {
+      "signal": "request local regeneration",
+      "present": true
+    },
+    {
+      "signal": "Template artwork is ready now",
+      "present": true
+    }
+  ],
+  "missingCurrentSignals": [
+    "print through your preferred print shop",
+    "Finish at a print shop",
+    "Draft again",
+    "The card assistant",
+    "secure Google Calendar connection is still pending"
+  ],
+  "presentStaleSignals": [
+    "print through Walgreens",
+    "Finish manually",
+    "Server-gated",
+    "Local scripted assistant",
+    "Regenerate locally",
+    "Manual upload stays active",
+    "request local regeneration",
+    "Template artwork is ready now"
+  ],
+  "valuesRedacted": true,
+  "destructiveActions": false,
+  "externalNetworkCalls": false,
+  "realOrdersEnabled": false,
+  "liveProviderCalls": false,
+  "blockers": [
+    "Installed native bundle is missing current customer copy: print through your preferred print shop, Finish at a print shop, Draft again, The card assistant, secure Google Calendar connection is still pending.",
+    "Installed native bundle still contains stale customer copy: print through Walgreens, Finish manually, Server-gated, Local scripted assistant, Regenerate locally, Manual upload stays active, request local regeneration, Template artwork is ready now."
+  ]
+}

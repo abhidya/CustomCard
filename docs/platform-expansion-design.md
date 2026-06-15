@@ -329,7 +329,7 @@ and render snapshot seam. `apps/mobile/src/App.tsx` renders the
 `mobileRenderSnapshot` as the Expo customer surface instead of importing raw
 contract arrays or exposing proof diagnostics. It mirrors the web customer panel
 with card queue items, a next-action summary, approval controls, memory review
-items, print-proof checks, local scripted chat, image/render status, review-only
+items, print-proof checks, card assistant chat, image/render status, review-only
 printer pricing previews, offline idempotent API sync, manual handoff, and a
 real-order-disabled banner. The mobile contract also carries the same 4 launch
 locale options, including copy-review and RTL posture.
@@ -341,8 +341,10 @@ native shell source rendering, customer-flow screen state, print-proof render
 rows, responsive viewport constraints, RTL render review, Expo preview profile
 readiness, emulator render proof, and signed native artifact proof. Run
 `npm run mobile:render:doctor`; iOS Expo Go smoke, tooling-free Release
-simulator home, and compact, standard, large, and tablet Release viewport artifacts are
-attached under `docs/evidence/mobile-render/`, but this is not a complete emulator render proof matrix or signed native build.
+simulator home, compact, standard, large, and tablet Release viewport artifacts,
+guarded stale native-install proof, and fresh exported iOS JS bundle proof are
+attached under `docs/evidence/mobile-render/`, but this is not a complete
+emulator render proof matrix or signed native build.
 Print-proof, RTL review, EAS artifacts, and platform signing remain outside the
 current repo-local verification loop.
 

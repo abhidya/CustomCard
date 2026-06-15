@@ -217,11 +217,11 @@ describe("customer shell server render", () => {
     expect(studio.text).not.toContain("Ready for proof checks");
 
     const print = renderShell({ search: "?view=handoff", signedIn: false });
-    expect(print.text).toContain("Print at Walgreens");
+    expect(print.text).toContain("Finish at a print shop");
     expect(print.text).toContain("Approve your proof");
     expect(print.text).toContain("I approve this proof for printing");
-    expect(print.text).toContain("Continue to Walgreens");
-    expect(print.text).toContain("Finish the proof approval checklist to unlock Walgreens checkout.");
+    expect(print.text).toContain("Download print package");
+    expect(print.text).toContain("Finish the proof approval checklist to unlock the print-shop package.");
     expect(print.text).toContain("Save print package");
     expect(print.text).not.toContain("Sign in to continue");
     expect(print.text).not.toContain("Account required");
@@ -232,7 +232,7 @@ describe("customer shell server render", () => {
 
       expect(text).toContain("CustomCard");
       expect(text).toContain("Make the card you meant to send.");
-      expect(text).toContain("edit, review, and print through Walgreens");
+      expect(text).toContain("edit, review, and print through your preferred print shop");
       expect(text).toContain("Make my card now");
       expect(text).toContain("Start from invite or calendar");
       expect(text).toContain("See example cards");
@@ -241,21 +241,21 @@ describe("customer shell server render", () => {
         expect(text).toContain(label);
       }
       expect(text).toContain("Made for real moments");
-      // Landing sections explain the product and the Walgreens boundary.
+      // Landing sections explain the product and the print-shop payment boundary.
       expect(text).toContain("How it works");
       expect(text).toContain("Pick a moment");
       expect(text).toContain("Add relationship context");
       expect(text).toContain("AI drafts");
       expect(text).toContain("You review");
-      expect(text).toContain("Continue to Walgreens");
+      expect(text).toContain("Finish at a print shop");
       expect(text).toContain("Made for real moments");
       expect(text).toContain("Free to create. Private by default.");
-      expect(text).toContain("Free to create. Pay Walgreens only if you print.");
-      expect(text).toContain("Walgreens handles payment and final checkout.");
-      expect(text).toContain("AI generation, saved history, Google Calendar, and Walgreens checkout require an account.");
+      expect(text).toContain("Free to create. Pay the print shop only if you print.");
+      expect(text).toContain("You choose the printer and confirm payment directly with them.");
+      expect(text).toContain("AI generation, saved history, and Google Calendar require an account.");
       expect(text).toContain("Calendar connections are optional and separate from creating an account.");
       expect(text).not.toContain("Email and calendar connections are optional");
-      expect(text).toContain("You review every word before checkout.");
+      expect(text).toContain("You review every word before creating the print-shop package.");
       // The invite import is a collapsed expander; personal details live under "My cards";
       // print is reached through the create flow, not a home tile.
       expect(text).toContain("Start from invite or calendar");
@@ -455,14 +455,14 @@ describe("customer shell server render", () => {
     it("renders print options with downloads and the outside-checkout boundary", () => {
     const { text } = renderShell({ search: "?view=handoff", storedWorkspace: sampleWorkspace });
 
-      expect(text).toContain("Print at Walgreens");
-      expect(text).toContain("Walgreens print details");
-      expect(text).toContain("Manual Walgreens upload");
+      expect(text).toContain("Finish at a print shop");
+      expect(text).toContain("Print-shop details");
+      expect(text).toContain("Print file package");
       expect(text).toContain("Save print package");
       expect(text).toContain("Save upload panels");
       expect(text).toContain("Copy steps");
-      expect(text).toContain("Open Walgreens upload");
-      expect(text).toContain("Walgreens confirms the final total");
+      expect(text).toContain("Open print shop");
+      expect(text).toContain("confirms the final total");
 
       // Wayfinding back to the design step.
       expect(text).toContain("Back to design");

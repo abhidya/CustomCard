@@ -186,7 +186,7 @@
 | Persistence readiness | `npm run persistence:doctor` | Passed; 20 table contracts, 26 stateful API routes, 14 idempotent mutations, server-backed draft-state routes, render-packet artifact storage, signed artifact URLs, append-only audit coverage, and no browser-local customer data requirements are tracked with no blockers. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue and artifact-signing readiness. |
 | Mobile app shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile app configuration and customer experience contract present, including local account import, Paste invite or ICS ready path, gated Google Calendar readiness, Apple/iCloud manual export readiness, next-action, memory-review, card assistant, best available fulfillment recommendations, and print-proof workflow state. |
-| Mobile render readiness | `npm run mobile:render:doctor` | Passed; verified 8 mobile render readiness items, 21 screen sections, 4 viewport profiles, 3 native build profiles, 9 evidence artifacts including tooling-free iOS Release simulator home, compact-phone, standard-phone, large-phone, and tablet screenshots, admin/API surfaces, docs, CI wiring, zero full emulator render proof claims, zero signed artifact claims, zero live provider calls, and zero real orders. |
+| Mobile render readiness | `npm run mobile:render:doctor` | Passed; verified 8 mobile render readiness items, 21 screen sections, 4 viewport profiles, 3 native build profiles, 11 evidence artifacts including tooling-free iOS Release simulator home, compact-phone, standard-phone, large-phone, tablet screenshots, a guarded stale native-install proof, and a fresh exported iOS JS bundle proof, admin/API surfaces, docs, CI wiring, zero full emulator render proof claims, zero signed artifact claims, zero live provider calls, and zero real orders. |
 | Mobile native release contract | `npm run mobile:release:doctor` | Passed; verified Expo/EAS development, preview, and production build profiles, iOS/Android identifiers, environment-sourced API URL, disabled real-order kill switch, no hardcoded production API endpoint, no live provider calls, and no signed artifact built. |
 | Demo reset | `npm run demo:doctor` | Passed; admin reset contract covers 14 reviewer fixture tables and 17 rows without live calls or real orders. |
 | CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, cloud artifact IaC, cloud artifact proof readiness, contract API, localization readiness, capacity planning, memory API, Postgres contract API, live Postgres integration, Postgres API HTTP, account auth, artifact store, live MinIO/S3-compatible artifact writes, persistence, demo reset, worker, mobile, mobile render readiness, hosted API proof readiness, business engagement readiness, and mobile native release gates with safe repo-local env. |
@@ -330,9 +330,12 @@
 - Hosted GitHub Actions verification exists for main pushes, but no real droplet
   or Kubernetes deployment execution evidence is claimed.
 - Tooling-free iOS Release simulator home, compact-phone, standard-phone,
-  large-phone, and tablet screenshots are attached, but no print/RTL render
-  matrix, EAS cloud artifact, or signed mobile artifact is attached; mobile
-  render readiness, native release profiles, and release doctors are covered as
+  large-phone, and tablet screenshots are attached, and a guarded native-install
+  proof now blocks stale simulator bundles from counting as current release
+  evidence. A fresh exported iOS JS bundle now proves the current print-shop copy
+  can be embedded, but no print/RTL render matrix, current installed native app,
+  EAS cloud artifact, or signed mobile artifact is attached; mobile render
+  readiness, native release profiles, and release doctors are covered as
   contracts.
 - No physical print certification.
 - No external legal/security/privacy/accessibility audit.

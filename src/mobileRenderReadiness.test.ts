@@ -22,8 +22,8 @@ describe("mobile render readiness", () => {
       nativeBuildProfiles: 3,
       deterministicProofBoundaries: 8,
       blockedLiveProofs: 4,
-      evidenceArtifacts: 9,
-      emulatorSmokeEvidenceArtifacts: 9,
+      evidenceArtifacts: 11,
+      emulatorSmokeEvidenceArtifacts: 11,
       emulatorRequired: 2,
       signedArtifactRequired: 1,
       emulatorRenderProofs: 0,
@@ -97,9 +97,17 @@ describe("mobile render readiness", () => {
         "docs/evidence/mobile-render/2026-06-15-ios-release-iphone-se.png",
         "docs/evidence/mobile-render/2026-06-15-ios-release-standard-phone.png",
         "docs/evidence/mobile-render/2026-06-15-ios-release-large-phone.png",
-        "docs/evidence/mobile-render/2026-06-15-ios-release-tablet-portrait.png"
+        "docs/evidence/mobile-render/2026-06-15-ios-release-tablet-portrait.png",
+        "docs/evidence/mobile-render/2026-06-15-ios-native-install-stale-proof.json",
+        "docs/evidence/mobile-render/2026-06-15-ios-native-export-current-proof.json"
       ]
     });
+    expect(emulator?.currentEvidence).toEqual(
+      expect.arrayContaining([
+        "guarded native install scan that blocks stale simulator bundles from counting as current release proof",
+        "fresh iOS exported native JS bundle scan with current print-shop copy and redacted QA config"
+      ])
+    );
     expect(signed).toMatchObject({
       status: "artifact-blocked",
       requiresSignedArtifact: true,

@@ -244,7 +244,9 @@ export const mobileRenderReadinessItems = [
       "docs/evidence/mobile-render/2026-06-15-ios-release-iphone-se.png",
       "docs/evidence/mobile-render/2026-06-15-ios-release-standard-phone.png",
       "docs/evidence/mobile-render/2026-06-15-ios-release-large-phone.png",
-      "docs/evidence/mobile-render/2026-06-15-ios-release-tablet-portrait.png"
+      "docs/evidence/mobile-render/2026-06-15-ios-release-tablet-portrait.png",
+      "docs/evidence/mobile-render/2026-06-15-ios-native-install-stale-proof.json",
+      "docs/evidence/mobile-render/2026-06-15-ios-native-export-current-proof.json"
     ],
     customerVisible: true,
     requiresEmulatorProof: true,
@@ -260,14 +262,16 @@ export const mobileRenderReadinessItems = [
       "contract-only customer model",
       "iOS Expo Go production-mode smoke artifact with Tools bubble caveat",
       "tooling-free iOS Release simulator home screenshot",
-      "tooling-free iOS Release compact, standard, large, and tablet viewport screenshots"
+      "tooling-free iOS Release compact, standard, large, and tablet viewport screenshots",
+      "guarded native install scan that blocks stale simulator bundles from counting as current release proof",
+      "fresh iOS exported native JS bundle scan with current print-shop copy and redacted QA config"
     ],
     requiredEvidence: [
       "Print proof native screenshot",
       "RTL native screenshot",
       "Native smoke transcript"
     ],
-    blocker: "Clean iOS Release simulator home, compact-phone, standard-phone, large-phone, and tablet screenshots are attached, but the native evidence still does not cover the print, RTL, smoke-transcript, or signed-artifact proof matrix."
+    blocker: "Clean iOS Release simulator home, compact-phone, standard-phone, large-phone, and tablet screenshots are attached; the guarded native install scan proves one simulator install is stale, and a fresh exported iOS JS bundle now has current copy, but the native evidence still does not cover the print, RTL, smoke-transcript, installed-current-bundle, or signed-artifact proof matrix."
   },
   {
     id: "signed-native-artifact-proof",

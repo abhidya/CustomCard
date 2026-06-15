@@ -16,7 +16,6 @@ export type RootStackParamList = {
   Chat: { recipientName?: string } | undefined;
   Memories: { recipientName?: string } | undefined;
   PrintOptions: { renderPacketId?: string } | undefined;
-  Checkout: undefined;
   Handoff: { projectId: string; renderPacketId: string };
   Privacy: undefined;
   WorkflowGuide: { focus?: "print-proof" } | undefined;

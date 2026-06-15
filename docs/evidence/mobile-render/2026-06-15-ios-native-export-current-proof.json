@@ -1,0 +1,90 @@
+{
+  "service": "customcard-mobile-native-install-proof",
+  "status": "ready",
+  "scope": "exported-native-js-bundle",
+  "checkedAt": "2026-06-15T21:08:29.817Z",
+  "bundle": {
+    "bundleId": "com.customcard.app",
+    "simulatorUdidConfigured": false,
+    "bundlePathConfigured": false,
+    "mainBundlePathConfigured": true,
+    "appConfigPathConfigured": true,
+    "bundlePathResolved": false,
+    "bundlePathFingerprint": null,
+    "mainBundlePathFingerprint": "115fd6287a01",
+    "mainBundleFound": true,
+    "mainBundleBytes": 6219073
+  },
+  "appConfig": {
+    "present": true,
+    "appEnv": "qa",
+    "apiBaseUrlConfigured": true,
+    "clerkPublishableKeyKind": "test",
+    "oauthRedirectConfigured": true,
+    "realOrderKillSwitch": "disabled"
+  },
+  "currentSignals": [
+    {
+      "signal": "print through your preferred print shop",
+      "present": true
+    },
+    {
+      "signal": "Finish at a print shop",
+      "present": true
+    },
+    {
+      "signal": "Draft again",
+      "present": true
+    },
+    {
+      "signal": "The card assistant",
+      "present": true
+    },
+    {
+      "signal": "secure Google Calendar connection is still pending",
+      "present": true
+    }
+  ],
+  "staleSignals": [
+    {
+      "signal": "print through Walgreens",
+      "present": false
+    },
+    {
+      "signal": "Finish manually",
+      "present": false
+    },
+    {
+      "signal": "Server-gated",
+      "present": false
+    },
+    {
+      "signal": "Local scripted assistant",
+      "present": false
+    },
+    {
+      "signal": "Regenerate locally",
+      "present": false
+    },
+    {
+      "signal": "Manual upload stays active",
+      "present": false
+    },
+    {
+      "signal": "request local regeneration",
+      "present": false
+    },
+    {
+      "signal": "Template artwork is ready now",
+      "present": false
+    }
+  ],
+  "missingCurrentSignals": [],
+  "presentStaleSignals": [],
+  "valuesRedacted": true,
+  "destructiveActions": false,
+  "externalNetworkCalls": false,
+  "realOrdersEnabled": false,
+  "liveProviderCalls": false,
+  "blockers": []
+}

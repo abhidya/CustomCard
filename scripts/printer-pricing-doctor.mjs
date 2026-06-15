@@ -117,7 +117,7 @@ const checks = [
   ]),
   checkIncludes("surfaces", "customer-pricing-surfaces", `${contents.app}\n${contents.webappPrint}\n${contents.apiServer}\n${contents.apiRouteFamilies}`, [
     "Estimated price",
-    "Walgreens confirms the final total",
+    "confirms the final total",
     "knownPriceCount: 12",
     "sourceCount: 8",
     "couponSourceCount: 4",
