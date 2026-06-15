@@ -25,6 +25,7 @@ import {
 import {
   configuredAdminEmailsFromEnv,
   resolveBrowserAdminAccess,
+  resolveLocalAdminPreview,
   type BrowserAdminAccessPolicy
 } from "../src/browserGatePolicy";
 import {
@@ -54,7 +55,6 @@ import {
   getAdminAccessStatus,
   getAdminSurfaceHeading,
   getAdminTargetLabel,
-  isBusinessRoute,
   resolveCreateFlowEntryView,
   type AdminAccessPolicy
 } from "./routePolicy";
@@ -360,13 +360,6 @@ export default function App() {
   useEffect(() => {
     setVendorId("walgreens");
   }, [setVendorId]);
-
-  // The internal B2B landing is admin-only; everyone else is sent to the customer home (URL included).
-  useEffect(() => {
-    if (!isBusinessRoute(activeView) || !adminAccess.isLoaded || adminAccess.isAdmin) return;
-    setActiveView("customer");
-    replaceViewRoute("customer");
-  }, [activeView, adminAccess.isAdmin, adminAccess.isLoaded, setActiveView]);
 
   // Entry-only wayfinding: a deep link straight to print with nothing designed yet starts in the studio.
   const entryViewResolved = useRef(false);
@@ -720,9 +713,11 @@ type AdminAccess = BrowserAdminAccessPolicy & AdminAccessPolicy;
 
 function useAdminAccess(): AdminAccess {
   const { isLoaded, isSignedIn, user } = useUser();
+  const localAdminPreview =
+    typeof window === "undefined" ? false : resolveLocalAdminPreview(import.meta.env, window.location.href);
   return useMemo(
-    () => resolveBrowserAdminAccess({ isLoaded, isSignedIn, user, configuredAdminEmails }),
-    [isLoaded, isSignedIn, user]
+    () => resolveBrowserAdminAccess({ isLoaded, isSignedIn, user, configuredAdminEmails, localAdminPreview }),
+    [isLoaded, isSignedIn, localAdminPreview, user]
   );
 }
 

@@ -33,12 +33,12 @@ export function isBusinessRoute(view: ViewId): boolean {
 }
 
 /**
- * The B2B landing still reads as internal readiness commentary, so it stays
- * admin-only until real marketing copy exists. Everyone else lands on the
- * customer home instead.
+ * The B2B landing is a hidden page for now: anyone with the direct link can view
+ * it, but the only nav entry that points there lives in adminNavItems, so it is
+ * not advertised to non-admins. Viewing is not gated; discovery is.
  */
-export function shouldRenderBusinessLanding(view: ViewId, isAdmin: boolean): boolean {
-  return isBusinessRoute(view) && isAdmin;
+export function shouldRenderBusinessLanding(view: ViewId): boolean {
+  return isBusinessRoute(view);
 }
 
 /**
@@ -131,7 +131,7 @@ export function buildAppShellViewModel({
   const renderCustomerNav = shouldRenderCustomerNav(viewportWidth);
   return {
     isAdminView,
-    showBusinessLanding: shouldRenderBusinessLanding(activeView, isAdmin),
+    showBusinessLanding: shouldRenderBusinessLanding(activeView),
     visibleCustomerView: resolveVisibleCustomerView(activeView),
     visibleNavView: resolveActiveCustomerNavView(activeView),
     renderCustomerNav,

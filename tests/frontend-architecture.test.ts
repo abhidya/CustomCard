@@ -153,10 +153,9 @@ describe("frontend architecture seams", () => {
     });
   });
 
-  it("keeps the internal B2B landing admin-only until real marketing copy exists", () => {
-    expect(shouldRenderBusinessLanding("business", false)).toBe(false);
-    expect(shouldRenderBusinessLanding("business", true)).toBe(true);
-    expect(shouldRenderBusinessLanding("customer", true)).toBe(false);
+  it("renders the B2B landing for anyone with the link (nav entry stays admin-only)", () => {
+    expect(shouldRenderBusinessLanding("business")).toBe(true);
+    expect(shouldRenderBusinessLanding("customer")).toBe(false);
   });
 
   it("routes empty print deep-links to the studio and labels the create flow steps", () => {
