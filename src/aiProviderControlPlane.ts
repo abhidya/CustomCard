@@ -650,7 +650,7 @@ export function validateAiProviderControlPlaneModel(
 ): string[] {
   const issues: string[] = [];
   const catalogById = new Map(model.catalog.map((entry) => [entry.id, entry]));
-  const flowIds = new Set(aiFlowSummary.flows.map((flow) => flow.flowId));
+  const flowIds = new Set<string>(aiFlowSummary.flows.map((flow) => flow.flowId));
   const promptProfileIds = new Set(model.promptProfiles.map((profile) => profile.id));
   const tableNames = new Set(model.persistence.tables.map((table) => table.name));
 
