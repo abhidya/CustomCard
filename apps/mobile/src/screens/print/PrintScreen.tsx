@@ -1,7 +1,11 @@
 import React from "react";
+import { Text } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
-import { ErrorState, LoadingState } from "../../components";
+import { AppButton, Card, ErrorState, LoadingState, SectionHeading } from "../../components";
 import { Screen } from "../../components/Screen";
+import { useAppSession } from "../../lib/auth/AuthProvider";
+import { typography } from "../../theme";
 import { ChecksStep, EventStep, FinishStep, ProjectStep, ProofStep } from "./printSteps";
 import { usePrintPipeline } from "./usePrintPipeline";
 
@@ -11,8 +15,14 @@ import { usePrintPipeline } from "./usePrintPipeline";
  * order.
  */
 export function PrintScreen() {
-  const pipeline = usePrintPipeline();
+  const session = useAppSession();
+  const accountReady = session.status === "signedIn";
+  const pipeline = usePrintPipeline({ enabled: accountReady });
   const { connections, bootstrap } = pipeline;
+
+  if (!accountReady) {
+    return <GuestMyCards />;
+  }
 
   if (connections.isPending || bootstrap.isPending) {
     return (
@@ -46,6 +56,27 @@ export function PrintScreen() {
       <ProofStep pipeline={pipeline} />
       <ChecksStep pipeline={pipeline} checks={proofChecks} />
       <FinishStep pipeline={pipeline} />
+    </Screen>
+  );
+}
+
+function GuestMyCards() {
+  const navigation = useNavigation();
+
+  return (
+    <Screen>
+      <SectionHeading title="Your cards" />
+      <Card>
+        <Text style={typography.body}>
+          No cards yet. Start with a card, an invite, or a saved person.
+        </Text>
+        <AppButton label="Start a card" onPress={() => navigation.navigate("Studio")} />
+        <AppButton
+          label="Sign in to save cards"
+          variant="secondary"
+          onPress={() => navigation.navigate("SignIn")}
+        />
+      </Card>
     </Screen>
   );
 }

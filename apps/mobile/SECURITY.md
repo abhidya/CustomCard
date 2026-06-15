@@ -19,9 +19,10 @@ Security posture for the CustomCard mobile app, aligned with OWASP MASVS basics.
 
 ## Authentication
 
-- Production auth uses **Clerk** hosted identity. Email one-time-code is the
-  default factor; no password is handled on device. Any OAuth/OIDC social login
-  enabled in Clerk uses **Authorization Code + PKCE** (handled by Clerk).
+- Production auth uses **Clerk** hosted identity. Google/Apple OAuth use Clerk
+  SSO with **Authorization Code + PKCE** and the native callback
+  `customcard://sso-callback`; email one-time-code remains available as the
+  account fallback. No password is handled on device.
 - The app holds only the Clerk **publishable** key (public by design). The Clerk
   secret key and JWKS verification material live server-side only.
 - The app has no local bearer-token sign-in path; customer session tokens used
@@ -96,8 +97,8 @@ Data safety entries derived from this table.
       expiry, secure logout, 401-driven sign-out.
 - [x] **Network**: HTTPS-enforced, cleartext disabled, request timeouts,
       idempotent mutations.
-- [x] **Platform**: no unnecessary permissions; no sensitive data in deep links
-      or `app.config.js` extra.
+- [x] **Platform**: no unnecessary permissions; deep links carry only the Clerk
+      OAuth callback response and never app-issued bearer tokens.
 - [x] **Privacy**: minimal collection; redaction of sensitive data; documented
       data inventory.
 - [ ] **Pinning**: TLS certificate pinning is not implemented (relies on

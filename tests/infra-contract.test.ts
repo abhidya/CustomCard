@@ -12,6 +12,7 @@ const shellDoctorTimeoutMs = 15_000;
 const validMobileDoctorEnv = {
   CUSTOMCARD_API_BASE_URL: "https://api.customcard.test",
   CUSTOMCARD_APP_ENV: "qa",
+  CUSTOMCARD_OAUTH_REDIRECT_URL: "customcard://sso-callback",
   EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_customcard",
   REAL_ORDER_KILL_SWITCH: "disabled"
 };

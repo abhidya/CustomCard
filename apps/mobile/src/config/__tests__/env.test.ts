@@ -1,9 +1,10 @@
-import { ConfigError, resolveAppConfig } from "../env";
+import { ConfigError, resolveAppConfig, resolveExpoConfigExtra } from "../env";
 
 const base = {
   apiBaseUrl: "https://api.example.test",
   appEnv: "production",
   clerkPublishableKey: "pk_live_x",
+  oauthRedirectUrl: "customcard://sso-callback",
   realOrderKillSwitch: "disabled"
 };
 
@@ -58,6 +59,30 @@ describe("resolveAppConfig", () => {
       resolveAppConfig({ ...base, appEnv: "qa", clerkPublishableKey: "pk_test_x" })
         .clerkPublishableKey
     ).toBe("pk_test_x");
+  });
+
+  it("requires the native Clerk OAuth redirect URL", () => {
+    expect(() => resolveAppConfig({ ...base, oauthRedirectUrl: "" })).toThrow(/OAUTH/);
+    expect(() =>
+      resolveAppConfig({ ...base, oauthRedirectUrl: "https://customcard.test/callback" })
+    ).toThrow(/customcard:\/\/sso-callback/);
+    expect(resolveAppConfig(base, false).oauthRedirectUrl).toBe("customcard://sso-callback");
+  });
+
+  it("merges Expo manifest extra locations before validating config", () => {
+    const extra = resolveExpoConfigExtra({
+      expoConfig: { extra: { ...base, oauthRedirectUrl: undefined } },
+      manifest: {
+        extra: {
+          expoClient: {
+            extra: base
+          }
+        }
+      },
+      manifest2: { extra: { expoClient: { extra: base } } }
+    });
+
+    expect(resolveAppConfig(extra, false).oauthRedirectUrl).toBe("customcard://sso-callback");
   });
 
   it("strips trailing slashes from the base URL", () => {

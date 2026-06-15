@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
   ActivityIndicator,
@@ -13,6 +14,9 @@ import {
 
 import { userMessageForError } from "../lib/api/errors";
 import { colors, elevation, minTouchTarget, radius, spacing, typography } from "../theme";
+
+type ButtonIconName = keyof typeof Ionicons.glyphMap;
+type ButtonVariant = "primary" | "secondary" | "danger";
 
 export function LoadingState({ label = "Loading…" }: { label?: string }) {
   return (
@@ -57,17 +61,21 @@ export function AppButton({
   disabled = false,
   loading = false,
   accessibilityHint,
+  icon,
   style
 }: {
   label: string;
   onPress: () => void;
-  variant?: "primary" | "secondary" | "danger";
+  variant?: ButtonVariant;
   disabled?: boolean;
   loading?: boolean;
   accessibilityHint?: string;
+  icon?: ButtonIconName;
   style?: StyleProp<ViewStyle>;
 }) {
   const blocked = disabled || loading;
+  const foregroundColor = buttonForegroundColor(variant);
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -87,20 +95,29 @@ export function AppButton({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={variant === "primary" ? colors.textOnBrand : colors.brand} />
+        <ActivityIndicator color={foregroundColor} />
       ) : (
-        <Text
-          style={[
-            styles.buttonLabel,
-            variant === "primary" && styles.buttonLabelPrimary,
-            variant === "danger" && styles.buttonLabelDanger
-          ]}
-        >
-          {label}
-        </Text>
+        <View style={styles.buttonContent}>
+          {icon ? <Ionicons name={icon} color={foregroundColor} size={18} /> : null}
+          <Text
+            style={[
+              styles.buttonLabel,
+              variant === "primary" && styles.buttonLabelPrimary,
+              variant === "danger" && styles.buttonLabelDanger
+            ]}
+          >
+            {label}
+          </Text>
+        </View>
       )}
     </Pressable>
   );
+}
+
+function buttonForegroundColor(variant: ButtonVariant): string {
+  if (variant === "primary") return colors.textOnBrand;
+  if (variant === "danger") return colors.danger;
+  return colors.brandInkOnSoft;
 }
 
 export function FormField({
@@ -235,6 +252,7 @@ const styles = StyleSheet.create({
   },
   buttonPressed: { opacity: 0.85 },
   buttonDisabled: { opacity: 0.5 },
+  buttonContent: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
   buttonLabel: { fontSize: 16, fontWeight: "800", color: colors.brandInkOnSoft },
   buttonLabelPrimary: { color: colors.textOnBrand },
   buttonLabelDanger: { color: colors.danger },

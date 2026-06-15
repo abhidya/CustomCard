@@ -34,6 +34,13 @@ import {
 } from "../apps/mobile/src/customerExperience";
 
 const shellDoctorTimeoutMs = 15_000;
+const validMobileDoctorEnv = {
+  CUSTOMCARD_API_BASE_URL: "https://api.customcard.test",
+  CUSTOMCARD_APP_ENV: "qa",
+  CUSTOMCARD_OAUTH_REDIRECT_URL: "customcard://sso-callback",
+  EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_customcard",
+  REAL_ORDER_KILL_SWITCH: "disabled"
+};
 
 describe("mobile customer experience contract", () => {
   it("exposes the Expo root entrypoint and native launch scripts", () => {
@@ -45,8 +52,11 @@ describe("mobile customer experience contract", () => {
     expect(rootApp.trim()).toBe('export { default } from "./src/App";');
     expect(packageJson.scripts).toMatchObject({
       start: "expo start",
+      "start:review": "EXPO_UNSTABLE_HEADLESS=1 expo start --localhost",
       ios: "expo start --ios",
+      "ios:review": "EXPO_UNSTABLE_HEADLESS=1 expo start --localhost --ios",
       android: "expo start --android",
+      "android:review": "EXPO_UNSTABLE_HEADLESS=1 expo start --localhost --android",
       doctor: "node ./scripts/doctor.mjs",
       "release:doctor": "node ./scripts/release-doctor.mjs"
     });
@@ -429,7 +439,7 @@ describe("mobile customer experience contract", () => {
   it("passes the mobile doctor with env configuration and fails if real orders are enabled", () => {
     const validOutput = execFileSync("node", ["apps/mobile/scripts/doctor.mjs"], {
       encoding: "utf8",
-      env: { ...process.env, CUSTOMCARD_API_BASE_URL: "http://127.0.0.1:5173", REAL_ORDER_KILL_SWITCH: "disabled" },
+      env: { ...process.env, ...validMobileDoctorEnv },
       stdio: ["ignore", "pipe", "pipe"]
     });
     expect(validOutput).toContain("customer experience contract");
@@ -438,19 +448,19 @@ describe("mobile customer experience contract", () => {
     try {
       execFileSync("node", ["apps/mobile/scripts/doctor.mjs"], {
         encoding: "utf8",
-        env: { ...process.env, CUSTOMCARD_API_BASE_URL: "http://127.0.0.1:5173", REAL_ORDER_KILL_SWITCH: "enabled" },
+        env: { ...process.env, ...validMobileDoctorEnv, REAL_ORDER_KILL_SWITCH: "enabled" },
         stdio: ["ignore", "pipe", "pipe"]
       });
     } catch (error) {
       stderr = String((error as { stderr?: string }).stderr);
     }
-    expect(stderr).toContain("kill switch must resolve to disabled");
+    expect(stderr).toContain("REAL_ORDER_KILL_SWITCH must stay disabled until retail certification is recorded.");
 
     stderr = "";
     try {
       execFileSync("node", ["apps/mobile/scripts/doctor.mjs"], {
         encoding: "utf8",
-        env: { ...process.env, CUSTOMCARD_API_BASE_URL: "replace-me", REAL_ORDER_KILL_SWITCH: "disabled" },
+        env: { ...process.env, ...validMobileDoctorEnv, CUSTOMCARD_API_BASE_URL: "replace-me" },
         stdio: ["ignore", "pipe", "pipe"]
       });
     } catch (error) {
@@ -491,15 +501,12 @@ describe("mobile customer experience contract", () => {
     expect(eas.build.development).toMatchObject({
       developmentClient: true,
       distribution: "internal",
-      channel: "development",
+      channel: "qa",
       env: { REAL_ORDER_KILL_SWITCH: "disabled" }
     });
     expect(eas.build.preview).toMatchObject({
-      distribution: "internal",
-      channel: "preview",
-      ios: { simulator: true },
-      android: { buildType: "apk" },
-      env: { REAL_ORDER_KILL_SWITCH: "disabled" }
+      extends: "qa",
+      channel: "qa"
     });
     expect(eas.build.production).toMatchObject({
       channel: "production",
@@ -511,7 +518,7 @@ describe("mobile customer experience contract", () => {
       service: "customcard-mobile-release-doctor",
       status: "ready",
       platforms: ["ios", "android"],
-      nativeBuildProfiles: ["development", "preview", "production"],
+      nativeBuildProfiles: ["development", "qa", "preview", "production"],
       proofBoundary: "repo-local-contract",
       blockedLiveProofs: ["native-emulator-render", "signed-native-artifact", "app-store-review", "live-retail-order"],
       signedArtifactBuilt: false,

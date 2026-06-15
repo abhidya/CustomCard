@@ -511,7 +511,7 @@ describe("customer shell server render", () => {
       expect(html).toContain('data-proof-visible="true"');
       expect(text).toContain("Review details");
       expect(text).toContain("Edit original details");
-      expect(text).toContain("Improve with AI");
+      expect(text).toContain("Choose what to improve");
       expect(text).toContain("Editing: Front");
       expect(text).toContain("These are the exact words that print on this panel.");
       expect(text).toContain("Shorten to fit");

@@ -20,9 +20,11 @@ const checks = [
     "process.env.CUSTOMCARD_API_BASE_URL",
     "process.env.CUSTOMCARD_APP_ENV",
     "process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY",
+    "process.env.CUSTOMCARD_OAUTH_REDIRECT_URL",
     "CUSTOMCARD_API_BASE_URL is required",
     "CUSTOMCARD_APP_ENV must be qa or production",
     "Clerk publishable key",
+    "CUSTOMCARD_OAUTH_REDIRECT_URL must be customcard://sso-callback",
     "realOrderKillSwitch",
     'process.env.REAL_ORDER_KILL_SWITCH ?? "disabled"'
   ]),
@@ -31,6 +33,7 @@ const checks = [
     distribution: "internal",
     developmentClient: true,
     appEnv: "qa",
+    oauthRedirectUrl: "customcard://sso-callback",
     realOrderKillSwitch: "disabled"
   }),
   checkProfile("eas-build", "qa-profile", resolveBuildProfile("qa"), {
@@ -39,6 +42,7 @@ const checks = [
     iosSimulator: true,
     androidBuildType: "apk",
     appEnv: "qa",
+    oauthRedirectUrl: "customcard://sso-callback",
     realOrderKillSwitch: "disabled"
   }),
   checkProfile("eas-build", "preview-profile", resolveBuildProfile("preview"), {
@@ -47,12 +51,14 @@ const checks = [
     iosSimulator: true,
     androidBuildType: "apk",
     appEnv: "qa",
+    oauthRedirectUrl: "customcard://sso-callback",
     realOrderKillSwitch: "disabled"
   }),
   checkProfile("eas-build", "production-profile", resolveBuildProfile("production"), {
     channel: "production",
     autoIncrement: true,
     appEnv: "production",
+    oauthRedirectUrl: "customcard://sso-callback",
     realOrderKillSwitch: "disabled"
   }),
   checkIncludes("package", "release-doctor-script", JSON.stringify(packageJson, null, 2), [
@@ -136,6 +142,9 @@ function checkProfile(lane, id, profile, expected) {
     if (expected.autoIncrement && profile.autoIncrement !== true) missing.push("autoIncrement true");
     if (expected.appEnv && profile.env?.CUSTOMCARD_APP_ENV !== expected.appEnv) {
       missing.push(`CUSTOMCARD_APP_ENV ${expected.appEnv}`);
+    }
+    if (expected.oauthRedirectUrl && profile.env?.CUSTOMCARD_OAUTH_REDIRECT_URL !== expected.oauthRedirectUrl) {
+      missing.push(`CUSTOMCARD_OAUTH_REDIRECT_URL ${expected.oauthRedirectUrl}`);
     }
     if (expected.realOrderKillSwitch && profile.env?.REAL_ORDER_KILL_SWITCH !== expected.realOrderKillSwitch) {
       missing.push(`REAL_ORDER_KILL_SWITCH ${expected.realOrderKillSwitch}`);

@@ -61,6 +61,7 @@ import {
 import { themes, useTheme } from "./theme";
 import { CreateFlowStepper, Toast } from "./ui";
 import { EventsView } from "./views/EventsView";
+import { BusinessLandingView } from "./views/BusinessLandingView";
 import { HomeView } from "./views/HomeView";
 import { NotesView } from "./views/NotesView";
 import { PeopleView } from "./views/PeopleView";
@@ -69,9 +70,6 @@ import { SettingsView } from "./views/SettingsView";
 import { StudioView } from "./views/StudioView";
 
 const AdminOperationalView = lazy(() => import("./AdminOperationalView"));
-const BusinessLandingView = lazy(() =>
-  import("./views/BusinessLandingView").then((module) => ({ default: module.BusinessLandingView }))
-);
 
 const configuredAdminEmails = configuredAdminEmailsFromEnv(import.meta.env);
 
@@ -542,13 +540,11 @@ export default function App() {
         ) : null}
 
         {!isAdminView && showBusinessLanding ? (
-          <Suspense fallback={<div className="panelcard">Loading…</div>}>
-            <BusinessLandingView
-              draft={displayDraft}
-              onCreate={() => openView("studio")}
-              onReview={() => openView("opportunities")}
-            />
-          </Suspense>
+          <BusinessLandingView
+            draft={displayDraft}
+            onCreate={() => openView("studio")}
+            onReview={() => openView("opportunities")}
+          />
         ) : null}
 
         {!isAdminView && visibleCustomerView === "opportunities" ? (

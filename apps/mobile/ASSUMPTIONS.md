@@ -18,18 +18,18 @@ open. Each is the safest reasonable default for the existing backend.
   (`@clerk/clerk-expo`) and sends the Clerk session token as the bearer.
 - **Configured QA Clerk instance:** `model-bluejay-21`. The publishable key
   (`pk_test_…`, public) is wired via `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` so the
-  app performs real email-code sign-in. The instance's JWKS PEM and issuer are
-  backend deployment config; the Clerk secret key is never used by or stored in
-  the mobile app.
-- **Sign-in method:** email one-time-code (`email_code`) via Clerk, with
-  automatic fall-through to sign-up when the email is unknown — one form covers
-  both. No password is collected on device. OAuth/OIDC social providers can be
-  added through the Clerk dashboard without app changes; when used, Clerk
-  performs Authorization Code + PKCE.
+  app performs real Clerk sign-in. The native OAuth callback is
+  `customcard://sso-callback` and must be allowlisted in Clerk. The instance's
+  JWKS PEM and issuer are backend deployment config; the Clerk secret key is
+  never used by or stored in the mobile app.
+- **Sign-in method:** Google and Apple OAuth use Clerk's SSO flow with
+  Authorization Code + PKCE. Email one-time-code (`email_code`) remains as the
+  fallback account path, with automatic fall-through to sign-up when the email
+  is unknown — one form covers both. No password is collected on device.
 - **No local token sign-in:** mobile builds require a Clerk publishable key and
-  use Clerk email-code auth in QA and production. Local memory-runtime bearer
-  tokens remain backend test fixtures only; they are not accepted through the app
-  UI.
+  use Clerk OAuth/email-code auth in QA and production. Local memory-runtime
+  bearer tokens remain backend test fixtures only; they are not accepted through
+  the app UI.
 
 ## Workflow mapping
 

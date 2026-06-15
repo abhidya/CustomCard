@@ -35,10 +35,12 @@ Provide via EAS environment variables / build profile `env`:
 - [ ] `CUSTOMCARD_API_BASE_URL` = the production **https** API URL.
 - [ ] `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` = production Clerk publishable key
       (`pk_live_…`).
+- [ ] `CUSTOMCARD_OAUTH_REDIRECT_URL=customcard://sso-callback`.
 - [ ] `CUSTOMCARD_APP_ENV=production`.
 - [ ] `REAL_ORDER_KILL_SWITCH=disabled` (already enforced in `eas.json`).
-- [ ] Clerk dashboard: production instance, allowed origins, and the mobile app
-      added; backend has the matching `CLERK_JWT_KEY` / authorized parties.
+- [ ] Clerk dashboard: production instance, Google/Apple OAuth providers,
+      `customcard://sso-callback` Redirect URL, and the mobile app added;
+      backend has the matching `CLERK_JWT_KEY` / authorized parties.
 
 ## 3. Build & submit (EAS)
 
@@ -100,7 +102,8 @@ Derived from `SECURITY.md`. Configure in App Store Connect → App Privacy:
 Device E2E automation is not available in this repo; run this manual pass on at
 least one iOS and one Android device/simulator before release:
 
-1. [ ] Launch → sign in with Clerk email code on the QA or production build.
+1. [ ] Launch → browse the product shell signed out, then sign in with Clerk
+       Google/Apple OAuth or email code on the QA or production build.
 2. [ ] Home loads today's card, the queue, and the "confirm before checkout"
        banner; pull-to-refresh works.
 3. [ ] Events → Import an event: paste an invite, see a card opportunity.
@@ -113,7 +116,7 @@ least one iOS and one Android device/simulator before release:
 8. [ ] Checkout: readiness shown; on an enabled deployment, contact form opens
        the Walgreens hosted page in the browser.
 9. [ ] Settings → Privacy: submit an export request; sign out and confirm you
-       return to the sign-in screen with no cached data.
+       return to the product shell with no cached account data.
 10. [ ] Toggle airplane mode: the offline banner appears and cached screens
         still render.
 

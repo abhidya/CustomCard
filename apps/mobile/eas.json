@@ -10,6 +10,7 @@
       "channel": "qa",
       "env": {
         "CUSTOMCARD_APP_ENV": "qa",
+        "CUSTOMCARD_OAUTH_REDIRECT_URL": "customcard://sso-callback",
         "REAL_ORDER_KILL_SWITCH": "disabled"
       }
     },
@@ -24,6 +25,7 @@
       },
       "env": {
         "CUSTOMCARD_APP_ENV": "qa",
+        "CUSTOMCARD_OAUTH_REDIRECT_URL": "customcard://sso-callback",
         "REAL_ORDER_KILL_SWITCH": "disabled"
       }
     },
@@ -36,6 +38,7 @@
       "autoIncrement": true,
       "env": {
         "CUSTOMCARD_APP_ENV": "production",
+        "CUSTOMCARD_OAUTH_REDIRECT_URL": "customcard://sso-callback",
         "REAL_ORDER_KILL_SWITCH": "disabled"
       }
     },
@@ -48,6 +51,7 @@
         "buildType": "apk"
       },
       "env": {
+        "CUSTOMCARD_OAUTH_REDIRECT_URL": "customcard://sso-callback",
         "REAL_ORDER_KILL_SWITCH": "disabled"
       }
     }

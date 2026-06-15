@@ -1,5 +1,6 @@
 const apiBaseUrl = process.env.CUSTOMCARD_API_BASE_URL;
 const clerkPublishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const oauthRedirectUrl = process.env.CUSTOMCARD_OAUTH_REDIRECT_URL;
 const appEnv = normalizeAppEnv(process.env.CUSTOMCARD_APP_ENV);
 const realOrderKillSwitch = process.env.REAL_ORDER_KILL_SWITCH ?? "disabled";
 
@@ -17,6 +18,12 @@ if (!/^pk_(test|live)_/.test(clerkPublishableKey ?? "")) {
 }
 if (appEnv === "production" && !clerkPublishableKey.startsWith("pk_live_")) {
   throw new Error("Production mobile builds require a Clerk live publishable key.");
+}
+if (!oauthRedirectUrl) {
+  throw new Error("CUSTOMCARD_OAUTH_REDIRECT_URL is required for mobile OAuth.");
+}
+if (!/^customcard:\/\/sso-callback\/?$/.test(oauthRedirectUrl)) {
+  throw new Error("CUSTOMCARD_OAUTH_REDIRECT_URL must be customcard://sso-callback.");
 }
 if (realOrderKillSwitch !== "disabled") {
   throw new Error("REAL_ORDER_KILL_SWITCH must stay disabled until retail certification is recorded.");
@@ -65,6 +72,7 @@ module.exports = () => ({
       apiBaseUrl,
       appEnv,
       clerkPublishableKey,
+      oauthRedirectUrl,
       realOrderKillSwitch,
       eas: easProjectId ? { projectId: easProjectId } : undefined
     }

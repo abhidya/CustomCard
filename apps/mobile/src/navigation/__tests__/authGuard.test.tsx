@@ -97,6 +97,10 @@ describe("RootNavigator customer shell", () => {
 
     expect(await screen.findByText("Make the card you meant to send.")).toBeTruthy();
     expect(screen.getByText("Make my card now")).toBeTruthy();
+    expect(screen.getByText("My cards")).toBeTruthy();
+    expect(screen.getByText("People")).toBeTruthy();
+    expect(screen.queryByText("Design")).toBeNull();
+    expect(screen.queryByText("Events")).toBeNull();
     expect(screen.queryByText("Cards to review")).toBeNull();
   });
 

@@ -38,6 +38,7 @@ jest.mock("expo-constants", () => ({
         apiBaseUrl: "https://api.qa.customcard.example",
         appEnv: "qa",
         clerkPublishableKey: "pk_test_customcard_qa",
+        oauthRedirectUrl: "customcard://sso-callback",
         realOrderKillSwitch: "disabled"
       }
     }

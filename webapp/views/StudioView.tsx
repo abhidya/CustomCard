@@ -890,7 +890,7 @@ function GenerationScopePanel({
       <details className="generationScopeDetails" open={aiLoading || undefined}>
         <summary>
           <span className="generationScope-summaryText">
-            <strong>Improve with AI</strong>
+            <strong>Choose what to improve</strong>
             <small>{aiLoading ? "Drafting updates now" : "Refresh the whole card or selected faces."}</small>
           </span>
           <span className="generationScope-summaryMeta">{selectedCopy}</span>

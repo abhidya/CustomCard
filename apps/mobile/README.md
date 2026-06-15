@@ -39,21 +39,24 @@ surfaced to the app via `expo-constants`.
 | ----------------------------------- | ----------------- | ------------------------------------------------------------------ |
 | `CUSTOMCARD_API_BASE_URL`           | yes               | HTTPS API base URL for QA or production.                           |
 | `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` | yes               | Clerk **publishable** key (`pk_test_` for QA, `pk_live_` for prod). |
+| `CUSTOMCARD_OAUTH_REDIRECT_URL`     | yes               | Native Clerk SSO callback. Must be `customcard://sso-callback`.     |
 | `CUSTOMCARD_APP_ENV`                | yes               | `qa` \| `production` (`staging`/`preview` aliases normalize to `qa`). |
 | `REAL_ORDER_KILL_SWITCH`            | no                | Mirrors the backend safety gate; keep `disabled`.                  |
 | `EAS_PROJECT_ID`                    | for EAS builds    | Set by `eas init`, or via EAS environment variables.               |
 
-The mobile app always uses Clerk email-code auth. It does not expose a local
-session-token sign-in path. Production builds require a `pk_live_` Clerk
-publishable key.
+The mobile app uses Clerk for Google/Apple OAuth and email-code auth. It does
+not expose a local session-token sign-in path. Production builds require a
+`pk_live_` Clerk publishable key and a Clerk Redirect URL allowlist entry for
+`customcard://sso-callback`.
 
 #### Configured Clerk instance
 
 This project's QA Clerk instance is `model-bluejay-21`. The **publishable key**
-(public by design) enables real email-code sign-in in QA builds:
+(public by design) enables real Clerk sign-in in QA builds:
 
 ```
 EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_bW9kZWwtYmx1ZWpheS0yMS5jbGVyay5hY2NvdW50cy5kZXYk
+CUSTOMCARD_OAUTH_REDIRECT_URL=customcard://sso-callback
 ```
 
 The matching **backend** values are deployment config for the CustomCard API
@@ -73,12 +76,29 @@ cd apps/mobile
 CUSTOMCARD_APP_ENV=qa \
 CUSTOMCARD_API_BASE_URL=https://api.qa.customcard.test \
 EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_... \
+CUSTOMCARD_OAUTH_REDIRECT_URL=customcard://sso-callback \
 REAL_ORDER_KILL_SWITCH=disabled npm run start
 # or: npm run ios   /   npm run android
 ```
 
-In Expo Go or a simulator, sign in with a Clerk email code. Local memory-runtime
-session tokens are only for backend contract tests, not for app sign-in.
+For Codex/local simulator review, prefer the review scripts:
+
+```sh
+CUSTOMCARD_APP_ENV=qa \
+CUSTOMCARD_API_BASE_URL=https://api.qa.customcard.test \
+EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_... \
+CUSTOMCARD_OAUTH_REDIRECT_URL=customcard://sso-callback \
+REAL_ORDER_KILL_SWITCH=disabled npm run ios:review
+```
+
+The review scripts run Expo with `EXPO_UNSTABLE_HEADLESS=1` on localhost. Expo
+uses that mode to keep the standalone React Native DevTools shell from
+auto-installing/opening; the app UI, Metro bundle, and simulator runtime are
+unchanged.
+
+In Expo Go or a simulator, sign in with Clerk Google/Apple OAuth or an email
+code. Local memory-runtime session tokens are only for backend contract tests,
+not for app sign-in.
 
 > Note: a desktop browser pointed at the Expo dev server shows a JSON manifest —
 > that is Expo metadata, not the app UI. Use Expo Go or a simulator.
@@ -175,7 +195,7 @@ apps/mobile/
    ├─ theme/                    # design tokens (color, spacing, type)
    ├─ components/               # Screen scaffold + shared UI (buttons, fields, states)
    ├─ forms/validation.ts       # dependency-free form validators
-   ├─ navigation/               # auth-gated stack + bottom tabs
+   ├─ navigation/               # product-first stack + bottom tabs
    ├─ lib/
    │  ├─ api/                   # typed client, endpoints, errors, redaction
    │  ├─ auth/                  # Clerk + SecureStore token cache + session provider
@@ -192,8 +212,10 @@ apps/mobile/
   `X-Idempotency-Key` to every mutation, applies a request timeout, classifies
   errors, and redacts sensitive data from logs/error messages. `endpoints.ts`
   is the typed facade over every customer route.
-- **Navigation guard**: signed-out users can only reach the sign-in screen;
-  customer workflow screens mount only for an authenticated session.
+- **Navigation model**: signed-out users can browse the product shell and start
+  a card. Sign-in is required only when the app needs an account-backed action
+  such as AI drafting, saving cards, reviewing people, privacy requests, or
+  checkout.
 - **Proof-first print**: print options and checkout stay locked until the
   customer approves the rendered proof.
 - **Honest gating**: capabilities like live AI, retail orders, and hosted

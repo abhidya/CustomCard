@@ -5,8 +5,11 @@
   "description": "CustomCard iOS/Android customer app targeting the shared API and service contracts.",
   "scripts": {
     "start": "expo start",
+    "start:review": "EXPO_UNSTABLE_HEADLESS=1 expo start --localhost",
     "ios": "expo start --ios",
+    "ios:review": "EXPO_UNSTABLE_HEADLESS=1 expo start --localhost --ios",
     "android": "expo start --android",
+    "android:review": "EXPO_UNSTABLE_HEADLESS=1 expo start --localhost --android",
     "doctor": "node ./scripts/doctor.mjs",
     "release:doctor": "node ./scripts/release-doctor.mjs",
     "typecheck": "tsc --noEmit",

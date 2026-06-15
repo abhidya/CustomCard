@@ -206,10 +206,7 @@ function GuestHome() {
       </Text>
 
       <View style={styles.landingActions}>
-        <AppButton
-          label="Make my card now"
-          onPress={() => navigation.navigate("MainTabs", { screen: "Create" })}
-        />
+        <AppButton label="Make my card now" onPress={() => navigation.navigate("Studio")} />
         <AppButton
           label="Start from invite or calendar"
           variant="secondary"

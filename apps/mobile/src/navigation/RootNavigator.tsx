@@ -8,7 +8,6 @@ import { colors } from "../theme";
 import { ChatScreen } from "../screens/create/ChatScreen";
 import { StudioScreen } from "../screens/create/StudioScreen";
 import { CalendarConnectScreen } from "../screens/events/CalendarConnectScreen";
-import { EventsScreen } from "../screens/events/EventsScreen";
 import { ImportEventScreen } from "../screens/events/ImportEventScreen";
 import { HomeScreen } from "../screens/home/HomeScreen";
 import { MemoriesScreen } from "../screens/memories/MemoriesScreen";
@@ -38,9 +37,8 @@ const navTheme = {
 
 const tabIcons: Record<keyof MainTabParamList, keyof typeof Ionicons.glyphMap> = {
   Home: "create",
-  Create: "color-wand",
-  Events: "calendar",
   Print: "albums",
+  People: "people",
   Settings: "settings"
 };
 
@@ -61,9 +59,8 @@ function MainTabs() {
       })}
     >
       <Tabs.Screen name="Home" component={HomeScreen} options={{ title: "Create" }} />
-      <Tabs.Screen name="Create" component={StudioScreen} options={{ title: "Design" }} />
-      <Tabs.Screen name="Events" component={EventsScreen} options={{ title: "Events" }} />
       <Tabs.Screen name="Print" component={PrintScreen} options={{ title: "My cards" }} />
+      <Tabs.Screen name="People" component={MemoriesScreen} options={{ title: "People" }} />
       <Tabs.Screen name="Settings" component={SettingsScreen} options={{ title: "Settings" }} />
     </Tabs.Navigator>
   );
@@ -79,6 +76,7 @@ export function RootNavigator({
       <Stack.Navigator screenOptions={{ headerTitleStyle: { fontWeight: "900" } }}>
         <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
         <Stack.Screen name="SignIn" component={SignInScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Studio" component={StudioScreen} options={{ title: "Design" }} />
         <Stack.Screen
           name="ImportEvent"
           component={ImportEventScreen}

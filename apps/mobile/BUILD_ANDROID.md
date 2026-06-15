@@ -15,6 +15,7 @@ in git. There are two ways to produce an installable build.
 
 Provide non-secret config via env / EAS environment variables:
 `CUSTOMCARD_API_BASE_URL` (https), `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`,
+`CUSTOMCARD_OAUTH_REDIRECT_URL=customcard://sso-callback`,
 `CUSTOMCARD_APP_ENV=qa|production`, `REAL_ORDER_KILL_SWITCH=disabled`.
 
 ## Android APK
@@ -38,6 +39,9 @@ and a QR code when the build finishes.
 cd apps/mobile
 export CUSTOMCARD_API_BASE_URL=https://your-api.example
 export EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+export CUSTOMCARD_OAUTH_REDIRECT_URL=customcard://sso-callback
+export CUSTOMCARD_APP_ENV=qa
+export REAL_ORDER_KILL_SWITCH=disabled
 npm run build:android:apk:gradle
 # -> apps/mobile/android/app/build/outputs/apk/release/app-release.apk
 ```

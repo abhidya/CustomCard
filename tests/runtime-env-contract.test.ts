@@ -77,10 +77,46 @@ describe("runtime env contract", () => {
     expect(validateWorkerRuntimeEnv({ ...durableEnv, QUEUE_URL: "" })).not.toContain(
       "CustomCard worker missing env: QUEUE_URL"
     );
-    expect(validateMobileRuntimeEnv({})).toEqual(["Mobile shell missing env: CUSTOMCARD_API_BASE_URL"]);
-    expect(validateMobileRuntimeEnv({ CUSTOMCARD_API_BASE_URL: "replace-me" })).toEqual([
-      "Mobile shell has placeholder env: CUSTOMCARD_API_BASE_URL"
+    expect(validateMobileRuntimeEnv({})).toEqual([
+      "Mobile shell missing env: CUSTOMCARD_API_BASE_URL",
+      "Mobile shell missing env: CUSTOMCARD_APP_ENV",
+      "Mobile shell missing env: CUSTOMCARD_OAUTH_REDIRECT_URL",
+      "Mobile shell missing env: EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY"
     ]);
-    expect(validateMobileRuntimeEnv({ CUSTOMCARD_API_BASE_URL: "http://127.0.0.1:5173" })).toEqual([]);
+    expect(
+      validateMobileRuntimeEnv({
+        CUSTOMCARD_API_BASE_URL: "replace-me",
+        CUSTOMCARD_APP_ENV: "qa",
+        CUSTOMCARD_OAUTH_REDIRECT_URL: "customcard://sso-callback",
+        EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_customcard"
+      })
+    ).toEqual([
+      "Mobile shell has placeholder env: CUSTOMCARD_API_BASE_URL",
+      "Mobile shell CUSTOMCARD_API_BASE_URL must be an https:// URL."
+    ]);
+    expect(
+      validateMobileRuntimeEnv({
+        CUSTOMCARD_API_BASE_URL: "http://127.0.0.1:5173",
+        CUSTOMCARD_APP_ENV: "qa",
+        CUSTOMCARD_OAUTH_REDIRECT_URL: "customcard://sso-callback",
+        EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_customcard"
+      })
+    ).toEqual(["Mobile shell CUSTOMCARD_API_BASE_URL must be an https:// URL."]);
+    expect(
+      validateMobileRuntimeEnv({
+        CUSTOMCARD_API_BASE_URL: "https://api.customcard.test",
+        CUSTOMCARD_APP_ENV: "qa",
+        CUSTOMCARD_OAUTH_REDIRECT_URL: "https://customcard.test/sso-callback",
+        EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_customcard"
+      })
+    ).toEqual(["Mobile shell CUSTOMCARD_OAUTH_REDIRECT_URL must be customcard://sso-callback."]);
+    expect(
+      validateMobileRuntimeEnv({
+        CUSTOMCARD_API_BASE_URL: "https://api.customcard.test",
+        CUSTOMCARD_APP_ENV: "qa",
+        CUSTOMCARD_OAUTH_REDIRECT_URL: "customcard://sso-callback",
+        EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_customcard"
+      })
+    ).toEqual([]);
   });
 });

@@ -17,6 +17,7 @@ export const workerRequiredEnv = durableRuntimeRequiredEnv;
 export const mobileRequiredEnv = Object.freeze([
   "CUSTOMCARD_API_BASE_URL",
   "CUSTOMCARD_APP_ENV",
+  "CUSTOMCARD_OAUTH_REDIRECT_URL",
   "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY"
 ]);
 
@@ -102,6 +103,7 @@ export function validateMobileRuntimeEnv(env = process.env) {
   ];
   const appEnv = normalizeMobileAppEnv(env.CUSTOMCARD_APP_ENV);
   const apiBaseUrl = String(env.CUSTOMCARD_API_BASE_URL ?? "").trim();
+  const oauthRedirectUrl = String(env.CUSTOMCARD_OAUTH_REDIRECT_URL ?? "").trim();
   const clerkPublishableKey = String(env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "").trim();
 
   if (env.CUSTOMCARD_APP_ENV && !appEnv) {
@@ -109,6 +111,9 @@ export function validateMobileRuntimeEnv(env = process.env) {
   }
   if (apiBaseUrl && !apiBaseUrl.startsWith("https://")) {
     blockers.push("Mobile shell CUSTOMCARD_API_BASE_URL must be an https:// URL.");
+  }
+  if (oauthRedirectUrl && !/^customcard:\/\/sso-callback\/?$/.test(oauthRedirectUrl)) {
+    blockers.push("Mobile shell CUSTOMCARD_OAUTH_REDIRECT_URL must be customcard://sso-callback.");
   }
   if (clerkPublishableKey && !/^pk_(test|live)_/.test(clerkPublishableKey)) {
     blockers.push("Mobile shell EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY must be a Clerk publishable key.");

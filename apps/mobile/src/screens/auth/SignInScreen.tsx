@@ -42,11 +42,12 @@ export function SignInScreen() {
 }
 
 const oauthOptions = [
-  { label: "Continue with Google", strategy: "oauth_google" },
-  { label: "Continue with Apple", strategy: "oauth_apple" }
+  { label: "Continue with Google", strategy: "oauth_google", icon: "logo-google" },
+  { label: "Continue with Apple", strategy: "oauth_apple", icon: "logo-apple" }
 ] as const;
 
 function ClerkOAuthButtons() {
+  const config = appConfig();
   const { startSSOFlow } = useSSO();
   const [busyStrategy, setBusyStrategy] = useState<
     (typeof oauthOptions)[number]["strategy"] | null
@@ -58,7 +59,8 @@ function ClerkOAuthButtons() {
     setError(null);
     try {
       const { createdSessionId, setActive, authSessionResult } = await startSSOFlow({
-        strategy: option.strategy
+        strategy: option.strategy,
+        redirectUrl: config.oauthRedirectUrl
       });
       if (createdSessionId && setActive) {
         await setActive({ session: createdSessionId });
@@ -81,6 +83,7 @@ function ClerkOAuthButtons() {
         <AppButton
           key={option.strategy}
           label={option.label}
+          icon={option.icon}
           variant="secondary"
           loading={busyStrategy === option.strategy}
           disabled={Boolean(busyStrategy)}

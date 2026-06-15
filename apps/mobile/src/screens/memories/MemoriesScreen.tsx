@@ -1,3 +1,4 @@
+import { useNavigation } from "@react-navigation/native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
 import { Alert, Platform, StyleSheet, Text, View } from "react-native";
@@ -7,6 +8,7 @@ import { Screen } from "../../components/Screen";
 import { useToast } from "../../components/Toast";
 import { userMessageForError } from "../../lib/api/errors";
 import { useApi } from "../../lib/api/ApiProvider";
+import { useAppSession } from "../../lib/auth/AuthProvider";
 import type { MemoryReviewRequest, MemoryReviewResponse } from "../../lib/api/types";
 import { hasErrors, requireText, type FieldErrors } from "../../forms/validation";
 import { spacing, typography } from "../../theme";
@@ -19,8 +21,11 @@ type Field = "recipientName" | "text";
  */
 export function MemoriesScreen() {
   const api = useApi();
+  const session = useAppSession();
+  const navigation = useNavigation();
   const queryClient = useQueryClient();
   const toast = useToast();
+  const signedIn = session.status === "signedIn";
 
   const [recipientName, setRecipientName] = useState("");
   const [text, setText] = useState("");
@@ -29,7 +34,8 @@ export function MemoriesScreen() {
 
   const bootstrap = useQuery({
     queryKey: ["mobile-bootstrap"],
-    queryFn: () => api.getMobileBootstrap(Platform.OS)
+    queryFn: () => api.getMobileBootstrap(Platform.OS),
+    enabled: signedIn
   });
 
   const review = useMutation({
@@ -68,6 +74,30 @@ export function MemoriesScreen() {
       return;
     }
     run("approve");
+  }
+
+  if (!signedIn) {
+    return (
+      <Screen>
+        <SectionHeading
+          title="People"
+          detail="Save birthdays, preferences, and reviewed memories once you have an account."
+        />
+        <Card>
+          <Text style={typography.heading}>No saved people yet</Text>
+          <Text style={typography.body}>
+            Start a card as a guest, then sign in when you're ready to save people and reuse
+            approved notes.
+          </Text>
+          <AppButton label="Start a card" onPress={() => navigation.navigate("Studio")} />
+          <AppButton
+            label="Sign in to save people"
+            variant="secondary"
+            onPress={() => navigation.navigate("SignIn")}
+          />
+        </Card>
+      </Screen>
+    );
   }
 
   const pendingItems =

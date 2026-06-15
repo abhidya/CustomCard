@@ -16,7 +16,7 @@ import type {
  * thin layout. Selecting an event or rebuilding resets downstream steps, which
  * keeps the "you must approve the proof before checkout" invariant honest.
  */
-export function usePrintPipeline() {
+export function usePrintPipeline({ enabled = true }: { enabled?: boolean } = {}) {
   const api = useApi();
   const toast = useToast();
 
@@ -25,10 +25,15 @@ export function usePrintPipeline() {
   const [renderPacket, setRenderPacket] = useState<RenderPacketResponse | null>(null);
   const [proofApproved, setProofApproved] = useState(false);
 
-  const connections = useQuery({ queryKey: ["connections"], queryFn: () => api.getConnections() });
+  const connections = useQuery({
+    queryKey: ["connections"],
+    queryFn: () => api.getConnections(),
+    enabled
+  });
   const bootstrap = useQuery({
     queryKey: ["mobile-bootstrap"],
-    queryFn: () => api.getMobileBootstrap(Platform.OS)
+    queryFn: () => api.getMobileBootstrap(Platform.OS),
+    enabled
   });
 
   const createProject = useMutation({
