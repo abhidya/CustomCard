@@ -1657,7 +1657,8 @@ a { color: inherit; }
   gap: 28px;
 }
 @media (max-width: 980px) {
-  .studio { grid-template-columns: 1fr; }
+  .studio,
+  .studio[data-proof-visible="true"] { grid-template-columns: 1fr; gap: 24px; }
   .steps { order: -1; }
   .stage { position: static; }
 }
