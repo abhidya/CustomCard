@@ -69,6 +69,21 @@ describe("object store runtime", () => {
     });
   });
 
+  it("derives hosted artifact links when production has a loopback public base override", () => {
+    const runtime = createObjectStoreRuntime({
+      env: {
+        ...objectStoreEnv,
+        NODE_ENV: "production",
+        OBJECT_STORE_URL: "https://example-account.r2.cloudflarestorage.com",
+        OBJECT_STORE_PUBLIC_BASE_URL: "http://127.0.0.1:4173/api/artifacts",
+        VERCEL_URL: "customcard-three.vercel.app"
+      }
+    });
+
+    expect(runtime.describe().publicBaseUrl).toBe("https://customcard-three.vercel.app/api/artifacts");
+    expect(runtime.validate()).toEqual([]);
+  });
+
   it("stores render artifacts and serves them through the HMAC signed URL contract", async () => {
     const runtime = createObjectStoreRuntime({
       env: objectStoreEnv,

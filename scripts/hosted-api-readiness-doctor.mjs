@@ -34,6 +34,7 @@ const doctorManifest = defineDoctorManifest({
     verificationDocs: "docs/verification.md",
     vercel: "vercel.json",
     vercelApiHandler: "api/[...path].js",
+    vercelArtifactHandler: "api/artifacts/[...path].js",
     vercelAiCardGenerateHandler: "api/ai/card/generate.js",
     vercelAiChatRespondHandler: "api/ai/chat/respond.js",
     envExample: "infra/env/.env.example",
@@ -132,7 +133,7 @@ const checks = [
   checkDoctorSourceSignals(doctorManifest, contents, {
     lane: "vercel-source",
     id: "vercel-serverless-source-signals",
-    sourceKeys: ["vercel", "vercelApiHandler", "vercelAiCardGenerateHandler", "vercelAiChatRespondHandler"],
+    sourceKeys: ["vercel", "vercelApiHandler", "vercelArtifactHandler", "vercelAiCardGenerateHandler", "vercelAiChatRespondHandler"],
     signals: [
       '"buildCommand": "npm run build"',
       '"source": "/api/(.*)"',

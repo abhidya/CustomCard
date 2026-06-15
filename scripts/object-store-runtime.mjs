@@ -320,11 +320,11 @@ function resolveObjectStoreConfig(env) {
     1,
     90
   );
-  const provider = providerForEndpoint(endpoint);
-  const publicBaseUrl = resolvePublicBaseUrl(env);
   const writeConcurrency = safeIntegerEnv(env.CUSTOMCARD_ARTIFACT_WRITE_CONCURRENCY, 4, 1, 8);
   const required = env.CUSTOMCARD_ARTIFACT_PERSISTENCE === "enabled" || Boolean(endpoint || bucket || accessKeyId || secretAccessKey);
   const productionRuntime = isProductionRuntime(env);
+  const provider = providerForEndpoint(endpoint);
+  const publicBaseUrl = resolvePublicBaseUrl(env, { productionRuntime });
   const blockers = [];
 
   if (required && !endpoint) blockers.push("OBJECT_STORE_URL is required.");
@@ -334,6 +334,7 @@ function resolveObjectStoreConfig(env) {
   if (required && !secretAccessKey) blockers.push("OBJECT_STORE_SECRET_ACCESS_KEY is required.");
   if (required && signingSecret.length < 32) blockers.push("OBJECT_STORE_SIGNING_SECRET must be at least 32 characters.");
   if (required && !isSafePublicBaseUrl(publicBaseUrl)) blockers.push("OBJECT_STORE_PUBLIC_BASE_URL must be https or localhost/127.0.0.1 http.");
+  if (required && productionRuntime && isLoopbackHttpUrl(publicBaseUrl)) blockers.push("OBJECT_STORE_PUBLIC_BASE_URL must not be loopback in production.");
   if (required && !isSupportedEndpoint(endpoint, { productionRuntime })) {
     blockers.push(
       productionRuntime
@@ -1111,11 +1112,21 @@ function normalizeHeaders(headers) {
   return normalized;
 }
 
-function resolvePublicBaseUrl(env) {
-  if (env.OBJECT_STORE_PUBLIC_BASE_URL) return trimTrailingSlash(env.OBJECT_STORE_PUBLIC_BASE_URL);
+function resolvePublicBaseUrl(env, { productionRuntime = false } = {}) {
+  const hostedBaseUrl = resolveHostedArtifactPublicBaseUrl(env);
+  if (env.OBJECT_STORE_PUBLIC_BASE_URL) {
+    const configuredBaseUrl = trimTrailingSlash(env.OBJECT_STORE_PUBLIC_BASE_URL);
+    if (productionRuntime && hostedBaseUrl && isLoopbackHttpUrl(configuredBaseUrl)) return hostedBaseUrl;
+    return configuredBaseUrl;
+  }
+  if (hostedBaseUrl) return hostedBaseUrl;
+  return `http://127.0.0.1:${env.PORT ?? 4173}/api/artifacts`;
+}
+
+function resolveHostedArtifactPublicBaseUrl(env) {
   if (env.CUSTOMCARD_PUBLIC_BASE_URL) return `${trimTrailingSlash(env.CUSTOMCARD_PUBLIC_BASE_URL)}/api/artifacts`;
   if (env.VERCEL_URL) return `https://${env.VERCEL_URL.replace(/^https?:\/\//, "").replace(/\/+$/, "")}/api/artifacts`;
-  return `http://127.0.0.1:${env.PORT ?? 4173}/api/artifacts`;
+  return "";
 }
 
 function signedUrlExpiry(minutes, fromDate) {
@@ -1176,6 +1187,15 @@ function isSafePublicBaseUrl(value) {
     if (parsed.protocol === "https:") return true;
     if (parsed.protocol !== "http:") return false;
     return ["localhost", "127.0.0.1", "0.0.0.0"].includes(parsed.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function isLoopbackHttpUrl(value) {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" && ["localhost", "127.0.0.1", "0.0.0.0"].includes(parsed.hostname);
   } catch {
     return false;
   }

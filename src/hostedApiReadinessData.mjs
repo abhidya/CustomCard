@@ -66,7 +66,7 @@ export const hostedApiReadinessItems = [
     proofScope: "repo-local-contract",
     routeIds: requiredHostedRouteIds,
     envVarNames: [],
-    requiredSourceSignals: ["api/[...path].js", "handleApiRequest", "vercel.json", "CUSTOMCARD_API_RUNTIME"],
+    requiredSourceSignals: ["api/[...path].js", "api/artifacts/[...path].js", "handleApiRequest", "vercel.json", "CUSTOMCARD_API_RUNTIME"],
     requiresHostedDb: false,
     requiresPublicRouteProof: false,
     requiresHostedTokenVerification: false,
