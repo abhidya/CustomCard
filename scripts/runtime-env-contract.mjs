@@ -9,16 +9,25 @@ export const durableRuntimeRequiredEnv = Object.freeze([
   "OBJECT_STORE_URL",
   "OBJECT_STORE_SIGNING_SECRET",
   "AUTH_SESSION_SECRET",
+  "CLERK_JWT_KEY",
+  "CLERK_AUTHORIZED_PARTIES",
+  "CLERK_ISSUER",
+  "CLERK_AUDIENCE",
   "REAL_ORDER_KILL_SWITCH"
 ]);
 
 export const workerRequiredEnv = durableRuntimeRequiredEnv;
 
 export const mobileRequiredEnv = Object.freeze([
-  "CUSTOMCARD_API_BASE_URL",
   "CUSTOMCARD_APP_ENV",
   "CUSTOMCARD_OAUTH_REDIRECT_URL",
   "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY"
+]);
+
+export const mobileApiBaseUrlEnv = Object.freeze([
+  "CUSTOMCARD_API_BASE_URL",
+  "CUSTOMCARD_QA_API_BASE_URL",
+  "CUSTOMCARD_PRODUCTION_API_BASE_URL"
 ]);
 
 export const runtimePlaceholderPattern = /replace-me|placeholder|changeme|__set_|example/i;
@@ -102,15 +111,28 @@ export function validateMobileRuntimeEnv(env = process.env) {
     ...placeholderEnv(env, mobileRequiredEnv).map((key) => `Mobile shell has placeholder env: ${key}`)
   ];
   const appEnv = normalizeMobileAppEnv(env.CUSTOMCARD_APP_ENV);
-  const apiBaseUrl = String(env.CUSTOMCARD_API_BASE_URL ?? "").trim();
+  const { apiBaseUrl, selectedApiBaseUrlKey, apiBaseUrlSourceName, conflict } =
+    resolveMobileApiBaseUrl(env, appEnv);
   const oauthRedirectUrl = String(env.CUSTOMCARD_OAUTH_REDIRECT_URL ?? "").trim();
   const clerkPublishableKey = String(env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "").trim();
+  const apiPlaceholderKey = selectedApiBaseUrlKey
+    ? placeholderEnv(env, [selectedApiBaseUrlKey])[0]
+    : "";
 
   if (env.CUSTOMCARD_APP_ENV && !appEnv) {
     blockers.push("Mobile shell CUSTOMCARD_APP_ENV must be qa or production.");
   }
+  if (!apiBaseUrl) {
+    blockers.push(`Mobile shell missing env: ${apiBaseUrlSourceName}`);
+  }
+  if (apiPlaceholderKey) {
+    blockers.push(`Mobile shell has placeholder env: ${apiPlaceholderKey}`);
+  }
+  if (conflict) {
+    blockers.push(`Mobile shell ${apiBaseUrlSourceName} must not conflict with CUSTOMCARD_API_BASE_URL.`);
+  }
   if (apiBaseUrl && !apiBaseUrl.startsWith("https://")) {
-    blockers.push("Mobile shell CUSTOMCARD_API_BASE_URL must be an https:// URL.");
+    blockers.push(`Mobile shell ${apiBaseUrlSourceName} must be an https:// URL.`);
   }
   if (oauthRedirectUrl && !/^customcard:\/\/sso-callback\/?$/.test(oauthRedirectUrl)) {
     blockers.push("Mobile shell CUSTOMCARD_OAUTH_REDIRECT_URL must be customcard://sso-callback.");
@@ -121,8 +143,45 @@ export function validateMobileRuntimeEnv(env = process.env) {
   if (appEnv === "production" && clerkPublishableKey && !clerkPublishableKey.startsWith("pk_live_")) {
     blockers.push("Mobile production shell requires a Clerk live publishable key.");
   }
+  if (appEnv === "qa" && clerkPublishableKey && !clerkPublishableKey.startsWith("pk_test_")) {
+    blockers.push("Mobile QA shell requires a Clerk test publishable key.");
+  }
 
   return blockers;
+}
+
+export function resolveMobileApiBaseUrl(env = process.env, appEnv = normalizeMobileAppEnv(env.CUSTOMCARD_APP_ENV)) {
+  const explicit = normalizeMobileUrl(env.CUSTOMCARD_API_BASE_URL);
+  const qa = normalizeMobileUrl(env.CUSTOMCARD_QA_API_BASE_URL);
+  const production = normalizeMobileUrl(env.CUSTOMCARD_PRODUCTION_API_BASE_URL);
+  const selectedApiBaseUrlKey =
+    appEnv === "production" && production
+      ? "CUSTOMCARD_PRODUCTION_API_BASE_URL"
+      : appEnv === "qa" && qa
+        ? "CUSTOMCARD_QA_API_BASE_URL"
+        : explicit
+          ? "CUSTOMCARD_API_BASE_URL"
+          : "";
+  const apiBaseUrl =
+    appEnv === "production" ? production || explicit : appEnv === "qa" ? qa || explicit : explicit;
+  const apiBaseUrlSourceName =
+    appEnv === "production"
+      ? "CUSTOMCARD_PRODUCTION_API_BASE_URL or CUSTOMCARD_API_BASE_URL"
+      : appEnv === "qa"
+        ? "CUSTOMCARD_QA_API_BASE_URL or CUSTOMCARD_API_BASE_URL"
+        : "CUSTOMCARD_API_BASE_URL";
+
+  const conflict =
+    explicit &&
+    ((appEnv === "production" && production && explicit !== production) ||
+      (appEnv === "qa" && qa && explicit !== qa));
+
+  return {
+    apiBaseUrl,
+    selectedApiBaseUrlKey,
+    apiBaseUrlSourceName,
+    conflict
+  };
 }
 
 export function normalizeMobileAppEnv(value) {
@@ -130,4 +189,8 @@ export function normalizeMobileAppEnv(value) {
   if (normalized === "qa" || normalized === "staging" || normalized === "preview") return "qa";
   if (normalized === "production" || normalized === "prod") return "production";
   return "";
+}
+
+function normalizeMobileUrl(value) {
+  return String(value ?? "").trim().replace(/\/+$/, "");
 }

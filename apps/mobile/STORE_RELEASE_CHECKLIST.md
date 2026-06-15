@@ -1,19 +1,20 @@
 # Store Release Checklist
 
 Steps to take the CustomCard mobile app from this repo to the App Store and
-Google Play. Items marked **(placeholder)** must be replaced with real assets or
-account-specific values before submission.
+Google Play. Items marked **account-specific** must be confirmed with the store
+account or external reviewers before submission.
 
 ## 0. Pre-flight
 
 - [ ] `npm run verify` passes (typecheck, lint, format, tests).
 - [ ] `npm run release:doctor` reports `status: ready`, `blockers: 0`.
-- [ ] Real brand **icon and splash** replace the generated placeholders in
-      `assets/` **(placeholder)**. Required: `icon.png` (1024×1024, no alpha for
-      iOS), `adaptive-icon.png` (1024×1024 foreground), `splash-icon.png`.
+- [ ] Brand **icon and splash** are present in `assets/`. Required:
+      `icon.png` (1024×1024, no alpha for iOS), `adaptive-icon.png`
+      (1024×1024 foreground), `splash-icon.png`. Regenerate with
+      `npm run assets:brand`.
 - [ ] Confirm store identifiers in `app.config.js`: iOS
       `ios.bundleIdentifier` and Android `android.package` (currently
-      `com.customcard.app`) **(placeholder — confirm ownership)**.
+      `com.customcard.app`) **account-specific — confirm ownership**.
 - [ ] Bump `expo.version` and let EAS auto-increment build numbers
       (`autoIncrement: true` in the production profile).
 
@@ -32,11 +33,13 @@ account-specific values before submission.
 
 Provide via EAS environment variables / build profile `env`:
 
-- [ ] `CUSTOMCARD_API_BASE_URL` = the production **https** API URL.
+- [ ] `CUSTOMCARD_APP_ENV=production`.
+- [ ] `CUSTOMCARD_PRODUCTION_API_BASE_URL` = the production **https** API URL.
+- [ ] Optional `CUSTOMCARD_API_BASE_URL`, if set, matches
+      `CUSTOMCARD_PRODUCTION_API_BASE_URL`.
 - [ ] `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` = production Clerk publishable key
       (`pk_live_…`).
 - [ ] `CUSTOMCARD_OAUTH_REDIRECT_URL=customcard://sso-callback`.
-- [ ] `CUSTOMCARD_APP_ENV=production`.
 - [ ] `REAL_ORDER_KILL_SWITCH=disabled` (already enforced in `eas.json`).
 - [ ] Clerk dashboard: production instance, Google/Apple OAuth providers,
       `customcard://sso-callback` Redirect URL, and the mobile app added;
@@ -85,14 +88,14 @@ Derived from `SECURITY.md`. Configure in App Store Connect → App Privacy:
       (`/api/data-requests`) and/or a web deletion URL.
 - [ ] Declare encryption in transit = Yes.
 
-## 6. Store listing metadata (placeholder)
+## 6. Store listing metadata
 
 - [ ] App name: **CustomCard** — subtitle/short description.
 - [ ] Full description, keywords, support URL, marketing URL.
-- [ ] Privacy policy URL **(placeholder)** and terms URL **(placeholder)**.
+- [ ] Privacy policy URL and terms URL **account-specific**.
 - [ ] Category: e.g. Lifestyle / Productivity.
 - [ ] Age rating questionnaire completed.
-- [ ] Screenshots **(placeholder)**: iPhone 6.7" & 6.5", iPad if supported;
+- [ ] Store screenshots **account-specific**: iPhone 6.7" & 6.5", iPad,
       Android phone + tablet. Capture the Home, Card studio, Proof & print, and
       Checkout screens.
 - [ ] App icon uploaded (matches `assets/icon.png`).

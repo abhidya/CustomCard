@@ -1,0 +1,40 @@
+{
+  "service": "customcard-hosted-db-restore-drill",
+  "status": "blocked",
+  "scope": "live-hosted-restore-drill",
+  "checkedAt": "2026-06-15T17:51:43.628Z",
+  "restoreMetadata": {
+    "restoreSource": "neon-branch",
+    "restorePointInTime": "2026-06-15T17:00:00.000Z",
+    "retentionDays": 14,
+    "rpoMinutes": 15,
+    "rtoMinutes": 60,
+    "productionDatabaseUrlConfigured": false,
+    "restoreDatabaseUrlConfigured": false
+  },
+  "schema": {
+    "databaseName": "",
+    "tables": 0,
+    "indexes": 0,
+    "requiredTablesPresent": 0,
+    "requiredIndexesPresent": 0,
+    "rowCounts": {}
+  },
+  "backupPolicy": {
+    "restoredCloneValidated": false,
+    "productionUrlSeparated": null,
+    "requiredTablesPresent": false,
+    "requiredIndexesPresent": false,
+    "retentionConfigured": true,
+    "restorePointAttached": true,
+    "destructiveLiveMutations": false,
+    "realOrdersEnabled": false,
+    "externalVendorCalls": false
+  },
+  "checks": [],
+  "passed": 0,
+  "failed": 0,
+  "blockers": [
+    "CUSTOMCARD_RESTORE_DATABASE_URL is required."
+  ]
+}

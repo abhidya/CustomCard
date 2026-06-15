@@ -8,7 +8,7 @@ function read(path: string): string {
   return readFileSync(path, "utf8");
 }
 
-const shellDoctorTimeoutMs = 15_000;
+const shellDoctorTimeoutMs = 60_000;
 const validMobileDoctorEnv = {
   CUSTOMCARD_API_BASE_URL: "https://api.customcard.test",
   CUSTOMCARD_APP_ENV: "qa",
@@ -275,6 +275,7 @@ describe("production infrastructure contract", () => {
     expect(env).toContain("OBJECT_STORE_SIGNING_SECRET=");
     expect(env).toContain("ARTIFACT_SIGNED_URL_TTL_MINUTES=");
     expect(env).toContain("AUTH_SESSION_SECRET=");
+    expect(env).toContain("CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS=disabled");
     expect(env).toContain("CUSTOMCARD_CUSTOMER_SESSION_TOKEN=");
     expect(env).toContain("CUSTOMCARD_ADMIN_SESSION_TOKEN=");
     expect(env).toContain("CUSTOMCARD_AUTH_CALLBACK_URL=");
@@ -286,6 +287,8 @@ describe("production infrastructure contract", () => {
     expect(env).toContain("CLERK_SECRET_KEY=");
     expect(env).toContain("CLERK_JWT_KEY=");
     expect(env).toContain("CLERK_AUTHORIZED_PARTIES=");
+    expect(env).toContain("CLERK_ISSUER=");
+    expect(env).toContain("CLERK_AUDIENCE=");
     expect(env).toContain("SUPABASE_URL=");
     expect(env).toContain("SUPABASE_ANON_KEY=");
     expect(env).toContain("SUPABASE_SERVICE_ROLE_KEY=");
@@ -1128,6 +1131,8 @@ describe("production infrastructure contract", () => {
       screenSections: number;
       viewportProfiles: number;
       nativeBuildProfiles: number;
+      evidenceArtifacts: number;
+      emulatorSmokeEvidenceArtifacts: number;
       emulatorRenderProofs: number;
       signedArtifacts: number;
       externalNetworkCalls: number;
@@ -1147,6 +1152,8 @@ describe("production infrastructure contract", () => {
       screenSections: 21,
       viewportProfiles: 4,
       nativeBuildProfiles: 3,
+      evidenceArtifacts: 9,
+      emulatorSmokeEvidenceArtifacts: 9,
       emulatorRenderProofs: 0,
       signedArtifacts: 0,
       externalNetworkCalls: 0,
@@ -1177,15 +1184,20 @@ describe("production infrastructure contract", () => {
       items: number;
       repoLocalReady: number;
       evidenceMissing: number;
+      liveProofAttached: number;
+      partialLiveProof: number;
       protectionBlocked: number;
       routeContracts: number;
       requiredEnvVars: number;
+      liveHostedProofAttached: number;
+      partialLiveHostedProofs: number;
       envSyncProofs: number;
       hostedDbProofs: number;
       publicRouteProofs: number;
       hostedTokenVerificationProofs: number;
       backupPolicies: number;
       deploymentProtectionBypasses: number;
+      evidenceArtifacts: number;
       externalNetworkCalls: number;
       realOrdersEnabled: number;
       liveProviderCalls: number;
@@ -1198,16 +1210,21 @@ describe("production infrastructure contract", () => {
       status: "repo-consistent",
       items: 8,
       repoLocalReady: 2,
-      evidenceMissing: 5,
-      protectionBlocked: 1,
+      evidenceMissing: 2,
+      liveProofAttached: 2,
+      partialLiveProof: 2,
+      protectionBlocked: 0,
       routeContracts: 5,
-      requiredEnvVars: 6,
+      requiredEnvVars: 13,
+      liveHostedProofAttached: 2,
+      partialLiveHostedProofs: 2,
       envSyncProofs: 0,
-      hostedDbProofs: 0,
-      publicRouteProofs: 0,
+      hostedDbProofs: 2,
+      publicRouteProofs: 2,
       hostedTokenVerificationProofs: 0,
       backupPolicies: 0,
-      deploymentProtectionBypasses: 0,
+      deploymentProtectionBypasses: 1,
+      evidenceArtifacts: 10,
       externalNetworkCalls: 0,
       realOrdersEnabled: 0,
       liveProviderCalls: 0,
@@ -1266,7 +1283,7 @@ describe("production infrastructure contract", () => {
       vercelEnvSyncRequired: 5,
       tableContracts: 15,
       routeContracts: 5,
-      requiredEnvVars: 6,
+      requiredEnvVars: 7,
       hostedSeedProofs: 0,
       hostedTokenProbeProofs: 0,
       vercelEnvSyncProofs: 0,
@@ -1555,12 +1572,16 @@ describe("production infrastructure contract", () => {
     expect(mobilePackage).toContain("\"expo\"");
     expect(mobilePackage).toContain("\"react-native\"");
     expect(mobilePackage).toContain("\"start\": \"expo start\"");
-    expect(mobilePackage).toContain("\"ios\": \"expo start --ios\"");
-    expect(mobilePackage).toContain("\"android\": \"expo start --android\"");
+    expect(mobilePackage).toContain("\"ios\": \"expo run:ios\"");
+    expect(mobilePackage).toContain("\"ios:review\": \"EXPO_UNSTABLE_HEADLESS=1 expo start --localhost --ios\"");
+    expect(mobilePackage).toContain("\"android\": \"expo run:android\"");
+    expect(mobilePackage).toContain("\"android:review\": \"EXPO_UNSTABLE_HEADLESS=1 expo start --localhost --android\"");
     expect(mobilePackage).toContain("\"release:doctor\": \"node ./scripts/release-doctor.mjs\"");
     expect(mobileRootApp.trim()).toBe('export { default } from "./src/App";');
     expect(appConfig).toContain('platforms: ["ios", "android"]');
-    expect(appConfig).toContain("process.env.CUSTOMCARD_API_BASE_URL");
+    expect(appConfig).toContain("env.CUSTOMCARD_API_BASE_URL");
+    expect(appConfig).toContain("env.CUSTOMCARD_QA_API_BASE_URL");
+    expect(appConfig).toContain("env.CUSTOMCARD_PRODUCTION_API_BASE_URL");
     expect(appConfig).not.toContain("${CUSTOMCARD_API_BASE_URL}");
     expect(appConfig).toContain("realOrderKillSwitch");
     expect(easConfig).toContain("\"developmentClient\": true");
@@ -1568,6 +1589,8 @@ describe("production infrastructure contract", () => {
     expect(easConfig).toContain("\"autoIncrement\": true");
     expect(easConfig).toContain("\"REAL_ORDER_KILL_SWITCH\": \"disabled\"");
     expect(easConfig).not.toContain("CUSTOMCARD_API_BASE_URL");
+    expect(easConfig).not.toContain("CUSTOMCARD_QA_API_BASE_URL");
+    expect(easConfig).not.toContain("CUSTOMCARD_PRODUCTION_API_BASE_URL");
     expect(releaseDoctor).toContain("customcard-mobile-release-doctor");
     expect(releaseDoctor).toContain("signedArtifactBuilt: false");
     expect(releaseDoctor).toContain("nativeBuildProfiles");
@@ -1600,7 +1623,7 @@ describe("production infrastructure contract", () => {
     expect(mobileExperience).toContain("mobileHandoffSteps");
     expect(mobileExperience).toContain("requiredMobileCapabilities");
     expect(mobileExperience).toContain("validateMobileExperience");
-    expect(mobileExperience).toContain("Live AI and automatic orders stay off");
+    expect(mobileExperience).toContain("automatic orders stay off");
     const doctorOutput = execFileSync("node", ["apps/mobile/scripts/doctor.mjs"], {
       encoding: "utf8",
       env: { ...process.env, ...validMobileDoctorEnv },

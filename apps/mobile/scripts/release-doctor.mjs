@@ -14,16 +14,21 @@ const checks = [
     'platforms: ["ios", "android"]',
     'scheme: "customcard"',
     'bundleIdentifier: "com.customcard.app"',
+    "supportsTablet: true",
     'package: "com.customcard.app"'
   ]),
   checkIncludes("app-config", "runtime-env-resolution", appConfigSource, [
-    "process.env.CUSTOMCARD_API_BASE_URL",
+    "env.CUSTOMCARD_API_BASE_URL",
+    "env.CUSTOMCARD_QA_API_BASE_URL",
+    "env.CUSTOMCARD_PRODUCTION_API_BASE_URL",
     "process.env.CUSTOMCARD_APP_ENV",
     "process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY",
     "process.env.CUSTOMCARD_OAUTH_REDIRECT_URL",
-    "CUSTOMCARD_API_BASE_URL is required",
+    "resolveApiBaseUrl",
+    "is required for the mobile app shell",
     "CUSTOMCARD_APP_ENV must be qa or production",
     "Clerk publishable key",
+    "QA mobile builds require a Clerk test publishable key",
     "CUSTOMCARD_OAUTH_REDIRECT_URL must be customcard://sso-callback",
     "realOrderKillSwitch",
     'process.env.REAL_ORDER_KILL_SWITCH ?? "disabled"'
@@ -64,6 +69,7 @@ const checks = [
   checkIncludes("package", "release-doctor-script", JSON.stringify(packageJson, null, 2), [
     '"doctor": "node ./scripts/doctor.mjs"',
     '"release:doctor": "node ./scripts/release-doctor.mjs"',
+    '"assets:brand": "node ./scripts/generate-brand-assets.mjs"',
     '"expo"',
     '"react-native"'
   ]),

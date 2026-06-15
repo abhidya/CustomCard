@@ -116,6 +116,70 @@ describe("api runtime safety", () => {
     });
   });
 
+  it("allows memory runtime validation to use Clerk verification instead of seeded static session tokens", () => {
+    const runtime = createApiRuntime({
+      env: {
+        CUSTOMCARD_API_RUNTIME: "memory",
+        AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
+        CLERK_JWT_KEY: "-----BEGIN PUBLIC KEY-----\\ntest-clerk-jwt-key\\n-----END PUBLIC KEY-----",
+        CLERK_AUTHORIZED_PARTIES: "https://customcard.test",
+        CLERK_ISSUER: "https://clerk.customcard.test",
+        CLERK_AUDIENCE: "customcard-api"
+      },
+      routes: apiRouteContracts
+    });
+
+    expect(runtime.validate()).not.toContain("Memory API runtime requires CUSTOMCARD_CUSTOMER_SESSION_TOKEN.");
+    expect(runtime.validate()).toEqual([]);
+  });
+
+  it("ignores static memory session tokens unless local auth fallbacks are explicitly enabled", async () => {
+    const runtime = createApiRuntime({
+      env: {
+        CUSTOMCARD_API_RUNTIME: "memory",
+        AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
+        CUSTOMCARD_CUSTOMER_SESSION_TOKEN: "test-customer-session-token",
+        CUSTOMCARD_ADMIN_SESSION_TOKEN: "test-admin-session-token"
+      },
+      routes: apiRouteContracts
+    });
+
+    expect(runtime.describe()).toMatchObject({ sessionsConfigured: 0 });
+    expect(runtime.validate()).toContain(
+      "Memory API runtime requires Clerk JWT verification config or CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS=enabled with CUSTOMCARD_CUSTOMER_SESSION_TOKEN plus CUSTOMCARD_ADMIN_SESSION_TOKEN."
+    );
+    await expect(
+      runtime.authorize(renderPacketsRoute, { headers: { authorization: "Bearer test-customer-session-token" } })
+    ).resolves.toMatchObject({
+      ok: false,
+      statusCode: 401,
+      payload: { status: "invalid-session" }
+    });
+  });
+
+  it("allows static memory session tokens only for explicit local auth fallback drills", async () => {
+    const runtime = createApiRuntime({
+      env: {
+        CUSTOMCARD_API_RUNTIME: "memory",
+        CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS: "enabled",
+        AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
+        CUSTOMCARD_CUSTOMER_SESSION_TOKEN: "test-customer-session-token",
+        CUSTOMCARD_ADMIN_SESSION_TOKEN: "test-admin-session-token"
+      },
+      routes: apiRouteContracts
+    });
+
+    expect(runtime.describe()).toMatchObject({ sessionsConfigured: 2 });
+    expect(runtime.validate()).toEqual([]);
+    await expect(
+      runtime.authorize(renderPacketsRoute, { headers: { authorization: "Bearer test-customer-session-token" } })
+    ).resolves.toMatchObject({
+      ok: true,
+      role: "customer",
+      userId: "user-demo"
+    });
+  });
+
   it("fails closed when production Postgres runtime enables real orders", () => {
     const runtime = createApiRuntime({
       env: {
@@ -126,6 +190,10 @@ describe("api runtime safety", () => {
         OBJECT_STORE_URL: "https://objects.customcard.test",
         OBJECT_STORE_SIGNING_SECRET: "test-object-store-signing-secret-32",
         AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
+        CLERK_JWT_KEY: "-----BEGIN PUBLIC KEY-----\\ntest-clerk-jwt-key\\n-----END PUBLIC KEY-----",
+        CLERK_AUTHORIZED_PARTIES: "https://customcard.test",
+        CLERK_ISSUER: "https://clerk.customcard.test",
+        CLERK_AUDIENCE: "customcard-api",
         REAL_ORDER_KILL_SWITCH: "enabled"
       },
       routes: apiRouteContracts
@@ -162,6 +230,7 @@ describe("api runtime safety", () => {
     const runtime = createApiRuntime({
       env: {
         CUSTOMCARD_API_RUNTIME: "memory",
+        CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS: "enabled",
         CUSTOMCARD_CUSTOMER_SESSION_TOKEN: "test-customer-session-token",
         CUSTOMCARD_ADMIN_SESSION_TOKEN: "test-admin-session-token"
       },

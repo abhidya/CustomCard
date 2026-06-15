@@ -1,0 +1,102 @@
+{
+  "service": "customcard-hosted-vercel-env-inventory",
+  "status": "blocked",
+  "scope": "live-hosted-env-sync",
+  "targetEnvironment": "production",
+  "vercelTarget": "production",
+  "baseUrl": "https://customcard-three.vercel.app",
+  "checkedAt": "2026-06-15T14:33:38.760Z",
+  "command": {
+    "name": "vercel env ls --format=json",
+    "exitCode": 0,
+    "stdoutParsed": true
+  },
+  "mutationsEnabled": false,
+  "valuesRedacted": true,
+  "requiredKeys": [
+    {
+      "name": "CUSTOMCARD_API_RUNTIME",
+      "present": true,
+      "targets": [
+        "production"
+      ]
+    },
+    {
+      "name": "DATABASE_URL",
+      "present": true,
+      "targets": [
+        "production"
+      ]
+    },
+    {
+      "name": "AUTH_SESSION_SECRET",
+      "present": true,
+      "targets": [
+        "production"
+      ]
+    },
+    {
+      "name": "CLERK_JWT_KEY",
+      "present": true,
+      "targets": [
+        "production"
+      ]
+    },
+    {
+      "name": "CLERK_AUTHORIZED_PARTIES",
+      "present": true,
+      "targets": [
+        "production"
+      ]
+    },
+    {
+      "name": "CLERK_ISSUER",
+      "present": false,
+      "targets": []
+    },
+    {
+      "name": "CLERK_AUDIENCE",
+      "present": false,
+      "targets": []
+    },
+    {
+      "name": "IDEMPOTENCY_KEY_TTL_HOURS",
+      "present": false,
+      "targets": []
+    }
+  ],
+  "keyCount": 57,
+  "scopedKeyCount": 57,
+  "envSync": {
+    "requiredKeysPresent": false,
+    "customcardApiRuntimeConfigured": true,
+    "databaseUrlConfigured": true,
+    "clerkJwtVerifierConfigured": false,
+    "idempotencyConfigured": false,
+    "environmentSynced": false
+  },
+  "checks": [
+    {
+      "id": "required-hosted-env-keys",
+      "passed": false,
+      "detail": "Missing hosted env keys: CLERK_ISSUER, CLERK_AUDIENCE, IDEMPOTENCY_KEY_TTL_HOURS."
+    },
+    {
+      "id": "clerk-token-verifier-env",
+      "passed": false,
+      "detail": "Clerk JWT verifier env keys are incomplete."
+    },
+    {
+      "id": "postgres-runtime-env",
+      "passed": true,
+      "detail": "Hosted runtime mode and DATABASE_URL env keys are present."
+    }
+  ],
+  "passed": 1,
+  "failed": 2,
+  "blockers": [
+    "CLERK_ISSUER is missing from the Vercel production env inventory.",
+    "CLERK_AUDIENCE is missing from the Vercel production env inventory.",
+    "IDEMPOTENCY_KEY_TTL_HOURS is missing from the Vercel production env inventory."
+  ]
+}

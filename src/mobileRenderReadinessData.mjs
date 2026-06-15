@@ -1,4 +1,4 @@
-import { defineReadinessRegister } from "./readinessRegister.mjs";
+import { defineReadinessRegister, invalidEvidenceArtifactRefs } from "./readinessRegister.mjs";
 
 const requiredMobileRenderReadinessIds = [
   "native-shell-source-render-contract",
@@ -55,6 +55,7 @@ export const mobileRenderReadinessItems = [
     ],
     deterministicProofBoundary: "repo-local-source-contract",
     blockedLiveProofs: ["native-emulator-render", "signed-native-artifact", "app-store-review", "live-retail-order"],
+    evidenceArtifactRefs: [],
     customerVisible: true,
     requiresEmulatorProof: false,
     requiresSignedArtifact: false,
@@ -102,6 +103,7 @@ export const mobileRenderReadinessItems = [
     ],
     deterministicProofBoundary: "repo-local-customer-flow-contract",
     blockedLiveProofs: ["native-emulator-render", "live-retail-order"],
+    evidenceArtifactRefs: [],
     customerVisible: true,
     requiresEmulatorProof: false,
     requiresSignedArtifact: false,
@@ -125,6 +127,7 @@ export const mobileRenderReadinessItems = [
     requiredSourceSignals: ["mobilePrintProofChecks", "proof-size", "proof-resolution", "proof-safe-zone", "proof-order-gate"],
     deterministicProofBoundary: "repo-local-print-proof-contract",
     blockedLiveProofs: ["native-emulator-render", "live-retail-order"],
+    evidenceArtifactRefs: [],
     customerVisible: true,
     requiresEmulatorProof: false,
     requiresSignedArtifact: false,
@@ -148,6 +151,7 @@ export const mobileRenderReadinessItems = [
     requiredSourceSignals: ["flex: 1", "ScrollView", "gap:", "maxWidth: 92", "lineHeight"],
     deterministicProofBoundary: "repo-local-layout-source-contract",
     blockedLiveProofs: ["native-emulator-render"],
+    evidenceArtifactRefs: [],
     customerVisible: true,
     requiresEmulatorProof: false,
     requiresSignedArtifact: false,
@@ -156,9 +160,14 @@ export const mobileRenderReadinessItems = [
     externalNetworkCalls: false,
     realOrdersEnabled: false,
     liveProviderCalls: false,
-    currentEvidence: ["flex layout source", "bounded status pills", "Chrome mobile web overflow smoke test"],
-    requiredEvidence: ["Native small-phone screenshot", "Native large-phone screenshot", "Text clipping report"],
-    blocker: "Responsive source constraints exist; no native viewport screenshot set or text clipping report is attached."
+    currentEvidence: [
+      "flex layout source",
+      "bounded status pills",
+      "Chrome mobile web overflow smoke test",
+      "iOS Release compact, standard, large, and tablet home screenshots"
+    ],
+    requiredEvidence: ["Text clipping report", "Print proof responsive screenshot"],
+    blocker: "Responsive source constraints and native home viewport screenshots exist; no native text clipping report or print-proof responsive screenshot is attached."
   },
   {
     id: "mobile-rtl-render-review",
@@ -171,6 +180,7 @@ export const mobileRenderReadinessItems = [
     requiredSourceSignals: ["ar-EG", "ur-PK", "writingDirection", "copyReviewRequired", "rtl"],
     deterministicProofBoundary: "repo-local-locale-contract",
     blockedLiveProofs: ["native-emulator-render", "app-store-review"],
+    evidenceArtifactRefs: [],
     customerVisible: true,
     requiresEmulatorProof: true,
     requiresSignedArtifact: false,
@@ -194,6 +204,7 @@ export const mobileRenderReadinessItems = [
     requiredSourceSignals: ["developmentClient", "ios.simulator", "android.buildType", "autoIncrement", "REAL_ORDER_KILL_SWITCH"],
     deterministicProofBoundary: "repo-local-eas-profile-contract",
     blockedLiveProofs: ["native-emulator-render", "signed-native-artifact", "app-store-review"],
+    evidenceArtifactRefs: [],
     customerVisible: false,
     requiresEmulatorProof: false,
     requiresSignedArtifact: false,
@@ -214,9 +225,27 @@ export const mobileRenderReadinessItems = [
     screenSectionIds: ["customer-home", "sign-in-import", "print-proof"],
     viewportProfiles: requiredViewportProfiles,
     nativeBuildProfileIds: ["development", "preview"],
-    requiredSourceSignals: ["CUSTOMCARD_API_BASE_URL", "REAL_ORDER_KILL_SWITCH", "expo", "react-native"],
+    requiredSourceSignals: [
+      "CUSTOMCARD_QA_API_BASE_URL",
+      "CUSTOMCARD_PRODUCTION_API_BASE_URL",
+      "CUSTOMCARD_API_BASE_URL",
+      "REAL_ORDER_KILL_SWITCH",
+      "expo",
+      "react-native"
+    ],
     deterministicProofBoundary: "missing-native-emulator-proof",
     blockedLiveProofs: ["native-emulator-render"],
+    evidenceArtifactRefs: [
+      "docs/evidence/mobile-render/2026-06-15-ios-prod-review-smoke.md",
+      "docs/evidence/mobile-render/2026-06-15-ios-prod-review-smoke.png",
+      "docs/evidence/mobile-render/2026-06-15-ios-release-simulator-home.md",
+      "docs/evidence/mobile-render/2026-06-15-ios-release-simulator-home.png",
+      "docs/evidence/mobile-render/2026-06-15-ios-release-viewport-screenshots.md",
+      "docs/evidence/mobile-render/2026-06-15-ios-release-iphone-se.png",
+      "docs/evidence/mobile-render/2026-06-15-ios-release-standard-phone.png",
+      "docs/evidence/mobile-render/2026-06-15-ios-release-large-phone.png",
+      "docs/evidence/mobile-render/2026-06-15-ios-release-tablet-portrait.png"
+    ],
     customerVisible: true,
     requiresEmulatorProof: true,
     requiresSignedArtifact: false,
@@ -225,9 +254,20 @@ export const mobileRenderReadinessItems = [
     externalNetworkCalls: false,
     realOrdersEnabled: false,
     liveProviderCalls: false,
-    currentEvidence: ["mobile app config", "mobile release doctor", "contract-only customer model"],
-    requiredEvidence: ["Emulator screenshot", "Emulator boot log", "Native smoke transcript"],
-    blocker: "No iOS or Android emulator screenshot, boot log, or native smoke transcript is attached."
+    currentEvidence: [
+      "mobile app config",
+      "mobile release doctor",
+      "contract-only customer model",
+      "iOS Expo Go production-mode smoke artifact with Tools bubble caveat",
+      "tooling-free iOS Release simulator home screenshot",
+      "tooling-free iOS Release compact, standard, large, and tablet viewport screenshots"
+    ],
+    requiredEvidence: [
+      "Print proof native screenshot",
+      "RTL native screenshot",
+      "Native smoke transcript"
+    ],
+    blocker: "Clean iOS Release simulator home, compact-phone, standard-phone, large-phone, and tablet screenshots are attached, but the native evidence still does not cover the print, RTL, smoke-transcript, or signed-artifact proof matrix."
   },
   {
     id: "signed-native-artifact-proof",
@@ -240,6 +280,7 @@ export const mobileRenderReadinessItems = [
     requiredSourceSignals: ["bundleIdentifier", "package: \"com.customcard.app\"", "submit", "production"],
     deterministicProofBoundary: "missing-signed-native-artifact-proof",
     blockedLiveProofs: ["signed-native-artifact", "app-store-review"],
+    evidenceArtifactRefs: [],
     customerVisible: false,
     requiresEmulatorProof: false,
     requiresSignedArtifact: true,
@@ -269,6 +310,14 @@ const mobileRenderReadinessRegister = defineReadinessRegister({
     }
     if (!Array.isArray(item.blockedLiveProofs) || item.blockedLiveProofs.length < 1) {
       issues.push(`Mobile render readiness item ${item.id} must list blocked live proof claims.`);
+    }
+    if (!Array.isArray(item.evidenceArtifactRefs)) {
+      issues.push(`Mobile render readiness item ${item.id} must list evidenceArtifactRefs.`);
+    } else {
+      const invalidRefs = invalidEvidenceArtifactRefs(item.evidenceArtifactRefs);
+      if (invalidRefs.length > 0) {
+        issues.push(`Mobile render readiness item ${item.id} has invalid evidenceArtifactRefs: ${invalidRefs.join(", ")}.`);
+      }
     }
     if (item.currentEvidence.length < 1) issues.push(`Mobile render readiness item ${item.id} must list current repo-local evidence.`);
     if (item.requiredEvidence.length < 2) issues.push(`Mobile render readiness item ${item.id} must list at least two required evidence items.`);
@@ -360,6 +409,9 @@ const mobileRenderReadinessRegister = defineReadinessRegister({
       sourceSignals: new Set(items.flatMap((item) => item.requiredSourceSignals)).size,
       deterministicProofBoundaries: new Set(items.map((item) => item.deterministicProofBoundary)).size,
       blockedLiveProofs: new Set(items.flatMap((item) => item.blockedLiveProofs)).size,
+      evidenceArtifacts: items.reduce((total, item) => total + item.evidenceArtifactRefs.length, 0),
+      emulatorSmokeEvidenceArtifacts:
+        items.find((item) => item.id === "native-emulator-render-proof")?.evidenceArtifactRefs.length ?? 0,
       emulatorRequired: items.filter((item) => item.requiresEmulatorProof).length,
       signedArtifactRequired: items.filter((item) => item.requiresSignedArtifact).length,
       emulatorRenderProofs: items.filter((item) => item.emulatorRenderProofAttached).length,

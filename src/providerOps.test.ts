@@ -106,7 +106,10 @@ describe("provider ops", () => {
       monthBucket: "2026-06"
     });
     expect(providerOps.orr.latencyGateRequired).toBeGreaterThan(0);
-    expect(providerOps.users.userManagementRequiredEnv).toEqual(expect.arrayContaining(["VITE_CUSTOMCARD_ADMIN_EMAILS"]));
+    expect(providerOps.users.userManagementRequiredEnv).toEqual(expect.arrayContaining(["CLERK_JWT_KEY"]));
+    expect(providerOps.users.userManagementRequiredEnv).not.toEqual(
+      expect.arrayContaining(["VITE_CUSTOMCARD_ADMIN_EMAILS", "VITE_CUSTOMCARD_ADMIN_EMAIL"])
+    );
     expect(JSON.stringify(providerOps)).not.toContain("token_text");
   });
 

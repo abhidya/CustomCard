@@ -7,7 +7,7 @@ import {
 } from "./mobileRenderReadiness";
 
 describe("mobile render readiness", () => {
-  it("tracks mobile render readiness without claiming emulator or signed artifact proof", () => {
+  it("tracks mobile render readiness with iOS release simulator evidence without claiming full emulator or signed artifact proof", () => {
     const summary = summarizeMobileRenderReadiness();
 
     expect(validateMobileRenderReadiness()).toEqual([]);
@@ -22,6 +22,8 @@ describe("mobile render readiness", () => {
       nativeBuildProfiles: 3,
       deterministicProofBoundaries: 8,
       blockedLiveProofs: 4,
+      evidenceArtifacts: 9,
+      emulatorSmokeEvidenceArtifacts: 9,
       emulatorRequired: 2,
       signedArtifactRequired: 1,
       emulatorRenderProofs: 0,
@@ -35,7 +37,7 @@ describe("mobile render readiness", () => {
     expect(summary.requiredEvidence).toEqual(
       expect.arrayContaining([
         "React Native render test output",
-        "Emulator screenshot",
+        "Print proof native screenshot",
         "RTL native screenshot",
         "Signed iOS artifact",
         "Signed Android artifact"
@@ -75,6 +77,7 @@ describe("mobile render readiness", () => {
     expect(mobileRenderReadinessItems.every((item) => item.emulatorRenderProofAttached === false)).toBe(true);
     expect(mobileRenderReadinessItems.every((item) => item.nativeArtifactSigned === false)).toBe(true);
     expect(mobileRenderReadinessItems.every((item) => item.blockedLiveProofs.length > 0)).toBe(true);
+    expect(mobileRenderReadinessItems.every((item) => Array.isArray(item.evidenceArtifactRefs))).toBe(true);
     expect(rtl).toMatchObject({
       status: "evidence-missing",
       requiresEmulatorProof: true,
@@ -84,7 +87,18 @@ describe("mobile render readiness", () => {
     expect(emulator).toMatchObject({
       requiresEmulatorProof: true,
       emulatorRenderProofAttached: false,
-      externalNetworkCalls: false
+      externalNetworkCalls: false,
+      evidenceArtifactRefs: [
+        "docs/evidence/mobile-render/2026-06-15-ios-prod-review-smoke.md",
+        "docs/evidence/mobile-render/2026-06-15-ios-prod-review-smoke.png",
+        "docs/evidence/mobile-render/2026-06-15-ios-release-simulator-home.md",
+        "docs/evidence/mobile-render/2026-06-15-ios-release-simulator-home.png",
+        "docs/evidence/mobile-render/2026-06-15-ios-release-viewport-screenshots.md",
+        "docs/evidence/mobile-render/2026-06-15-ios-release-iphone-se.png",
+        "docs/evidence/mobile-render/2026-06-15-ios-release-standard-phone.png",
+        "docs/evidence/mobile-render/2026-06-15-ios-release-large-phone.png",
+        "docs/evidence/mobile-render/2026-06-15-ios-release-tablet-portrait.png"
+      ]
     });
     expect(signed).toMatchObject({
       status: "artifact-blocked",
@@ -106,6 +120,7 @@ describe("mobile render readiness", () => {
         requiredSourceSignals: ["one"],
         deterministicProofBoundary: "",
         blockedLiveProofs: [],
+        evidenceArtifactRefs: ["docs/not-evidence.png"],
         currentEvidence: [],
         requiredEvidence: ["one"],
         blocker: ""
@@ -122,6 +137,7 @@ describe("mobile render readiness", () => {
         "Mobile render readiness item native-shell-source-render-contract must list source signals.",
         "Mobile render readiness item native-shell-source-render-contract must name its deterministic proof boundary.",
         "Mobile render readiness item native-shell-source-render-contract must list blocked live proof claims.",
+        "Mobile render readiness item native-shell-source-render-contract has invalid evidenceArtifactRefs: docs/not-evidence.png.",
         "Mobile render readiness item native-shell-source-render-contract must list current repo-local evidence.",
         "Mobile render readiness item native-shell-source-render-contract must list at least two required evidence items.",
         "Mobile render readiness item native-shell-source-render-contract must explain its blocker.",

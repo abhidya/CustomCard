@@ -474,6 +474,7 @@ DATABASE_URL="postgres://..." node scripts/hosted-api-readiness-doctor.mjs
 | `VITE_CARD_GEN_URL` | Vercel / `.env.local` | No | AI sidecar URL — enables Generate with AI button |
 | `DATABASE_URL` | Vercel / shell | For API | Postgres connection string |
 | `CUSTOMCARD_API_RUNTIME` | Vercel / shell | For API | `postgres` in production; `contract`/`memory` only for local reviewer checks |
+| `CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS` | Local shell only | No | Set `enabled` only for local reviewer memory-token drills; keep disabled in QA/production |
 | `CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG` | Server env only | No | Defaults to `false`; set `true` only for trusted admin/operator flows that may override server AI provider config |
 | `CUSTOMCARD_TRUST_PROXY_HEADERS` | Server env only | No | Defaults to `false`; set `true` only behind a trusted proxy before using `X-Forwarded-For` for rate limits |
 | `CLOUDFLARE_ACCOUNT_ID` | Server env only | For live AI route | Cloudflare account for Workers AI text/image routes |

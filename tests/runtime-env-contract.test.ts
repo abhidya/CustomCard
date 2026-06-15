@@ -13,6 +13,10 @@ const durableEnv = {
   OBJECT_STORE_URL: "https://objects.customcard.test",
   OBJECT_STORE_SIGNING_SECRET: "test-object-store-signing-secret-32",
   AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
+  CLERK_JWT_KEY: "-----BEGIN PUBLIC KEY-----\\ntest-clerk-jwt-key\\n-----END PUBLIC KEY-----",
+  CLERK_AUTHORIZED_PARTIES: "https://customcard.test",
+  CLERK_ISSUER: "https://clerk.customcard.test",
+  CLERK_AUDIENCE: "customcard-api",
   REAL_ORDER_KILL_SWITCH: "disabled"
 };
 
@@ -31,11 +35,13 @@ describe("runtime env contract", () => {
       validateDurableRuntimeEnv({
         ...durableEnv,
         DATABASE_URL: "replace-me",
-        OBJECT_STORE_URL: ""
+        OBJECT_STORE_URL: "",
+        CLERK_JWT_KEY: "",
+        CLERK_AUTHORIZED_PARTIES: "replace-me"
       })
     ).toMatchObject({
-      missing: ["OBJECT_STORE_URL"],
-      placeholders: ["DATABASE_URL"]
+      missing: ["OBJECT_STORE_URL", "CLERK_JWT_KEY"],
+      placeholders: ["DATABASE_URL", "CLERK_AUTHORIZED_PARTIES"]
     });
   });
 
@@ -78,10 +84,10 @@ describe("runtime env contract", () => {
       "CustomCard worker missing env: QUEUE_URL"
     );
     expect(validateMobileRuntimeEnv({})).toEqual([
-      "Mobile shell missing env: CUSTOMCARD_API_BASE_URL",
       "Mobile shell missing env: CUSTOMCARD_APP_ENV",
       "Mobile shell missing env: CUSTOMCARD_OAUTH_REDIRECT_URL",
-      "Mobile shell missing env: EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY"
+      "Mobile shell missing env: EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY",
+      "Mobile shell missing env: CUSTOMCARD_API_BASE_URL"
     ]);
     expect(
       validateMobileRuntimeEnv({
@@ -92,7 +98,7 @@ describe("runtime env contract", () => {
       })
     ).toEqual([
       "Mobile shell has placeholder env: CUSTOMCARD_API_BASE_URL",
-      "Mobile shell CUSTOMCARD_API_BASE_URL must be an https:// URL."
+      "Mobile shell CUSTOMCARD_QA_API_BASE_URL or CUSTOMCARD_API_BASE_URL must be an https:// URL."
     ]);
     expect(
       validateMobileRuntimeEnv({
@@ -101,7 +107,9 @@ describe("runtime env contract", () => {
         CUSTOMCARD_OAUTH_REDIRECT_URL: "customcard://sso-callback",
         EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_customcard"
       })
-    ).toEqual(["Mobile shell CUSTOMCARD_API_BASE_URL must be an https:// URL."]);
+    ).toEqual([
+      "Mobile shell CUSTOMCARD_QA_API_BASE_URL or CUSTOMCARD_API_BASE_URL must be an https:// URL."
+    ]);
     expect(
       validateMobileRuntimeEnv({
         CUSTOMCARD_API_BASE_URL: "https://api.customcard.test",
@@ -112,11 +120,32 @@ describe("runtime env contract", () => {
     ).toEqual(["Mobile shell CUSTOMCARD_OAUTH_REDIRECT_URL must be customcard://sso-callback."]);
     expect(
       validateMobileRuntimeEnv({
-        CUSTOMCARD_API_BASE_URL: "https://api.customcard.test",
+        CUSTOMCARD_QA_API_BASE_URL: "https://api.qa.customcard.test",
         CUSTOMCARD_APP_ENV: "qa",
         CUSTOMCARD_OAUTH_REDIRECT_URL: "customcard://sso-callback",
         EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_customcard"
       })
     ).toEqual([]);
+    expect(
+      validateMobileRuntimeEnv({
+        CUSTOMCARD_API_BASE_URL: "https://api.customcard.test",
+        CUSTOMCARD_PRODUCTION_API_BASE_URL: "https://api.customcard.test",
+        CUSTOMCARD_APP_ENV: "production",
+        CUSTOMCARD_OAUTH_REDIRECT_URL: "customcard://sso-callback",
+        EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_live_customcard"
+      })
+    ).toEqual([]);
+    expect(
+      validateMobileRuntimeEnv({
+        CUSTOMCARD_API_BASE_URL: "https://api.wrong.customcard.test",
+        CUSTOMCARD_QA_API_BASE_URL: "https://api.qa.customcard.test",
+        CUSTOMCARD_APP_ENV: "qa",
+        CUSTOMCARD_OAUTH_REDIRECT_URL: "customcard://sso-callback",
+        EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_live_customcard"
+      })
+    ).toEqual([
+      "Mobile shell CUSTOMCARD_QA_API_BASE_URL or CUSTOMCARD_API_BASE_URL must not conflict with CUSTOMCARD_API_BASE_URL.",
+      "Mobile QA shell requires a Clerk test publishable key."
+    ]);
   });
 });

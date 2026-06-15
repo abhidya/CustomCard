@@ -17,7 +17,7 @@ export const requiredMobileCapabilities = [
 ] as const;
 
 export type MobileExperienceCapability = (typeof requiredMobileCapabilities)[number];
-export type MobileExperienceStatus = "Ready" | "Approved" | "Local" | "Free" | "Manual";
+export type MobileExperienceStatus = "Ready" | "Approved";
 export type MobileCardQueueStatus = "needs-approval" | "approved" | "ready-for-handoff";
 export type MobileApprovalActionKind = "approve" | "edit-tone" | "snooze" | "dismiss" | "request-regeneration";
 export type MobileMutationType = "approve-card" | "update-tone" | "snooze-card" | "dismiss-card" | "prepare-handoff";
@@ -186,7 +186,7 @@ export interface MobileSyncState {
   offlineQueueEnabled: boolean;
   idempotencyRequired: boolean;
   pendingMutationTypes: MobileMutationType[];
-  forbiddenMutationTypes: Array<"submit-live-order" | "charge-payment" | "upload-raw-memory">;
+  forbiddenMutationTypes: ("submit-live-order" | "charge-payment" | "upload-raw-memory")[];
   retryPolicy: "exponential-backoff";
 }
 
@@ -197,7 +197,12 @@ export interface MobileProofBoundary {
   printOptionsUnlocked: boolean;
   webCustomerFlowStages: MobileCustomerFlowStage[];
   repoLocalEvidence: string[];
-  blockedLiveProofs: Array<"native-emulator-render" | "signed-native-artifact" | "app-store-review" | "live-retail-order">;
+  blockedLiveProofs: (
+    | "native-emulator-render"
+    | "signed-native-artifact"
+    | "app-store-review"
+    | "live-retail-order"
+  )[];
   emulatorProofClaimed: false;
   signedArtifactClaimed: false;
   liveOrderClaimed: false;
@@ -332,7 +337,7 @@ export const mobileExperienceSections: MobileExperienceSection[] = [
   {
     id: "account-import",
     title: "Start with an event",
-    detail: "Paste invite/ICS works now; Google Calendar is not connected yet, and Apple uses manual ICS export.",
+    detail: "Paste invite or ICS details now; secure Google Calendar connection is still pending.",
     status: "Ready",
     customerVisible: true
   },
@@ -346,8 +351,8 @@ export const mobileExperienceSections: MobileExperienceSection[] = [
   {
     id: "approval-controls",
     title: "Card actions",
-    detail: "Approve, edit tone, snooze, dismiss, or request local regeneration before any paid generation is used.",
-    status: "Manual",
+    detail: "Approve, adjust tone, snooze, dismiss, or request a fresh draft before print review.",
+    status: "Ready",
     customerVisible: true
   },
   {
@@ -360,36 +365,36 @@ export const mobileExperienceSections: MobileExperienceSection[] = [
   {
     id: "text-chat",
     title: "Customer chat",
-    detail: "Local scripted assistant explains event, memory, artwork, and checkout state.",
-    status: "Local",
+    detail: "The card assistant explains event, memory, artwork, and checkout state.",
+    status: "Ready",
     customerVisible: true
   },
   {
     id: "image-render",
     title: "Card proof path",
-    detail: "Template artwork is ready now; AI artwork stays off until account, review, and spend controls exist.",
-    status: "Free",
+    detail: "Card proof preview is ready now; AI artwork waits for account, review, and spend controls.",
+    status: "Ready",
     customerVisible: true
   },
   {
     id: "pricing-preview",
     title: "Print options",
     detail: "The app compares current estimates, pickup speed, shipping, and same-cart coupon proof before checkout.",
-    status: "Manual",
+    status: "Ready",
     customerVisible: true
   },
   {
     id: "handoff",
-    title: "Finish manually",
-    detail: "Manual upload stays active while automatic retail checkout remains blocked.",
-    status: "Manual",
+    title: "Finish at a print shop",
+    detail: "Print package export stays active while automatic checkout remains blocked.",
+    status: "Ready",
     customerVisible: true
   },
   {
     id: "offline-sync",
     title: "Saved offline",
-    detail: "Customer actions stay saved locally and replay safely when the session is available.",
-    status: "Local",
+    detail: "Customer actions stay saved on this device and replay safely when the session is available.",
+    status: "Ready",
     customerVisible: true
   }
 ];
@@ -409,8 +414,8 @@ export function buildMobileAccountOptions(
       label: provider === "Google" ? "Google Calendar" : "Apple Calendar ICS export",
       detail:
         provider === "Google"
-          ? "Google Calendar is not connected yet. Paste invite/ICS works now while consent and revocation controls are finished."
-          : "Export an ICS event or calendar copy, then paste selected event details locally.",
+          ? "Google Calendar can be reviewed here; until secure connection is enabled, paste invite or ICS details."
+          : "Copy event details from an Apple Calendar export, then paste selected details.",
       sourceMode: packet.sourceMode === "manual-export" ? "manual-export" : "oauth-readiness",
       startMode: packet.startMode === "manual-export-guide" ? "manual-export-guide" : "oauth-evidence-required",
       startRoute: packet.apiRoute,
@@ -435,7 +440,7 @@ export const mobileImportActions: MobileImportAction[] = [
   {
     kind: "calendar",
     label: "Review calendar options",
-    detail: "Paste invite/ICS works now; Google Calendar is not connected yet, and Apple uses manual ICS export.",
+    detail: "Paste invite or ICS details now; secure Google Calendar connection is still pending.",
     sourceMode: "contract-gated",
     customerVisible: true
   },
@@ -519,8 +524,8 @@ export const mobileApprovalActions: MobileApprovalAction[] = [
   },
   {
     kind: "request-regeneration",
-    label: "Regenerate locally",
-    detail: "Uses deterministic local copy and artwork until paid generation is enabled.",
+    label: "Draft again",
+    detail: "Creates another draft from approved event and memory details before paid generation is enabled.",
     mutationType: "update-tone",
     idempotencyRequired: true,
     networkMode: "local-only",
@@ -542,12 +547,12 @@ export const mobileChatTranscript: MobileChatMessage[] = [
   {
     speaker: "assistant",
     source: "local-script",
-    text: "Local scripted assistant can draft and explain the card before any live generation is connected."
+    text: "The card assistant can draft and explain the card before any paid generation is connected."
   },
   {
     speaker: "assistant",
     source: "local-script",
-    text: "Live AI and automatic orders stay off until account, review, and certification gates pass."
+    text: "AI artwork and automatic orders stay off until account, review, and certification gates pass."
   }
 ];
 
@@ -577,7 +582,7 @@ export const mobileMemoryReviewItems: MobileMemoryReviewItem[] = [
 export const mobileRenderChoices: MobileRenderChoice[] = [
   {
     label: "Template card proof",
-    detail: "Free 5x7 panel rendering mirrors the web customer path.",
+    detail: "Included 5x7 panel rendering mirrors the web customer path.",
     mode: "free-local"
   },
   {
@@ -789,7 +794,7 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
     hero: {
       eyebrow: "Your card assistant",
       title: "CustomCard",
-      subtitle: "Create a local workspace, paste an invite or ICS event, approve the proof, then review print options.",
+      subtitle: "Paste an invite or calendar event, approve the proof, then review print options.",
       primaryAction: {
         label: `Review ${model.todaySummary.recipientLabel}'s card`,
         detail: "Check event details, memory, copy, language, and artwork before printing.",
@@ -819,12 +824,12 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
           ...model.accountOptions.map((option) => ({
             title: option.label,
             detail: option.detail,
-            modeLabel: option.canStartNow ? "Manual" : "Not connected"
+            modeLabel: option.canStartNow ? "Ready" : "Connect later"
           })),
           ...model.importActions.map((action) => ({
             title: action.label,
             detail: action.detail,
-            modeLabel: action.sourceMode === "local-paste" ? "Local" : "Later"
+            modeLabel: action.sourceMode === "local-paste" ? "Ready" : "Review"
           }))
         ]
       },
@@ -884,7 +889,7 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
         rows: model.chatTranscript.map((message) => ({
           title: message.speaker === "customer" ? "Customer" : "Assistant",
           detail: message.text,
-          modeLabel: message.source === "local-script" ? "Local" : "Customer"
+          modeLabel: message.source === "local-script" ? "Assistant" : "Customer"
         }))
       },
       {
@@ -893,7 +898,7 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
         rows: model.renderChoices.map((choice) => ({
           title: choice.label,
           detail: choice.detail,
-          modeLabel: choice.mode === "free-local" ? "Free" : "Later"
+          modeLabel: choice.mode === "free-local" ? "Ready" : "Review"
         }))
       },
       {
@@ -912,17 +917,17 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
       },
       {
         id: "checkout-confirmation",
-        title: "Finish manually",
+        title: "Finish at a print shop",
         rows: buildMobileHandoffRows(model)
       },
       {
         id: "offline-sync",
         title: "Saved offline",
         rows: [
-          {
-            title: "Customer session",
-            detail: "Customer actions stay queued offline and replay safely when your session is available.",
-            modeLabel: model.syncState.offlineQueueEnabled ? "Saved offline" : "Off"
+      {
+        title: "Customer session",
+        detail: "Customer actions stay saved offline and replay safely when your session is available.",
+        modeLabel: model.syncState.offlineQueueEnabled ? "Saved offline" : "Off"
           }
         ]
       }
@@ -1194,12 +1199,12 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
     issues.push("Mobile today summary primary action must exist in approval controls.");
   }
 
-  if (!model.chatTranscript.some((message) => message.text.includes("Local scripted assistant"))) {
-    issues.push("Mobile chat must identify the local scripted assistant path.");
+  if (!model.chatTranscript.some((message) => message.text.includes("card assistant"))) {
+    issues.push("Mobile chat must identify the customer card assistant path.");
   }
 
-  if (!model.chatTranscript.some((message) => message.text.includes("Live AI and automatic orders stay off"))) {
-    issues.push("Mobile chat must disclose that live AI and automatic orders are off.");
+  if (!model.chatTranscript.some((message) => message.text.includes("automatic orders stay off"))) {
+    issues.push("Mobile chat must disclose that automatic orders are off.");
   }
 
   if (model.memoryReviewItems.length < 2) {
@@ -1266,7 +1271,7 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
   }
 
   if (!model.handoffSteps.some((step) => step.realOrderState === "manual")) {
-    issues.push("Mobile handoff must keep a manual upload path.");
+    issues.push("Mobile print package must keep a customer-controlled print shop path.");
   }
 
   if (!model.handoffSteps.every((step) => step.realOrderState !== "disabled" || step.detail.includes("blocked"))) {
@@ -1335,7 +1340,7 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
 
   for (const phrase of collectMobileCustomerCopy(model)) {
     if (
-      /\b(oauth[- ]gated|credential[- ]gated|repo-local-contract|handoff|fulfillment|vendor|adapter|mock|dummy|placeholder)\b/i.test(
+      /\b(oauth[- ]gated|credential[- ]gated|repo-local-contract|handoff|fulfillment|vendor|adapter|mock|dummy|placeholder|local scripted|deterministic local|manual upload|automatic retail checkout)\b/i.test(
         phrase
       )
     ) {
@@ -1349,7 +1354,7 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
       const unsafeClaim = `Unsafe mobile live-provider claim: ${phrase}`;
       if (!issues.includes(unsafeClaim)) issues.push(unsafeClaim);
     }
-    if (/\b(adapter|provider|vendor api|retail-printer|browser svg renderer|ai image providers)\b/i.test(phrase)) {
+    if (/\b(adapter|provider|vendor api|retail-printer|browser svg renderer|ai image providers|local scripted|deterministic local|manual upload|automatic retail checkout)\b/i.test(phrase)) {
       const jargonClaim = `Mobile customer text must not expose provider/adapters: ${phrase}`;
       if (!issues.includes(jargonClaim)) issues.push(jargonClaim);
     }
@@ -1451,15 +1456,15 @@ function buildMobileHeroSecondaryActions(model: MobileExperienceModel): MobileRe
     {
       label: pasteInvite?.label ?? "Import an invite",
       detail: pasteInvite?.detail ?? "Paste an email invite, event link, or calendar export.",
-      modeLabel: "Local",
+      modeLabel: "Ready",
       presentation: "secondary",
       disabled: false,
       accessibilityLabel: "Import an invite"
     },
     {
       label: calendarReview?.label ?? "Review calendar options",
-      detail: calendarReview?.detail ?? "Google Calendar is not connected yet, and Apple uses manual ICS export.",
-      modeLabel: "Later",
+      detail: calendarReview?.detail ?? "Paste invite or ICS details now; secure Google Calendar connection is still pending.",
+      modeLabel: "Review",
       presentation: "secondary",
       disabled: true,
       accessibilityLabel: "Review calendar options"
@@ -1468,7 +1473,7 @@ function buildMobileHeroSecondaryActions(model: MobileExperienceModel): MobileRe
 }
 
 function actionModeLabel(action: MobileApprovalAction): string {
-  return action.networkMode === "local-only" ? "Local" : "Queued";
+  return action.networkMode === "local-only" ? "Draft" : "Saved";
 }
 
 function sourceLabel(source: MobileCardQueueItem["source"]): string {
@@ -1524,7 +1529,7 @@ function buildMobileHandoffRows(model: MobileExperienceModel): MobileRenderRow[]
   return model.handoffSteps.map((step) => ({
     title: step.label,
     detail: step.detail,
-    modeLabel: step.realOrderState === "manual" ? "Manual" : "Off",
+    modeLabel: step.realOrderState === "manual" ? "Print shop" : "Off",
     presentation: step.realOrderState === "manual" ? "secondary" : "locked",
     disabled: step.realOrderState !== "manual",
     accessibilityLabel: step.label

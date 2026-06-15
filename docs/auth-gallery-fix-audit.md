@@ -15,12 +15,12 @@ Audited at HEAD `fadce0c` ("Include readiness summary data in readiness checks")
 
 - Route contracts (`src/apiRouteContractsData.mjs`) mark customer routes `auth: "customer-session"`.
 - `scripts/api-runtime.mjs`:
-  - Postgres runtime `authorize` (≈ line 376) hashes the bearer token via `hashSessionToken(token, AUTH_SESSION_SECRET)` and looks it up in **`auth_sessions`** (`session_hash`, unrevoked, unexpired). No Clerk JWT verification exists anywhere in the API runtime.
-  - Memory runtime seeds sessions only from `CUSTOMCARD_CUSTOMER_SESSION_TOKEN` / `CUSTOMCARD_ADMIN_SESSION_TOKEN` env tokens (`addSession`, `authorizeFromSessions` ≈ line 566-584).
+  - Postgres runtime hashes bearer tokens via `hashSessionToken(token, AUTH_SESSION_SECRET)`, looks them up in **`auth_sessions`**, and mints durable sessions after offline Clerk JWT verification.
+  - Memory runtime accepts Clerk JWT verification config directly. Static `CUSTOMCARD_CUSTOMER_SESSION_TOKEN` / `CUSTOMCARD_ADMIN_SESSION_TOKEN` sessions are seeded only when `CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS=enabled`.
 
-## 3. Why signed-in Clerk users still get 401 / invalid-session
+## 3. Previous Clerk 401 / invalid-session issue
 
-The Clerk JWT is never minted into `auth_sessions`, so `authorize` finds no row → `401 invalid-session`. The UI then renders "Sign in required" (`calendarConnectionAdapter.resolveCalendarConnectionResult`, 401 branch) even though Clerk says `isSignedIn === true`. This is an architecture mismatch, not a user error. Production effectively depended on reviewer-seeded tokens (`CUSTOMCARD_CUSTOMER_SESSION_TOKEN`).
+Fixed in the API runtime: signed-in Clerk users now send the Clerk session JWT, the API verifies it offline using `CLERK_JWT_KEY` plus issuer/audience/authorized-party checks, then creates a runtime session. Local static reviewer tokens remain available only behind the explicit local fallback flag and are not a production auth path.
 
 ## 4. Current Google Calendar connection flow
 
@@ -42,7 +42,7 @@ No. `provider_connections` (`infra/migrations/001_initial_schema.sql:46`) stores
 ## 7. Current admin panel capabilities
 
 - `webapp/AdminOperationalView.tsx` → `webapp/views/AdminView.tsx`, model in `src/adminPortal.ts` (sections: ops, orders, users, assets, providers, launch). Bucket object viewer + AI jobs exist. No card gallery/curation surface.
-- Admin gating: Clerk publicMetadata role `admin` or `VITE_CUSTOMCARD_ADMIN_EMAILS` allowlist (`webapp/App.tsx:60-69`, `useAdminAccess`).
+- Admin gating: Clerk `publicMetadata.role` / `publicMetadata.roles` grants browser admin access; any email allowlist stays server-only and is not bundled into the client (`webapp/App.tsx`, `useAdminAccess`).
 
 ## 8. Gaps for category/featured/social-proof carousel
 

@@ -30,10 +30,51 @@ Verification:
   Preview, and Development scopes for Clerk React auth.
 - On 2026-06-12, `CLERK_JWT_KEY` and `CLERK_AUTHORIZED_PARTIES` were confirmed
   for Production and Development scopes for server-side Clerk session JWT
-  verification. Preview still needs a branch-scoped Vercel env add; the CLI
-  rejected the unscoped Preview add because it requires a non-production branch.
-  Real values are stored only in Vercel env / ignored local env, not in tracked
-  docs.
+  verification.
+- On 2026-06-15, redacted `npm run hosted:env:inventory` evidence was attached
+  at `docs/evidence/hosted-api/2026-06-15-vercel-env-inventory.json`. Production
+  contains `CUSTOMCARD_API_RUNTIME`, `DATABASE_URL`, `AUTH_SESSION_SECRET`,
+  `CLERK_JWT_KEY`, and `CLERK_AUTHORIZED_PARTIES`, but is missing required
+  `CLERK_ISSUER`, `CLERK_AUDIENCE`, and `IDEMPOTENCY_KEY_TTL_HOURS`. Hosted env
+  sync remained incomplete until those keys were added and re-captured. Preview
+  still needs a branch-scoped Vercel env add; the CLI rejected the unscoped
+  Preview add because it requires a non-production branch. Real values are
+  stored only in Vercel env / ignored local env, not in tracked docs.
+- On 2026-06-15, redacted `npm run hosted:env:repair` plan evidence was attached
+  at `docs/evidence/hosted-api/2026-06-15-vercel-env-repair-plan.json`. It did
+  not mutate Vercel because `CUSTOMCARD_HOSTED_ENV_REPAIR_APPLY` was not
+  enabled and no operator-supplied values were present for the three missing
+  keys.
+- On 2026-06-15, guarded partial repair evidence was attached at
+  `docs/evidence/hosted-api/2026-06-15-vercel-env-repair-partial-ttl.json`.
+  It applied only `IDEMPOTENCY_KEY_TTL_HOURS` to Production with values
+  redacted, then remained blocked on `CLERK_ISSUER` and `CLERK_AUDIENCE`.
+  Follow-up redacted inventory at
+  `docs/evidence/hosted-api/2026-06-15-vercel-env-inventory-after-ttl-repair.json`
+  confirms `IDEMPOTENCY_KEY_TTL_HOURS` is now present in Production and hosted
+  env sync remains incomplete only on the two Clerk verifier keys.
+- On 2026-06-15, guarded public Clerk config evidence was attached at
+  `docs/evidence/hosted-api/2026-06-15-clerk-public-config-probe.json`.
+  It fetched the production public app shell and JavaScript assets with values
+  redacted. The deployed bundle currently contains a Clerk `pk_test`
+  publishable key, contains no `pk_live` publishable key, and decodes to issuer
+  candidate `https://model-bluejay-21.clerk.accounts.dev`. Production OAuth is
+  not claimable until `VITE_CLERK_PUBLISHABLE_KEY` is replaced with a live Clerk
+  publishable key, the app is redeployed, and this probe passes.
+- On 2026-06-15, guarded Clerk config repair-plan evidence was attached at
+  `docs/evidence/hosted-api/2026-06-15-clerk-config-repair-plan.json`.
+  It did not mutate Vercel because apply was not enabled. It confirmed no live
+  Clerk publishable key or `CLERK_AUDIENCE` value is available in the local
+  process env, the current production public bundle still ships `pk_test`, and
+  the repair plan must replace `VITE_CLERK_PUBLISHABLE_KEY`, add the derived
+  `CLERK_ISSUER`, add `CLERK_AUDIENCE`, redeploy, and re-run the public config
+  probe before production OAuth can be claimed.
+- On 2026-06-15, guarded hosted DB restore-drill plan evidence was attached at
+  `docs/evidence/hosted-api/2026-06-15-db-restore-drill-plan.json`. It did not
+  connect to a database because no restored clone URL is available locally. It
+  confirms the restore source, restore point, 14-day retention, 15-minute RPO,
+  60-minute RTO, no destructive live mutations, no real orders, and the single
+  remaining restore-drill input blocker: `CUSTOMCARD_RESTORE_DATABASE_URL`.
 - On 2026-06-11, Cloudflare Workers AI env vars were added to Production,
   Preview, and Development scopes: `CLOUDFLARE_ACCOUNT_ID`,
   `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN`,
@@ -50,11 +91,12 @@ Verification:
 
 Conclusion:
 
-The Vercel static/serverless deployment exists, but public route proof and
-DB-backed API access are not yet complete. The production launch gate remains
-evidence-missing until Vercel env vars include `CUSTOMCARD_API_RUNTIME=postgres`,
-`DATABASE_URL`, customer/admin session tokens, deployment protection is bypassed
-or disabled for verification, and a hosted DB doctor run is captured.
+The Vercel static/serverless deployment exists. This 2026-06-03 section is
+historical; later evidence below supersedes the original deployment-protection
+401 boundary. Public Vercel route and hosted Postgres runtime proof are now
+attached, while production launch remains evidence-missing for live Clerk public
+config, hosted Clerk JWT verification, authenticated DB-backed mutation replay,
+hosted audit-row proof, and executed backup/restore policy.
 
 ### 2026-06-11 Vercel + Neon Update
 

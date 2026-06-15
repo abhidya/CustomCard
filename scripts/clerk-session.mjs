@@ -101,11 +101,7 @@ export function verifyClerkSessionToken(token, env = process.env, { nowMs = Date
 }
 
 export function clerkAdminEmails(env = process.env) {
-  return new Set(
-    [...parseList(env.CUSTOMCARD_ADMIN_EMAILS), ...parseList(env.VITE_CUSTOMCARD_ADMIN_EMAILS)].map((value) =>
-      value.toLowerCase()
-    )
-  );
+  return new Set(parseList(env.CUSTOMCARD_ADMIN_EMAILS).map((value) => value.toLowerCase()));
 }
 
 function resolveRole(payload, email, env) {

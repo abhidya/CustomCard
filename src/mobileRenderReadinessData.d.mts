@@ -20,6 +20,7 @@ export interface MobileRenderReadinessItem {
   requiredSourceSignals: string[];
   deterministicProofBoundary: string;
   blockedLiveProofs: string[];
+  evidenceArtifactRefs: string[];
   customerVisible: boolean;
   requiresEmulatorProof: boolean;
   requiresSignedArtifact: boolean;
@@ -45,6 +46,8 @@ export interface MobileRenderReadinessSummary {
   sourceSignals: number;
   deterministicProofBoundaries: number;
   blockedLiveProofs: number;
+  evidenceArtifacts: number;
+  emulatorSmokeEvidenceArtifacts: number;
   emulatorRequired: number;
   signedArtifactRequired: number;
   emulatorRenderProofs: number;

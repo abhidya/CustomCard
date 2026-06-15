@@ -1074,13 +1074,22 @@ function buildAuthRequest(adapter: ProviderAdapter, input: AuthRuntimeInput): Ru
       adapter,
       "GET",
       "https://api.clerk.com/v1/jwks",
-      ["CLERK_SECRET_KEY", "CLERK_JWT_KEY", "CLERK_AUTHORIZED_PARTIES", "AUTH_SESSION_SECRET"],
+      [
+        "CLERK_SECRET_KEY",
+        "CLERK_JWT_KEY",
+        "CLERK_AUTHORIZED_PARTIES",
+        "CLERK_ISSUER",
+        "CLERK_AUDIENCE",
+        "AUTH_SESSION_SECRET"
+      ],
       undefined,
       [],
       {
         authorization: "Bearer {CLERK_SECRET_KEY}",
         "x-customcard-auth-flow": "jwt-verification",
-        "x-customcard-authorized-parties": "{CLERK_AUTHORIZED_PARTIES}"
+        "x-customcard-authorized-parties": "{CLERK_AUTHORIZED_PARTIES}",
+        "x-customcard-issuer": "{CLERK_ISSUER}",
+        "x-customcard-audience": "{CLERK_AUDIENCE}"
       }
     );
   }

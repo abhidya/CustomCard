@@ -171,7 +171,7 @@ export function FinishStep({ pipeline }: { pipeline: PrintPipeline }) {
           }
         />
         <AppButton
-          label="Finish manually at a print shop"
+          label="Finish at a print shop"
           variant="secondary"
           disabled={!proofApproved || !project || !renderPacket}
           onPress={() =>

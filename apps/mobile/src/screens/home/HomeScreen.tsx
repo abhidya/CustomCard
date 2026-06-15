@@ -202,7 +202,8 @@ function GuestHome() {
       <Text style={styles.landingTitle}>Make the card you meant to send.</Text>
       <Text style={styles.landingCopy}>
         Start with a name, occasion, messy note, invite, or calendar event. CustomCard helps turn it
-        into a personal 5 x 7 card you can edit, review, and print through Walgreens.
+        into a personal 5 x 7 card you can edit, review, and print through your preferred print
+        shop.
       </Text>
 
       <View style={styles.landingActions}>

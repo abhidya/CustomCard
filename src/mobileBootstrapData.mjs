@@ -39,7 +39,7 @@ export const mobileBootstrap = {
     {
       id: "account-import",
       title: "Start with an event",
-      detail: "Paste invite/ICS works now; Google Calendar is not connected yet, and Apple uses manual ICS export.",
+      detail: "Paste invite or ICS details now; secure Google Calendar connection is still pending.",
       status: "Ready",
       customerVisible: true
     },
@@ -53,8 +53,8 @@ export const mobileBootstrap = {
     {
       id: "approval-controls",
       title: "Card actions",
-      detail: "Approve, edit tone, snooze, dismiss, or request local regeneration before any paid generation is used.",
-      status: "Manual",
+      detail: "Approve, adjust tone, snooze, dismiss, or request a fresh draft before print review.",
+      status: "Ready",
       customerVisible: true
     },
     {
@@ -67,36 +67,36 @@ export const mobileBootstrap = {
     {
       id: "text-chat",
       title: "Customer chat",
-      detail: "Local scripted assistant explains event, memory, artwork, and checkout state.",
-      status: "Local",
+      detail: "The card assistant explains event, memory, artwork, and checkout state.",
+      status: "Ready",
       customerVisible: true
     },
     {
       id: "image-render",
       title: "Card proof path",
-      detail: "Template artwork is ready now; AI artwork stays off until account, review, and spend controls exist.",
-      status: "Free",
+      detail: "Card proof preview is ready now; AI artwork waits for account, review, and spend controls.",
+      status: "Ready",
       customerVisible: true
     },
     {
       id: "pricing-preview",
       title: "Print options",
       detail: "The app compares current estimates, pickup speed, shipping, and same-cart coupon proof before checkout.",
-      status: "Manual",
+      status: "Ready",
       customerVisible: true
     },
     {
       id: "handoff",
-      title: "Finish manually",
-      detail: "Manual upload stays active while automatic retail checkout remains blocked.",
-      status: "Manual",
+      title: "Finish at a print shop",
+      detail: "Print package export stays active while automatic checkout remains blocked.",
+      status: "Ready",
       customerVisible: true
     },
     {
       id: "offline-sync",
       title: "Saved offline",
-      detail: "Customer actions stay saved locally and replay safely when the session is available.",
-      status: "Local",
+      detail: "Customer actions stay saved on this device and replay safely when the session is available.",
+      status: "Ready",
       customerVisible: true
     }
   ],
@@ -104,7 +104,7 @@ export const mobileBootstrap = {
     {
       provider: "Google",
       label: "Google Calendar",
-      detail: "Google Calendar is not connected yet. Paste invite/ICS works now while consent and revocation controls are finished.",
+      detail: "Google Calendar can be reviewed here; until secure connection is enabled, paste invite or ICS details.",
       sourceMode: "oauth-readiness",
       startMode: "oauth-evidence-required",
       startRoute: "/api/calendar/connections/start",
@@ -123,7 +123,7 @@ export const mobileBootstrap = {
     {
       provider: "Apple",
       label: "Apple Calendar ICS export",
-      detail: "Export an ICS event or calendar copy, then paste selected event details locally.",
+      detail: "Copy event details from an Apple Calendar export, then paste selected details.",
       sourceMode: "manual-export",
       startMode: "manual-export-guide",
       startRoute: "/api/calendar/connections/start",
@@ -144,7 +144,7 @@ export const mobileBootstrap = {
     {
       kind: "calendar",
       label: "Review calendar options",
-      detail: "Paste invite/ICS works now; Google Calendar is not connected yet, and Apple uses manual ICS export.",
+      detail: "Paste invite or ICS details now; secure Google Calendar connection is still pending.",
       sourceMode: "contract-gated",
       customerVisible: true
     },
@@ -226,8 +226,8 @@ export const mobileBootstrap = {
     },
     {
       kind: "request-regeneration",
-      label: "Regenerate locally",
-      detail: "Uses deterministic local copy and artwork until paid generation is enabled.",
+      label: "Draft again",
+      detail: "Creates another draft from approved event and memory details before paid generation is enabled.",
       mutationType: "update-tone",
       idempotencyRequired: true,
       networkMode: "local-only",
@@ -248,12 +248,12 @@ export const mobileBootstrap = {
     {
       speaker: "assistant",
       source: "local-script",
-      text: "Local scripted assistant can draft and explain the card before any live generation is connected."
+      text: "The card assistant can draft and explain the card before any paid generation is connected."
     },
     {
       speaker: "assistant",
       source: "local-script",
-      text: "Live AI and automatic orders stay off until account, review, and certification gates pass."
+      text: "AI artwork and automatic orders stay off until account, review, and certification gates pass."
     }
   ],
   memoryReviewItems: [
@@ -281,7 +281,7 @@ export const mobileBootstrap = {
   renderChoices: [
     {
       label: "Template card proof",
-      detail: "Free 5x7 panel rendering mirrors the web customer path.",
+      detail: "Included 5x7 panel rendering mirrors the web customer path.",
       mode: "free-local"
     },
     {

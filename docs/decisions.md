@@ -326,15 +326,16 @@ remembered in a separate startup file.
 ## D022: Browser Feature Gates Use One Policy Module
 
 Decision: add `src/browserGatePolicy.ts` as the browser bootstrap policy for
-admin email env parsing, Clerk metadata interpretation, and AI card-generation
+Clerk metadata interpretation, local admin preview, and AI card-generation
 endpoint resolution. The app shell, admin probe view, and customer app-state
-orchestrator consume this module instead of reading
-`VITE_CUSTOMCARD_ADMIN_EMAILS`, `VITE_CUSTOMCARD_ADMIN_EMAIL`, or
-`VITE_CARD_GEN_URL` directly.
+orchestrator consume this module instead of reading Clerk admin metadata or
+`VITE_CARD_GEN_URL` directly. Browser admin access must not depend on a bundled
+email allowlist; production admin role comes from Clerk `publicMetadata.role` or
+`publicMetadata.roles`, with any email backstop kept server-only.
 
 Reason: admin route visibility and AI availability are bootstrap decisions, not
-render details. Centralizing them keeps Clerk metadata shape, browser env names,
-and same-origin API fallback behavior testable in one place.
+render details. Centralizing them keeps Clerk metadata shape, local-preview
+behavior, and same-origin API fallback behavior testable in one place.
 
 Rejected: keeping each browser caller responsible for env parsing and metadata
 shape. That preserves short local code but lets gate behavior drift across app

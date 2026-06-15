@@ -79,8 +79,9 @@ The API runtime defaults to `CUSTOMCARD_API_RUNTIME=contract` only for local
 reviewer/static serving. Production-shaped environments must set
 `CUSTOMCARD_API_RUNTIME=postgres`; `runtime:doctor` rejects contract or memory
 there so auth sessions and idempotency records are durable. `npm run
-api:doctor:memory` sets test customer/admin session tokens and
-validates Bearer auth plus `X-Idempotency-Key` replay without a live database.
+api:doctor:memory` sets `CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS=enabled` with
+test customer/admin session tokens and validates Bearer auth plus
+`X-Idempotency-Key` replay without a live database.
 `npm run api:doctor:postgres` injects a fake Postgres pool into the same runtime
 path and validates session lookup, wrong-role blocking, idempotency replay,
 conflict handling, repository-backed relationship-memory inserts,
@@ -262,8 +263,9 @@ when budget allows.
   `FEDEX_VENDOR_MODE`, `WALMART_VENDOR_MODE`, `STAPLES_VENDOR_MODE`,
   `OFFICE_DEPOT_VENDOR_MODE`.
 - Persistence controls: `CUSTOMCARD_API_RUNTIME`, `AUTH_SESSION_SECRET`,
-  `CUSTOMCARD_CUSTOMER_SESSION_TOKEN`, `CUSTOMCARD_ADMIN_SESSION_TOKEN`,
-  `IDEMPOTENCY_KEY_TTL_HOURS`.
+  `CLERK_JWT_KEY`, `CLERK_AUTHORIZED_PARTIES`, `CLERK_ISSUER`,
+  `CLERK_AUDIENCE`, `CUSTOMCARD_CUSTOMER_SESSION_TOKEN`,
+  `CUSTOMCARD_ADMIN_SESSION_TOKEN`, `IDEMPOTENCY_KEY_TTL_HOURS`.
 
 These keys are documented for deployment readiness only. The current repo state
 does not make live provider calls, and vendor modes remain

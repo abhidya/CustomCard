@@ -21,9 +21,9 @@ const VENDORS = [
 ];
 
 /**
- * Manual vendor handoff: explicit consent to share the rendered card files,
- * then a checklist plus expiring signed download links. No order is placed by
- * the app.
+ * Customer-controlled print package: explicit consent to share rendered card
+ * files, then a checklist plus expiring signed download links. No order is
+ * placed by the app.
  */
 export function HandoffScreen() {
   const api = useApi();
@@ -47,8 +47,8 @@ export function HandoffScreen() {
       setResult(response);
       toast.show(
         response.handoffStatus === "vendor_handoff_ready"
-          ? "Handoff package ready"
-          : "Handoff is blocked — check the details",
+          ? "Print package ready"
+          : "Print package is blocked — check the details",
         response.handoffStatus === "vendor_handoff_ready" ? "success" : "error"
       );
     },
@@ -58,7 +58,7 @@ export function HandoffScreen() {
   return (
     <Screen>
       <SectionHeading
-        title="Finish manually"
+        title="Finish at a print shop"
         detail="Download your print files and upload them to the print shop yourself. You stay in control of payment and ordering."
       />
 
@@ -92,7 +92,7 @@ export function HandoffScreen() {
           />
         </View>
         <AppButton
-          label="Prepare handoff package"
+          label="Prepare print package"
           disabled={!shareApproved}
           loading={handoff.isPending}
           onPress={() => handoff.mutate()}
@@ -104,7 +104,7 @@ export function HandoffScreen() {
 
       {result ? (
         <>
-          <SectionHeading title="Handoff checklist" />
+          <SectionHeading title="Print checklist" />
           <Card>
             <Pill
               label={result.handoffStatus === "vendor_handoff_ready" ? "Ready" : "Blocked"}

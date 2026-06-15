@@ -19,7 +19,7 @@ export type RootStackParamList = {
   Checkout: undefined;
   Handoff: { projectId: string; renderPacketId: string };
   Privacy: undefined;
-  WorkflowGuide: undefined;
+  WorkflowGuide: { focus?: "print-proof" } | undefined;
 };
 
 declare global {

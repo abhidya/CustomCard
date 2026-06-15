@@ -59,9 +59,9 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
   business:engagement:doctor`. This is not live CRM OAuth, customer messaging, CRM writeback, or production campaign analytics proof.
 - Reviewer DB seed readiness: `src/reviewerDbSeedReadiness.ts` and
   `src/reviewerDbSeedReadinessData.mjs` track deterministic reviewer seed
-  plans, customer/admin session-token contracts, SQL preview safety, Vercel env
-  sync, hosted migration, hosted seed execution, hosted token probes, and
-  rollback drills. Run `npm run reviewer:db:seed:doctor`. This is not hosted reviewer DB mutation or hosted account-token proof.
+  plans, customer/admin local static-token contracts, SQL preview safety, Vercel
+  env sync, hosted migration, hosted seed execution, local static-token probes,
+  and rollback drills. Run `npm run reviewer:db:seed:doctor`. This is not hosted reviewer DB mutation or hosted Clerk JWT proof.
 - Cloud artifact proof readiness: `src/cloudArtifactProofReadiness.ts` and
   `src/cloudArtifactProofReadinessData.mjs` track Terraform artifact-store
   source coverage, plan review, applied bucket ARN proof, IAM policy output
@@ -340,9 +340,11 @@ repo-local real-order kill switch. Mobile render readiness in
 native shell source rendering, customer-flow screen state, print-proof render
 rows, responsive viewport constraints, RTL render review, Expo preview profile
 readiness, emulator render proof, and signed native artifact proof. Run
-`npm run mobile:render:doctor`; this is not an emulator render proof or signed
-native build. Actual emulator runs, native screenshots, EAS artifacts, and
-platform signing remain outside the repo-local verification loop.
+`npm run mobile:render:doctor`; iOS Expo Go smoke, tooling-free Release
+simulator home, and compact, standard, large, and tablet Release viewport artifacts are
+attached under `docs/evidence/mobile-render/`, but this is not a complete emulator render proof matrix or signed native build.
+Print-proof, RTL review, EAS artifacts, and platform signing remain outside the
+current repo-local verification loop.
 
 ## API Boundary
 
@@ -361,8 +363,74 @@ and offline idempotent sync state.
 Hosted API proof readiness in `src/hostedApiReadiness.ts` and
 `src/hostedApiReadinessData.mjs` tracks the Vercel project link, serverless API
 route contract, deployment-protection boundary, hosted env sync, hosted Postgres
-connectivity, public DB-backed route proof, hosted account-token verification,
-and backup policy. Run `npm run hosted:api:doctor`. This is not public DB-backed Vercel proof, hosted account-token verification, or hosted database backup evidence.
+connectivity, public DB-backed route proof, hosted Clerk JWT verification,
+and backup policy. Run `npm run hosted:api:doctor`. The read-only
+`npm run hosted:auth:probe` command can target QA or production with
+`CUSTOMCARD_HOSTED_API_ENV`, the selected hosted API base URL, and real
+`CUSTOMCARD_HOSTED_CUSTOMER_JWT` plus `CUSTOMCARD_HOSTED_ADMIN_JWT` values to
+verify public health, customer bootstrap, admin readiness, missing-auth, and
+wrong-role behavior without live mutations. Public Vercel route and hosted
+Postgres runtime proof is attached in
+`docs/evidence/hosted-api/2026-06-15-public-route-probes.md`. Redacted
+production env inventory is attached in
+`docs/evidence/hosted-api/2026-06-15-vercel-env-inventory.json`; it confirms
+runtime, Postgres, session-secret, Clerk JWT key, and authorized-party keys, but
+shows `CLERK_ISSUER`, `CLERK_AUDIENCE`, and `IDEMPOTENCY_KEY_TTL_HOURS` are
+missing. Redacted repair-plan evidence is attached in
+`docs/evidence/hosted-api/2026-06-15-vercel-env-repair-plan.json`; it confirms
+no values were supplied or applied in plan mode. Guarded partial repair evidence
+is attached in
+`docs/evidence/hosted-api/2026-06-15-vercel-env-repair-partial-ttl.json`; it
+applied `IDEMPOTENCY_KEY_TTL_HOURS` without exposing the value. Follow-up
+inventory in
+`docs/evidence/hosted-api/2026-06-15-vercel-env-inventory-after-ttl-repair.json`
+confirms only `CLERK_ISSUER` and `CLERK_AUDIENCE` remain missing. This is still
+not complete hosted env sync or hosted Clerk JWT verification. Guarded public
+Clerk config evidence in
+`docs/evidence/hosted-api/2026-06-15-clerk-public-config-probe.json` confirms
+the deployed production public bundle currently ships a redacted Clerk `pk_test`
+publishable key, no `pk_live` publishable key, and issuer candidate
+`https://model-bluejay-21.clerk.accounts.dev`. Production OAuth remains
+unclaimed until `VITE_CLERK_PUBLISHABLE_KEY` is changed to a live key, the app
+is redeployed, and `npm run hosted:clerk:public-config` passes. The guarded
+`npm run hosted:clerk:repair` plan evidence in
+`docs/evidence/hosted-api/2026-06-15-clerk-config-repair-plan.json` confirms no
+local `pk_live` publishable key or `CLERK_AUDIENCE` value is available to apply
+yet, and records the safe apply path: replace `VITE_CLERK_PUBLISHABLE_KEY`,
+derive/apply `CLERK_ISSUER`, apply `CLERK_AUDIENCE`, redeploy, and re-probe.
+The guarded
+`npm run hosted:env:inventory`
+command can read `vercel env ls --format=json`, redact values, normalize QA
+Preview versus Production targets, and verify required hosted runtime, Postgres,
+Clerk JWT verifier, and idempotency key names without claiming the secret values
+themselves. The guarded `npm run hosted:env:repair` command can plan, apply the
+remaining keys, or explicitly partially apply supplied keys only when values and
+production apply/acknowledge guards are supplied. The guarded `npm run
+hosted:clerk:public-config` command can fetch the public app shell and
+JavaScript assets, redact Clerk publishable-key values, and fail production when
+it sees `pk_test` or no `pk_live`. The guarded `npm run hosted:clerk:repair`
+command can validate a supplied live publishable key, derive the Clerk issuer,
+require `CLERK_AUDIENCE`, replace the public key only behind explicit production
+and public-key-replacement acknowledgements, and keep reports redacted. The
+guarded `npm run
+hosted:mutation:probe`
+command can write one harmless hosted render-packet probe row, replay the same
+idempotency key, verify conflict behavior, and compare admin readiness counters
+for idempotency, audit, queue, render-packet, and provider-call rows. That
+command still has to be run with real hosted JWTs before authenticated DB-backed
+mutation replay, hosted audit-row proof, or hosted database backup evidence can
+be claimed. The guarded `npm run hosted:rollback:plan:doctor` command validates
+`docs/hosted-migration-rollback-plan.md`, including the forward-only migration
+policy, restore-before-switch procedure, reviewer seed cleanup boundary,
+completion evidence, and the explicit "executed hosted rollback drill: no"
+status. The guarded `npm run
+hosted:db:restore:drill` command can validate a restored database clone by
+checking required tables, key indexes, table readability, restore point,
+retention window, RPO, and RTO while refusing the exact production
+`DATABASE_URL`. Blocked restore-drill plan evidence is attached at
+`docs/evidence/hosted-api/2026-06-15-db-restore-drill-plan.json` with
+retention/RPO/RTO metadata, but it still has to be run against a real restored
+hosted clone before backup/restore policy evidence can be claimed.
 
 `scripts/api-server.mjs` is the deployable no-dependency Node wrapper for those
 contracts, backed by `scripts/api-runtime.mjs`. It serves `/api/health`,
@@ -375,10 +443,13 @@ serves the built web app from `dist`.
 runtime. Vercel serves the built Vite app from `dist` and routes `/api/*` to the
 serverless `handleApiRequest` Module. In contract mode it stays database-free;
 in Postgres mode it requires `CUSTOMCARD_API_RUNTIME=postgres`, `DATABASE_URL`,
-and customer/admin session tokens in Vercel environment variables.
-The current protected Vercel deployment evidence is recorded in
-`docs/deployment-evidence.md`; hosted DB env vars and public route proof remain
-open launch-gate evidence.
+and Clerk JWT verifier config in Vercel environment variables.
+The current Vercel deployment evidence is recorded in
+`docs/deployment-evidence.md`; public route and hosted Postgres runtime proof is
+attached in `docs/evidence/hosted-api/2026-06-15-public-route-probes.md`.
+Hosted Clerk JWT verification, authenticated DB-backed mutation replay, hosted
+audit-row proof, and executed backup/restore policy remain open launch-gate
+evidence.
 
 The server now has explicit runtime modes:
 
@@ -470,10 +541,10 @@ The runtime remains fail-closed:
   network calls, live provider calls, and real orders at zero.
 - `npm run reviewer:db:seed:doctor` verifies Reviewer DB seed readiness in
   `src/reviewerDbSeedReadiness.ts`, deterministic seed-plan and SQL-preview
-  contracts, customer/admin session-token requirements, hosted migration/env
+  contracts, customer/admin local static-token requirements, hosted migration/env
   proof gaps, admin/API exposure, CI wiring, and the "not hosted reviewer DB
-  mutation or hosted account-token proof" disclaimer while keeping hosted seed
-  proof, hosted token proof, Vercel env proof, destructive live mutations, live
+  mutation or hosted Clerk JWT proof" disclaimer while keeping hosted seed
+  proof, hosted static-token proof, Vercel env proof, destructive live mutations, live
   external network calls, live provider calls, and real orders at zero.
 - `npm run business:engagement:doctor` verifies Business engagement readiness in
   `src/businessEngagementReadiness.ts`, CRM/workflow/notification adapter
@@ -485,7 +556,7 @@ The runtime remains fail-closed:
   `src/adminOperations.ts`, owner-lane coverage for identity/access, provider
   integrations, commerce/fulfillment, platform infrastructure, and
   observability/audit, admin UI exposure, workflow smoke coverage, CI wiring,
-  credential-vault evidence requirements, hosted token proof, alert-route drill,
+  credential-vault evidence requirements, hosted Clerk token proof, alert-route drill,
   and incident-review runbook while keeping live production enablement at zero.
 - `npm run ai:doctor` verifies AI provider readiness in
   `src/aiProviderReadiness.ts`, the text/image adapter inventory, model
@@ -517,14 +588,15 @@ The runtime remains fail-closed:
   web/API/mobile surfaces, coverage/CI wiring, no live translation provider, and
   no real orders.
 - `npm run api:doctor:memory` verifies Bearer session and idempotency enforcement
-  in the executable memory runtime.
+  in the executable memory runtime with explicit local auth fallback enabled.
 - `npm run persistence:doctor` verifies auth-session schema, idempotency replay,
   relationship-memory repository signals, render-packet repository signals,
   import-preview repository signals, card-project repository signals, manual
   vendor handoff order/consent/event repository signals, data-request
   privacy/consent repository signals, queue jobs, provider usage ledger,
-  append-only audit coverage, 20 stateful API routes, 13 idempotent mutations,
-  and local persistence audit counts for browser-local data migration.
+  append-only audit coverage, 26 stateful API routes, 14 idempotent mutations,
+  server-backed draft-state routes, and zero browser-local customer data
+  requirements in the local persistence audit.
 - Production Kubernetes secrets are annotated for pre-created secret-manager
   provisioning.
 - Backups, live observability provider verification, and managed secrets remain
@@ -606,9 +678,10 @@ Implemented checks:
   customer sends or CRM writes.
 - `src/reviewerDbSeedReadiness.test.ts` and
   `npm run reviewer:db:seed:doctor` validate reviewer seed table coverage,
-  customer/admin session-token requirements, SQL preview safety, hosted seed
-  proof gaps, hosted token probe gaps, Vercel env proof gaps, rollback
-  requirements, and zero destructive live mutations.
+  customer/admin local static-token requirements, SQL preview safety, hosted seed
+  proof gaps, hosted token probe gaps, Vercel env proof gaps, the attached
+  hosted migration rollback plan, rollback requirements, and zero destructive
+  live mutations.
 - `src/printExport.test.ts` validates source SVG artifacts, the combined 5x7
   PDF proof, checksum manifest validation, preflight failures, and no-order
   export summaries.
@@ -655,9 +728,10 @@ Implemented checks:
   relationship-memory, render-packet, import-preview, card-project,
   manual-vendor-handoff, and data-request mutations, and
   memory-runtime auth/idempotency behavior.
-- Persistence contract tests validate 19 table contracts, 20 stateful API
-  routes, 13 idempotent mutations, account identity/recovery storage,
-  idempotency replay, queue-backed routes, and migration signals.
+- Persistence contract tests validate 20 table contracts, 26 stateful API
+  routes, 14 idempotent mutations, account identity/recovery storage,
+  idempotency replay, queue-backed routes, server-backed draft-state routes, and
+  migration signals.
 - `scripts/deployment-readiness.mjs` emits a JSON readiness report and is tested
   by `tests/infra-contract.test.ts`.
 - `.github/workflows/verify.yml` runs install, full checks, deployment doctor,
@@ -700,10 +774,10 @@ Remaining high-risk work:
   static AWS artifact-store IaC, temporary filesystem write/read verification,
   injected S3-compatible write/read contract verification, and live CI/local
   MinIO/S3-compatible write/read doctor coverage are covered.
-- No deployed production Postgres API integration or production hosted
-  account-token verification; isolated live Postgres route-auth/migration/runtime
+- No deployed production public Clerk config or production hosted Clerk JWT
+  verification; isolated live Postgres route-auth/migration/runtime
   integration, process-level API HTTP verification, and account identity/recovery
-  storage are covered by doctors.
+  storage are covered by doctors, and public Postgres runtime proof is attached.
 - No React Native renderer-package output, emulator proof, or actual native
   iOS/Android build artifact; render snapshot validation, EAS profiles, and
   release doctor are covered.

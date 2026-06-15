@@ -1,0 +1,73 @@
+{
+  "service": "customcard-hosted-vercel-env-repair",
+  "status": "blocked",
+  "scope": "live-hosted-env-repair",
+  "checkedAt": "2026-06-15T16:20:11.022Z",
+  "targetEnvironment": "production",
+  "vercelTarget": "production",
+  "baseUrl": "https://customcard-three.vercel.app",
+  "applyEnabled": true,
+  "partialApplyEnabled": true,
+  "valuesRedacted": true,
+  "missingRepairKeys": [
+    "CLERK_ISSUER",
+    "CLERK_AUDIENCE",
+    "IDEMPOTENCY_KEY_TTL_HOURS"
+  ],
+  "valueInputs": {
+    "CLERK_ISSUER": {
+      "supplied": false
+    },
+    "CLERK_AUDIENCE": {
+      "supplied": false
+    },
+    "IDEMPOTENCY_KEY_TTL_HOURS": {
+      "supplied": true
+    }
+  },
+  "repairPlan": [
+    {
+      "key": "CLERK_ISSUER",
+      "target": "production",
+      "valueSupplied": false,
+      "action": "blocked-missing-value"
+    },
+    {
+      "key": "CLERK_AUDIENCE",
+      "target": "production",
+      "valueSupplied": false,
+      "action": "blocked-missing-value"
+    },
+    {
+      "key": "IDEMPOTENCY_KEY_TTL_HOURS",
+      "target": "production",
+      "valueSupplied": true,
+      "action": "vercel-env-add"
+    }
+  ],
+  "applyResults": [
+    {
+      "key": "IDEMPOTENCY_KEY_TTL_HOURS",
+      "target": "production",
+      "exitCode": 0
+    }
+  ],
+  "appliedRepairKeys": [
+    "IDEMPOTENCY_KEY_TTL_HOURS"
+  ],
+  "remainingUnappliedRepairKeys": [
+    "CLERK_ISSUER",
+    "CLERK_AUDIENCE"
+  ],
+  "envSync": {
+    "beforeRepairEnvironmentSynced": false,
+    "repairKeysMissing": 3,
+    "repairApplied": false,
+    "partialRepairApplied": true,
+    "environmentSynced": false
+  },
+  "blockers": [
+    "CLERK_ISSUER must be supplied in the process env before repair can apply it.",
+    "CLERK_AUDIENCE must be supplied in the process env before repair can apply it."
+  ]
+}

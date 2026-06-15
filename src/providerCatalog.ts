@@ -175,7 +175,14 @@ export const providerCatalog: ProviderAdapter[] = [
     lane: "Hosted identity",
     status: "credential-gated",
     cost: "free-tier",
-    credentials: ["CLERK_SECRET_KEY", "CLERK_JWT_KEY", "CLERK_AUTHORIZED_PARTIES", "AUTH_SESSION_SECRET"],
+    credentials: [
+      "CLERK_SECRET_KEY",
+      "CLERK_JWT_KEY",
+      "CLERK_AUTHORIZED_PARTIES",
+      "CLERK_ISSUER",
+      "CLERK_AUDIENCE",
+      "AUTH_SESSION_SECRET"
+    ],
     safetyGates: ["Tenant review", "Revocation handling", "Network allowlist"],
     roleSurface: ["customer", "admin"],
     priority: 21,

@@ -64,16 +64,16 @@ skeleton for the production path. It includes:
   live provider calls, external network calls, and real orders at zero.
 - Hosted API proof readiness for Vercel deployment metadata, serverless API
   route contracts, deployment-protection boundary, hosted env sync, hosted
-  Postgres connectivity, public DB-backed route proof, hosted account-token
+  Postgres connectivity, public DB-backed route proof, hosted Clerk JWT
   verification, and backup policy; `npm run hosted:api:doctor` keeps public
-  route proof, hosted DB proof, env sync proof, hosted token proof, backup
+  route proof, hosted DB proof, env sync proof, hosted Clerk token proof, backup
   policy proof, deployment-protection bypass, live provider calls, external
   network calls, and real orders at zero.
 - Reviewer DB seed readiness for deterministic reviewer seed plans,
-  customer/admin session-token contracts, SQL preview safety, hosted migration
+  customer/admin local static-token contracts, SQL preview safety, hosted migration
   prerequisites, Vercel env sync, hosted seed execution proof, hosted token
   probes, and rollback drills; `npm run reviewer:db:seed:doctor` keeps hosted
-  seed proof, hosted token proof, Vercel env proof, destructive live mutations,
+  seed proof, local static-token proof, Vercel env proof, destructive live mutations,
   live provider calls, external network calls, and real orders at zero.
 - Business engagement readiness for CRM lifecycle source, trigger
   normalization, card-opportunity review, workflow payloads, customer message
@@ -116,8 +116,8 @@ skeleton for the production path. It includes:
 - No live production user auth or delivered account recovery flow; durable
   account identity and hashed recovery challenge storage are covered by doctor.
 - No real email/calendar OAuth flow.
-- No deployed production Postgres API integration or production hosted
-  account-token verification outside the isolated live Postgres route-auth,
+- No deployed production Postgres API integration or production hosted Clerk JWT
+  verification outside the isolated live Postgres route-auth,
   Postgres API HTTP, and account-auth doctors.
 - AI provider readiness is covered as repo-local text/image adapter inventory,
   model allowlist, prompt safety, privacy, print QA, spend, evaluation, and

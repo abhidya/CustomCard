@@ -62,6 +62,8 @@ const readyEnv: ProviderRuntimeEnv = {
   CARDDAV_BASE_URL: "https://contacts.customcard.test",
   CARDDAV_USERNAME: "configured-carddav-user",
   CLERK_AUTHORIZED_PARTIES: "https://customcard.test",
+  CLERK_AUDIENCE: "customcard-api",
+  CLERK_ISSUER: "https://clerk.customcard.test",
   CLERK_JWT_KEY: "configured-clerk-jwt-key",
   CLERK_SECRET_KEY: "configured-clerk-secret-key",
   CLOUDFLARE_ACCOUNT_ID: "configured-cloudflare-account-id",
@@ -482,7 +484,9 @@ describe("provider runtime contracts", () => {
     );
     expect(buildAuthRuntime("clerk-session-auth", { requestedRole: "customer", returnToPath: "/customer" }, readyEnv, openGates).request?.headers).toMatchObject({
       authorization: "Bearer {CLERK_SECRET_KEY}",
-      "x-customcard-auth-flow": "jwt-verification"
+      "x-customcard-auth-flow": "jwt-verification",
+      "x-customcard-issuer": "{CLERK_ISSUER}",
+      "x-customcard-audience": "{CLERK_AUDIENCE}"
     });
     expect(buildAuthRuntime("supabase-auth", { requestedRole: "customer", returnToPath: "/customer" }, readyEnv, openGates).request?.headers).toMatchObject({
       apikey: "{SUPABASE_ANON_KEY}",

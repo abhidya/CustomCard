@@ -14,9 +14,11 @@ in git. There are two ways to produce an installable build.
   with the SDK installed.
 
 Provide non-secret config via env / EAS environment variables:
-`CUSTOMCARD_API_BASE_URL` (https), `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`,
-`CUSTOMCARD_OAUTH_REDIRECT_URL=customcard://sso-callback`,
-`CUSTOMCARD_APP_ENV=qa|production`, `REAL_ORDER_KILL_SWITCH=disabled`.
+`CUSTOMCARD_APP_ENV=qa|production`, `CUSTOMCARD_QA_API_BASE_URL` (https),
+`CUSTOMCARD_PRODUCTION_API_BASE_URL` (https), optional matching
+`CUSTOMCARD_API_BASE_URL`, `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`,
+`CUSTOMCARD_OAUTH_REDIRECT_URL=customcard://sso-callback`, and
+`REAL_ORDER_KILL_SWITCH=disabled`.
 
 ## Android APK
 
@@ -37,7 +39,8 @@ and a QR code when the build finishes.
 
 ```sh
 cd apps/mobile
-export CUSTOMCARD_API_BASE_URL=https://your-api.example
+export CUSTOMCARD_QA_API_BASE_URL=https://your-qa-api.example
+export CUSTOMCARD_PRODUCTION_API_BASE_URL=https://your-prod-api.example
 export EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 export CUSTOMCARD_OAUTH_REDIRECT_URL=customcard://sso-callback
 export CUSTOMCARD_APP_ENV=qa

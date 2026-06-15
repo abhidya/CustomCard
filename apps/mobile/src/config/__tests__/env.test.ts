@@ -27,6 +27,40 @@ describe("resolveAppConfig", () => {
     ).toBe("qa");
   });
 
+  it("selects the API URL from the active QA or production environment", () => {
+    expect(
+      resolveAppConfig({
+        ...base,
+        apiBaseUrl: "",
+        qaApiBaseUrl: "https://api.qa.example.test",
+        productionApiBaseUrl: "https://api.example.test",
+        appEnv: "qa",
+        clerkPublishableKey: "pk_test_x"
+      }).apiBaseUrl
+    ).toBe("https://api.qa.example.test");
+
+    expect(
+      resolveAppConfig({
+        ...base,
+        apiBaseUrl: "",
+        qaApiBaseUrl: "https://api.qa.example.test",
+        productionApiBaseUrl: "https://api.example.test",
+        appEnv: "production",
+        clerkPublishableKey: "pk_live_x"
+      }).apiBaseUrl
+    ).toBe("https://api.example.test");
+  });
+
+  it("rejects conflicting generic and environment-specific API URLs", () => {
+    expect(() =>
+      resolveAppConfig({
+        ...base,
+        apiBaseUrl: "https://api.wrong.example.test",
+        productionApiBaseUrl: "https://api.example.test"
+      })
+    ).toThrow(/must not conflict/);
+  });
+
   it("rejects a missing API base URL", () => {
     expect(() => resolveAppConfig({ ...base, apiBaseUrl: "" }, true)).toThrow(ConfigError);
   });
@@ -59,6 +93,9 @@ describe("resolveAppConfig", () => {
       resolveAppConfig({ ...base, appEnv: "qa", clerkPublishableKey: "pk_test_x" })
         .clerkPublishableKey
     ).toBe("pk_test_x");
+    expect(() =>
+      resolveAppConfig({ ...base, appEnv: "qa", clerkPublishableKey: "pk_live_x" })
+    ).toThrow(/test publishable key/);
   });
 
   it("requires the native Clerk OAuth redirect URL", () => {

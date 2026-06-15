@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
+import { NavigationContainer, DefaultTheme, type LinkingOptions } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 
@@ -42,6 +42,33 @@ const tabIcons: Record<keyof MainTabParamList, keyof typeof Ionicons.glyphMap> =
   Settings: "settings"
 };
 
+export const customCardLinking: LinkingOptions<RootStackParamList> = {
+  prefixes: ["customcard://", "customcard:///"],
+  config: {
+    screens: {
+      MainTabs: {
+        path: "",
+        screens: {
+          Home: "",
+          Print: "cards",
+          People: "people",
+          Settings: "settings"
+        }
+      },
+      Studio: "studio",
+      ImportEvent: "import",
+      CalendarConnect: "calendar",
+      Chat: "chat",
+      Memories: "memories",
+      PrintOptions: "print-options",
+      Checkout: "checkout",
+      Handoff: "handoff",
+      Privacy: "privacy",
+      WorkflowGuide: "guide/:focus?"
+    }
+  }
+};
+
 function MainTabs() {
   return (
     <Tabs.Navigator
@@ -72,7 +99,7 @@ export function RootNavigator({
   WorkflowGuideScreen: React.ComponentType;
 }) {
   return (
-    <NavigationContainer theme={navTheme}>
+    <NavigationContainer theme={navTheme} linking={customCardLinking}>
       <Stack.Navigator screenOptions={{ headerTitleStyle: { fontWeight: "900" } }}>
         <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
         <Stack.Screen name="SignIn" component={SignInScreen} options={{ headerShown: false }} />
@@ -102,7 +129,7 @@ export function RootNavigator({
         <Stack.Screen
           name="Handoff"
           component={HandoffScreen}
-          options={{ title: "Finish manually" }}
+          options={{ title: "Finish at a print shop" }}
         />
         <Stack.Screen
           name="Privacy"

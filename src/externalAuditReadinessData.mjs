@@ -30,7 +30,7 @@ const allowedStatuses = new Set([
 export const externalAuditReadinessItems = [
   {
     id: "production-auth-token-verification",
-    label: "Production account-token verification",
+    label: "Production Clerk JWT verification",
     category: "identity",
     status: "external-evidence-missing",
     relatedProductionGateIds: ["production-user-auth"],
@@ -42,7 +42,7 @@ export const externalAuditReadinessItems = [
     externalReviewerRequired: true,
     blocksProduction: true,
     publicClaimAllowed: false,
-    blocker: "Hosted account-token verification outside isolated local/live Postgres doctors is not attached."
+    blocker: "Hosted Clerk JWT verification outside isolated local/live Postgres doctors is not attached."
   },
   {
     id: "oauth-app-approval",
@@ -147,14 +147,19 @@ export const externalAuditReadinessItems = [
     status: "external-evidence-missing",
     relatedProductionGateIds: ["deployed-postgres-api", "vercel-deployment-db-access"],
     requiredEvidence: ["Hosted DATABASE_URL env proof", "Migration run output", "Authenticated public route doctor", "Backup policy"],
-    currentEvidence: ["Postgres runtime contract doctor", "Live isolated Postgres integration doctor", "Postgres HTTP doctor"],
+    currentEvidence: [
+      "Postgres runtime contract doctor",
+      "Live isolated Postgres integration doctor",
+      "Postgres HTTP doctor",
+      "2026-06-15 public Vercel route probes"
+    ],
     evidenceArtifactRefs: [],
     reviewer: "platform owner",
     cadence: "before hosted launch and after schema changes",
     externalReviewerRequired: true,
     blocksProduction: true,
     publicClaimAllowed: false,
-    blocker: "No public DB-backed hosted API route proof or backup policy is attached."
+    blocker: "Public hosted API route proof is partially attached; backup policy and authenticated DB-backed route proof remain missing."
   },
   {
     id: "native-mobile-artifact-proof",

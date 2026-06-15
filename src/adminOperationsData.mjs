@@ -59,7 +59,7 @@ export function buildAdminOperationsWorkflow(input) {
     buildCredentialVaultTask(input.model.coverage.requiredEnv),
     ...input.hostedApiReadinessItems
       .filter((item) =>
-        ["hosted-env-sync", "hosted-postgres-connectivity", "public-db-backed-route-proof", "hosted-account-token-verification", "backup-recovery-policy"].includes(item.id)
+        ["hosted-env-sync", "hosted-postgres-connectivity", "public-db-backed-route-proof", "hosted-clerk-token-verification", "backup-recovery-policy"].includes(item.id)
       )
       .map(buildHostedApiTask),
     ...input.retailFulfillmentReadinessItems
@@ -91,7 +91,7 @@ export function buildAdminOperationsWorkflow(input) {
 function selectPriorityTasks(tasks) {
   const pinnedIds = [
     "credential-vault-required-env",
-    "hosted-account-token-verification",
+    "hosted-clerk-token-verification",
     "alert-routing-drill",
     "incident-review-runbook"
   ];
@@ -138,7 +138,7 @@ export function validateAdminOperationsWorkflow(workflow) {
   for (const requiredId of [
     "production-user-auth",
     "credential-vault-required-env",
-    "hosted-account-token-verification",
+    "hosted-clerk-token-verification",
     "alert-routing-drill",
     "incident-review-runbook"
   ]) {
@@ -202,8 +202,8 @@ function buildHostedApiTask(item) {
   return {
     id: item.id,
     label: item.label,
-    ownerId: item.id === "hosted-account-token-verification" ? "identity-access" : "platform-infrastructure",
-    priority: item.id === "hosted-account-token-verification" || item.id === "public-db-backed-route-proof" ? "p0" : "p1",
+    ownerId: item.id === "hosted-clerk-token-verification" ? "identity-access" : "platform-infrastructure",
+    priority: item.id === "hosted-clerk-token-verification" || item.id === "public-db-backed-route-proof" ? "p0" : "p1",
     status: mapReadinessStatus(item.status),
     source: "hosted-api",
     adminAction: hostedApiAction(item),
@@ -335,8 +335,8 @@ function mapReadinessStatus(status) {
 }
 
 function hostedApiAction(item) {
-  if (item.id === "hosted-account-token-verification") {
-    return "Run hosted customer and admin token probes against a DB-backed deployment and attach the output.";
+  if (item.id === "hosted-clerk-token-verification") {
+    return "Run hosted customer and admin Clerk JWT probes against a DB-backed deployment and attach the output.";
   }
   if (item.id === "hosted-env-sync") return "Sync required hosted env vars from the credential vault and attach the deployment env proof.";
   if (item.id === "hosted-postgres-connectivity") return "Run the hosted Postgres route doctor and attach authenticated route evidence.";

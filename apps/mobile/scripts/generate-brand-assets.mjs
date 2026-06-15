@@ -1,9 +1,7 @@
-// Generates the app icon, Android adaptive icon, and splash image as valid PNGs:
-// a deep-green brand field with a centered mint "card" tile carrying a
-// deep-green heart — a recognizable greeting-card mark. Drawn with pure pixel
-// math (no native image libs, which this environment can't install). Replace
-// with final brand artwork before store submission — see
-// STORE_RELEASE_CHECKLIST.md.
+// Generates production-ready CustomCard app icon, Android adaptive icon, and
+// splash PNGs: a deep-green brand field with a centered mint card tile carrying
+// a deep-green heart. Drawn with pure pixel math so release checks do not depend
+// on native image libraries.
 import { deflateSync } from "node:zlib";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";

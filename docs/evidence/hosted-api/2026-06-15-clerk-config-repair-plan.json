@@ -1,0 +1,84 @@
+{
+  "service": "customcard-hosted-clerk-config-repair",
+  "status": "blocked",
+  "scope": "live-hosted-clerk-config-repair",
+  "checkedAt": "2026-06-15T17:02:36.477Z",
+  "targetEnvironment": "production",
+  "vercelTarget": "production",
+  "baseUrl": "https://customcard-three.vercel.app",
+  "applyEnabled": false,
+  "publicKeyReplaceAcknowledged": false,
+  "mutationsEnabled": false,
+  "valuesRedacted": true,
+  "desiredConfig": {
+    "publishableKeySupplied": false,
+    "publishableKeyKind": "unknown",
+    "publishableKeyFingerprint": null,
+    "issuerSupplied": false,
+    "explicitIssuerSupplied": false,
+    "derivedIssuerCandidate": null,
+    "audienceSupplied": false
+  },
+  "publicConfigBefore": {
+    "status": "blocked",
+    "keyKinds": [
+      "test"
+    ],
+    "issuerCandidates": [
+      "https://model-bluejay-21.clerk.accounts.dev"
+    ],
+    "productionPublicClerkReady": false,
+    "testKeyDetected": true,
+    "liveKeyDetected": false
+  },
+  "serverVerifierBefore": {
+    "clerkJwtVerifierConfigured": false,
+    "missingServerVerifierKeys": [
+      "CLERK_ISSUER",
+      "CLERK_AUDIENCE"
+    ]
+  },
+  "repairPlan": [
+    {
+      "key": "VITE_CLERK_PUBLISHABLE_KEY",
+      "target": "production",
+      "valueSupplied": false,
+      "action": "plan-replace-after-redeploy",
+      "reason": "Hosted public bundle must be rebuilt with the supplied Clerk publishable key."
+    },
+    {
+      "key": "CLERK_ISSUER",
+      "target": "production",
+      "valueSupplied": false,
+      "action": "plan-add",
+      "reason": "CLERK_ISSUER is missing from the redacted Vercel env inventory."
+    },
+    {
+      "key": "CLERK_AUDIENCE",
+      "target": "production",
+      "valueSupplied": false,
+      "action": "plan-add",
+      "reason": "CLERK_AUDIENCE is missing from the redacted Vercel env inventory."
+    }
+  ],
+  "applyResults": [],
+  "appliedKeys": [],
+  "pendingKeys": [
+    "VITE_CLERK_PUBLISHABLE_KEY",
+    "CLERK_ISSUER",
+    "CLERK_AUDIENCE"
+  ],
+  "clerkConfig": {
+    "repairReady": false,
+    "repairApplied": false,
+    "redeployRequired": true,
+    "publicConfigReprobeRequired": true,
+    "productionReadyClaimed": false
+  },
+  "blockers": [
+    "VITE_CLERK_PUBLISHABLE_KEY must be supplied in the process env before Clerk config repair can apply it.",
+    "Production Clerk config repair requires a pk_live publishable key.",
+    "CLERK_ISSUER must be supplied or derivable from the Clerk publishable key.",
+    "CLERK_AUDIENCE must be supplied in the process env before Clerk config repair can apply it."
+  ]
+}

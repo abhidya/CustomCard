@@ -118,9 +118,14 @@ export const productionLaunchGates: ProductionLaunchGate[] = [
     status: "evidence-missing",
     liveEnabled: false,
     requiredEvidence: ["Production DATABASE_URL", "Migration run", "Route auth probe", "Idempotency/audit rows", "Backup policy"],
-    currentEvidence: ["Postgres integration doctors", "HTTP Postgres API doctor", "Persistence contract tests"],
-    blocker: "No deployed production Postgres route proof or backup policy is attached.",
-    adminAction: "Run migrations against the hosted database and capture authenticated route doctor output."
+    currentEvidence: [
+      "Postgres integration doctors",
+      "HTTP Postgres API doctor",
+      "Persistence contract tests",
+      "2026-06-15 public hosted API health reports runtime.mode=postgres"
+    ],
+    blocker: "Public hosted Postgres route proof is attached; authenticated mutation replay, audit rows, and backup policy remain missing.",
+    adminAction: "Capture authenticated hosted route doctor output, idempotent mutation replay, audit-row proof, and backup/restore evidence."
   },
   {
     id: "vercel-deployment-db-access",
@@ -135,10 +140,11 @@ export const productionLaunchGates: ProductionLaunchGate[] = [
       "Env template",
       "Vercel project linked",
       "Protected production deployment inspected",
-      "Hosted API proof readiness register"
+      "Hosted API proof readiness register",
+      "2026-06-15 public Vercel route probes"
     ],
-    blocker: "Vercel deployment exists, but hosted DB env vars and public DB doctor output are not present.",
-    adminAction: "Set Vercel Postgres env vars, disable or bypass deployment protection for verification, and run the hosted API DB doctor."
+    blocker: "Vercel deployment and hosted Postgres runtime proof are attached; hosted env sync proof and authenticated public DB doctor output remain incomplete.",
+    adminAction: "Attach hosted env sync evidence, authenticated route probes, and hosted DB mutation/audit proof."
   },
   {
     id: "native-mobile-artifact",

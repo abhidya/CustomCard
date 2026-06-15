@@ -85,9 +85,20 @@ export const reviewerDbSeedReadinessItems = [
     status: "repo-local-ready",
     proofScope: "repo-local-contract",
     tableNames: ["users", "auth_sessions"],
-    envVarNames: ["CUSTOMCARD_CUSTOMER_SESSION_TOKEN", "CUSTOMCARD_ADMIN_SESSION_TOKEN", "AUTH_SESSION_SECRET"],
+    envVarNames: [
+      "CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS",
+      "CUSTOMCARD_CUSTOMER_SESSION_TOKEN",
+      "CUSTOMCARD_ADMIN_SESSION_TOKEN",
+      "AUTH_SESSION_SECRET"
+    ],
     routeIds: ["/api/admin/readiness", "/api/customer/bootstrap"],
-    requiredSourceSignals: ["hashSessionToken", "session-demo-customer", "session-demo-admin", "wrong-role"],
+    requiredSourceSignals: [
+      "CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS",
+      "hashSessionToken",
+      "session-demo-customer",
+      "session-demo-admin",
+      "wrong-role"
+    ],
     requiresHostedDatabase: false,
     requiresHostedSeedExecution: false,
     requiresHostedTokenProbe: true,
@@ -255,7 +266,14 @@ export const reviewerDbSeedReadinessItems = [
     tableNames: requiredReviewerSeedTables,
     envVarNames: ["DATABASE_URL"],
     routeIds: ["/api/admin/demo-reset"],
-    requiredSourceSignals: ["DELETE FROM", "resetKey", "audit_log", "idempotentReset"],
+    requiredSourceSignals: [
+      "hosted:rollback:plan:doctor",
+      "docs/hosted-migration-rollback-plan.md",
+      "DELETE FROM",
+      "resetKey",
+      "audit_log",
+      "idempotentReset"
+    ],
     requiresHostedDatabase: true,
     requiresHostedSeedExecution: true,
     requiresHostedTokenProbe: false,
@@ -270,9 +288,14 @@ export const reviewerDbSeedReadinessItems = [
     externalNetworkCalls: false,
     liveProviderCalls: false,
     realOrdersEnabled: false,
-    currentEvidence: ["demo seed rows use demo-scoped IDs", "SQL preview includes reset statements"],
+    currentEvidence: [
+      "demo seed rows use demo-scoped IDs",
+      "SQL preview includes reset statements",
+      "docs/hosted-migration-rollback-plan.md covers reviewer seed cleanup",
+      "scripts/hosted-migration-rollback-plan-doctor.mjs validates the plan without claiming hosted rollback execution"
+    ],
     requiredEvidence: ["Hosted rollback run", "Post-rollback row count", "Rollback audit entry"],
-    blocker: "No hosted reviewer database rollback drill is attached."
+    blocker: "Reviewer seed rollback plan is attached and repo-checked; no hosted reviewer database rollback drill is attached."
   }
 ];
 
@@ -340,7 +363,12 @@ const reviewerDbSeedReadinessRegister = defineReadinessRegister({
 
     const tokenContract = itemsById.get("reviewer-session-token-contract");
     if (tokenContract) {
-      assertCoversEnvVars(tokenContract, ["CUSTOMCARD_CUSTOMER_SESSION_TOKEN", "CUSTOMCARD_ADMIN_SESSION_TOKEN"], issues, "Reviewer session token contract");
+      assertCoversEnvVars(
+        tokenContract,
+        ["CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS", "CUSTOMCARD_CUSTOMER_SESSION_TOKEN", "CUSTOMCARD_ADMIN_SESSION_TOKEN"],
+        issues,
+        "Reviewer session token contract"
+      );
       for (const route of ["/api/admin/readiness", "/api/customer/bootstrap"]) {
         if (!tokenContract.routeIds.includes(route)) {
           issues.push(`Reviewer session token contract must include route: ${route}.`);

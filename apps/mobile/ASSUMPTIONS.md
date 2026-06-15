@@ -11,11 +11,12 @@ open. Each is the safest reasonable default for the existing backend.
   Typed request/response models live in `src/lib/api/types.ts`. Fields the app
   does not consume are intentionally omitted; payloads are treated as open
   records so extra backend fields never break the client.
-- **Auth is session-token based via Clerk.** The API accepts
+- **Auth is Clerk JWT based.** The API accepts
   `Authorization: Bearer <token>`. In production the token is a Clerk session
-  JWT (the backend verifies it offline against `CLERK_JWT_KEY` and bridges it to
-  a durable `auth_sessions` row). The app therefore uses Clerk's hosted identity
-  (`@clerk/clerk-expo`) and sends the Clerk session token as the bearer.
+  JWT that the backend verifies offline against `CLERK_JWT_KEY`,
+  `CLERK_AUTHORIZED_PARTIES`, `CLERK_ISSUER`, and `CLERK_AUDIENCE`. The app
+  uses Clerk's hosted identity (`@clerk/clerk-expo`) and sends the verified
+  Clerk JWT as the bearer.
 - **Configured QA Clerk instance:** `model-bluejay-21`. The publishable key
   (`pk_test_…`, public) is wired via `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` so the
   app performs real Clerk sign-in. The native OAuth callback is
@@ -80,10 +81,10 @@ open. Each is the safest reasonable default for the existing backend.
   (`react`, `react-dom`, `react-test-renderer`) are pinned to `19.2.0` to match
   Expo Go's native runtime; a mismatch otherwise breaks simulator launch. See
   `package.json` `overrides`.
-- **App icon and splash are generated placeholders** (solid brand color with a
-  centered mark) produced by `scripts/generate-placeholder-assets.mjs`. They are
-  valid PNGs so builds succeed, but must be replaced with real brand artwork
-  before store submission.
+- **App icon and splash are deterministic brand assets** (solid brand field with
+  a centered card-and-heart mark) produced by `scripts/generate-brand-assets.mjs`.
+  They are valid no-alpha PNGs sized for iOS, Android adaptive icon, and splash
+  usage.
 - **Device E2E automation is unavailable in this environment.** The "main user
   workflow" is covered two ways: a fully mocked client test
   (`src/lib/api/__tests__/workflow.test.ts`) and a real, un-mocked **live API

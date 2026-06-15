@@ -1,5 +1,5 @@
 import { createHash, createHmac } from "node:crypto";
-import { looksLikeJwt, verifyClerkSessionToken } from "./clerk-session.mjs";
+import { clerkVerificationConfigured, looksLikeJwt, verifyClerkSessionToken } from "./clerk-session.mjs";
 import { resolveImportPreviewMetadata } from "../src/importPreviewMetadata.mjs";
 import { normalizeCardCategory, publicCardCategories } from "../src/cardCategoriesData.mjs";
 import { missingRetailPrinterCouponPortalEvidenceFields } from "../src/retailPrinterCouponPortalEvidenceData.mjs";
@@ -21,6 +21,7 @@ const generatedImageWebpQuality = 82;
 const generatedImageWebpEffort = 4;
 const generatedImageMaxEdgePixels = 2100;
 const generatedImageRasterMimeTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
+const localAuthFallbackOptInEnvName = "CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS";
 const routeMutationRuntime = createRouteMutationRuntime({
   missingRetailPrinterCouponPortalEvidenceFields,
   mutationBodyContractSpecs,
@@ -285,8 +286,10 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
   const dataRequests = new Map();
   const cardGalleryEntries = new Map();
 
-  addSession(sessions, env.CUSTOMCARD_CUSTOMER_SESSION_TOKEN, "customer", "user-demo", env.AUTH_SESSION_SECRET);
-  addSession(sessions, env.CUSTOMCARD_ADMIN_SESSION_TOKEN, "admin", "admin-demo", env.AUTH_SESSION_SECRET);
+  if (localAuthFallbacksEnabled(env)) {
+    addSession(sessions, env.CUSTOMCARD_CUSTOMER_SESSION_TOKEN, "customer", "user-demo", env.AUTH_SESSION_SECRET);
+    addSession(sessions, env.CUSTOMCARD_ADMIN_SESSION_TOKEN, "admin", "admin-demo", env.AUTH_SESSION_SECRET);
+  }
 
   return {
     mode: "memory",
@@ -318,8 +321,11 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
     },
     validate() {
       const blockers = [];
-      if (!env.CUSTOMCARD_CUSTOMER_SESSION_TOKEN) blockers.push("Memory API runtime requires CUSTOMCARD_CUSTOMER_SESSION_TOKEN.");
-      if (!env.CUSTOMCARD_ADMIN_SESSION_TOKEN) blockers.push("Memory API runtime requires CUSTOMCARD_ADMIN_SESSION_TOKEN.");
+      if (!memoryAuthConfigured(env)) {
+        blockers.push(
+          `Memory API runtime requires Clerk JWT verification config or ${localAuthFallbackOptInEnvName}=enabled with CUSTOMCARD_CUSTOMER_SESSION_TOKEN plus CUSTOMCARD_ADMIN_SESSION_TOKEN.`
+        );
+      }
       blockers.push(...objectStoreRuntime.validate());
       return blockers;
     },
@@ -512,6 +518,7 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
 function authorizeLocalMemoryClerkCustomer({ route, request, sessions, env, token, verification }) {
   if (verification?.status !== "clerk-not-configured") return undefined;
   if (isProductionRuntimeEnv(env)) return undefined;
+  if (!localAuthFallbacksEnabled(env)) return undefined;
   if (route.auth !== "customer-session") return undefined;
   const preview = readLocalClerkJwtPreview(token);
   if (!preview) return undefined;
@@ -525,6 +532,17 @@ function authorizeLocalMemoryClerkCustomer({ route, request, sessions, env, toke
     provider: "local-clerk"
   });
   return authorizeFromSessions(route, request, sessions, env.AUTH_SESSION_SECRET);
+}
+
+function memoryAuthConfigured(env) {
+  return Boolean(
+    clerkVerificationConfigured(env) ||
+      (localAuthFallbacksEnabled(env) && env.CUSTOMCARD_CUSTOMER_SESSION_TOKEN && env.CUSTOMCARD_ADMIN_SESSION_TOKEN)
+  );
+}
+
+function localAuthFallbacksEnabled(env) {
+  return String(env?.[localAuthFallbackOptInEnvName] ?? "").trim().toLowerCase() === "enabled";
 }
 
 function readLocalClerkJwtPreview(token, { nowMs = Date.now() } = {}) {

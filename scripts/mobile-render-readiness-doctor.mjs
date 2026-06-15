@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import {
   mobileRenderReadinessItems,
   summarizeMobileRenderReadiness,
@@ -39,6 +40,9 @@ const doctorManifest = defineDoctorManifest({
     apiServer: "scripts/api-server.mjs",
     adminApp: "src/App.tsx",
     readinessSummaryData: "src/readinessSummaryData.mjs",
+    iosSmokeEvidence: "docs/evidence/mobile-render/2026-06-15-ios-prod-review-smoke.md",
+    iosReleaseEvidence: "docs/evidence/mobile-render/2026-06-15-ios-release-simulator-home.md",
+    iosViewportEvidence: "docs/evidence/mobile-render/2026-06-15-ios-release-viewport-screenshots.md",
     docs: "docs/platform-expansion-design.md"
   },
   docsKeys: ["docs"]
@@ -49,6 +53,8 @@ const contents = readDoctorManifestFiles(doctorManifest);
 const summary = summarizeMobileRenderReadiness(mobileRenderReadinessItems);
 const validationBlockers = validateMobileRenderReadiness(mobileRenderReadinessItems);
 const itemIds = mobileRenderReadinessItems.map((item) => item.id);
+const evidenceArtifactRefs = mobileRenderReadinessItems.flatMap((item) => item.evidenceArtifactRefs);
+const missingEvidenceArtifactRefs = evidenceArtifactRefs.filter((ref) => !existsSync(ref));
 
 const checks = [
   checkExact("register", "item-count", summary.total, 8),
@@ -57,6 +63,8 @@ const checks = [
   checkExact("register", "artifact-blocked-count", summary.artifactBlocked, 1),
   checkExact("register", "viewport-profile-count", summary.viewportProfiles, 4),
   checkExact("register", "native-build-profile-count", summary.nativeBuildProfiles, 3),
+  checkExact("register", "evidence-artifact-count", summary.evidenceArtifacts, 9),
+  checkExact("register", "emulator-smoke-evidence-artifact-count", summary.emulatorSmokeEvidenceArtifacts, 9),
   checkExact("register", "no-emulator-proof-claim", summary.emulatorRenderProofs, 0),
   checkExact("register", "no-signed-artifact-claim", summary.signedArtifacts, 0),
   checkExact("register", "no-live-external-network", summary.externalNetworkCalls, 0),
@@ -84,6 +92,9 @@ const checks = [
     "viewportProfiles",
     "nativeBuildProfileIds",
     "requiredSourceSignals",
+    "deterministicProofBoundary",
+    "blockedLiveProofs",
+    "evidenceArtifactRefs",
     "customerVisible",
     "requiresEmulatorProof",
     "requiresSignedArtifact",
@@ -99,14 +110,69 @@ const checks = [
     readyDetail: `Validated ${mobileRenderReadinessItems.length} executable mobile render readiness item shapes.`,
     missingPrefix: "Missing mobile render readiness fields"
   }),
+  {
+    id: "mobile-render-evidence-artifacts-exist",
+    lane: "evidence",
+    passed: missingEvidenceArtifactRefs.length === 0,
+    detail:
+      missingEvidenceArtifactRefs.length === 0
+        ? `Resolved ${evidenceArtifactRefs.length} mobile render evidence artifact refs.`
+        : `Missing mobile render evidence artifacts: ${missingEvidenceArtifactRefs.join(", ")}`
+  },
   checkDoctorSourceSignals(doctorManifest, contents, {
     lane: "tests",
     id: "mobile-render-readiness-tests",
     sourceKeys: ["readinessTest"],
     signals: [
-      "tracks mobile render readiness without claiming emulator or signed artifact proof",
+      "tracks mobile render readiness with iOS release simulator evidence without claiming full emulator or signed artifact proof",
       "covers customer mobile sections, viewports, and native build profiles explicitly",
       "flags unsafe native render proof claims"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "evidence",
+    id: "ios-prod-review-smoke-evidence-boundary",
+    sourceKeys: ["iosSmokeEvidence"],
+    signals: [
+      "iOS Production-Mode Review Smoke",
+      "CUSTOMCARD_OAUTH_REDIRECT_URL=customcard://sso-callback",
+      "Expo Go production JavaScript bundle",
+      "2026-06-15-ios-prod-review-smoke.png",
+      "session-token gate is not shown",
+      "not a complete emulator render proof",
+      "Expo Go `Tools` bubble"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "evidence",
+    id: "ios-release-simulator-home-evidence-boundary",
+    sourceKeys: ["iosReleaseEvidence"],
+    signals: [
+      "iOS Release Simulator Home Render",
+      "Build Succeeded",
+      "Release-iphonesimulator",
+      "com.customcard.app",
+      "2026-06-15-ios-release-simulator-home.png",
+      "without the Expo Go Tools overlay",
+      "not the full mobile render proof matrix"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "evidence",
+    id: "ios-release-viewport-screenshot-evidence-boundary",
+    sourceKeys: ["iosViewportEvidence"],
+    signals: [
+      "iOS Release Viewport Screenshots",
+      "Build Succeeded",
+      "Release-iphonesimulator",
+      "com.customcard.app",
+      "UIDeviceFamily",
+      "2026-06-15-ios-release-iphone-se.png",
+      "2026-06-15-ios-release-standard-phone.png",
+      "2026-06-15-ios-release-large-phone.png",
+      "2026-06-15-ios-release-tablet-portrait.png",
+      "session-token gate is not shown",
+      "not the full mobile render proof matrix"
     ]
   }),
   checkDoctorSourceSignals(doctorManifest, contents, {
@@ -167,15 +233,21 @@ const checks = [
       "summarizeMobileRenderReadiness",
       "mobileRenderReadiness",
       "emulatorRenderProofs",
+      "emulatorSmokeEvidenceArtifacts",
       "signedArtifacts"
     ]
   }),
-  checkDoctorDocs(doctorManifest, contents, ["not an emulator render proof"], { id: "mobile-render-readiness-docs" }),
+  checkDoctorDocs(
+    doctorManifest,
+    contents,
+    ["iOS Expo Go smoke", "tooling-free Release", "compact, standard, large, and tablet Release", "not a complete emulator render proof matrix"],
+    { id: "mobile-render-readiness-docs" }
+  ),
   checkDoctorScriptedAndGated(doctorManifest, contents, { id: "mobile-render-doctor-scripted-and-gated" }),
   checkArrayIncludes("evidence", "required-evidence-signals", summary.requiredEvidence, [
     "React Native render test output",
-    "Emulator screenshot",
     "RTL native screenshot",
+    "Print proof native screenshot",
     "Signed iOS artifact",
     "Signed Android artifact"
   ])
@@ -190,6 +262,8 @@ runDoctorReport({
   screenSections: summary.screenSections,
   viewportProfiles: summary.viewportProfiles,
   nativeBuildProfiles: summary.nativeBuildProfiles,
+  evidenceArtifacts: summary.evidenceArtifacts,
+  emulatorSmokeEvidenceArtifacts: summary.emulatorSmokeEvidenceArtifacts,
   emulatorRequired: summary.emulatorRequired,
   signedArtifactRequired: summary.signedArtifactRequired,
   emulatorRenderProofs: summary.emulatorRenderProofs,

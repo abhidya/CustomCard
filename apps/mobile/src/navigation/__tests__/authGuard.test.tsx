@@ -8,7 +8,7 @@ import { Text } from "react-native";
 import React from "react";
 
 import type { AppSession } from "../../lib/auth/AuthProvider";
-import { RootNavigator } from "../RootNavigator";
+import { customCardLinking, RootNavigator } from "../RootNavigator";
 
 let mockSession: AppSession;
 
@@ -84,6 +84,14 @@ function session(overrides: Partial<AppSession>): AppSession {
 }
 
 describe("RootNavigator customer shell", () => {
+  it("defines production deep links for customer workflow and print-proof guide screens", () => {
+    expect(customCardLinking.prefixes).toEqual(
+      expect.arrayContaining(["customcard://", "customcard:///"])
+    );
+    expect(JSON.stringify(customCardLinking.config)).toContain("guide/:focus?");
+    expect(JSON.stringify(customCardLinking.config)).toContain("print-options");
+  });
+
   it("keeps the customer landing visible while the session is resolving", async () => {
     mockSession = session({ status: "loading" });
     await renderNavigator();

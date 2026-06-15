@@ -14,6 +14,10 @@ const runtimeDoctorEnv = {
   OBJECT_STORE_URL: "https://object-store.customcard.test",
   OBJECT_STORE_SIGNING_SECRET: "test-object-store-signing-secret-32",
   AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
+  CLERK_JWT_KEY: "test-clerk-jwt-key",
+  CLERK_AUTHORIZED_PARTIES: "https://customcard.test",
+  CLERK_ISSUER: "https://clerk.customcard.test",
+  CLERK_AUDIENCE: "customcard-api",
   REAL_ORDER_KILL_SWITCH: "disabled"
 };
 const expectedIdempotentMutations = apiRouteContracts.filter((route) => route.method === "POST" && route.idempotencyKeyRequired).length;
@@ -171,6 +175,8 @@ describe("api server wrapper", () => {
           screenSections: number;
           viewportProfiles: number;
           nativeBuildProfiles: number;
+          evidenceArtifacts: number;
+          emulatorSmokeEvidenceArtifacts: number;
           emulatorRenderProofs: number;
           signedArtifacts: number;
           realOrdersEnabled: number;
@@ -428,6 +434,8 @@ describe("api server wrapper", () => {
       screenSections: 21,
       viewportProfiles: 4,
       nativeBuildProfiles: 3,
+      evidenceArtifacts: 9,
+      emulatorSmokeEvidenceArtifacts: 9,
       emulatorRenderProofs: 0,
       signedArtifacts: 0,
       realOrdersEnabled: 0,
@@ -437,19 +445,22 @@ describe("api server wrapper", () => {
     expect(report.readiness.hostedApiReadiness).toMatchObject({
       total: 8,
       repoLocalReady: 2,
-      evidenceMissing: 5,
-      protectionBlocked: 1,
+      evidenceMissing: 2,
+      liveProofAttached: 2,
+      partialLiveProof: 2,
+      protectionBlocked: 0,
       routeContracts: 5,
-      requiredEnvVars: 6,
+      requiredEnvVars: 13,
       hostedDbRequired: 5,
       publicRouteProofRequired: 3,
       hostedTokenVerificationRequired: 3,
       envSyncProofs: 0,
-      hostedDbProofs: 0,
-      publicRouteProofs: 0,
+      hostedDbProofs: 2,
+      publicRouteProofs: 2,
       hostedTokenVerificationProofs: 0,
       backupPolicies: 0,
-      deploymentProtectionBypasses: 0,
+      deploymentProtectionBypasses: 1,
+      evidenceArtifacts: 10,
       realOrdersEnabled: 0,
       liveProviderCalls: 0,
       blockers: []
@@ -472,7 +483,7 @@ describe("api server wrapper", () => {
       vercelEnvSyncRequired: 5,
       tableContracts: 15,
       routeContracts: 5,
-      requiredEnvVars: 6,
+      requiredEnvVars: 7,
       hostedSeedProofs: 0,
       hostedTokenProbeProofs: 0,
       vercelEnvSyncProofs: 0,
@@ -537,7 +548,7 @@ describe("api server wrapper", () => {
     });
     expect(report.readiness.production.blockers).toEqual(
       expect.arrayContaining([
-        "Vercel deployment exists, but hosted DB env vars and public DB doctor output are not present.",
+        "Vercel deployment and hosted Postgres runtime proof are attached; hosted env sync proof and authenticated public DB doctor output remain incomplete.",
         "No physical sample or retailer certification has been recorded."
       ])
     );
@@ -864,6 +875,8 @@ describe("api server wrapper", () => {
         artifactBlocked: 1,
         viewportProfiles: 4,
         nativeBuildProfiles: 3,
+        evidenceArtifacts: 9,
+        emulatorSmokeEvidenceArtifacts: 9,
         emulatorRenderProofs: 0,
         signedArtifacts: 0,
         realOrdersEnabled: 0,
@@ -873,17 +886,20 @@ describe("api server wrapper", () => {
       expect(readiness.hostedApiReadiness).toMatchObject({
         total: 8,
         repoLocalReady: 2,
-        evidenceMissing: 5,
-        protectionBlocked: 1,
+        evidenceMissing: 2,
+        liveProofAttached: 2,
+        partialLiveProof: 2,
+        protectionBlocked: 0,
         routeContracts: 5,
-        requiredEnvVars: 6,
+        requiredEnvVars: 13,
         hostedTokenVerificationRequired: 3,
         envSyncProofs: 0,
-        hostedDbProofs: 0,
-        publicRouteProofs: 0,
+        hostedDbProofs: 2,
+        publicRouteProofs: 2,
         hostedTokenVerificationProofs: 0,
         backupPolicies: 0,
-        deploymentProtectionBypasses: 0,
+        deploymentProtectionBypasses: 1,
+        evidenceArtifacts: 10,
         realOrdersEnabled: 0,
         liveProviderCalls: 0,
         blockers: []
@@ -1023,8 +1039,8 @@ describe("api server wrapper", () => {
       );
       expect(mobile.chatTranscript).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ speaker: "assistant", source: "local-script", text: expect.stringContaining("Local scripted assistant") }),
-          expect.objectContaining({ speaker: "assistant", source: "local-script", text: expect.stringContaining("Live AI and automatic orders stay off") })
+          expect.objectContaining({ speaker: "assistant", source: "local-script", text: expect.stringContaining("card assistant") }),
+          expect.objectContaining({ speaker: "assistant", source: "local-script", text: expect.stringContaining("automatic orders stay off") })
         ])
       );
       expect(mobile.approvalActions.every((action: { idempotencyRequired: boolean }) => action.idempotencyRequired)).toBe(true);
@@ -1595,6 +1611,7 @@ describe("api server wrapper", () => {
       env: {
         ...process.env,
         CUSTOMCARD_API_RUNTIME: "memory",
+        CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS: "enabled",
         CUSTOMCARD_AI_CUSTOMER_CHAT_LIVE_ENABLED: "false",
         CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "false",
         CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG: "false",
@@ -2375,6 +2392,7 @@ describe("api server wrapper", () => {
         HOST: "127.0.0.1",
         PORT: String(port),
         CUSTOMCARD_API_RUNTIME: "memory",
+        CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS: "enabled",
         AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
         CUSTOMCARD_CUSTOMER_SESSION_TOKEN: customerToken,
         CUSTOMCARD_ADMIN_SESSION_TOKEN: "google-calendar-admin-token",
@@ -2484,6 +2502,7 @@ describe("api server wrapper", () => {
         HOST: "127.0.0.1",
         PORT: String(port),
         CUSTOMCARD_API_RUNTIME: "memory",
+        CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS: "enabled",
         AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
         CUSTOMCARD_CUSTOMER_SESSION_TOKEN: customerToken,
         CUSTOMCARD_ADMIN_SESSION_TOKEN: adminToken,

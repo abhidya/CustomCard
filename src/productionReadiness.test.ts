@@ -19,7 +19,7 @@ describe("production readiness gates", () => {
         "Retail quote APIs and quote freshness evidence are not connected.",
         "The app has no live processor approval, refund proof, or PCI review.",
         "Direct ordering remains disabled until retail certification and physical QA pass.",
-        "Vercel deployment exists, but hosted DB env vars and public DB doctor output are not present.",
+        "Vercel deployment and hosted Postgres runtime proof are attached; hosted env sync proof and authenticated public DB doctor output remain incomplete.",
         "No signed native artifact or emulator render proof is attached.",
         "No physical sample or retailer certification has been recorded."
       ])

@@ -1,8 +1,3 @@
-export const browserAdminEmailEnvNames = Object.freeze([
-  "VITE_CUSTOMCARD_ADMIN_EMAILS",
-  "VITE_CUSTOMCARD_ADMIN_EMAIL"
-] as const);
-
 export const adminPreviewEnvName = "VITE_CUSTOMCARD_ENABLE_ADMIN_PREVIEW";
 export const cardGenerationUrlEnvName = "VITE_CARD_GEN_URL";
 export const sameOriginCardGenerationPath = "/api/ai/card/generate";
@@ -19,7 +14,6 @@ export interface BrowserAdminUserProfile {
 export type BrowserAdminAccessReason =
   | "loading"
   | "signed-out"
-  | "configured-email"
   | "metadata-role"
   | "metadata-roles"
   | "local-preview"
@@ -29,7 +23,6 @@ export interface BrowserAdminAccessPolicy {
   isLoaded: boolean;
   isSignedIn: boolean;
   isAdmin: boolean;
-  hasConfiguredEmails: boolean;
   email: string;
   role: string;
   roles: string[];
@@ -40,7 +33,6 @@ export interface BrowserAdminAccessInput {
   isLoaded: boolean;
   isSignedIn: boolean | undefined;
   user: BrowserAdminUserProfile | null | undefined;
-  configuredAdminEmails: ReadonlySet<string>;
   localAdminPreview?: boolean;
 }
 
@@ -50,20 +42,10 @@ export interface CardGenerationEndpoint {
   sameOriginPath: string;
 }
 
-export function configuredAdminEmailsFromEnv(env: BrowserGateEnv): ReadonlySet<string> {
-  return new Set(
-    browserAdminEmailEnvNames
-      .flatMap((name) => stringEnvValue(env, name).split(","))
-      .map(normalizeText)
-      .filter(Boolean)
-  );
-}
-
 export function resolveBrowserAdminAccess({
   isLoaded,
   isSignedIn,
   user,
-  configuredAdminEmails,
   localAdminPreview = false
 }: BrowserAdminAccessInput): BrowserAdminAccessPolicy {
   const metadata = recordValue(user?.publicMetadata);
@@ -73,23 +55,20 @@ export function resolveBrowserAdminAccess({
     : [];
   const email = normalizeText(user?.primaryEmailAddress?.emailAddress ?? "");
   const signedIn = Boolean(isSignedIn);
-  const emailAllowed = email ? configuredAdminEmails.has(email) : false;
   const singleRoleAllowed = role === "admin";
   const multiRoleAllowed = roles.includes("admin");
-  const isAdmin = Boolean(localAdminPreview || (signedIn && (emailAllowed || singleRoleAllowed || multiRoleAllowed)));
+  const isAdmin = Boolean(localAdminPreview || (signedIn && (singleRoleAllowed || multiRoleAllowed)));
 
   return {
     isLoaded,
     isSignedIn: signedIn,
     isAdmin,
-    hasConfiguredEmails: configuredAdminEmails.size > 0,
     email,
     role,
     roles,
     reason: resolveAdminAccessReason({
       isLoaded,
       signedIn,
-      emailAllowed,
       singleRoleAllowed,
       multiRoleAllowed,
       localAdminPreview
@@ -126,14 +105,12 @@ export function resolveCardGenerationEndpoint(
 function resolveAdminAccessReason({
   isLoaded,
   signedIn,
-  emailAllowed,
   singleRoleAllowed,
   multiRoleAllowed,
   localAdminPreview
 }: {
   isLoaded: boolean;
   signedIn: boolean;
-  emailAllowed: boolean;
   singleRoleAllowed: boolean;
   multiRoleAllowed: boolean;
   localAdminPreview: boolean;
@@ -143,7 +120,6 @@ function resolveAdminAccessReason({
   if (!signedIn) return "signed-out";
   if (singleRoleAllowed) return "metadata-role";
   if (multiRoleAllowed) return "metadata-roles";
-  if (emailAllowed) return "configured-email";
   return "not-authorized";
 }
 

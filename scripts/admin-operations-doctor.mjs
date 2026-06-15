@@ -32,17 +32,17 @@ const checks = [
     "workflow",
     "required-task-ids",
     workflow.tasks.map((task) => task.id),
-    ["production-user-auth", "credential-vault-required-env", "hosted-account-token-verification", "alert-routing-drill", "incident-review-runbook"]
+    ["production-user-auth", "credential-vault-required-env", "hosted-clerk-token-verification", "alert-routing-drill", "incident-review-runbook"]
   ),
   checkIncludes("tests", "admin-operations-tests", contents.adminOperationsTest, [
     "turns readiness evidence into owner lanes without live-production claims",
-    "keeps credential vault, hosted token, and incident drill work explicit",
+    "keeps credential vault, hosted Clerk token, and incident drill work explicit",
     "rejects unsafe or unactionable operations tasks"
   ]),
   checkIncludes("surfaces", "admin-ui-operation-surface", `${contents.app}\n${contents.adminOperationsData}\n${contents.hostedApiReadinessData}\n${contents.observabilityReadinessData}\n${contents.appSmokeTest}`, [
     "Integration owner workflow",
     "Credential vault setup",
-    "Hosted account-token verification",
+    "Hosted Clerk token verification",
     "Alert route drill",
     "Incident review runbook",
     "Live enabled"
@@ -52,7 +52,7 @@ const checks = [
     "`src/adminOperations.ts`",
     "`npm run admin:operations:doctor`",
     "credential-vault",
-    "hosted token proof",
+    "hosted Clerk token proof",
     "alert route drill",
     "incident-review runbook"
   ]),
@@ -106,7 +106,7 @@ function buildDoctorFixtureInput() {
   return {
     model: {
       coverage: {
-        requiredEnv: ["DATABASE_URL", "AUTH_SESSION_SECRET", "CUSTOMCARD_ADMIN_SESSION_TOKEN"]
+        requiredEnv: ["DATABASE_URL", "AUTH_SESSION_SECRET", "CLERK_JWT_KEY", "CLERK_AUTHORIZED_PARTIES", "CLERK_ISSUER", "CLERK_AUDIENCE"]
       }
     },
     productionGates: [
@@ -117,9 +117,9 @@ function buildDoctorFixtureInput() {
       productionGate("external-audits", "External audits", "audit")
     ],
     hostedApiReadinessItems: [
-      hostedItem("hosted-account-token-verification", "Hosted account-token verification", [
-        "Hosted customer token probe",
-        "Hosted admin token probe"
+      hostedItem("hosted-clerk-token-verification", "Hosted Clerk token verification", [
+        "Hosted Clerk customer JWT probe",
+        "Hosted Clerk admin JWT probe"
       ])
     ],
     retailFulfillmentReadinessItems: [],
@@ -154,7 +154,7 @@ function hostedItem(id, label, requiredEvidence) {
     id,
     label,
     status: "evidence-missing",
-    envVarNames: ["CUSTOMCARD_ADMIN_SESSION_TOKEN"],
+    envVarNames: ["CLERK_JWT_KEY", "CLERK_AUTHORIZED_PARTIES", "CLERK_ISSUER", "CLERK_AUDIENCE"],
     requiredEvidence,
     currentEvidence: ["Hosted API readiness contract"],
     blocker: `${label} output is not attached.`,

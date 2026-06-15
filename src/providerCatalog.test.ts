@@ -184,6 +184,8 @@ describe("provider catalog", () => {
     expect(admin.coverage.requiredEnv).toContain("CLERK_SECRET_KEY");
     expect(admin.coverage.requiredEnv).toContain("CLERK_JWT_KEY");
     expect(admin.coverage.requiredEnv).toContain("CLERK_AUTHORIZED_PARTIES");
+    expect(admin.coverage.requiredEnv).toContain("CLERK_ISSUER");
+    expect(admin.coverage.requiredEnv).toContain("CLERK_AUDIENCE");
     expect(admin.coverage.requiredEnv).toContain("SUPABASE_URL");
     expect(admin.coverage.requiredEnv).toContain("SUPABASE_ANON_KEY");
     expect(admin.coverage.requiredEnv).toContain("SUPABASE_SERVICE_ROLE_KEY");

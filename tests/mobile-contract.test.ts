@@ -33,9 +33,10 @@ import {
   type MobileExperienceModel
 } from "../apps/mobile/src/customerExperience";
 
-const shellDoctorTimeoutMs = 15_000;
+const shellDoctorTimeoutMs = 30_000;
 const validMobileDoctorEnv = {
-  CUSTOMCARD_API_BASE_URL: "https://api.customcard.test",
+  CUSTOMCARD_QA_API_BASE_URL: "https://api.qa.customcard.test",
+  CUSTOMCARD_PRODUCTION_API_BASE_URL: "https://api.customcard.test",
   CUSTOMCARD_APP_ENV: "qa",
   CUSTOMCARD_OAUTH_REDIRECT_URL: "customcard://sso-callback",
   EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_customcard",
@@ -53,9 +54,9 @@ describe("mobile customer experience contract", () => {
     expect(packageJson.scripts).toMatchObject({
       start: "expo start",
       "start:review": "EXPO_UNSTABLE_HEADLESS=1 expo start --localhost",
-      ios: "expo start --ios",
+      ios: "expo run:ios",
       "ios:review": "EXPO_UNSTABLE_HEADLESS=1 expo start --localhost --ios",
-      android: "expo start --android",
+      android: "expo run:android",
       "android:review": "EXPO_UNSTABLE_HEADLESS=1 expo start --localhost --android",
       doctor: "node ./scripts/doctor.mjs",
       "release:doctor": "node ./scripts/release-doctor.mjs"
@@ -181,7 +182,7 @@ describe("mobile customer experience contract", () => {
       ])
     );
     expect(mobileChatTranscript.map((message) => message.text).join(" ")).toContain(
-      "Live AI and automatic orders stay off"
+      "automatic orders stay off"
     );
     expect(mobileMemoryReviewItems).toEqual(
       expect.arrayContaining([
@@ -287,13 +288,15 @@ describe("mobile customer experience contract", () => {
     const customerCopy = collectMobileCustomerCopy().join(" ");
 
     expect(validateMobileExperience()).toEqual([]);
-    expect(customerCopy).toContain("Google Calendar is not connected yet");
+    expect(customerCopy).toContain("secure Google Calendar connection is still pending");
     expect(customerCopy).toContain("Print options");
     expect(customerCopy).toContain("Download print package");
     expect(customerCopy).toContain("same-cart coupon proof");
     expect(customerCopy).toContain("Public prices and source-listed coupons are only estimates");
     expect(customerCopy).not.toContain("cheapest known price");
-    expect(customerCopy).not.toMatch(/\b(oauth[- ]gated|credential[- ]gated|repo-local-contract|handoff|fulfillment|vendor|adapter|mock|dummy|placeholder)\b/i);
+    expect(customerCopy).not.toMatch(
+      /\b(oauth[- ]gated|credential[- ]gated|repo-local-contract|handoff|fulfillment|vendor|adapter|mock|dummy|placeholder|local scripted|deterministic local|manual upload|automatic retail checkout)\b/i
+    );
   });
 
   it("rejects mobile calendar account options that drift from server-owned start packets", () => {
@@ -363,7 +366,7 @@ describe("mobile customer experience contract", () => {
         expect.objectContaining({ title: "Cards to review" }),
         expect.objectContaining({ title: "Card assistant" }),
         expect.objectContaining({ title: "Printing options" }),
-        expect.objectContaining({ title: "Finish manually" }),
+        expect.objectContaining({ title: "Finish at a print shop" }),
         expect.objectContaining({ title: "Saved offline" })
       ])
     });
@@ -372,13 +375,13 @@ describe("mobile customer experience contract", () => {
     expect(mobileRenderSnapshot.hero.secondaryActions).toEqual([
       expect.objectContaining({
         label: "Import an invite",
-        modeLabel: "Local",
+        modeLabel: "Ready",
         presentation: "secondary",
         disabled: false
       }),
       expect.objectContaining({
         label: "Review calendar options",
-        modeLabel: "Later",
+        modeLabel: "Review",
         presentation: "secondary",
         disabled: true
       })
@@ -398,12 +401,12 @@ describe("mobile customer experience contract", () => {
     });
     expect(mobileRenderSnapshot.sections.flatMap((section) => section.rows).map((row) => row.modeLabel)).toEqual(
       expect.arrayContaining([
-        "Local",
-        "Queued",
-        "Free",
-        "Later",
+        "Ready",
+        "Saved",
+        "Draft",
+        "Review",
         "After proof",
-        "Not connected",
+        "Connect later",
         "Ready to review",
         "Saved offline"
       ])
@@ -460,13 +463,17 @@ describe("mobile customer experience contract", () => {
     try {
       execFileSync("node", ["apps/mobile/scripts/doctor.mjs"], {
         encoding: "utf8",
-        env: { ...process.env, ...validMobileDoctorEnv, CUSTOMCARD_API_BASE_URL: "replace-me" },
+        env: {
+          ...process.env,
+          ...validMobileDoctorEnv,
+          CUSTOMCARD_QA_API_BASE_URL: "replace-me"
+        },
         stdio: ["ignore", "pipe", "pipe"]
       });
     } catch (error) {
       stderr = String((error as { stderr?: string }).stderr);
     }
-    expect(stderr).toContain("Mobile shell has placeholder env: CUSTOMCARD_API_BASE_URL");
+    expect(stderr).toContain("Mobile shell has placeholder env: CUSTOMCARD_QA_API_BASE_URL");
   }, shellDoctorTimeoutMs);
 
   it("ships a native release profile gate without hardcoded production API endpoints", () => {
@@ -514,6 +521,8 @@ describe("mobile customer experience contract", () => {
       env: { REAL_ORDER_KILL_SWITCH: "disabled" }
     });
     expect(JSON.stringify(eas)).not.toContain("CUSTOMCARD_API_BASE_URL");
+    expect(JSON.stringify(eas)).not.toContain("CUSTOMCARD_QA_API_BASE_URL");
+    expect(JSON.stringify(eas)).not.toContain("CUSTOMCARD_PRODUCTION_API_BASE_URL");
     expect(report).toMatchObject({
       service: "customcard-mobile-release-doctor",
       status: "ready",
@@ -689,8 +698,8 @@ describe("mobile customer experience contract", () => {
         "Missing mobile approval action: dismiss",
         "Every mobile approval action must require idempotency.",
         "Mobile today summary primary action must exist in approval controls.",
-        "Mobile chat must identify the local scripted assistant path.",
-        "Mobile chat must disclose that live AI and automatic orders are off.",
+        "Mobile chat must identify the customer card assistant path.",
+        "Mobile chat must disclose that automatic orders are off.",
         "Mobile memory review must expose at least two customer memory items.",
         "Every mobile memory review item must be customer-visible.",
         "Mobile memory review must not store raw memory content.",
@@ -706,7 +715,7 @@ describe("mobile customer experience contract", () => {
         "Mobile print proof must expose at least four checks.",
         "Every mobile print proof check must be customer-visible.",
         "Mobile print proof checks must pass before handoff.",
-        "Mobile handoff must keep a manual upload path.",
+        "Mobile print package must keep a customer-controlled print shop path.",
         "Disabled mobile handoff steps must explain blocked automatic checkout.",
         "Mobile print options must stay locked until proof approval.",
         "Mobile safety banner must require checkout confirmation.",

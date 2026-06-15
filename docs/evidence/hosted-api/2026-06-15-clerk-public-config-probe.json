@@ -1,0 +1,57 @@
+{
+  "service": "customcard-hosted-clerk-public-config-probe",
+  "status": "blocked",
+  "scope": "live-hosted-clerk-public-config",
+  "checkedAt": "2026-06-15T16:39:35.821Z",
+  "targetEnvironment": "production",
+  "baseUrl": "https://customcard-three.vercel.app",
+  "mutationsEnabled": false,
+  "valuesRedacted": true,
+  "assets": [
+    {
+      "url": "/",
+      "fetched": true,
+      "status": 200
+    },
+    {
+      "url": "/assets/index-LrnQu1ly.js",
+      "fetched": true,
+      "status": 200
+    },
+    {
+      "url": "/assets/rolldown-runtime-Bh1tDfsg.js",
+      "fetched": true,
+      "status": 200
+    },
+    {
+      "url": "/assets/clerk-BoEBdit2.js",
+      "fetched": true,
+      "status": 200
+    }
+  ],
+  "publishableKeys": [
+    {
+      "sourcePath": "/assets/index-LrnQu1ly.js",
+      "kind": "test",
+      "fingerprint": "3c3e59d3bcf1",
+      "valueLength": 56,
+      "decodedIssuerCandidate": "https://model-bluejay-21.clerk.accounts.dev"
+    }
+  ],
+  "keyCount": 1,
+  "keyKinds": [
+    "test"
+  ],
+  "issuerCandidates": [
+    "https://model-bluejay-21.clerk.accounts.dev"
+  ],
+  "publicConfig": {
+    "productionPublicClerkReady": false,
+    "testKeyDetected": true,
+    "liveKeyDetected": false
+  },
+  "blockers": [
+    "Production hosted public app bundle must not ship a Clerk pk_test publishable key.",
+    "Production hosted public app bundle must ship a Clerk pk_live publishable key."
+  ]
+}

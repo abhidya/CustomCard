@@ -23,7 +23,6 @@ import {
   type ViewId
 } from "../src/appStateOrchestrator";
 import {
-  configuredAdminEmailsFromEnv,
   resolveBrowserAdminAccess,
   resolveLocalAdminPreview,
   type BrowserAdminAccessPolicy
@@ -70,8 +69,6 @@ import { SettingsView } from "./views/SettingsView";
 import { StudioView } from "./views/StudioView";
 
 const AdminOperationalView = lazy(() => import("./AdminOperationalView"));
-
-const configuredAdminEmails = configuredAdminEmailsFromEnv(import.meta.env);
 
 function updateViewRoute(view: ViewId) {
   if (typeof window === "undefined") return;
@@ -712,7 +709,7 @@ function useAdminAccess(): AdminAccess {
   const localAdminPreview =
     typeof window === "undefined" ? false : resolveLocalAdminPreview(import.meta.env, window.location.href);
   return useMemo(
-    () => resolveBrowserAdminAccess({ isLoaded, isSignedIn, user, configuredAdminEmails, localAdminPreview }),
+    () => resolveBrowserAdminAccess({ isLoaded, isSignedIn, user, localAdminPreview }),
     [isLoaded, isSignedIn, localAdminPreview, user]
   );
 }

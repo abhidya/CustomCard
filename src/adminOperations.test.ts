@@ -50,10 +50,10 @@ describe("admin operations workflow", () => {
     });
   });
 
-  it("keeps credential vault, hosted token, and incident drill work explicit", () => {
+  it("keeps credential vault, hosted Clerk token, and incident drill work explicit", () => {
     const workflow = buildAdminOperationsWorkflow(workflowInput);
     const credentialVault = workflow.tasks.find((task) => task.id === "credential-vault-required-env");
-    const hostedToken = workflow.tasks.find((task) => task.id === "hosted-account-token-verification");
+    const hostedToken = workflow.tasks.find((task) => task.id === "hosted-clerk-token-verification");
     const alertDrill = workflow.tasks.find((task) => task.id === "alert-routing-drill");
     const incidentRunbook = workflow.tasks.find((task) => task.id === "incident-review-runbook");
 
@@ -68,11 +68,11 @@ describe("admin operations workflow", () => {
       expect.arrayContaining(["Secret manager path for every required environment variable", "Rotation owner"])
     );
     expect(hostedToken).toMatchObject({
-      label: "Hosted account-token verification",
+      label: "Hosted Clerk token verification",
       ownerId: "identity-access",
       status: "evidence-required"
     });
-    expect(hostedToken?.requiredEvidence).toEqual(expect.arrayContaining(["Hosted customer token probe"]));
+    expect(hostedToken?.requiredEvidence).toEqual(expect.arrayContaining(["Hosted Clerk customer JWT probe"]));
     expect(alertDrill).toMatchObject({
       label: "Alert route drill",
       ownerId: "observability-audit",

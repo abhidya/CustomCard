@@ -166,8 +166,8 @@ describe("clerk to api session bridge (memory runtime)", () => {
 
     await expect(runtime.authorize(walgreensUploadRoute, bearerRequest(runtimeEnv.CUSTOMCARD_ADMIN_SESSION_TOKEN))).resolves.toMatchObject({
       ok: false,
-      statusCode: 403,
-      payload: expect.objectContaining({ status: "wrong-role" })
+      statusCode: 401,
+      payload: expect.objectContaining({ status: "invalid-session" })
     });
 
     const clerkCustomerToken = signClerkJwt(clerkClaims({ sub: "user_2clerkCustomer", sid: "sess_2clerkCustomer" }));
@@ -180,7 +180,10 @@ describe("clerk to api session bridge (memory runtime)", () => {
 
   it("authorizes signed-in local Clerk customers for AI generation when memory runtime has no Clerk verification key", async () => {
     const { CLERK_JWT_KEY: _clerkJwtKey, ...localMemoryEnv } = runtimeEnv;
-    const runtime = createApiRuntime({ env: localMemoryEnv, routes: apiRouteContracts });
+    const runtime = createApiRuntime({
+      env: { ...localMemoryEnv, CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS: "enabled" },
+      routes: apiRouteContracts
+    });
     const token = signClerkJwt(clerkClaims());
     const aiCardRoute = getApiRouteById("ai-card-generate");
 

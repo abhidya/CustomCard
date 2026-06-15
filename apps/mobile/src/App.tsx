@@ -1,4 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
+import { useRoute, type RouteProp } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import { Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
@@ -19,6 +20,7 @@ import { ApiProvider } from "./lib/api/ApiProvider";
 import { AuthProvider } from "./lib/auth/AuthProvider";
 import { createAppQueryClient } from "./lib/query/queryClient";
 import { RootNavigator } from "./navigation/RootNavigator";
+import type { RootStackParamList } from "./navigation/types";
 
 export default function App() {
   const [queryClient] = useState(createAppQueryClient);
@@ -65,19 +67,36 @@ export default function App() {
  * flow stages and is the contract surface checked by the repo doctors.
  */
 export function WorkflowOverviewScreen() {
+  const route = useRoute<RouteProp<RootStackParamList, "WorkflowGuide">>();
+  const guideFocus = route.params?.focus;
+  const focusedOnPrintProof = guideFocus === "print-proof";
+  const sections = focusedOnPrintProof ? printProofGuideSections() : mobileRenderSnapshot.sections;
+  const header = focusedOnPrintProof
+    ? {
+        eyebrow: "Print proof",
+        title: "Print proof checklist",
+        subtitle:
+          "Review the 5 x 7 file checks, proof approval, and manual checkout boundary before printing."
+      }
+    : mobileRenderSnapshot.hero;
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.eyebrow}>{mobileRenderSnapshot.hero.eyebrow}</Text>
-          <Text style={styles.title}>{mobileRenderSnapshot.hero.title}</Text>
-          <Text style={styles.subtitle}>{mobileRenderSnapshot.hero.subtitle}</Text>
-          <ActionSurface action={mobileRenderSnapshot.hero.primaryAction} />
-          <View style={styles.heroSecondaryActions}>
-            {mobileRenderSnapshot.hero.secondaryActions.map((action) => (
-              <ActionSurface key={action.label} action={action} compact />
-            ))}
-          </View>
+          <Text style={styles.eyebrow}>{header.eyebrow}</Text>
+          <Text style={styles.title}>{header.title}</Text>
+          <Text style={styles.subtitle}>{header.subtitle}</Text>
+          {!focusedOnPrintProof ? (
+            <>
+              <ActionSurface action={mobileRenderSnapshot.hero.primaryAction} />
+              <View style={styles.heroSecondaryActions}>
+                {mobileRenderSnapshot.hero.secondaryActions.map((action) => (
+                  <ActionSurface key={action.label} action={action} compact />
+                ))}
+              </View>
+            </>
+          ) : null}
         </View>
 
         <View style={styles.statusBand}>
@@ -93,7 +112,7 @@ export function WorkflowOverviewScreen() {
           </View>
         </View>
 
-        {mobileRenderSnapshot.sections.map((section) =>
+        {sections.map((section) =>
           section.id === "next-action" ? (
             <NextActionSection key={section.id} section={section} />
           ) : (
@@ -111,6 +130,18 @@ export function WorkflowOverviewScreen() {
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+function printProofGuideSections(): MobileRenderSection[] {
+  const focusOrder = [
+    "print-proof",
+    "checkout-confirmation",
+    "card-proof-path",
+    "best-available-options"
+  ];
+  return focusOrder
+    .map((id) => mobileRenderSnapshot.sections.find((section) => section.id === id))
+    .filter((section): section is MobileRenderSection => Boolean(section));
 }
 
 function NextActionSection({ section }: { section: MobileRenderSection }) {

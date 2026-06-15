@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  browserAdminEmailEnvNames,
   cardGenerationUrlEnvName,
-  configuredAdminEmailsFromEnv,
   resolveLocalAdminPreview,
   resolveBrowserAdminAccess,
   resolveCardGenerationEndpoint,
@@ -10,20 +8,10 @@ import {
 } from "./browserGatePolicy";
 
 describe("browser gate policy", () => {
-  it("centralizes browser admin email env parsing", () => {
-    const emails = configuredAdminEmailsFromEnv({
-      [browserAdminEmailEnvNames[0]]: " Owner@Example.com, ops@example.com ",
-      [browserAdminEmailEnvNames[1]]: "ADMIN@example.com"
-    });
-
-    expect([...emails]).toEqual(["owner@example.com", "ops@example.com", "admin@example.com"]);
-  });
-
   it("grants admin access from Clerk publicMetadata.role", () => {
     const access = resolveBrowserAdminAccess({
       isLoaded: true,
       isSignedIn: true,
-      configuredAdminEmails: new Set(),
       user: {
         publicMetadata: { role: "Admin" },
         primaryEmailAddress: { emailAddress: "person@example.com" }
@@ -42,7 +30,6 @@ describe("browser gate policy", () => {
     const access = resolveBrowserAdminAccess({
       isLoaded: true,
       isSignedIn: true,
-      configuredAdminEmails: new Set(),
       user: {
         publicMetadata: { roles: ["support", "ADMIN"] },
         primaryEmailAddress: { emailAddress: "person@example.com" }
@@ -54,11 +41,10 @@ describe("browser gate policy", () => {
     expect(access.roles).toEqual(["support", "admin"]);
   });
 
-  it("grants admin access from configured browser email allowlist", () => {
+  it("does not grant browser admin access from email alone", () => {
     const access = resolveBrowserAdminAccess({
       isLoaded: true,
       isSignedIn: true,
-      configuredAdminEmails: new Set(["owner@example.com"]),
       user: {
         publicMetadata: {},
         primaryEmailAddress: { emailAddress: " OWNER@example.com " }
@@ -66,9 +52,8 @@ describe("browser gate policy", () => {
     });
 
     expect(access).toMatchObject({
-      isAdmin: true,
-      hasConfiguredEmails: true,
-      reason: "configured-email",
+      isAdmin: false,
+      reason: "not-authorized",
       email: "owner@example.com"
     });
   });
@@ -77,7 +62,6 @@ describe("browser gate policy", () => {
     const access = resolveBrowserAdminAccess({
       isLoaded: true,
       isSignedIn: false,
-      configuredAdminEmails: new Set(["owner@example.com"]),
       user: {
         publicMetadata: { role: "admin" },
         primaryEmailAddress: { emailAddress: "owner@example.com" }
@@ -99,7 +83,6 @@ describe("browser gate policy", () => {
     ).toBe(true);
 
     const access = resolveBrowserAdminAccess({
-      configuredAdminEmails: new Set(),
       isLoaded: true,
       isSignedIn: false,
       localAdminPreview: true,

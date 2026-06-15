@@ -256,8 +256,8 @@ function buildOpsArea(input: AdminPortalModelInput, runtimeBlocked: number, runt
         status: readiness.hostedApi.summary.publicRouteProofRequired > 0 ? "blocked" : "ready",
         risk: "high",
         detail: `${readiness.hostedApi.summary.routeContracts} route contracts exist; public DB-backed proof is still required.`,
-        action: "Run hosted route probe for admin and customer session tokens.",
-        evidence: ["Hosted API route probe", "Hosted database proof", "Account-token verification"]
+        action: "Run hosted route probes with admin and customer Clerk JWTs.",
+        evidence: ["Hosted API route probe", "Hosted database proof", "Clerk JWT verification"]
       }),
       record({
         id: "ops-payment-exceptions",
@@ -301,7 +301,7 @@ function buildOrdersArea(input: AdminPortalModelInput): AdminPortalArea {
       source: "demo seed orders row",
       quote: "Review-only",
       pickup: "Not confirmed",
-      nextAction: "Use the hosted checkout or manual upload path; no live vendor order API call is made.",
+      nextAction: "Use hosted checkout or the customer-controlled print package; no live vendor order API call is made.",
       evidence: ["orders.status", "order_events.payload", "vendor_quotes.live_quote=false"]
     },
     {
@@ -413,7 +413,7 @@ function buildUsersArea(input: AdminPortalModelInput): AdminPortalArea {
     summary: "Admin roles, customer sessions, support queues, consent, and data-request controls.",
     metrics: [
       { label: "Auth env vars", value: `${model.coverage.requiredEnv.filter((envVar) => /AUTH|CLERK|COGNITO|SESSION/.test(envVar)).length}` },
-      { label: "Token proofs", value: `${readiness.reviewerDbSeed.summary.hostedTokenProbeProofs}` },
+      { label: "Static-token proofs", value: `${readiness.reviewerDbSeed.summary.hostedTokenProbeProofs}` },
       { label: "Seed proofs", value: `${readiness.reviewerDbSeed.summary.hostedSeedProofs}` },
       { label: "Opt-in gates", value: `${readiness.businessEngagement.summary.optInRequired}` },
       { label: "Live sends", value: `${readiness.businessEngagement.summary.liveMessagesEnabled}` },
@@ -433,9 +433,9 @@ function buildUsersArea(input: AdminPortalModelInput): AdminPortalArea {
         source: "Hosted API readiness",
         status: readiness.hostedApi.summary.hostedTokenVerificationProofs > 0 ? "ready" : "attention",
         risk: "high",
-        detail: "Admin routes require admin-session auth; hosted token proof is not attached yet.",
-        action: "Attach admin token probe and role mapping for operator, support, auditor, and owner roles.",
-        evidence: ["Hosted admin token probe", "Role mapping", "Session expiry policy"]
+        detail: "Admin routes require Clerk-admin role verification; hosted Clerk JWT proof is not attached yet.",
+        action: "Attach Clerk admin JWT probe and role mapping for operator, support, auditor, and owner roles.",
+        evidence: ["Hosted Clerk admin JWT probe", "Role mapping", "Session expiry policy"]
       }),
       record({
         id: "users-customer-accounts",
@@ -555,9 +555,9 @@ function buildAssetsArea(input: AdminPortalModelInput): AdminPortalArea {
         source: "Reviewer DB seed readiness",
         status: readiness.reviewerDbSeed.summary.hostedSeedProofs > 0 ? "ready" : "attention",
         risk: "medium",
-        detail: "Reviewer seed plans are modeled, but hosted migration and token-probe proof are not attached.",
-        action: "Run hosted seed, rollback, and account-token probes before exposing seeded admin/customer data.",
-        evidence: ["Hosted seed execution", "Rollback proof", "Hosted token probe"]
+        detail: "Reviewer seed plans are modeled, but hosted migration and local static-token probe proof are not attached.",
+        action: "Run hosted seed, rollback, and local static-token probes before exposing seeded admin/customer data.",
+        evidence: ["Hosted seed execution", "Rollback proof", "Local static-token probe"]
       }),
       record({
         id: "assets-coupon-evidence",
@@ -630,8 +630,8 @@ function buildProvidersArea(input: AdminPortalModelInput, runtimeBlocked: number
         source: "Provider Ops",
         status: providerOps.users.liveMessagesEnabled > 0 || providerOps.users.crmWritesEnabled > 0 ? "blocked" : "attention",
         risk: "high",
-        detail: `${providerOps.users.adminTokenProofs} admin token proofs, ${providerOps.users.customerTokenProofs} customer token proofs, ${providerOps.users.optInGates} opt-in gates.`,
-        action: "Keep admin/customer support queues metadata-only until hosted token, seed, opt-in, and audit evidence are attached.",
+        detail: `${providerOps.users.adminTokenProofs} admin Clerk proof placeholders, ${providerOps.users.customerTokenProofs} customer Clerk proof placeholders, ${providerOps.users.optInGates} opt-in gates.`,
+        action: "Keep admin/customer support queues metadata-only until hosted Clerk token, seed, opt-in, and audit evidence are attached.",
         evidence: providerOps.users.userManagementRequiredEnv.slice(0, 4)
       }),
       record({

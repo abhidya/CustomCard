@@ -55,7 +55,7 @@ export function CalendarConnectScreen() {
       </Card>
 
       <Card>
-        <Pill label={startGoogle.data?.providerRequestUrl ? "Ready" : "Server-gated"} />
+        <Pill label={startGoogle.data?.providerRequestUrl ? "Ready" : "Connect later"} />
         <Text style={typography.heading}>Google Calendar</Text>
         <Text style={typography.body}>
           Read-only event metadata via Google's consent screen. The connection is prepared and
@@ -74,7 +74,7 @@ export function CalendarConnectScreen() {
       </Card>
 
       <Card>
-        <Pill label="Manual" />
+        <Pill label="ICS export" />
         <Text style={typography.heading}>Apple Calendar</Text>
         <Text style={typography.body}>
           Export the event as an .ics file from Apple Calendar, then paste it here. CustomCard never

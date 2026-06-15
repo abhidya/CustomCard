@@ -33,6 +33,8 @@ const doctorManifest = defineDoctorManifest({
     apiRuntime: "scripts/api-runtime.mjs",
     postgresHttpDoctor: "scripts/postgres-api-http-doctor.mjs",
     hostedApiReadiness: "src/hostedApiReadinessData.mjs",
+    hostedMigrationRollbackPlanDoctor: "scripts/hosted-migration-rollback-plan-doctor.mjs",
+    hostedMigrationRollbackPlan: "docs/hosted-migration-rollback-plan.md",
     deploymentEvidence: "docs/deployment-evidence.md",
     platformDocs: "docs/platform-expansion-design.md",
     verificationDocs: "docs/verification.md",
@@ -69,7 +71,7 @@ const checks = [
   checkExact("register", "sql-preview-only-count", summary.sqlPreviewOnly, 8),
   checkExact("register", "table-contract-count", summary.tableContracts, 15),
   checkExact("register", "route-contract-count", summary.routeContracts, 5),
-  checkExact("register", "required-env-var-count", summary.requiredEnvVars, 6),
+  checkExact("register", "required-env-var-count", summary.requiredEnvVars, 7),
   checkExact("register", "no-hosted-seed-proof-claim", summary.hostedSeedProofs, 0),
   checkExact("register", "no-hosted-token-probe-claim", summary.hostedTokenProbeProofs, 0),
   checkExact("register", "no-vercel-env-sync-claim", summary.vercelEnvSyncProofs, 0),
@@ -159,10 +161,26 @@ const checks = [
     id: "hosted-proof-gap-signals",
     sourceKeys: ["hostedApiReadiness", "deploymentEvidence"],
     signals: [
-      "hosted-account-token-verification",
-      "hosted DB doctor run",
-      "no environment variables",
-      "DB-backed API access are not yet complete"
+      "hosted-clerk-token-verification",
+      "Hosted idempotent mutation replay",
+      "Hosted audit row count",
+      "hosted Postgres runtime proof are now",
+      "authenticated DB-backed mutation replay"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "rollback",
+    id: "hosted-migration-rollback-plan-boundary",
+    sourceKeys: ["packageJson", "hostedMigrationRollbackPlanDoctor", "hostedMigrationRollbackPlan", "readinessTest"],
+    signals: [
+      '"hosted:rollback:plan:doctor": "node scripts/hosted-migration-rollback-plan-doctor.mjs"',
+      "customcard-hosted-migration-rollback-plan-doctor",
+      "Reviewer Seed Cleanup",
+      "Hosted rollback run",
+      "Rollback audit entry",
+      "Executed hosted rollback drill: no",
+      "hosted:rollback:plan:doctor",
+      "docs/hosted-migration-rollback-plan.md covers reviewer seed cleanup"
     ]
   }),
   checkDoctorSourceSignals(doctorManifest, contents, {
@@ -188,7 +206,7 @@ const checks = [
       "Hosted seed proof remains unclaimed"
     ]
   }),
-  checkDoctorDocs(doctorManifest, contents, ["not hosted reviewer DB mutation or hosted account-token proof"], {
+  checkDoctorDocs(doctorManifest, contents, ["not hosted reviewer DB mutation or hosted Clerk JWT proof"], {
     id: "reviewer-db-seed-docs"
   }),
   checkDoctorScriptedAndGated(doctorManifest, contents, { id: "reviewer-db-seed-doctor-scripted-and-gated" }),

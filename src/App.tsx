@@ -468,7 +468,7 @@ export function AdminPanelView({
               <p className="eyebrow">Mobile</p>
               <h3>Mobile render readiness</h3>
             </div>
-            <StatusChip icon={Smartphone} label="Emulator proof missing" tone="red" />
+            <StatusChip icon={Smartphone} label="Release proof missing" tone="red" />
           </div>
           <div className="runtimeGrid" aria-label="Mobile native render readiness">
             <Metric label="Items" value={`${mobileRenderReadinessSummary.total}`} />
@@ -476,6 +476,7 @@ export function AdminPanelView({
             <Metric label="Viewports" value={`${mobileRenderReadinessSummary.viewportProfiles}`} />
             <Metric label="Profiles" value={`${mobileRenderReadinessSummary.nativeBuildProfiles}`} />
             <Metric label="Emulator req." value={`${mobileRenderReadinessSummary.emulatorRequired}`} />
+            <Metric label="Smoke artifacts" value={`${mobileRenderReadinessSummary.emulatorSmokeEvidenceArtifacts}`} />
             <Metric label="Emulator proof" value={`${mobileRenderReadinessSummary.emulatorRenderProofs}`} />
             <Metric label="Signed artifacts" value={`${mobileRenderReadinessSummary.signedArtifacts}`} />
             <Metric label="Live calls" value={`${mobileRenderReadinessSummary.liveProviderCalls}`} />
@@ -483,7 +484,8 @@ export function AdminPanelView({
           <MobileRenderReadinessList items={mobileRenderReadinessItems} />
           <p className="panelNote">
             These are source-render, viewport, customer-flow, RTL, preview-profile, emulator, and signed-artifact
-            readiness contracts; not an emulator render proof or signed native build.
+            readiness contracts; an Expo Go iOS smoke artifact is attached, but this is not a complete emulator
+            render proof or signed native build.
           </p>
         </article>
 
@@ -503,12 +505,12 @@ export function AdminPanelView({
             <Metric label="Public proof req." value={`${hostedApiReadinessSummary.publicRouteProofRequired}`} />
             <Metric label="Env proof" value={`${hostedApiReadinessSummary.envSyncProofs}`} />
             <Metric label="DB proof" value={`${hostedApiReadinessSummary.hostedDbProofs}`} />
-            <Metric label="Token proof" value={`${hostedApiReadinessSummary.hostedTokenVerificationProofs}`} />
+            <Metric label="Clerk proof" value={`${hostedApiReadinessSummary.hostedTokenVerificationProofs}`} />
           </div>
           <HostedApiReadinessList items={hostedApiReadinessItems} />
           <p className="panelNote">
-            These are Vercel deployment, serverless route, environment, hosted Postgres, token verification, and backup
-            readiness contracts; not public DB-backed Vercel proof or hosted account-token verification.
+            These are Vercel deployment, serverless route, environment, hosted Postgres, Clerk verification, and backup
+            readiness contracts; not public DB-backed Vercel proof or hosted Clerk JWT verification.
           </p>
         </article>
 
@@ -520,7 +522,7 @@ export function AdminPanelView({
             </div>
             <StatusChip icon={KeyRound} label="Hosted seed proof missing" tone="red" />
           </div>
-          <div className="runtimeGrid" aria-label="Reviewer database seed and account-token proof readiness">
+          <div className="runtimeGrid" aria-label="Reviewer database seed and local static-token proof readiness">
             <Metric label="Items" value={`${reviewerDbSeedReadinessSummary.total}`} />
             <Metric label="Tables" value={`${reviewerDbSeedReadinessSummary.tableContracts}`} />
             <Metric label="Routes" value={`${reviewerDbSeedReadinessSummary.routeContracts}`} />
@@ -528,12 +530,12 @@ export function AdminPanelView({
             <Metric label="Seed req." value={`${reviewerDbSeedReadinessSummary.hostedSeedExecutionRequired}`} />
             <Metric label="Token req." value={`${reviewerDbSeedReadinessSummary.hostedTokenProbeRequired}`} />
             <Metric label="Seed proof" value={`${reviewerDbSeedReadinessSummary.hostedSeedProofs}`} />
-            <Metric label="Token proof" value={`${reviewerDbSeedReadinessSummary.hostedTokenProbeProofs}`} />
+            <Metric label="Static-token proof" value={`${reviewerDbSeedReadinessSummary.hostedTokenProbeProofs}`} />
           </div>
           <ReviewerDbSeedReadinessList items={reviewerDbSeedReadinessItems} />
           <p className="panelNote">
-            These are reviewer seed-plan, SQL-preview, Vercel env, hosted migration, token-probe, and rollback
-            contracts; not hosted reviewer DB mutation or hosted account-token proof.
+            These are reviewer seed-plan, SQL-preview, Vercel env, hosted migration, local static-token probe, and rollback
+            contracts; not hosted reviewer DB mutation or hosted Clerk JWT proof.
           </p>
         </article>
 

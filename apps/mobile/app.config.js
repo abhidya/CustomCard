@@ -1,14 +1,14 @@
-const apiBaseUrl = process.env.CUSTOMCARD_API_BASE_URL;
+const appEnv = normalizeAppEnv(process.env.CUSTOMCARD_APP_ENV);
+const { apiBaseUrl, apiBaseUrlSourceName } = resolveApiBaseUrl(appEnv, process.env);
 const clerkPublishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 const oauthRedirectUrl = process.env.CUSTOMCARD_OAUTH_REDIRECT_URL;
-const appEnv = normalizeAppEnv(process.env.CUSTOMCARD_APP_ENV);
 const realOrderKillSwitch = process.env.REAL_ORDER_KILL_SWITCH ?? "disabled";
 
 if (!apiBaseUrl) {
-  throw new Error("CUSTOMCARD_API_BASE_URL is required for the mobile app shell.");
+  throw new Error(`${apiBaseUrlSourceName} is required for the mobile app shell.`);
 }
 if (!apiBaseUrl.startsWith("https://")) {
-  throw new Error("CUSTOMCARD_API_BASE_URL must be an https:// API base URL.");
+  throw new Error(`${apiBaseUrlSourceName} must be an https:// API base URL.`);
 }
 if (!appEnv) {
   throw new Error("CUSTOMCARD_APP_ENV must be qa or production.");
@@ -18,6 +18,9 @@ if (!/^pk_(test|live)_/.test(clerkPublishableKey ?? "")) {
 }
 if (appEnv === "production" && !clerkPublishableKey.startsWith("pk_live_")) {
   throw new Error("Production mobile builds require a Clerk live publishable key.");
+}
+if (appEnv === "qa" && !clerkPublishableKey.startsWith("pk_test_")) {
+  throw new Error("QA mobile builds require a Clerk test publishable key.");
 }
 if (!oauthRedirectUrl) {
   throw new Error("CUSTOMCARD_OAUTH_REDIRECT_URL is required for mobile OAuth.");
@@ -52,7 +55,7 @@ module.exports = () => ({
     },
     ios: {
       bundleIdentifier: "com.customcard.app",
-      supportsTablet: false,
+      supportsTablet: true,
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false
       }
@@ -84,4 +87,27 @@ function normalizeAppEnv(value) {
   if (normalized === "qa" || normalized === "staging" || normalized === "preview") return "qa";
   if (normalized === "production" || normalized === "prod") return "production";
   return "";
+}
+
+function resolveApiBaseUrl(appEnv, env) {
+  const explicit = normalizeBaseUrl(env.CUSTOMCARD_API_BASE_URL);
+  const qa = normalizeBaseUrl(env.CUSTOMCARD_QA_API_BASE_URL);
+  const production = normalizeBaseUrl(env.CUSTOMCARD_PRODUCTION_API_BASE_URL);
+  const envSpecific = appEnv === "production" ? production : appEnv === "qa" ? qa : "";
+  const apiBaseUrlSourceName =
+    appEnv === "production"
+      ? "CUSTOMCARD_PRODUCTION_API_BASE_URL or CUSTOMCARD_API_BASE_URL"
+      : appEnv === "qa"
+        ? "CUSTOMCARD_QA_API_BASE_URL or CUSTOMCARD_API_BASE_URL"
+        : "CUSTOMCARD_API_BASE_URL";
+
+  if (explicit && envSpecific && explicit !== envSpecific) {
+    throw new Error(`${apiBaseUrlSourceName} must not conflict with CUSTOMCARD_API_BASE_URL.`);
+  }
+
+  return { apiBaseUrl: envSpecific || explicit, apiBaseUrlSourceName };
+}
+
+function normalizeBaseUrl(value) {
+  return String(value ?? "").trim().replace(/\/+$/, "");
 }

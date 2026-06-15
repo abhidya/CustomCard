@@ -350,19 +350,22 @@ describe("api contracts", () => {
     expect(summary.hostedApiReadiness).toMatchObject({
       total: 8,
       repoLocalReady: 2,
-      evidenceMissing: 5,
-      protectionBlocked: 1,
+      evidenceMissing: 2,
+      liveProofAttached: 2,
+      partialLiveProof: 2,
+      protectionBlocked: 0,
       routeContracts: 5,
-      requiredEnvVars: 6,
+      requiredEnvVars: 13,
       hostedDbRequired: 5,
       publicRouteProofRequired: 3,
       hostedTokenVerificationRequired: 3,
       envSyncProofs: 0,
-      hostedDbProofs: 0,
-      publicRouteProofs: 0,
+      hostedDbProofs: 2,
+      publicRouteProofs: 2,
       hostedTokenVerificationProofs: 0,
       backupPolicies: 0,
-      deploymentProtectionBypasses: 0,
+      deploymentProtectionBypasses: 1,
+      evidenceArtifacts: 10,
       realOrdersEnabled: 0,
       liveProviderCalls: 0,
       blockers: []
@@ -421,6 +424,8 @@ describe("api contracts", () => {
       artifactBlocked: 1,
       viewportProfiles: 4,
       nativeBuildProfiles: 3,
+      evidenceArtifacts: 9,
+      emulatorSmokeEvidenceArtifacts: 9,
       emulatorRenderProofs: 0,
       signedArtifacts: 0,
       realOrdersEnabled: 0,
@@ -437,7 +442,7 @@ describe("api contracts", () => {
       vercelEnvSyncRequired: 5,
       tableContracts: 15,
       routeContracts: 5,
-      requiredEnvVars: 6,
+      requiredEnvVars: 7,
       hostedSeedProofs: 0,
       hostedTokenProbeProofs: 0,
       vercelEnvSyncProofs: 0,
@@ -736,6 +741,8 @@ describe("api contracts", () => {
       total: 8,
       screenSections: 21,
       viewportProfiles: 4,
+      evidenceArtifacts: 9,
+      emulatorSmokeEvidenceArtifacts: 9,
       emulatorRenderProofs: 0,
       signedArtifacts: 0
     });
@@ -745,18 +752,18 @@ describe("api contracts", () => {
     expect(payload.hostedApiReadiness.summary).toMatchObject({
       total: 8,
       routeContracts: 5,
-      requiredEnvVars: 6,
-      publicRouteProofs: 0,
-      hostedDbProofs: 0,
+      requiredEnvVars: 13,
+      publicRouteProofs: 2,
+      hostedDbProofs: 2,
       hostedTokenVerificationProofs: 0
     });
     expect(payload.hostedApiReadiness.items.map((item) => item.id)).toEqual(
-      expect.arrayContaining(["vercel-project-link", "public-db-backed-route-proof", "hosted-account-token-verification"])
+      expect.arrayContaining(["vercel-project-link", "public-db-backed-route-proof", "hosted-clerk-token-verification"])
     );
     expect(payload.reviewerDbSeedReadiness.summary).toMatchObject({
       total: 8,
       tableContracts: 15,
-      requiredEnvVars: 6,
+      requiredEnvVars: 7,
       hostedSeedProofs: 0,
       hostedTokenProbeProofs: 0
     });
@@ -877,13 +884,15 @@ describe("api contracts", () => {
       },
       mobileRenderReadiness: {
         total: 8,
+        evidenceArtifacts: 9,
+        emulatorSmokeEvidenceArtifacts: 9,
         emulatorRenderProofs: 0,
         signedArtifacts: 0
       },
       hostedApiReadiness: {
         total: 8,
-        publicRouteProofs: 0,
-        hostedDbProofs: 0,
+        publicRouteProofs: 2,
+        hostedDbProofs: 2,
         hostedTokenVerificationProofs: 0
       },
       reviewerDbSeedReadiness: {

@@ -99,8 +99,8 @@ export function CheckoutScreen() {
           <>
             <Text style={typography.body}>
               Hosted checkout isn't enabled on this deployment yet
-              {status.data?.blockers?.length ? ` (${status.data.blockers[0]})` : ""}. Use "Finish
-              manually" to download files and order directly instead.
+              {status.data?.blockers?.length ? ` (${status.data.blockers[0]})` : ""}. Use "Finish at
+              a print shop" to download files and order directly instead.
             </Text>
             <AppButton
               label="Re-check availability"

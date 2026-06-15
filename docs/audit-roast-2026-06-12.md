@@ -55,7 +55,7 @@ Severity / Area / Title / Status. Evidence and fixes are in the sections below o
 ### Medium (selected)
 | # | Area | Title | Status |
 |---|------|-------|--------|
-| M1 | Security | Prod gating keyed on `NODE_ENV`/`CUSTOMCARD_ENV` only; misconfig falls back to static shared admin token (memory mode) | Needs owner (require explicit insecure-runtime opt-in flag) |
+| M1 | Security | Prod gating keyed on `NODE_ENV`/`CUSTOMCARD_ENV` only; misconfig falls back to static shared admin token (memory mode) | **Fixed** (production still requires Postgres, and memory static tokens require `CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS=enabled`) |
 | M2 | Security | Rate-limit key was the proxy IP (one global bucket) or spoofable XFF | **Fixed** (Vercel client-IP headers preferred) |
 | M3 | Security | Vercel-served static assets had zero security headers (api-server headers don't apply on Vercel CDN) | **Fixed** (non-CSP headers in vercel.json; COOP `same-origin-allow-popups` to keep Walgreens popup callback). CSP for the SPA still open — needs Clerk domain allowlist testing |
 | M4 | Privacy | DSAR `status`/`dueAt` were client-supplied (requester could self-complete) | **Fixed** in both runtimes, tests updated |
@@ -73,8 +73,8 @@ Severity / Area / Title / Status. Evidence and fixes are in the sections below o
 | M16 | UX | Offline fallback is unstyled plain-text "Offline" | Open |
 | M17 | Copy | Manual-upload "manifest/source SVGs" jargon; "Handled by printer" | **Fixed** |
 | M18 | UX | Same-day urgency label applied to events 2 days out | **Fixed** ("Print in the next day or two") |
-| M19 | Security | Admin email allowlist ships in client bundle via `VITE_` var | Open (server-derived admin gating; prefer Clerk `publicMetadata.role`) |
-| M20 | Security | Clerk `iss`/`aud`/`azp` checks optional | Open (require `CLERK_ISSUER` in durable env validation) |
+| M19 | Security | Admin email allowlist ships in client bundle via `VITE_` var | **Fixed** (browser admin access now uses Clerk `publicMetadata.role`/`roles`; any email backstop is server-only) |
+| M20 | Security | Clerk `iss`/`aud`/`azp` checks optional | **Fixed in repo contract** (`CLERK_JWT_KEY`, `CLERK_AUTHORIZED_PARTIES`, `CLERK_ISSUER`, and `CLERK_AUDIENCE` are durable runtime requirements); hosted env proof still needed |
 | M21 | Legal | Admin gallery reuses customer-derived cards with no license/consent terms; AI output ownership unaddressed | Needs legal review |
 
 ### Low (selected)

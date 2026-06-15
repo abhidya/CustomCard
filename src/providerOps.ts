@@ -418,11 +418,9 @@ function buildProviderOpsEnvSummary(
 }
 
 function buildUserManagementRequiredEnv(model: AdminPanelModel): string[] {
-  return uniqueSorted([
-    "VITE_CUSTOMCARD_ADMIN_EMAIL",
-    "VITE_CUSTOMCARD_ADMIN_EMAILS",
-    ...model.coverage.requiredEnv.filter((envVar) => /CLERK|AUTH_SESSION|CUSTOMCARD_(ADMIN|CUSTOMER)_SESSION/.test(envVar))
-  ]);
+  return uniqueSorted(
+    model.coverage.requiredEnv.filter((envVar) => /CLERK|AUTH_SESSION|CUSTOMCARD_(ADMIN|CUSTOMER)_SESSION/.test(envVar))
+  );
 }
 
 function buildProviderOpsUsageCostSummary(input: ProviderOpsModelInput): ProviderOpsUsageCostSummary {

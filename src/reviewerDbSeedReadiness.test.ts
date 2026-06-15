@@ -29,7 +29,7 @@ describe("reviewer DB seed readiness", () => {
       sqlPreviewOnly: 8,
       tableContracts: 15,
       routeContracts: 5,
-      requiredEnvVars: 6,
+      requiredEnvVars: 7,
       hostedSeedProofs: 0,
       hostedTokenProbeProofs: 0,
       vercelEnvSyncProofs: 0,
@@ -56,12 +56,18 @@ describe("reviewer DB seed readiness", () => {
     const summary = summarizeReviewerDbSeedReadiness();
     const seedPlan = reviewerDbSeedReadinessItems.find((item) => item.id === "reviewer-seed-plan-contract");
     const tokenContract = reviewerDbSeedReadinessItems.find((item) => item.id === "reviewer-session-token-contract");
+    const rollback = reviewerDbSeedReadinessItems.find((item) => item.id === "rollback-cleanup-drill");
 
     expect(plan.rows).toHaveLength(18);
     expect(new Set(plan.rows.map((row) => row.table)).size).toBe(summary.tableContracts);
     expect(seedPlan?.tableNames).toEqual(expect.arrayContaining(Array.from(new Set(plan.rows.map((row) => row.table)))));
     expect(tokenContract?.envVarNames).toEqual(
-      expect.arrayContaining(["CUSTOMCARD_CUSTOMER_SESSION_TOKEN", "CUSTOMCARD_ADMIN_SESSION_TOKEN", "AUTH_SESSION_SECRET"])
+      expect.arrayContaining([
+        "CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS",
+        "CUSTOMCARD_CUSTOMER_SESSION_TOKEN",
+        "CUSTOMCARD_ADMIN_SESSION_TOKEN",
+        "AUTH_SESSION_SECRET"
+      ])
     );
     expect(tokenContract?.routeIds).toEqual(expect.arrayContaining(["/api/admin/readiness", "/api/customer/bootstrap"]));
     expect(seedPlan).toMatchObject({
@@ -74,6 +80,15 @@ describe("reviewer DB seed readiness", () => {
       proofScope: "repo-local-contract",
       rollbackMode: "demo-scoped-sql-preview"
     });
+    expect(rollback?.requiredSourceSignals).toEqual(
+      expect.arrayContaining(["hosted:rollback:plan:doctor", "docs/hosted-migration-rollback-plan.md"])
+    );
+    expect(rollback?.currentEvidence).toEqual(
+      expect.arrayContaining([
+        "docs/hosted-migration-rollback-plan.md covers reviewer seed cleanup",
+        "scripts/hosted-migration-rollback-plan-doctor.mjs validates the plan without claiming hosted rollback execution"
+      ])
+    );
     expect(preview.resetSql).toHaveLength(summary.tableContracts);
     expect(preview.insertSql).toHaveLength(plan.rows.length);
     expect(preview.resetSql.join("\n")).toContain("DELETE FROM auth_sessions");

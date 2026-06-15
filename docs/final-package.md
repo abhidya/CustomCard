@@ -167,14 +167,15 @@
 | Observability readiness | `npm run observability:doctor` | Passed; verified 7 telemetry/alerting readiness items, 6 observability provider contracts, 4 alert-route-required controls, admin/API surfaces, docs, CI wiring, zero live ingestion, zero production alerts, and zero live external network requirements. |
 | Retail fulfillment readiness | `npm run retail:doctor` | Passed; verified 8 retail fulfillment readiness items, 6 blocked retail-printer adapter contracts, 2 manual fallbacks, 21 recovery events, admin/API surfaces, docs, CI wiring, zero live quotes, zero direct retail orders, zero real payments, zero external network calls, and zero physical certification claims. |
 | Payment readiness | `npm run payment:doctor` | Passed; verified 8 payment readiness items, 4 sandbox payment provider contracts, 1 no-payment fallback, 23 ledger events, admin/API surfaces, docs, CI wiring, zero live charges, zero live refunds, zero live captures, zero external network calls, zero card data storage, and zero PCI approval claims. |
-| Hosted API proof readiness | `npm run hosted:api:doctor` | Passed; verified 8 hosted API proof readiness items, 5 hosted-DB-required items, 5 route contracts, 6 required hosted env vars, Vercel/serverless source signals, deployment evidence boundary, admin/API surfaces, docs, CI wiring, zero public DB-backed route proof claims, zero hosted DB proof claims, zero hosted token verification proof claims, zero backup policy claims, zero deployment-protection bypass claims, zero live provider calls, and zero real orders. |
-| Reviewer DB seed readiness | `npm run reviewer:db:seed:doctor` | Passed; verified 8 reviewer DB seed readiness items, 14 seed table contracts, 5 route contracts, 6 required hosted env vars, deterministic seed plan and SQL preview safety, customer/admin session-token contracts, hosted migration/env/token proof gaps, rollback requirements, admin/API surfaces, docs, CI wiring, zero hosted seed proof claims, zero hosted token proof claims, zero Vercel env sync proof claims, zero destructive live mutations, zero live provider calls, and zero real orders. |
+| Hosted API proof readiness | `npm run hosted:api:doctor` | Passed; verified 8 hosted API proof readiness items, 5 hosted-DB-required items, 5 route contracts, 13 required hosted env vars, Vercel/serverless source signals, deployment evidence boundary, guarded `hosted:env:inventory` redacted QA/production Vercel env inventory command, guarded `hosted:env:repair` redacted env repair plan/apply command, guarded `hosted:clerk:public-config` redacted public Clerk publishable-key command, guarded `hosted:clerk:repair` redacted Clerk public/server config repair command, guarded `hosted:auth:probe` QA/production Clerk route-probe command, guarded `hosted:mutation:probe` mutation/audit/idempotency command, guarded `hosted:rollback:plan:doctor` forward-only migration rollback-plan command, guarded `hosted:db:restore:drill` restored-clone backup drill command, admin/API surfaces, docs, CI wiring, 2 attached live public/hosted-DB proof items, 2 partial live proof items, 10 hosted evidence artifact refs, initial redacted production env inventory proof showing `CLERK_ISSUER`, `CLERK_AUDIENCE`, and `IDEMPOTENCY_KEY_TTL_HOURS` missing, redacted repair-plan proof showing no values supplied or applied, guarded partial repair proof showing `IDEMPOTENCY_KEY_TTL_HOURS` applied, follow-up inventory proof showing only `CLERK_ISSUER` and `CLERK_AUDIENCE` missing, public Clerk config proof showing the production bundle ships a redacted `pk_test` key and no `pk_live` key, Clerk config repair-plan proof showing no local `pk_live` or `CLERK_AUDIENCE` value is available to apply yet, restore-drill plan proof showing retention/RPO/RTO metadata and a single missing restored clone URL input, zero hosted env sync proof claims, zero executed hosted Clerk token verification proof claims, zero executed hosted mutation/audit proof claims, zero executed hosted restore-drill or rollback-drill proof claims, zero backup policy claims, zero live provider calls, and zero real orders. |
+| Hosted migration rollback plan | `npm run hosted:rollback:plan:doctor` | Passed; verified the attached forward-only migration rollback plan, transaction-wrapped migration runner, restored-clone guardrails, redacted env inventory guardrails, rollback evidence requirements without live proof claims, audit/privacy/idempotency schema retention, zero hosted rollback execution, zero restored-clone switch execution, zero destructive live mutations, zero live provider calls, and zero real orders. |
+| Reviewer DB seed readiness | `npm run reviewer:db:seed:doctor` | Passed; verified 8 reviewer DB seed readiness items, 14 seed table contracts, 5 route contracts, 7 required reviewer seed env vars, deterministic seed plan and SQL preview safety, customer/admin local static-token contracts behind explicit local auth fallback, hosted migration/env/local static-token proof gaps, rollback requirements, admin/API surfaces, docs, CI wiring, zero hosted seed proof claims, zero local static-token proof claims, zero Vercel env sync proof claims, zero destructive live mutations, zero live provider calls, and zero real orders. |
 | Business engagement readiness | `npm run business:engagement:doctor` | Passed; verified 8 business engagement readiness items, 14 CRM adapter contracts, 11 workflow adapter contracts, 16 notification adapter contracts, 3 lifecycle trigger kinds, admin/API surfaces, docs, CI wiring, zero live customer messages, zero CRM writes, zero live external network calls, and zero real orders. |
 | Provider cost governance | `npm run provider:governance:doctor` | Passed; verified 131 adapter-id signals, 62 usage-based markers, 6 blocked live vendor adapters, budget/rate/fallback policy signals, admin/API governance surfaces, CI wiring, and no live provider calls or real orders. |
 | Capacity planning | `npm run capacity:doctor` | Passed; verified 4 local/cheap/cloud/SaaS profiles, finite daily card/image limits, admin/API surfaces, CI wiring, documentation, and no live provider calls or real orders. |
 | Printer pricing research | `npm run printer:pricing:doctor` | Passed; verified 12 official-source public price observations across 8 persisted source links, 9 no-network collection rules, manual confirmation on every observation, customer/API exposure, CI wiring, and no live quote or real-order claims. |
 | Localization readiness | `npm run localization:doctor` | Passed; verified 4 launch locales, 2 RTL locales, 3 human-copy-review locales, 4 mobile locale options, web/API/mobile surfaces, CI wiring, no live translation provider, and no real orders. |
-| API readiness | `npm run api:doctor` | Blocked in the current pass; service readiness still reports `ready`, 25 routes, 15 idempotent mutation contracts, 124 API-summary providers, 20 persistence tables, and 18 schema-backed routes, but the doctor blocks on local persistence migration evidence drift. Source `providerCatalog.ts` now contains 131 adapters, so the API readiness summary is behind the catalog. |
+| API readiness | `npm run api:doctor` | Passed; verified API readiness status `ready`, 32 routes, 16 mutations, 14 idempotent mutations, 129 providers, provider governance, 21 persistence tables, 22 schema-backed routes, 28 stateful routes, contract runtime mode, no live external calls, no real vendor orders, no raw content storage, and no blockers. |
 | API memory runtime | `npm run api:doctor:memory` | Passed; Bearer auth and idempotency enforced with two configured test sessions, signed artifact contracts present, no live calls or real orders. |
 | API Postgres runtime contract | `npm run api:doctor:postgres` | Passed; fake-pool runtime exercised auth-session lookup, wrong-role blocking, idempotency insert/replay/conflict, repository-backed render-packet insert, repository-backed import-preview insert, repository-backed relationship-memory insert, repository-backed card-project insert, manual handoff order/consent/event insert, data-request privacy/consent insert, audit insert, and queue-job insert without external DB credentials. |
 | API live Postgres integration | `npm run api:doctor:postgres:live` | Passed against an isolated temporary database; migration applied, sessions seeded, real `pg` runtime authorized all 6 repository-backed customer routes, authorized the admin readiness route, blocked wrong-role access, persisted/replayed/conflicted idempotency, wrote one provider connection, imported event, card opportunity, relationship-memory row, card-project row, render-packet row, manual handoff order/consent/event row, data-request row, two consent rows, and audit plus queue rows. |
@@ -182,10 +183,10 @@
 | Account auth storage/recovery | `npm run account:doctor:live` | Passed against an isolated temporary database; migration applied, hosted identity stored without raw profile, provider-subject uniqueness enforced, hashed recovery challenge used, durable session created, and audit row appended. |
 | Artifact object-store writes | `npm run artifact:doctor` | Passed; wrote all 6 render-packet artifacts to a temporary filesystem object-store path and all 6 artifacts through an injected S3-compatible client contract, read them back, verified checksums and byte lengths, stored both manifests, made no network calls, kept real orders disabled, and reported `cloudWritesVerified: false`. |
 | Live S3-compatible artifact writes | `npm run artifact:doctor:s3:live` | Passed in CI against MinIO; created an isolated bucket, wrote 6 render-packet artifacts plus 1 manifest through path-style SigV4 requests, read all 7 objects back, verified checksum/byte-length evidence, reported `cloudWritesVerified: true`, kept external vendor calls and real orders disabled, and cleaned up the bucket. |
-| Persistence readiness | `npm run persistence:doctor` | Passed; 19 table contracts, 20 stateful API routes, 13 idempotent mutations, 5 local persistence audit items, 4 DB-required browser-local data groups, 1 object-store-required artifact group, and 1 browser-only theme key are tracked with no blockers. |
+| Persistence readiness | `npm run persistence:doctor` | Passed; 20 table contracts, 26 stateful API routes, 14 idempotent mutations, server-backed draft-state routes, render-packet artifact storage, signed artifact URLs, append-only audit coverage, and no browser-local customer data requirements are tracked with no blockers. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue and artifact-signing readiness. |
 | Mobile app shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile app configuration and customer experience contract present, including local account import, Paste invite or ICS ready path, gated Google Calendar readiness, Apple/iCloud manual export readiness, next-action, memory-review, card assistant, best available fulfillment recommendations, and print-proof workflow state. |
-| Mobile render readiness | `npm run mobile:render:doctor` | Passed; verified 8 mobile render readiness items, 21 screen sections, 4 viewport profiles, 3 native build profiles, admin/API surfaces, docs, CI wiring, zero emulator render proof claims, zero signed artifact claims, zero live provider calls, and zero real orders. |
+| Mobile render readiness | `npm run mobile:render:doctor` | Passed; verified 8 mobile render readiness items, 21 screen sections, 4 viewport profiles, 3 native build profiles, 9 evidence artifacts including tooling-free iOS Release simulator home, compact-phone, standard-phone, large-phone, and tablet screenshots, admin/API surfaces, docs, CI wiring, zero full emulator render proof claims, zero signed artifact claims, zero live provider calls, and zero real orders. |
 | Mobile native release contract | `npm run mobile:release:doctor` | Passed; verified Expo/EAS development, preview, and production build profiles, iOS/Android identifiers, environment-sourced API URL, disabled real-order kill switch, no hardcoded production API endpoint, no live provider calls, and no signed artifact built. |
 | Demo reset | `npm run demo:doctor` | Passed; admin reset contract covers 14 reviewer fixture tables and 17 rows without live calls or real orders. |
 | CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, cloud artifact IaC, cloud artifact proof readiness, contract API, localization readiness, capacity planning, memory API, Postgres contract API, live Postgres integration, Postgres API HTTP, account auth, artifact store, live MinIO/S3-compatible artifact writes, persistence, demo reset, worker, mobile, mobile render readiness, hosted API proof readiness, business engagement readiness, and mobile native release gates with safe repo-local env. |
@@ -243,11 +244,19 @@
 26. Run the worker and mobile doctor commands in `docs/verification.md`.
 27. Run `npm run mobile:render:doctor`.
 28. Run `npm run hosted:api:doctor`.
-29. Run `npm run reviewer:db:seed:doctor`.
-30. Run `npm run business:engagement:doctor`.
-31. Run `npm run mobile:release:doctor`.
-32. Inspect `.github/workflows/verify.yml`.
-33. Inspect screenshots in `docs/evidence/` and known gaps in
+29. Run `npm run hosted:rollback:plan:doctor`.
+30. With Vercel access, run `CUSTOMCARD_HOSTED_ENV_INVENTORY=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:env:inventory`.
+31. After obtaining a production `pk_live` Clerk publishable key and `CLERK_AUDIENCE`, run the redacted repair plan: `CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app VITE_CLERK_PUBLISHABLE_KEY=pk_live_... CLERK_AUDIENCE=... npm run hosted:clerk:repair`.
+32. To apply that Clerk config to Vercel, run `CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR=enabled CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_APPLY=enabled CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_ACKNOWLEDGE_PRODUCTION=enabled CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_ACKNOWLEDGE_PUBLIC_KEY_REPLACE=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app VITE_CLERK_PUBLISHABLE_KEY=pk_live_... CLERK_AUDIENCE=... npm run hosted:clerk:repair`, redeploy, then run `CUSTOMCARD_HOSTED_CLERK_PUBLIC_CONFIG_PROBE=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:clerk:public-config`.
+33. With the remaining Clerk verifier values present in the process env and production approval, run `CUSTOMCARD_HOSTED_ENV_REPAIR=enabled CUSTOMCARD_HOSTED_ENV_REPAIR_APPLY=enabled CUSTOMCARD_HOSTED_ENV_REPAIR_ACKNOWLEDGE_PRODUCTION=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app CLERK_ISSUER=... CLERK_AUDIENCE=... npm run hosted:env:repair`.
+34. With real hosted Clerk JWTs, run `CUSTOMCARD_HOSTED_AUTH_PROBE=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app CUSTOMCARD_HOSTED_CUSTOMER_JWT=... CUSTOMCARD_HOSTED_ADMIN_JWT=... npm run hosted:auth:probe`.
+35. With real hosted Clerk JWTs and approval for a harmless live render-packet probe row, run `CUSTOMCARD_HOSTED_MUTATION_PROBE=enabled CUSTOMCARD_HOSTED_MUTATION_PROBE_ACKNOWLEDGE_LIVE_WRITES=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app CUSTOMCARD_HOSTED_CUSTOMER_JWT=... CUSTOMCARD_HOSTED_ADMIN_JWT=... npm run hosted:mutation:probe`.
+36. Against a restored hosted DB clone, run `CUSTOMCARD_HOSTED_DB_RESTORE_DRILL=enabled CUSTOMCARD_RESTORE_DATABASE_URL=postgres://... CUSTOMCARD_RESTORE_SOURCE=neon-branch CUSTOMCARD_RESTORE_POINT_IN_TIME=2026-06-15T14:00:00.000Z CUSTOMCARD_BACKUP_RETENTION_DAYS=14 CUSTOMCARD_BACKUP_RPO_MINUTES=15 CUSTOMCARD_BACKUP_RTO_MINUTES=60 npm run hosted:db:restore:drill`.
+37. Run `npm run reviewer:db:seed:doctor`.
+38. Run `npm run business:engagement:doctor`.
+39. Run `npm run mobile:release:doctor`.
+40. Inspect `.github/workflows/verify.yml`.
+41. Inspect screenshots in `docs/evidence/` and known gaps in
    `docs/handoff-notes.md`.
 
 ## Known Gaps
@@ -257,11 +266,36 @@
 - No completed Gmail, Google Calendar, Outlook, or iCloud OAuth callback, token
   exchange, credential persistence, revocation, or live import flow. Google
   connection start can only return an env-gated authorization URL.
-- No production Postgres deployment or production hosted account-token
-  verification; hosted API proof readiness tracks Vercel deployment evidence,
-  hosted env/DB/token/backup proof gaps, and deployment-protection boundary,
-  while isolated live Postgres route-auth/migration/runtime integration and
-  process-level API HTTP verification are covered by doctors.
+- Production Vercel + Neon public route and hosted Postgres runtime proof is
+  attached, including `/api/health` reporting `runtime.mode=postgres` and a
+  protected admin route returning app-level `401 auth-required`. `npm run
+  hosted:env:inventory` is available for redacted QA/production Vercel env key
+  coverage. `npm run hosted:auth:probe` is available for read-only QA/production
+  Clerk customer, admin, missing-auth, and wrong-role probes with
+  operator-supplied JWTs. `npm run hosted:mutation:probe` is available for a
+  guarded live render-packet mutation, idempotency replay/conflict, and
+  audit-counter proof. `npm run hosted:rollback:plan:doctor` validates the
+  attached forward-only migration rollback plan. `npm run
+  hosted:db:restore:drill` is available for restored-clone schema, index,
+  table-read, retention, RPO, and RTO proof. The redacted production env
+  inventory is attached but incomplete: initial inventory showed `CLERK_ISSUER`,
+  `CLERK_AUDIENCE`, and `IDEMPOTENCY_KEY_TTL_HOURS` missing; guarded partial
+  repair applied `IDEMPOTENCY_KEY_TTL_HOURS`; follow-up inventory shows only
+  `CLERK_ISSUER` and `CLERK_AUDIENCE` missing. Guarded public Clerk config
+  evidence also shows the deployed production bundle currently ships a redacted
+  Clerk `pk_test` publishable key and no `pk_live` key, so production OAuth
+  remains unclaimed until the live publishable key is deployed and re-probed.
+  Guarded Clerk config repair-plan evidence shows no local `pk_live` or
+  `CLERK_AUDIENCE` value is available to apply yet, and records the apply path
+  for replacing the public key, deriving/applying `CLERK_ISSUER`, applying
+  `CLERK_AUDIENCE`, redeploying, and re-probing. No
+  executed production Clerk JWT verification, authenticated DB-backed mutation
+  replay, audit-row write, restored-clone switch, or backup/restore policy is
+  claimed. Guarded restore-drill plan evidence is attached at
+  `docs/evidence/hosted-api/2026-06-15-db-restore-drill-plan.json`; it records
+  the restore source, restore point, 14-day retention, 15-minute RPO,
+  60-minute RTO, and no live mutations, while remaining blocked on
+  `CUSTOMCARD_RESTORE_DATABASE_URL`.
 - AI provider readiness is covered as repo-local text/image adapter inventory,
   model allowlist, prompt safety, privacy, print QA, spend, evaluation, and
   rollout gates; no live AI text/image generation, model output QA run, or
@@ -295,9 +329,11 @@
 - No real droplet or Kubernetes deployment execution evidence.
 - Hosted GitHub Actions verification exists for main pushes, but no real droplet
   or Kubernetes deployment execution evidence is claimed.
-- No actual emulator run, native screenshot, EAS/native build, or signed mobile
-  artifact; mobile render readiness, native release profiles, and release
-  doctors are covered as contracts.
+- Tooling-free iOS Release simulator home, compact-phone, standard-phone,
+  large-phone, and tablet screenshots are attached, but no print/RTL render
+  matrix, EAS cloud artifact, or signed mobile artifact is attached; mobile
+  render readiness, native release profiles, and release doctors are covered as
+  contracts.
 - No physical print certification.
 - No external legal/security/privacy/accessibility audit.
 - No browser UI unit-coverage instrumentation; UI remains covered by smoke and

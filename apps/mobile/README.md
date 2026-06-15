@@ -25,7 +25,7 @@ every purchase is confirmed by the customer on the print shop's own site.
 cd apps/mobile
 npm install
 cp .env.example .env        # then edit values (see below)
-npm run assets:placeholders # generate placeholder icon/splash PNGs (first run)
+npm run assets:brand        # regenerate branded icon/splash PNGs
 ```
 
 ### Environment variables
@@ -37,10 +37,12 @@ surfaced to the app via `expo-constants`.
 
 | Variable                            | Required          | Purpose                                                            |
 | ----------------------------------- | ----------------- | ------------------------------------------------------------------ |
-| `CUSTOMCARD_API_BASE_URL`           | yes               | HTTPS API base URL for QA or production.                           |
+| `CUSTOMCARD_APP_ENV`                | yes               | `qa` \| `production` (`staging`/`preview` aliases normalize to `qa`). |
+| `CUSTOMCARD_QA_API_BASE_URL`        | QA builds         | HTTPS API base URL for QA.                                         |
+| `CUSTOMCARD_PRODUCTION_API_BASE_URL` | prod builds       | HTTPS API base URL for production.                                 |
+| `CUSTOMCARD_API_BASE_URL`           | optional override | Explicit HTTPS API URL; must match the selected env-specific URL if both are set. |
 | `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` | yes               | Clerk **publishable** key (`pk_test_` for QA, `pk_live_` for prod). |
 | `CUSTOMCARD_OAUTH_REDIRECT_URL`     | yes               | Native Clerk SSO callback. Must be `customcard://sso-callback`.     |
-| `CUSTOMCARD_APP_ENV`                | yes               | `qa` \| `production` (`staging`/`preview` aliases normalize to `qa`). |
 | `REAL_ORDER_KILL_SWITCH`            | no                | Mirrors the backend safety gate; keep `disabled`.                  |
 | `EAS_PROJECT_ID`                    | for EAS builds    | Set by `eas init`, or via EAS environment variables.               |
 
@@ -74,7 +76,8 @@ Point the app at a QA or production HTTPS API, then launch it:
 ```sh
 cd apps/mobile
 CUSTOMCARD_APP_ENV=qa \
-CUSTOMCARD_API_BASE_URL=https://api.qa.customcard.test \
+CUSTOMCARD_QA_API_BASE_URL=https://api.qa.customcard.test \
+CUSTOMCARD_PRODUCTION_API_BASE_URL=https://api.customcard.test \
 EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_... \
 CUSTOMCARD_OAUTH_REDIRECT_URL=customcard://sso-callback \
 REAL_ORDER_KILL_SWITCH=disabled npm run start
@@ -85,7 +88,8 @@ For Codex/local simulator review, prefer the review scripts:
 
 ```sh
 CUSTOMCARD_APP_ENV=qa \
-CUSTOMCARD_API_BASE_URL=https://api.qa.customcard.test \
+CUSTOMCARD_QA_API_BASE_URL=https://api.qa.customcard.test \
+CUSTOMCARD_PRODUCTION_API_BASE_URL=https://api.customcard.test \
 EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_... \
 CUSTOMCARD_OAUTH_REDIRECT_URL=customcard://sso-callback \
 REAL_ORDER_KILL_SWITCH=disabled npm run ios:review
@@ -154,9 +158,11 @@ contract test (against the in-memory runtime) on every change under
 ## Build & submit (EAS)
 
 `eas.json` defines `development`, `qa`, `preview`, and `production` profiles.
-The development and preview profiles both target the QA app environment. Build
-and submit require an Expo account, EAS CLI, and platform signing credentials
-configured outside this repo.
+The development and preview profiles both target the QA app environment. Set
+`CUSTOMCARD_QA_API_BASE_URL` and `CUSTOMCARD_PRODUCTION_API_BASE_URL` in EAS or
+CI; the build selects from `CUSTOMCARD_APP_ENV` and fails if a generic
+`CUSTOMCARD_API_BASE_URL` override conflicts. Build and submit require an Expo
+account, EAS CLI, and platform signing credentials configured outside this repo.
 
 ```sh
 npm install -g eas-cli
@@ -188,7 +194,7 @@ apps/mobile/
 ├─ App.tsx                      # Expo root, re-exports src/App
 ├─ app.config.js                # build-time public config (no secrets)
 ├─ eas.json                     # EAS build/submit profiles
-├─ assets/                      # placeholder icon/splash (replace before launch)
+├─ assets/                      # branded icon/splash PNGs
 └─ src/
    ├─ App.tsx                   # providers + RootNavigator; offline workflow guide
    ├─ config/env.ts             # config resolution + HTTPS/secret guards

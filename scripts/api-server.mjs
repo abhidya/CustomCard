@@ -235,8 +235,8 @@ export const readiness = {
       "Direct ordering remains disabled until retail certification and physical QA pass.",
       "No live telemetry project, alert route, or retention evidence is attached.",
       "Static IaC is present, but no applied production bucket/IAM output is attached.",
-      "No deployed production Postgres route proof or backup policy is attached.",
-      "Vercel deployment exists, but hosted DB env vars and public DB doctor output are not present.",
+      "Public hosted Postgres route proof is attached; authenticated mutation replay, audit rows, and backup policy remain missing.",
+      "Vercel deployment and hosted Postgres runtime proof are attached; hosted env sync proof and authenticated public DB doctor output remain incomplete.",
       "No signed native artifact or emulator render proof is attached.",
       "Only internal doctors exist; no external audit report is attached.",
       "No physical sample or retailer certification has been recorded."
