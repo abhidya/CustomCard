@@ -463,6 +463,39 @@ describe("admin card gallery and public featured cards", () => {
     expect(payload.rawContentStored).toBe(false);
   });
 
+  it("exposes only browser-safe gallery image URLs", async () => {
+    const runtime = createApiRuntime({ env: runtimeEnv, routes: apiRouteContracts });
+    await saveEntry(runtime, "safe-image", {
+      entryId: "gallery-safe-image",
+      category: "birthday",
+      title: "Signed image card",
+      publicCaption: "A signed artifact image.",
+      featured: true,
+      publicApproved: true,
+      frontImageUrl: "/api/artifacts/projects/p/render-packets/r/front.webp?expires=1770000000&signature=abc"
+    });
+    await saveEntry(runtime, "raw-uri", {
+      entryId: "gallery-raw-uri",
+      category: "birthday",
+      title: "Raw storage card",
+      publicCaption: "A raw storage artifact should not become an image URL.",
+      featured: true,
+      publicApproved: true,
+      frontArtifactUri: "s3://customcard-prod/projects/p/render-packets/r/raw-front.webp"
+    });
+
+    const payload = await runtime.readFeaturedCards();
+    const birthday = payload.categories.find((category: { category: string }) => category.category === "birthday") as {
+      cards: Array<{ id: string; frontImageUrl?: string; thumbnailUrl?: string }>;
+    };
+    expect(birthday.cards.find((card) => card.id === "gallery-safe-image")).toMatchObject({
+      frontImageUrl: "/api/artifacts/projects/p/render-packets/r/front.webp?expires=1770000000&signature=abc"
+    });
+    const rawStorageCard = birthday.cards.find((card) => card.id === "gallery-raw-uri");
+    expect(rawStorageCard?.frontImageUrl).toBeUndefined();
+    expect(rawStorageCard?.thumbnailUrl).toBeUndefined();
+  });
+
   it("lets admins update category, unfeature, and remove entries", async () => {
     const runtime = createApiRuntime({ env: runtimeEnv, routes: apiRouteContracts });
     await saveEntry(runtime, "edit1", {

@@ -14,5 +14,6 @@
     "types": ["jest"]
   },
   "include": ["App.tsx", "app.config.js", "src", "jest.setup.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "extends": "expo/tsconfig.base"
 }

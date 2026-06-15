@@ -38,6 +38,7 @@ import {
   type GalleryStage,
   type ReviewChecklistState
 } from "../adminCardGalleryWorkflow";
+import { normalizeBrowserImageUrl } from "../browserImageUrl";
 import { getBrowserJson, postBrowserJson } from "../../src/browserRequestAdapter";
 
 /**
@@ -175,6 +176,9 @@ export function AdminCardGalleryView({
 
   const featuredLiveCount = entries.filter((entry) => entry.featured && entry.publicApproved).length;
   const previewSvg = editor.frontSvg || buildFrontPreviewSvg(editor.cardCopy, editor.category);
+  const selectedEntryImageUrl = selectedEntry
+    ? normalizeBrowserImageUrl(selectedEntry.thumbnailUrl) ?? normalizeBrowserImageUrl(selectedEntry.frontImageUrl)
+    : undefined;
   const publishIssues = buildPublishIssues(editor, reviewChecklist, Boolean(selectedEntry), previewDirty);
   const canPublish = publishIssues.length === 0;
   const currentStageLabel = activeStage === "needs-review" ? "Needs review" : labelFor(activeStage);
@@ -343,24 +347,29 @@ export function AdminCardGalleryView({
                   <small>{labelFor(candidate.derivedCategory)} · {candidate.status} · {candidate.updatedAtIso?.slice(0, 10) ?? "recent"}</small>
                 </button>
               ))
-            : stageEntries.map((entry) => (
-                <button
-                  className="galleryListItem"
-                  data-selected={itemKey("entry", entry.entryId) === selectedKey}
-                  key={entry.entryId}
-                  onClick={() => setSelectedKey(itemKey("entry", entry.entryId))}
-                  type="button"
-                >
-                  {entry.frontSvg ? (
-                    <img alt="" src={`data:image/svg+xml;utf8,${encodeURIComponent(entry.frontSvg)}`} />
-                  ) : (
-                    <span aria-hidden="true" className="galleryThumbMissing" />
-                  )}
-                  <span className="galleryListKicker">{labelFor(stageForEntry(entry))}</span>
-                  <strong>{entry.title}</strong>
-                  <small>{labelFor(entry.category)} · rank {entry.featuredRank} · {entry.updatedAtIso?.slice(0, 10) ?? "draft"}</small>
-                </button>
-              ))}
+            : stageEntries.map((entry) => {
+                const imageUrl = normalizeBrowserImageUrl(entry.thumbnailUrl) ?? normalizeBrowserImageUrl(entry.frontImageUrl);
+                return (
+                  <button
+                    className="galleryListItem"
+                    data-selected={itemKey("entry", entry.entryId) === selectedKey}
+                    key={entry.entryId}
+                    onClick={() => setSelectedKey(itemKey("entry", entry.entryId))}
+                    type="button"
+                  >
+                    {entry.frontSvg ? (
+                      <img alt="" src={`data:image/svg+xml;utf8,${encodeURIComponent(entry.frontSvg)}`} />
+                    ) : imageUrl ? (
+                      <img alt="" src={imageUrl} />
+                    ) : (
+                      <span aria-hidden="true" className="galleryThumbMissing" />
+                    )}
+                    <span className="galleryListKicker">{labelFor(stageForEntry(entry))}</span>
+                    <strong>{entry.title}</strong>
+                    <small>{labelFor(entry.category)} · rank {entry.featuredRank} · {entry.updatedAtIso?.slice(0, 10) ?? "draft"}</small>
+                  </button>
+                );
+              })}
           {availableKeys.length === 0 ? <p className="opsFoot">{listEmpty}</p> : null}
         </aside>
 
@@ -410,6 +419,8 @@ export function AdminCardGalleryView({
                   <div className="galleryPreviewCard">
                     {previewSvg ? (
                       <img alt={`${editor.title} card front`} src={`data:image/svg+xml;utf8,${encodeURIComponent(previewSvg)}`} />
+                    ) : selectedEntryImageUrl ? (
+                      <img alt={`${editor.title} card front`} src={selectedEntryImageUrl} />
                     ) : (
                       <div className="galleryPreviewMissing">
                         <Eye size={18} />

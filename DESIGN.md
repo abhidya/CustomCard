@@ -2,9 +2,9 @@
 
 ## Source of truth
 - Status: Active
-- Last refreshed: 2026-06-14
+- Last refreshed: 2026-06-15
 - Primary product surfaces: customer landing/home, event import, card studio, people/notes, print handoff, business landing, admin operations, adapter readiness.
-- Evidence reviewed: `webapp/App.tsx`, `webapp/views/HomeView.tsx`, `webapp/views/EventsView.tsx`, `webapp/views/StudioView.tsx`, `webapp/views/PrintView.tsx`, `webapp/views/BusinessLandingView.tsx`, `webapp/routePolicy.ts`, `webapp/ui.tsx`, `webapp/panelMediaAdapter.ts`, `webapp/styles.css`, `src/styles.css`, `docs/ui-ux-walkthrough.md`, `docs/cloudflare-workers-ai-setup.md`, `docs/competitor-card-asset-categories.md`, `docs/evidence/*`, `docs/evidence/generated-card-comparisons/*`, live browser DOM checks at `http://127.0.0.1:5173/`, NN/g action/object proximity guidance, and Material Design 3 button hierarchy guidance.
+- Evidence reviewed: `webapp/App.tsx`, `webapp/views/HomeView.tsx`, `webapp/views/EventsView.tsx`, `webapp/views/StudioView.tsx`, `webapp/views/PrintView.tsx`, `webapp/routePolicy.ts`, `webapp/ui.tsx`, `webapp/panelMediaAdapter.ts`, `webapp/styles.css`, `src/styles.css`, `src/e2eCoverageData.mjs`, `tests/customer-shell-ssr.test.tsx`, `docs/ui-ux-walkthrough.md`, `docs/cloudflare-workers-ai-setup.md`, `docs/competitor-card-asset-categories.md`, `docs/evidence/*`, `docs/evidence/generated-card-comparisons/*`, live browser DOM checks at `http://127.0.0.1:5173/` and `https://customcard-three.vercel.app/?view=studio`, NN/g action/object proximity guidance, and Material Design 3 button hierarchy guidance.
 - Verification evidence: `npm run test -- --run tests/frontend-architecture.test.ts tests/customer-shell-ssr.test.tsx tests/app-smoke.test.ts` passed on 2026-06-14 with 51 tests. Browser DOM checks found the Studio setup state has no fixed proof dock, no proof CTA, and no panel editor before draft/review; template review reveals inline proof navigation plus four panel tabs; print handoff has no global fixed CTA competing with proof approval or Walgreens checkout; mobile landing checks at 375x667 and 390x900 keep CTAs above the fixed bottom nav, show the next section before the nav, and have no horizontal overflow. Current `docs/evidence/customcard-*.png` files were recaptured from production (`https://customcard-three.vercel.app/`) on 2026-06-14.
 
 ## Brand
@@ -114,6 +114,35 @@
 - Compatibility constraints: tests run with Vitest/headless browser flows; local demo must pass without credentials.
 - Test/screenshot expectations: keep smoke/SSR tests passing; recapture desktop/mobile screenshots after nav/image changes; add a visual check for no text-safe-zone obstruction in generated gallery art.
 - Admin cost metrics: derive from resolved AI/provider config, provider-sourced usage surfaces where available, and provider usage ledger contracts; show aggregate budgets/source labels without secret env values or live provider calls.
+
+## Studio E2E Workflow Test Contract
+- Purpose: protect product-breaking Studio regressions with tests that assert user-observable workflow contracts, not brittle AI copy, generated-image pixels, or incidental CSS layout.
+- Selector rule: prefer roles, labels, and accessible names; add stable test ids only for workflow state anchors such as `studio-proof-panel-front`, `ai-job-status`, and `proof-approval-progress`.
+- Timing rule: poll explicit state transitions with bounded timeouts. Do not use arbitrary sleeps as the assertion.
+- AI rule: CI should mock provider/API responses deterministically. Live production can have one signed-in canary, but it must never create real orders, external checkout, or depend on exact provider text.
+- Screenshot rule: screenshots are supporting evidence only. Pass/fail should come from form state, proof state, panel readiness, recovery actions, and checkout-gate behavior.
+
+### Happy path tests
+| Test | Product risk caught | Robust assertions |
+| --- | --- | --- |
+| `studio-template-to-proof-handoff` | The no-AI creation path breaks. | Fill recipient, sender, relationship, occasion, and note; `Review template instead` reveals four proof panels; `Continue to proof checks` opens Print/Handoff; Walgreens checkout stays locked until proof approval. |
+| `studio-ai-draft-to-editable-proof` | AI queue/status/proof rendering breaks. | Signed-in user clicks `Draft my card`; Studio enters queued/building; four panels eventually become editable; each panel has nonempty printable copy or a valid image/fallback state; console has no customer-breaking errors. |
+| `studio-provider-fallback-succeeds` | Primary provider failure strands generation. | Mock primary provider failure; assert fallback attempts continue through configured providers such as DeepAI and Cloudflare; job completes; UI never dead-ends. |
+| `studio-selected-panel-regenerate` | Regenerate/improve changes the wrong panel. | Seed four panels, select one face, regenerate/improve it, then assert the selected panel changes while the other three retain their identities/content. |
+| `proof-approval-unlocks-print-handoff` | Checkout gating allows unreviewed print output. | In Print/Handoff, checkout is disabled at 0 checks; progress increments with each panel/final proof check; checkout enables only after all required checks; test stops before any external vendor navigation. |
+
+### Sad path tests
+| Test | Product risk caught | Robust assertions |
+| --- | --- | --- |
+| `signed-out-ai-is-gated-template-still-works` | Auth gating blocks the whole product. | Signed-out Studio shows sign-in CTA for AI generation, but template review remains usable through proof and handoff. |
+| `missing-required-fields-block-ai-with-actionable-checklist` | Validation silently disables the main action. | Empty recipient, occasion, or relationship keeps AI disabled; checklist names missing fields; filling them enables the action without reload. |
+| `ai-queue-stuck-shows-recovery` | Jobs stay queued forever with no escape. | Force status to stay queued; after bounded polling, Studio keeps the template/proof editable and offers retry/cancel/recovery instead of a permanently disabled-only state. |
+| `ai-job-status-500-recovers` | Backend status errors strand the user. | Mock `/api/ai/jobs/status` returning 500; UI surfaces a recoverable error, preserves current inputs/proof, and retry works. |
+| `all-ai-providers-fail-falls-back-to-template` | Provider outage kills checkout path. | Mock every provider failure; UI shows failure state, preserves form data, and offers retry plus template proof path. |
+| `partial-panel-generation-failure` | One failed face corrupts the whole card. | Mock three ready panels and one failed panel; ready panels stay editable; failed panel has retry; proof approval remains blocked until resolved. |
+| `proof-overflow-blocks-approval` | Text that will not print can still be approved. | Seed too-long panel copy; handoff shows overflow warning and blocks approval/checkout with a return-to-Studio path. |
+| `auth-expires-during-ai-request` | Session expiry loses the customer's work. | Mock a 401 during AI draft; UI shows sign-in recovery and retains form inputs plus any current template/proof. |
+| `artifact-image-url-fails-gracefully` | Expired or broken image/artifact URLs blank the proof. | Mock panel image 404/expired artifact; panel shows fallback/error affordance, layout remains usable, and user can regenerate or upload. |
 
 ## Admin featured-card curation workflow
 - User stories: admin can promote generated cards into public-safe examples; admin can edit or regenerate card-front copy; admin can edit public title/caption separately; admin can approve, feature, unfeature, or archive cards.

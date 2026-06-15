@@ -3,8 +3,10 @@ import { renderToString } from "react-dom/server";
 import { createElement, type ReactNode } from "react";
 import App from "../webapp/App";
 import { AdminCardGalleryView } from "../webapp/views/AdminCardGalleryView";
+import { AdminView } from "../webapp/views/AdminView";
 import { BusinessLandingView } from "../webapp/views/BusinessLandingView";
 import { StudioView } from "../webapp/views/StudioView";
+import { buildDefaultAiFlowAdminConfigs, summarizeAiFlowConfigs } from "../src/aiFlowConfig";
 import { buildOpportunity, generateCardDraft, getDefaultDraftInput, parseFreeImport } from "../src/customerWorkflow";
 import {
   customerVisibleFixtureTermPattern,
@@ -147,6 +149,36 @@ afterEach(() => {
 });
 
 describe("customer shell server render", () => {
+  it("renders focused admin provider policy controls", () => {
+    const aiFlowConfigs = buildDefaultAiFlowAdminConfigs();
+    const html = renderToString(
+      createElement(AdminView, {
+        aiFlowConfigs,
+        aiFlowSummary: summarizeAiFlowConfigs({}, aiFlowConfigs),
+        aiGenerationJobs: [],
+        fullAudit: createElement("div", null, "Full audit"),
+        onAiFlowConfigsChange: () => undefined
+      })
+    );
+    const text = textFromHtml(html);
+
+    expect(text).toContain("Providers");
+    expect(text).toContain("Provider");
+    expect(text).toContain("Model");
+    expect(text).toContain("Fallback");
+    expect(text).toContain("Rate/min");
+    expect(text).toContain("Request limit ($)");
+    expect(text).toContain("Monthly limit ($)");
+    expect(text).toContain("Live provider");
+    expect(text).toContain("Queue primary");
+    expect(text).toContain("Queue fallback");
+    expect(text).toContain("Advanced policy");
+    expect(text).toContain("Max retries");
+    expect(text).toContain("Max tokens");
+    expect(text).toContain("Temperature");
+    expect(text).toContain("Prompt instructions");
+  });
+
   it("renders the admin featured-card curation workflow shell", () => {
     const html = renderToString(createElement(AdminCardGalleryView, {}));
     const text = textFromHtml(html);

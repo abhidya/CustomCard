@@ -5,6 +5,7 @@ import type { AiGenerationJobEvidence } from "../../src/aiGenerationJobs";
 import { fetchBrowser, requestBrowserJson } from "../../src/browserRequestAdapter";
 import { resolveCardGenerationEndpoint } from "../../src/browserGatePolicy";
 import { providerCatalog } from "../../src/providerCatalog";
+import { normalizeBrowserImageUrl } from "../browserImageUrl";
 import { AdminCardGalleryView } from "./AdminCardGalleryView";
 
 const adapterLabels = new Map(providerCatalog.map((adapter) => [adapter.id, adapter.label]));
@@ -143,10 +144,27 @@ export function AdminView({
   const serviceUp = apiResult !== undefined && apiResult !== "running" && apiResult.ok;
 
   /* ---------- provider policy edits ---------- */
-  function updateFlow(flowId: string, patch: Partial<AiFlowAdminConfig>) {
+  function updateFlow(flowId: AiFlowAdminConfig["flowId"], patch: Partial<AiFlowAdminConfig>) {
     onAiFlowConfigsChange(
       aiFlowConfigs.map((config) => (config.flowId === flowId ? { ...config, ...patch } : config))
     );
+  }
+
+  function updateFlowNumber(
+    flowId: AiFlowAdminConfig["flowId"],
+    key: keyof Pick<
+      AiFlowAdminConfig,
+      "maxRetries" | "maxTokens" | "monthlyBudgetCents" | "perRequestBudgetCents" | "rateLimitPerMinute" | "temperature"
+    >,
+    rawValue: string,
+    options: { min?: number; scale?: number } = {}
+  ) {
+    const parsed = Number.parseFloat(rawValue);
+    const min = options.min ?? 0;
+    if (!Number.isFinite(parsed) || parsed < min) return;
+    const scaled = parsed * (options.scale ?? 1);
+    const normalized = key === "temperature" && !options.scale ? Number(parsed.toFixed(2)) : Math.round(scaled);
+    updateFlow(flowId, { [key]: normalized } as Partial<AiFlowAdminConfig>);
   }
 
   /* ---------- full audit ---------- */
@@ -231,7 +249,7 @@ export function AdminView({
   }, [bucketCursorHistory, bucketPageIndex, bucketPayload?.nextCursor, loadBucketObjects]);
 
   const loadBucketJsonPreview = useCallback((artifact: BucketObject) => {
-    const url = artifact.signedDownload?.url;
+    const url = normalizeBrowserImageUrl(artifact.signedDownload?.url);
     if (!url) return;
     setBucketJsonPreviews((current) => ({
       ...current,
@@ -418,39 +436,42 @@ export function AdminView({
                     {job.imageProviderFailure ? <span>{job.imageProviderFailure}</span> : null}
                   </div>
                   <div className="opsJobPanels">
-                    {job.panels.map((panel) => (
-                      <article className="opsJobPanel" key={`${job.id}-${panel.panelId}`}>
-                        {panel.imageUrl ? (
-                          <img alt={`${panel.label} generated panel`} src={panel.imageUrl} />
-                        ) : (
-                          <span className="opsJobMissing" aria-label={`${panel.label} image missing`}>
-                            <Image size={16} />
-                          </span>
-                        )}
-                        <div className="opsJobPanelBody">
-                          <div className="opsJobPanelTitle">
-                            <strong>{panel.label}</strong>
-                            <span>{panel.panelId} · {panel.width} x {panel.height}</span>
-                          </div>
-                          <p>{panel.headline}</p>
-                          <small>{panel.body}</small>
-                          <details>
-                            <summary>Prompt sent</summary>
-                            <pre>{panel.imagePrompt || "No image prompt captured."}</pre>
-                          </details>
-                          <details>
-                            <summary>Generated prompt</summary>
-                            <pre>{panel.revisedPrompt || panel.imagePrompt || "No generated prompt captured."}</pre>
-                          </details>
-                          {panel.negativePrompt ? (
+                    {job.panels.map((panel) => {
+                      const imageUrl = normalizeBrowserImageUrl(panel.imageUrl);
+                      return (
+                        <article className="opsJobPanel" key={`${job.id}-${panel.panelId}`}>
+                          {imageUrl ? (
+                            <img alt={`${panel.label} generated panel`} src={imageUrl} />
+                          ) : (
+                            <span className="opsJobMissing" aria-label={`${panel.label} image missing`}>
+                              <Image size={16} />
+                            </span>
+                          )}
+                          <div className="opsJobPanelBody">
+                            <div className="opsJobPanelTitle">
+                              <strong>{panel.label}</strong>
+                              <span>{panel.panelId} · {panel.width} x {panel.height}</span>
+                            </div>
+                            <p>{panel.headline}</p>
+                            <small>{panel.body}</small>
                             <details>
-                              <summary>Negative prompt</summary>
-                              <pre>{panel.negativePrompt}</pre>
+                              <summary>Prompt sent</summary>
+                              <pre>{panel.imagePrompt || "No image prompt captured."}</pre>
                             </details>
-                          ) : null}
-                        </div>
-                      </article>
-                    ))}
+                            <details>
+                              <summary>Generated prompt</summary>
+                              <pre>{panel.revisedPrompt || panel.imagePrompt || "No generated prompt captured."}</pre>
+                            </details>
+                            {panel.negativePrompt ? (
+                              <details>
+                                <summary>Negative prompt</summary>
+                                <pre>{panel.negativePrompt}</pre>
+                              </details>
+                            ) : null}
+                          </div>
+                        </article>
+                      );
+                    })}
                   </div>
                 </section>
               ))}
@@ -632,6 +653,13 @@ export function AdminView({
                       </select>
                     </label>
                     <label>
+                      Model
+                      <input
+                        onChange={(event) => updateFlow(flow.flowId, { model: event.target.value })}
+                        value={config.model}
+                      />
+                    </label>
+                    <label>
                       Fallback
                       <select
                         onChange={(event) => updateFlow(flow.flowId, { fallbackAdapterId: event.target.value })}
@@ -645,18 +673,114 @@ export function AdminView({
                       </select>
                     </label>
                     <label>
-                      Monthly limit ($)
+                      Rate/min
                       <input
-                        inputMode="decimal"
-                        onChange={(event) => {
-                          const dollars = Number.parseFloat(event.target.value);
-                          if (!Number.isNaN(dollars) && dollars >= 0) {
-                            updateFlow(flow.flowId, { monthlyBudgetCents: Math.round(dollars * 100) });
-                          }
-                        }}
-                        defaultValue={(config.monthlyBudgetCents / 100).toFixed(2)}
+                        inputMode="numeric"
+                        min={1}
+                        onChange={(event) => updateFlowNumber(flow.flowId, "rateLimitPerMinute", event.target.value, { min: 1 })}
+                        type="number"
+                        value={config.rateLimitPerMinute}
                       />
                     </label>
+                    <label>
+                      Request limit ($)
+                      <input
+                        defaultValue={(config.perRequestBudgetCents / 100).toFixed(2)}
+                        inputMode="decimal"
+                        min={0}
+                        onBlur={(event) => updateFlowNumber(flow.flowId, "perRequestBudgetCents", event.target.value, { scale: 100 })}
+                        step="0.01"
+                        type="number"
+                      />
+                    </label>
+                    <label>
+                      Monthly limit ($)
+                      <input
+                        defaultValue={(config.monthlyBudgetCents / 100).toFixed(2)}
+                        min={0}
+                        inputMode="decimal"
+                        onBlur={(event) => updateFlowNumber(flow.flowId, "monthlyBudgetCents", event.target.value, { scale: 100 })}
+                        step="0.01"
+                        type="number"
+                      />
+                    </label>
+                  </div>
+                  <div className="flowToggleRow" aria-label={`${flow.label} safety gates`}>
+                    <label>
+                      <input
+                        checked={config.liveProviderCallsEnabled}
+                        onChange={(event) => updateFlow(flow.flowId, { liveProviderCallsEnabled: event.target.checked })}
+                        type="checkbox"
+                      />
+                      <span>Live provider</span>
+                    </label>
+                    <label>
+                      <input
+                        checked={config.queueEnabled}
+                        onChange={(event) => updateFlow(flow.flowId, { queueEnabled: event.target.checked })}
+                        type="checkbox"
+                      />
+                      <span>Queue primary</span>
+                    </label>
+                    <label>
+                      <input
+                        checked={config.fallbackQueueEnabled}
+                        onChange={(event) => updateFlow(flow.flowId, { fallbackQueueEnabled: event.target.checked })}
+                        type="checkbox"
+                      />
+                      <span>Queue fallback</span>
+                    </label>
+                  </div>
+                  <details className="flowAdvanced">
+                    <summary>Advanced policy</summary>
+                    <div className="flowControls flowControls-advanced">
+                      <label>
+                        Max retries
+                        <input
+                          inputMode="numeric"
+                          min={0}
+                          onChange={(event) => updateFlowNumber(flow.flowId, "maxRetries", event.target.value)}
+                          type="number"
+                          value={config.maxRetries}
+                        />
+                      </label>
+                      <label>
+                        Max tokens
+                        <input
+                          inputMode="numeric"
+                          min={0}
+                          onChange={(event) => updateFlowNumber(flow.flowId, "maxTokens", event.target.value)}
+                          type="number"
+                          value={config.maxTokens}
+                        />
+                      </label>
+                      <label>
+                        Temperature
+                        <input
+                          inputMode="decimal"
+                          max={2}
+                          min={0}
+                          onChange={(event) => updateFlowNumber(flow.flowId, "temperature", event.target.value)}
+                          step="0.01"
+                          type="number"
+                          value={config.temperature}
+                        />
+                      </label>
+                    </div>
+                    <label className="flowPromptField">
+                      Prompt instructions
+                      <textarea
+                        onChange={(event) => updateFlow(flow.flowId, { promptInstructions: event.target.value })}
+                        value={config.promptInstructions}
+                      />
+                    </label>
+                  </details>
+                  <div className="flowMeta" aria-label={`${flow.label} effective provider policy`}>
+                    <span>{formatCents(config.perRequestBudgetCents)} max/request</span>
+                    <span>{formatCents(config.monthlyBudgetCents)} monthly</span>
+                    <span>{config.rateLimitPerMinute}/min</span>
+                    <span>{config.queueEnabled ? "Primary queued" : "Primary direct"}</span>
+                    <span>{config.fallbackQueueEnabled ? "Fallback queued" : "Fallback direct"}</span>
                   </div>
                   {flow.blockedReasons.length > 0 ? (
                     <small className="flowBlocked">Setup note: {flow.blockedReasons[0]}</small>
@@ -698,6 +822,10 @@ function formatBytes(value: number): string {
   return `${(value / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function formatCents(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
 function BucketRenderPacketCard({
   group,
   jsonPreviews
@@ -725,16 +853,17 @@ function BucketRenderPacketCard({
       {group.panelImages.length ? (
         <div className="opsBucketThumbs" aria-label={`${group.renderPacketId} panel artifacts`}>
           {group.panelImages.slice(0, 8).map((artifact) => {
-            const preview = artifact.signedDownload?.url && artifact.contentType.startsWith("image/") ? (
-              <img alt={`${artifact.fileName} preview`} src={artifact.signedDownload.url} />
+            const signedUrl = normalizeBrowserImageUrl(artifact.signedDownload?.url);
+            const preview = signedUrl && artifact.contentType.startsWith("image/") ? (
+              <img alt={`${artifact.fileName} preview`} src={signedUrl} />
             ) : (
               <span aria-hidden="true">
                 <Image size={16} />
               </span>
             );
             const label = <em>{shortPanelFileName(artifact.fileName)}</em>;
-            return artifact.signedDownload?.url ? (
-              <a href={artifact.signedDownload.url} key={artifact.objectKey} rel="noreferrer" target="_blank">
+            return signedUrl ? (
+              <a href={signedUrl} key={artifact.objectKey} rel="noreferrer" target="_blank">
                 {preview}
                 {label}
               </a>
@@ -755,24 +884,27 @@ function BucketRenderPacketCard({
         </summary>
         {promptArtifacts.length ? (
           <div className="opsPromptList">
-            {promptArtifacts.map((artifact) => (
-              <section className="opsPromptArtifact" key={artifact.objectKey}>
-                <div className="opsPromptArtifactHead">
-                  <strong>{promptArtifactLabel(artifact.fileName)}</strong>
-                  <div className="opsBucketMeta">
-                    <span>{artifact.fileName}</span>
-                    <span>{formatBytes(artifact.byteLength)}</span>
-                    {artifact.signedDownload?.url ? (
-                      <a href={artifact.signedDownload.url} rel="noreferrer" target="_blank">
-                        Open signed
-                        <ExternalLink size={12} />
-                      </a>
-                    ) : null}
+            {promptArtifacts.map((artifact) => {
+              const signedUrl = normalizeBrowserImageUrl(artifact.signedDownload?.url);
+              return (
+                <section className="opsPromptArtifact" key={artifact.objectKey}>
+                  <div className="opsPromptArtifactHead">
+                    <strong>{promptArtifactLabel(artifact.fileName)}</strong>
+                    <div className="opsBucketMeta">
+                      <span>{artifact.fileName}</span>
+                      <span>{formatBytes(artifact.byteLength)}</span>
+                      {signedUrl ? (
+                        <a href={signedUrl} rel="noreferrer" target="_blank">
+                          Open signed
+                          <ExternalLink size={12} />
+                        </a>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
-                <BucketJsonPreviewPane artifact={artifact} preview={jsonPreviews[artifact.objectKey]} />
-              </section>
-            ))}
+                  <BucketJsonPreviewPane artifact={artifact} preview={jsonPreviews[artifact.objectKey]} />
+                </section>
+              );
+            })}
           </div>
         ) : (
           <div className="opsEmpty">
@@ -845,26 +977,29 @@ function BucketJsonPreviewPane({ artifact, preview }: { artifact: BucketObject; 
 function BucketRawObjectList({ objects }: { objects: BucketObject[] }) {
   return (
     <div className="opsBucketList" aria-label="Object-store bucket objects">
-      {objects.map((object) => (
-        <article className="opsBucketObject" key={object.objectKey}>
-          <div>
-            <strong>{object.fileName}</strong>
-            <span>{object.objectKey}</span>
-          </div>
-          <div className="opsBucketMeta">
-            <span>{formatBytes(object.byteLength)}</span>
-            <span>{object.contentType}</span>
-            {object.lastModifiedIso ? <span>{formatJobTime(object.lastModifiedIso)}</span> : null}
-            {object.metadata?.kind ? <span>{object.metadata.kind}</span> : null}
-            {object.signedDownload?.url ? (
-              <a href={object.signedDownload.url} rel="noreferrer" target="_blank">
-                Open signed
-                <ExternalLink size={12} />
-              </a>
-            ) : null}
-          </div>
-        </article>
-      ))}
+      {objects.map((object) => {
+        const signedUrl = normalizeBrowserImageUrl(object.signedDownload?.url);
+        return (
+          <article className="opsBucketObject" key={object.objectKey}>
+            <div>
+              <strong>{object.fileName}</strong>
+              <span>{object.objectKey}</span>
+            </div>
+            <div className="opsBucketMeta">
+              <span>{formatBytes(object.byteLength)}</span>
+              <span>{object.contentType}</span>
+              {object.lastModifiedIso ? <span>{formatJobTime(object.lastModifiedIso)}</span> : null}
+              {object.metadata?.kind ? <span>{object.metadata.kind}</span> : null}
+              {signedUrl ? (
+                <a href={signedUrl} rel="noreferrer" target="_blank">
+                  Open signed
+                  <ExternalLink size={12} />
+                </a>
+              ) : null}
+            </div>
+          </article>
+        );
+      })}
     </div>
   );
 }

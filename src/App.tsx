@@ -62,6 +62,7 @@ import {
   type BenchmarkResultRecord,
   type BenchmarkStatus
 } from "./benchmarkResults";
+import { normalizeBrowserImageUrl } from "../webapp/browserImageUrl";
 import {
   AdapterMiniList,
   AiProviderReadinessList,
@@ -1283,10 +1284,12 @@ function AiGenerationJobsPanel({ jobs }: { jobs: AiGenerationJobEvidence[] }) {
               </div>
 
               <div className="aiJobPanelList">
-                {job.panels.map((panel) => (
-                  <div className={`aiJobPanel ${panel.status}`} key={`${job.id}-${panel.panelId}`}>
-                    {panel.imageUrl ? (
-                      <img alt={`${panel.label} generated panel`} src={panel.imageUrl} />
+                {job.panels.map((panel) => {
+                  const imageUrl = normalizeBrowserImageUrl(panel.imageUrl);
+                  return (
+                    <div className={`aiJobPanel ${panel.status}`} key={`${job.id}-${panel.panelId}`}>
+                    {imageUrl ? (
+                      <img alt={`${panel.label} generated panel`} src={imageUrl} />
                     ) : (
                       <span className="aiJobImageMissing" aria-label={`${panel.label} image missing`}>
                         <Image size={18} />
@@ -1322,8 +1325,9 @@ function AiGenerationJobsPanel({ jobs }: { jobs: AiGenerationJobEvidence[] }) {
                         </details>
                       ) : null}
                     </div>
-                  </div>
-                ))}
+                    </div>
+                  );
+                })}
               </div>
             </section>
           ))}

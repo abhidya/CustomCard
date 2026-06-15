@@ -1006,7 +1006,8 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
       try {
         const entriesResult = await pool.query(
           `SELECT id, project_id, render_packet_id, source_draft_id, category, title, public_caption,
-                  featured, featured_rank, public_approved, front_svg, created_at, updated_at
+                  featured, featured_rank, public_approved, front_svg, thumbnail_artifact_uri,
+                  front_artifact_uri, created_at, updated_at
            FROM card_gallery_entries
            ORDER BY category ASC, featured_rank ASC, updated_at DESC
            LIMIT 200`
@@ -1042,6 +1043,8 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
             featuredRank: Number(row.featured_rank),
             publicApproved: row.public_approved,
             frontSvg: row.front_svg ?? undefined,
+            thumbnailArtifactUri: row.thumbnail_artifact_uri ?? undefined,
+            frontArtifactUri: row.front_artifact_uri ?? undefined,
             createdAtIso: new Date(row.created_at).toISOString(),
             updatedAtIso: new Date(row.updated_at).toISOString()
           })
@@ -1574,8 +1577,9 @@ async function persistCardGalleryPostgres({ client, authContext, bodyText }) {
   await client.query(
     `INSERT INTO card_gallery_entries
        (id, project_id, render_packet_id, source_draft_id, category, title, public_caption,
-        featured, featured_rank, public_approved, front_svg, redacted, created_by, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, TRUE, $12, NOW())
+        featured, featured_rank, public_approved, front_svg, thumbnail_artifact_uri, front_artifact_uri,
+        redacted, created_by, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, TRUE, $14, NOW())
      ON CONFLICT (id) DO UPDATE SET
        project_id = EXCLUDED.project_id,
        render_packet_id = EXCLUDED.render_packet_id,
@@ -1587,6 +1591,8 @@ async function persistCardGalleryPostgres({ client, authContext, bodyText }) {
        featured_rank = EXCLUDED.featured_rank,
        public_approved = EXCLUDED.public_approved,
        front_svg = COALESCE(EXCLUDED.front_svg, card_gallery_entries.front_svg),
+       thumbnail_artifact_uri = COALESCE(EXCLUDED.thumbnail_artifact_uri, card_gallery_entries.thumbnail_artifact_uri),
+       front_artifact_uri = COALESCE(EXCLUDED.front_artifact_uri, card_gallery_entries.front_artifact_uri),
        redacted = TRUE,
        updated_at = NOW()`,
     [
@@ -1601,6 +1607,8 @@ async function persistCardGalleryPostgres({ client, authContext, bodyText }) {
       record.featuredRank,
       record.publicApproved,
       record.frontSvg || null,
+      record.thumbnailArtifactUri || null,
+      record.frontArtifactUri || null,
       authContext.userId
     ]
   );
@@ -1962,9 +1970,9 @@ function buildFeaturedCardsPayload(entries, runtimeMode) {
       id: entry.id,
       title: entry.title,
       caption: entry.publicCaption,
-      thumbnailUrl: entry.thumbnailArtifactUri,
+      thumbnailUrl: publicBrowserImageUrl(entry.thumbnailArtifactUri),
       frontSvg: entry.frontSvg,
-      frontImageUrl: entry.frontArtifactUri,
+      frontImageUrl: publicBrowserImageUrl(entry.frontArtifactUri),
       featuredRank: Number(entry.featuredRank ?? 100)
     });
   }
@@ -1996,6 +2004,23 @@ function cardCategoryLabel(category) {
     .join(" ");
 }
 
+function publicBrowserImageUrl(value) {
+  const text = String(value ?? "").trim();
+  if (!text) return undefined;
+  if (text.startsWith("data:image/")) return text;
+  if (text.startsWith("/api/artifacts/")) return text;
+  if (text.startsWith("/") || text.startsWith("//")) return undefined;
+  try {
+    const url = new URL(text);
+    if ((url.protocol === "http:" || url.protocol === "https:") && url.pathname.startsWith("/api/artifacts/")) {
+      return url.toString();
+    }
+  } catch {
+    return undefined;
+  }
+  return undefined;
+}
+
 function buildCardGalleryEntryRecord({ authContext, bodyText }) {
   const body = parseJsonBody(bodyText);
   const sourceDraftId = safeId(body.sourceDraftId ?? body.draftStateId, "");
@@ -2021,6 +2046,8 @@ function buildCardGalleryEntryRecord({ authContext, bodyText }) {
     featuredRank: safeInteger(body.featuredRank, 100, 0, 10_000),
     publicApproved: safeBoolean(body.publicApproved),
     frontSvg,
+    thumbnailArtifactUri: safeOptionalArtifactReference(body.thumbnailArtifactUri ?? body.thumbnailUrl),
+    frontArtifactUri: safeOptionalArtifactReference(body.frontArtifactUri ?? body.frontImageUrl),
     redacted: true,
     createdBy: authContext.userId,
     remove: safeBoolean(body.remove)
@@ -2060,6 +2087,8 @@ function publicGalleryEntry(entry) {
     featuredRank: Number(entry.featuredRank ?? 100),
     publicApproved: Boolean(entry.publicApproved),
     frontSvg: entry.frontSvg || undefined,
+    thumbnailUrl: publicBrowserImageUrl(entry.thumbnailArtifactUri),
+    frontImageUrl: publicBrowserImageUrl(entry.frontArtifactUri),
     createdAtIso: entry.createdAtIso,
     updatedAtIso: entry.updatedAtIso
   };
@@ -2965,6 +2994,22 @@ function safeArtifactUri(value, fallback) {
   const text = String(value ?? "").trim();
   if (/^(file|s3):\/\//.test(text)) return text.slice(0, 240);
   return fallback;
+}
+
+function safeOptionalArtifactReference(value) {
+  const text = String(value ?? "").trim();
+  if (!text) return "";
+  if (/^(file|s3|memory):\/\//.test(text)) return text.slice(0, 500);
+  if (text.startsWith("/api/artifacts/")) return text.slice(0, 1000);
+  try {
+    const url = new URL(text);
+    if ((url.protocol === "http:" || url.protocol === "https:") && url.pathname.startsWith("/api/artifacts/")) {
+      return url.toString().slice(0, 1000);
+    }
+  } catch {
+    return "";
+  }
+  return "";
 }
 
 function safeMemoryText(value) {

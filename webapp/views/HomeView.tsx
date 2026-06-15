@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { getBrowserJson } from "../../src/browserRequestAdapter";
 import type { CardDraft } from "../../src/customerWorkflow";
 import { cardImageByCategory } from "../cardTemplates";
+import { normalizeBrowserImageUrl } from "../browserImageUrl";
 import { PanelArt } from "../ui";
 import { ImportSection, type ImportSectionProps } from "./EventsView";
 
@@ -337,7 +338,11 @@ function FeaturedCardFace({ card, category }: { card: FeaturedCard; category: st
       />
     );
   }
-  const imageUrl = card.thumbnailUrl ?? card.frontImageUrl ?? cardImageByCategory[category] ?? cardImageByCategory.custom;
+  const imageUrl =
+    normalizeBrowserImageUrl(card.thumbnailUrl) ??
+    normalizeBrowserImageUrl(card.frontImageUrl) ??
+    cardImageByCategory[category] ??
+    cardImageByCategory.custom;
   if (imageUrl) return <img alt={`${card.title} card front`} src={imageUrl} />;
   return <span aria-hidden="true" className="carditem-thumbfallback" />;
 }

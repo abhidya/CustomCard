@@ -27,6 +27,8 @@ export interface GalleryEntry {
   featuredRank: number;
   publicApproved: boolean;
   frontSvg?: string;
+  thumbnailUrl?: string;
+  frontImageUrl?: string;
   updatedAtIso?: string;
 }
 
