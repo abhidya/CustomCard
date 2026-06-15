@@ -357,15 +357,17 @@ export function StudioView({
             title="Who it's for"
           >
             <div className="fieldrow">
-              <Field label="To">
+              <Field htmlFor="studio-recipient" label="To">
                 <input
+                  id="studio-recipient"
                   onChange={(event) => onField("recipient", event.target.value)}
                   placeholder="Their name"
                   value={displayDraftValue(draftInput.recipient)}
                 />
               </Field>
-              <Field label="From">
+              <Field htmlFor="studio-sender" label="From">
                 <input
+                  id="studio-sender"
                   onChange={(event) => onField("sender", event.target.value)}
                   placeholder="Your name"
                   value={displayDraftValue(draftInput.sender)}
@@ -373,15 +375,17 @@ export function StudioView({
               </Field>
             </div>
             <div className="fieldrow">
-              <Field label="Your relationship">
+              <Field htmlFor="studio-relationship" label="Your relationship">
                 <input
+                  id="studio-relationship"
                   onChange={(event) => onField("relationship", event.target.value)}
                   placeholder="Friends, siblings, coworkers…"
                   value={draftInput.relationship}
                 />
               </Field>
-              <Field label="Occasion">
+              <Field htmlFor="studio-occasion" label="Occasion">
                 <input
+                  id="studio-occasion"
                   onChange={(event) => onField("occasion", event.target.value)}
                   placeholder="Birthday, anniversary…"
                   value={displayDraftValue(draftInput.occasion)}
@@ -446,8 +450,9 @@ export function StudioView({
             number={4}
             title="Make it personal"
           >
-            <Field label="A shared memory, an inside joke, or what you appreciate about them">
+            <Field htmlFor="studio-personal-note" label="A shared memory, an inside joke, or what you appreciate about them">
               <textarea
+                id="studio-personal-note"
                 onChange={(event) => onField("personalNote", event.target.value)}
                 placeholder="The road trip playlist, the Sunday pancakes, that one inside joke…"
                 value={displayDraftValue(draftInput.personalNote)}

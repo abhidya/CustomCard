@@ -3,6 +3,7 @@ import { buildPanelSvg } from "../src/renderPacket";
 import type { CardPanel } from "../src/customerWorkflow";
 import { createFlowStepIndex, createFlowSteps } from "./routePolicy";
 import type { ViewId } from "../src/appStateOrchestrator";
+import { normalizeBrowserImageUrl } from "./browserImageUrl";
 
 /** Labeled wayfinding for the create flow; earlier steps are clickable back-paths. */
 export function CreateFlowStepper({ currentView, onNavigate }: { currentView: ViewId; onNavigate: (view: ViewId) => void }) {
@@ -40,12 +41,13 @@ export function PanelArt({ panel, className }: { panel: CardPanel; className?: s
   const svg = useMemo(() => buildPanelSvg(panel), [panel]);
   const inlineSrc = useMemo(() => svgDataUri(svg), [svg]);
   const placeholderSrc = useMemo(() => panelPlaceholderDataUri(panel), [panel]);
+  const panelImageUrl = useMemo(() => normalizeBrowserImageUrl(panel.imageUrl), [panel.imageUrl]);
   const [objectSrc, setObjectSrc] = useState<string | undefined>();
   const [fallbackSrc, setFallbackSrc] = useState<string | undefined>();
 
   useEffect(() => {
     setFallbackSrc(undefined);
-    if (!panel.imageUrl || !canCreateSvgObjectUrl()) {
+    if (!panelImageUrl || !canCreateSvgObjectUrl()) {
       setObjectSrc(undefined);
       return undefined;
     }
@@ -53,9 +55,9 @@ export function PanelArt({ panel, className }: { panel: CardPanel; className?: s
     const objectUrl = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
     setObjectSrc(objectUrl);
     return () => URL.revokeObjectURL(objectUrl);
-  }, [panel.imageUrl, svg]);
+  }, [panelImageUrl, svg]);
 
-  const src = fallbackSrc ?? objectSrc ?? (panel.imageUrl ? placeholderSrc : inlineSrc);
+  const src = fallbackSrc ?? objectSrc ?? (panelImageUrl ? placeholderSrc : inlineSrc);
 
   return (
     <img
@@ -63,7 +65,7 @@ export function PanelArt({ panel, className }: { panel: CardPanel; className?: s
       className={className}
       decoding="async"
       onError={() => {
-        if (panel.imageUrl && fallbackSrc !== panel.imageUrl) setFallbackSrc(panel.imageUrl);
+        if (panelImageUrl && fallbackSrc !== panelImageUrl) setFallbackSrc(panelImageUrl);
       }}
       src={src}
     />
@@ -114,14 +116,16 @@ export function Chips<T extends string>({
 
 export function Field({
   label,
+  htmlFor,
   children
 }: {
   label: string;
+  htmlFor?: string;
   children: ReactNode;
 }) {
   return (
     <div className="field">
-      <label>{label}</label>
+      <label htmlFor={htmlFor}>{label}</label>
       {children}
     </div>
   );
