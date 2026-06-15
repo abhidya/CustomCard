@@ -3,6 +3,7 @@ export const browserAdminEmailEnvNames = Object.freeze([
   "VITE_CUSTOMCARD_ADMIN_EMAIL"
 ] as const);
 
+export const adminPreviewEnvName = "VITE_CUSTOMCARD_ENABLE_ADMIN_PREVIEW";
 export const cardGenerationUrlEnvName = "VITE_CARD_GEN_URL";
 export const sameOriginCardGenerationPath = "/api/ai/card/generate";
 
@@ -21,6 +22,7 @@ export type BrowserAdminAccessReason =
   | "configured-email"
   | "metadata-role"
   | "metadata-roles"
+  | "local-preview"
   | "not-authorized";
 
 export interface BrowserAdminAccessPolicy {
@@ -39,6 +41,7 @@ export interface BrowserAdminAccessInput {
   isSignedIn: boolean | undefined;
   user: BrowserAdminUserProfile | null | undefined;
   configuredAdminEmails: ReadonlySet<string>;
+  localAdminPreview?: boolean;
 }
 
 export interface CardGenerationEndpoint {
@@ -60,7 +63,8 @@ export function resolveBrowserAdminAccess({
   isLoaded,
   isSignedIn,
   user,
-  configuredAdminEmails
+  configuredAdminEmails,
+  localAdminPreview = false
 }: BrowserAdminAccessInput): BrowserAdminAccessPolicy {
   const metadata = recordValue(user?.publicMetadata);
   const role = normalizeText(typeof metadata?.role === "string" ? metadata.role : "");
@@ -72,7 +76,7 @@ export function resolveBrowserAdminAccess({
   const emailAllowed = email ? configuredAdminEmails.has(email) : false;
   const singleRoleAllowed = role === "admin";
   const multiRoleAllowed = roles.includes("admin");
-  const isAdmin = Boolean(signedIn && (emailAllowed || singleRoleAllowed || multiRoleAllowed));
+  const isAdmin = Boolean(localAdminPreview || (signedIn && (emailAllowed || singleRoleAllowed || multiRoleAllowed)));
 
   return {
     isLoaded,
@@ -82,8 +86,28 @@ export function resolveBrowserAdminAccess({
     email,
     role,
     roles,
-    reason: resolveAdminAccessReason({ isLoaded, signedIn, emailAllowed, singleRoleAllowed, multiRoleAllowed })
+    reason: resolveAdminAccessReason({
+      isLoaded,
+      signedIn,
+      emailAllowed,
+      singleRoleAllowed,
+      multiRoleAllowed,
+      localAdminPreview
+    })
   };
+}
+
+export function resolveLocalAdminPreview(env: BrowserGateEnv, href: string): boolean {
+  const enabledByEnv = stringEnvValue(env, adminPreviewEnvName).trim().toLowerCase() === "enabled";
+  const enabledInDev = env?.DEV === true;
+  if (!enabledByEnv && !enabledInDev) return false;
+  try {
+    const url = new URL(href, "http://localhost");
+    const value = normalizeText(url.searchParams.get("adminPreview") ?? "");
+    return value === "1" || value === "true";
+  } catch {
+    return false;
+  }
 }
 
 export function resolveCardGenerationEndpoint(
@@ -104,15 +128,18 @@ function resolveAdminAccessReason({
   signedIn,
   emailAllowed,
   singleRoleAllowed,
-  multiRoleAllowed
+  multiRoleAllowed,
+  localAdminPreview
 }: {
   isLoaded: boolean;
   signedIn: boolean;
   emailAllowed: boolean;
   singleRoleAllowed: boolean;
   multiRoleAllowed: boolean;
+  localAdminPreview: boolean;
 }): BrowserAdminAccessReason {
   if (!isLoaded) return "loading";
+  if (localAdminPreview) return "local-preview";
   if (!signedIn) return "signed-out";
   if (singleRoleAllowed) return "metadata-role";
   if (multiRoleAllowed) return "metadata-roles";

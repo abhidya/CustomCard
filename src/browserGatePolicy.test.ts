@@ -3,6 +3,7 @@ import {
   browserAdminEmailEnvNames,
   cardGenerationUrlEnvName,
   configuredAdminEmailsFromEnv,
+  resolveLocalAdminPreview,
   resolveBrowserAdminAccess,
   resolveCardGenerationEndpoint,
   sameOriginCardGenerationPath
@@ -85,6 +86,26 @@ describe("browser gate policy", () => {
 
     expect(access.isAdmin).toBe(false);
     expect(access.reason).toBe("signed-out");
+  });
+
+  it("allows explicit local admin preview only in dev or preview-enabled environments", () => {
+    expect(resolveLocalAdminPreview({ DEV: true }, "http://localhost/?view=admin&adminPreview=1")).toBe(true);
+    expect(resolveLocalAdminPreview({ DEV: false }, "http://localhost/?view=admin&adminPreview=1")).toBe(false);
+    expect(
+      resolveLocalAdminPreview(
+        { VITE_CUSTOMCARD_ENABLE_ADMIN_PREVIEW: "enabled" },
+        "http://localhost/?view=admin&adminPreview=true"
+      )
+    ).toBe(true);
+
+    const access = resolveBrowserAdminAccess({
+      configuredAdminEmails: new Set(),
+      isLoaded: true,
+      isSignedIn: false,
+      localAdminPreview: true,
+      user: null
+    });
+    expect(access).toMatchObject({ isAdmin: true, reason: "local-preview" });
   });
 
   it("resolves AI card generation to the same-origin API adapter by default", () => {
