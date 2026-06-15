@@ -80,6 +80,40 @@ describe("worker runtime", () => {
     expect(queries.some((query) => query.params.includes("api.job.succeeded"))).toBe(true);
   });
 
+  it("leases only the requested queued job for inline status fallback", async () => {
+    const queries: Array<{ sql: string; params: unknown[] }> = [];
+    const pool = createWorkerPool(queries, [
+      {
+        id: "job-render-inline",
+        user_id: "user-demo",
+        route_id: "render-packets",
+        idempotency_key_id: "idem-render-inline",
+        payload: { routeId: "render-packets" },
+        attempt_count: 1,
+        max_attempts: 3
+      }
+    ]);
+    const runtime = createWorkerRuntime({
+      env: { ...baseEnv, CUSTOMCARD_API_RUNTIME: "postgres" },
+      routes,
+      postgresPoolFactory: () => pool,
+      workerId: "worker-inline-test",
+      now: () => new Date("2030-01-01T00:00:00.000Z")
+    });
+
+    const result = await runtime.runJobById({ jobId: "job-render-inline", userId: "user-demo" });
+
+    expect(result).toMatchObject({
+      status: "ready",
+      leased: 1,
+      processed: 1,
+      succeeded: 1,
+      failed: 0
+    });
+    expect(queries.some((query) => query.sql.includes("WHERE id = $1") && query.params[0] === "job-render-inline")).toBe(true);
+    expect(queries.some((query) => query.sql.includes("user_id = $2") && query.params[1] === "user-demo")).toBe(true);
+  });
+
   it("runs a bounded polling loop so worker processes can continuously pick up queued jobs", async () => {
     const queries: Array<{ sql: string; params: unknown[] }> = [];
     const pool = createWorkerPool(queries, [

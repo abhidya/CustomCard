@@ -308,10 +308,20 @@ export function createApiRouteFamilies(deps) {
 
   async function handleAiRoute({ authContext, path, request, requestUrl, response, route }) {
     if (path === "/api/ai/jobs/status") {
-      const result = await apiRuntime.readQueuedJob({
+      let result = await apiRuntime.readQueuedJob({
         authContext,
         jobId: requestUrl.searchParams.get("job_id") ?? requestUrl.searchParams.get("jobId") ?? ""
       });
+      if (shouldRunInlineQueueWorker(result.payload)) {
+        await runInlineQueueWorkerForJob({
+          authContext,
+          jobId: result.payload.job_id
+        });
+        result = await apiRuntime.readQueuedJob({
+          authContext,
+          jobId: result.payload.job_id
+        });
+      }
       sendJson(response, result.statusCode, result.payload);
       return true;
     }
@@ -354,6 +364,28 @@ export function createApiRouteFamilies(deps) {
     });
     sendJson(response, result.statusCode, result.payload);
     return true;
+  }
+
+  function shouldRunInlineQueueWorker(payload) {
+    return Boolean(
+      payload?.queue_status === "queued" &&
+      String(payload.route_id ?? "").startsWith("ai-") &&
+      process.env.CUSTOMCARD_INLINE_QUEUE_WORKER !== "disabled"
+    );
+  }
+
+  async function runInlineQueueWorkerForJob({ authContext, jobId }) {
+    try {
+      const { createWorkerRuntime } = await import("./worker-runtime.mjs");
+      const runtime = createWorkerRuntime({ routes });
+      try {
+        return await runtime.runJobById({ jobId, userId: authContext.userId });
+      } finally {
+        await runtime.close();
+      }
+    } catch {
+      return undefined;
+    }
   }
 
   async function persistAiGeneratedImages({ authContext, result }) {

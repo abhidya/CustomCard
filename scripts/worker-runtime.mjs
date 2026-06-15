@@ -92,39 +92,58 @@ export function createWorkerRuntime({
         results: []
       };
 
-      for (const job of jobs) {
-        if (!routeIdSet.has(job.routeId)) {
-          await failJob({
-            postgresRuntime,
-            job,
-            error: new Error(`Unknown queue-backed route: ${job.routeId}`),
-            retryBackoffSeconds: workerRetryBackoffSeconds(env),
-            now
-          });
-          report.processed += 1;
-          report.failed += 1;
-          if (job.attemptCount >= job.maxAttempts) report.deadLettered += 1;
-          report.results.push({ id: job.id, routeId: job.routeId, status: "failed", reason: "unknown-route" });
-          continue;
-        }
+      await processLeasedJobs({
+        effectiveJobHandlers,
+        jobs,
+        now,
+        postgresRuntime,
+        report,
+        retryBackoffSeconds: workerRetryBackoffSeconds(env),
+        routeIdSet
+      });
 
-        try {
-          const result = await runJobAdapter(job, effectiveJobHandlers);
-          await completeJob({ postgresRuntime, job, result, now });
-          report.processed += 1;
-          report.succeeded += 1;
-          report.results.push({ id: job.id, routeId: job.routeId, status: "succeeded" });
-        } catch (error) {
-          const outcome = await failJob({ postgresRuntime, job, error, retryBackoffSeconds: workerRetryBackoffSeconds(env), now });
-          report.processed += 1;
-          if (outcome.status === "dead_lettered") {
-            report.deadLettered += 1;
-          } else {
-            report.failed += 1;
-          }
-          report.results.push({ id: job.id, routeId: job.routeId, status: outcome.status, reason: errorMessage(error) });
-        }
+      return report;
+    },
+    async runJobById({ jobId, userId }) {
+      const blockers = validateWorkerEnv(env, { requirePostgres: true });
+      if (blockers.length > 0) {
+        return {
+          service: "customcard-worker",
+          status: "blocked",
+          workerId,
+          blockers,
+          leased: 0,
+          processed: 0,
+          succeeded: 0,
+          failed: 0,
+          deadLettered: 0
+        };
       }
+
+      const expired = await requeueExpiredJobs({ postgresRuntime, leaseSeconds: workerLeaseSeconds(env) });
+      const jobs = await leaseJobById({ postgresRuntime, workerId, jobId, userId });
+      const report = {
+        service: "customcard-worker",
+        status: "ready",
+        workerId,
+        expiredJobs: expired,
+        leased: jobs.length,
+        processed: 0,
+        succeeded: 0,
+        failed: 0,
+        deadLettered: 0,
+        results: []
+      };
+
+      await processLeasedJobs({
+        effectiveJobHandlers,
+        jobs,
+        now,
+        postgresRuntime,
+        report,
+        retryBackoffSeconds: workerRetryBackoffSeconds(env),
+        routeIdSet
+      });
 
       return report;
     },
@@ -214,6 +233,74 @@ async function leaseJobs({ postgresRuntime, workerId, limit }) {
     [limit, workerId]
   );
   return result.rows.map(normalizeJobRow);
+}
+
+async function leaseJobById({ postgresRuntime, workerId, jobId, userId }) {
+  const result = await postgresRuntime.query(
+    `WITH selected_job AS (
+       SELECT id
+       FROM api_jobs
+       WHERE id = $1
+         AND user_id = $2
+         AND status = 'queued'
+         AND run_after <= NOW()
+       FOR UPDATE SKIP LOCKED
+     )
+     UPDATE api_jobs
+     SET status = 'running',
+         locked_by = $3,
+         locked_at = NOW(),
+         attempt_count = attempt_count + 1,
+         updated_at = NOW()
+     WHERE id IN (SELECT id FROM selected_job)
+     RETURNING id, user_id, route_id, idempotency_key_id, payload, attempt_count, max_attempts`,
+    [jobId, userId, workerId]
+  );
+  return result.rows.map(normalizeJobRow);
+}
+
+async function processLeasedJobs({
+  effectiveJobHandlers,
+  jobs,
+  now,
+  postgresRuntime,
+  report,
+  retryBackoffSeconds,
+  routeIdSet
+}) {
+  for (const job of jobs) {
+    if (!routeIdSet.has(job.routeId)) {
+      await failJob({
+        postgresRuntime,
+        job,
+        error: new Error(`Unknown queue-backed route: ${job.routeId}`),
+        retryBackoffSeconds,
+        now
+      });
+      report.processed += 1;
+      report.failed += 1;
+      if (job.attemptCount >= job.maxAttempts) report.deadLettered += 1;
+      report.results.push({ id: job.id, routeId: job.routeId, status: "failed", reason: "unknown-route" });
+      continue;
+    }
+
+    try {
+      const result = await runJobAdapter(job, effectiveJobHandlers);
+      await completeJob({ postgresRuntime, job, result, now });
+      report.processed += 1;
+      report.succeeded += 1;
+      report.results.push({ id: job.id, routeId: job.routeId, status: "succeeded" });
+    } catch (error) {
+      const outcome = await failJob({ postgresRuntime, job, error, retryBackoffSeconds, now });
+      report.processed += 1;
+      if (outcome.status === "dead_lettered") {
+        report.deadLettered += 1;
+      } else {
+        report.failed += 1;
+      }
+      report.results.push({ id: job.id, routeId: job.routeId, status: outcome.status, reason: errorMessage(error) });
+    }
+  }
 }
 
 async function requeueExpiredJobs({ postgresRuntime, leaseSeconds }) {
