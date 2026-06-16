@@ -446,13 +446,22 @@ export function createApiRouteFamilies(deps) {
   async function runInlineQueueWorkerForJob({ authContext, jobId }) {
     try {
       const { createWorkerRuntime } = await import("./worker-runtime.mjs");
-      const runtime = createWorkerRuntime({ routes });
-      try {
-        return await runtime.runJobById({ jobId, userId: authContext.userId });
-      } finally {
-        await runtime.close();
+      // Reuse the API's existing Postgres pool to avoid a new connection round-trip.
+      // Do NOT call runtime.close() — the pool is owned by apiRuntime, not this worker.
+      const sharedPool = apiRuntime.getAiFlowCostPool
+        ? await apiRuntime.getAiFlowCostPool()
+        : undefined;
+      const runtime = createWorkerRuntime({
+        routes,
+        postgresPoolFactory: sharedPool ? () => sharedPool : undefined
+      });
+      const result = await runtime.runJobById({ jobId, userId: authContext.userId });
+      if (result?.blockers?.length > 0) {
+        console.error("[inline-worker] blocked:", result.blockers.join("; "));
       }
-    } catch {
+      return result;
+    } catch (err) {
+      console.error("[inline-worker] error:", err?.message ?? String(err));
       return undefined;
     }
   }

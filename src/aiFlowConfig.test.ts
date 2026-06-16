@@ -31,7 +31,7 @@ describe("AI flow config", () => {
     expect(flow.blockedReasons).toEqual([]);
   });
 
-  it("defaults card generation to Qwen copy and DeepAI text2img while image live calls stay disabled", () => {
+  it("defaults card generation to Qwen copy and RunComfy image with live calls enabled", () => {
     const configs = buildDefaultAiFlowAdminConfigs();
     const cardCopy = configs.find((config) => config.flowId === "card-copy");
     const cardImage = configs.find((config) => config.flowId === "card-image");
@@ -43,13 +43,13 @@ describe("AI flow config", () => {
     expect(cardCopy?.rateLimitPerMinute).toBe(4);
     expect(cardCopy?.perRequestBudgetCents).toBe(5);
     expect(cardCopy?.liveProviderCallsEnabled).toBe(true);
-    expect(cardImage?.primaryAdapterId).toBe("deepai-text2img-image");
-    expect(cardImage?.model).toBe("text2img");
+    expect(cardImage?.primaryAdapterId).toBe("runcomfy-model-api-image");
+    expect(cardImage?.model).toBe("blackforestlabs/flux-2/dev/text-to-image");
     expect(cardImage?.fallbackAdapterId).toBe("cloudflare-workers-ai-image");
     expect(cardImage?.fallbackQueueEnabled).toBe(true);
     expect(cardImage?.rateLimitPerMinute).toBe(8);
     expect(cardImage?.perRequestBudgetCents).toBe(1);
-    expect(cardImage?.liveProviderCallsEnabled).toBe(false);
+    expect(cardImage?.liveProviderCallsEnabled).toBe(true);
   });
 
   it("uses the benchmark-winning Qwen plus DeepAI text2img combo when those credentials exist", () => {
@@ -114,16 +114,15 @@ describe("AI flow config", () => {
     expect(flow.blockedReasons).toEqual([]);
   });
 
-  it("allows RunComfy Model API image generation when token and model id are configured", () => {
+  it("allows RunComfy Model API image generation when token and admin model id are configured", () => {
     const flow = resolveAiFlowConfig("card-image", {
       RUNCOMFY_API_TOKEN: "runcomfy-token",
-      RUNCOMFY_IMAGE_MODEL_ID: "blackforestlabs/flux-1-kontext/pro/text-to-image",
       CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "runcomfy-model-api-image",
       CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
     });
 
     expect(flow.primaryAdapterId).toBe("runcomfy-model-api-image");
-    expect(flow.model).toBe("blackforestlabs/flux-1-kontext/pro/text-to-image");
+    expect(flow.model).toBe("blackforestlabs/flux-2/dev/text-to-image");
     expect(flow.liveProviderCallsEnabled).toBe(true);
     expect(flow.readyForLiveCalls).toBe(true);
     expect(flow.blockedReasons).toEqual([]);

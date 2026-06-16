@@ -1,0 +1,72 @@
+# CustomCard
+
+> AI-assisted greeting card maker that scans your calendar and email, drafts a personalized card, and gets it print-ready for any local print shop. Free to create; pay the print shop only if you print.
+
+## What CustomCard does
+
+CustomCard is a personal greeting-card assistant. It:
+
+1. Detects card-worthy occasions by scanning your Google Calendar or Gmail (with permission) — birthdays, weddings, anniversaries, graduations, and more.
+2. Asks a short context-aware questionnaire: who the card is from, your relationship to the recipient, tone, any inside details or cultural elements.
+3. Drafts personalized copy and artwork directions using AI.
+4. Renders a print-ready 5 × 7 folded card (four panels: front, inside-left, inside-right, back) at 300 DPI.
+5. Lets you review and edit every word before creating the print package.
+6. Prepares downloadable print-ready files for Walgreens, CVS, FedEx Office, or any print shop that accepts PDF or PNG.
+
+No card is auto-sent. No order is placed without explicit user approval.
+
+## Pricing
+
+- **Free to create.** Designing, drafting, and downloading a print package costs nothing.
+- **Pay the print shop only when you print.** CustomCard does not handle payment — you confirm the price directly with your chosen print shop (Walgreens, CVS, FedEx Office, etc.).
+- **Account optional to start.** You can begin a card without an account. AI generation, saved card history, and Google Calendar connection require a free account.
+
+See /pricing for the full breakdown.
+
+## Key capabilities
+
+- Occasion detection: birthday, graduation, wedding, anniversary, thank-you, sympathy, friendship, belated
+- Calendar scanning: Google Calendar integration (optional), manual .ics paste
+- Relationship memory: stores approved facts about recipients for future personalization; user can edit or delete any memory
+- Multilingual support: non-English messages, right-to-left script
+- Cultural sensitivity review: religious phrases, names, cultural details validated before rendering
+- 5 × 7 folded card format: four SVG panels at 1500 × 2100 px each, PDF proof
+- Vendor-agnostic fulfillment: Walgreens, CVS, FedEx Office, or any print shop accepting standard file formats
+- Business/enterprise mode: lifecycle card queue for customer birthday, purchase anniversary, and warranty anniversary sends — with human approval required at each step
+
+## Key pages
+
+- [Home](https://customcard-three.vercel.app/) — start a card, see examples
+- [Pricing](https://customcard-three.vercel.app/pricing) — free tier details and print shop cost structure
+- [How it works](https://customcard-three.vercel.app/#how-it-works) — 5-step flow
+- [Business / lifecycle cards](https://customcard-three.vercel.app/?view=business) — enterprise use case
+
+## AI model and privacy
+
+- AI drafts words and artwork directions; all AI output is reviewed by the user before use
+- Email and calendar scanning is permission-gated via OAuth; nothing is stored without explicit approval
+- Relationship memories are structured (not vector), user-visible, and deletable
+- No email content is stored — only event metadata (type, date, names)
+
+## Who it's for
+
+- Busy adults managing family and social obligations
+- Parents or caregivers who want help writing appropriate cards
+- People in multilingual or multicultural families
+- Frequent event attendees who want cards to feel personal over time
+- Last-minute users who need a printable card today
+- Customer lifecycle and marketing teams (business tier)
+
+## Competitive differentiators
+
+- Calendar scanning catches occasions you'd otherwise miss
+- Privacy-first: you see exactly what's stored and can delete it
+- Human approval required before any print order
+- Relationship memory makes cards feel personal over time, not generic
+- Free to design — no subscription required to create and download
+
+## Source and trust
+
+- CustomCard is an independent product, not affiliated with Hallmark, Shutterfly, or Walmart Photo
+- No auto-sending, no surprise checkout, no CRM writes without approval
+- Print-shop fulfillment is handled directly between the user and the retailer
