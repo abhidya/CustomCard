@@ -88,13 +88,13 @@ describe("provider ops", () => {
       }
     });
     expect(cloudflareChatOps?.blockedReasons.join(" ")).toContain("model allowlist");
-    expect(providerOps.summary.readyForLiveCalls).toBe(2);
+    expect(providerOps.summary.readyForLiveCalls).toBe(3);
     expect(providerOps.summary.liveReadyProviders).toBe(0);
     expect(providerOps.limits.maxPerRequestBudgetCents).toBe(5);
     expect(providerOps.usage).toMatchObject({
       configuredProviders: 2,
       configuredFlows: 3,
-      liveEnabledConfiguredFlows: 2,
+      liveEnabledConfiguredFlows: 3,
       monthlyBudgetCents: 11500,
       maxPerRequestBudgetCents: 10,
       estimatedMonthlyRequestsAtBudget: 5250,
@@ -118,7 +118,6 @@ describe("provider ops", () => {
     const deepAiEnv = {
       DEEPAI_API_KEY: "deepai-token",
       CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "deepai-text2img-image",
-      CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
     };
     expect(deepAi).toBeDefined();
     const providerOps = buildProviderOpsModel({

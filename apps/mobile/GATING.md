@@ -8,14 +8,14 @@ faking success. This doc traces each gated capability to its backend gate and
 what flips it on.
 
 The app never decides these gates itself; it reads them from API responses
-(`realOrdersEnabled`, route `status`, `ai_flow.*.live_provider_calls_enabled`,
+(`realOrdersEnabled`, route `status`, `ai_flow.*.ready_for_live_calls`,
 `enabled`, `blockers`).
 
 | Capability | App behaviour today | Backend gate / runtime | What turns it on |
 | --- | --- | --- | --- |
 | **Sign-in** | ✅ Live. Real Clerk Google/Apple OAuth plus email-code auth. | `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` + `CUSTOMCARD_OAUTH_REDIRECT_URL` (app) and `CLERK_JWT_KEY`/`CLERK_ISSUER` (API). | Configure Clerk providers and allowlist `customcard://sso-callback` for the QA/prod instance. |
 | **Import / events / memories / drafts / projects / render packets** | ✅ Live against the API (durable in Postgres runtime; in-memory locally). | Always on; `customer-session` auth. | Already live. |
-| **AI card copy & artwork** | Deterministic fallback (`browser-svg-renderer` / `deterministic-customer-chat`). Real copy structure, no paid model call. | Server `aiFlowConfig` live gate: `CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_WORKERS_AI_*` tokens, plus rate-limit + budget + fallback gates. Response field `ai_flow.card_copy.live_provider_calls_enabled`. | Set the Cloudflare Workers AI creds + enable flags in the API env; the gate flips and the same screen shows live output. |
+| **AI card copy & artwork** | Deterministic fallback (`browser-svg-renderer` / `deterministic-customer-chat`). Real copy structure, no paid model call. | Server AI flow controls: Admin live toggle, provider credentials, allowed adapter, rate-limit, budget, and fallback gates. Response field `ai_flow.card_copy.ready_for_live_calls`. | Set the provider credentials and enable the flow in Admin; the same screen shows live output. |
 | **Live retail price quotes** | Estimate-only; `retail-printers/operations/start` returns `status: "blocked"`, `liveQuoteEnabled: false`. | `REAL_ORDER_KILL_SWITCH` + provider certification gates server-side. | Provider cert + flip the kill switch (release owner). |
 | **Automatic retail orders** | Off. App hands off manually; no order is placed. | `REAL_ORDER_KILL_SWITCH=disabled` (mirrored in app config + EAS profiles). `realOrdersEnabled: false` on every route. | Release owner enables the kill switch after certification. |
 | **Print-shop handoff** | App prepares a manual print package only after proof approval; no hosted checkout form appears. | `REAL_ORDER_KILL_SWITCH=disabled` plus manual handoff route auth. | Keep as handoff until provider certification and release approval exist. |

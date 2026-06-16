@@ -72,15 +72,9 @@ describe("browser gate policy", () => {
     expect(access.reason).toBe("signed-out");
   });
 
-  it("allows explicit local admin preview only in dev or preview-enabled environments", () => {
+  it("allows explicit local admin preview only in dev", () => {
     expect(resolveLocalAdminPreview({ DEV: true }, "http://localhost/?view=admin&adminPreview=1")).toBe(true);
     expect(resolveLocalAdminPreview({ DEV: false }, "http://localhost/?view=admin&adminPreview=1")).toBe(false);
-    expect(
-      resolveLocalAdminPreview(
-        { VITE_CUSTOMCARD_ENABLE_ADMIN_PREVIEW: "enabled" },
-        "http://localhost/?view=admin&adminPreview=true"
-      )
-    ).toBe(true);
 
     const access = resolveBrowserAdminAccess({
       isLoaded: true,

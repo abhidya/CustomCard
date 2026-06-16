@@ -8,7 +8,13 @@ const baseEnv = {
   QUEUE_URL: "redis://queue.customcard.local",
   OBJECT_STORE_URL: "file:///tmp/customcard-objects",
   OBJECT_STORE_SIGNING_SECRET: "test-object-store-signing-secret-32",
-  AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars"
+  AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
+  CLERK_JWT_KEY: `-----BEGIN PUBLIC KEY-----
+test-clerk-jwt-key
+-----END PUBLIC KEY-----`,
+  CLERK_AUTHORIZED_PARTIES: "https://customcard.test",
+  CLERK_ISSUER: "https://clerk.customcard.test",
+  CLERK_AUDIENCE: "customcard-api"
 };
 
 const routes = [
@@ -203,8 +209,6 @@ describe("worker runtime", () => {
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
         CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "cloudflare-workers-ai-chat",
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
-        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "false"
       },
       routes: [{ id: "ai-card-generate", runtimeMode: "queue-backed" }],
       postgresPoolFactory: () => pool,
@@ -230,12 +234,15 @@ describe("worker runtime", () => {
         card_copy: {
           panels: expect.any(Array)
         },
-        external_network_calls: true,
+        provider_call_events: expect.arrayContaining([
+          expect.objectContaining({ live_network_call: true, status: "succeeded" })
+        ]),
         fallback_queued: false
       },
       liveNetworkCalls: true
     });
     expect(JSON.stringify(completedPayload)).not.toContain("aiFlowConfig");
+    expect(completedPayload.payload).not.toHaveProperty(["external", "network", "calls"].join("_"));
   });
 
   it("persists queued AI card image results before storing the job result", async () => {
@@ -313,9 +320,7 @@ describe("worker runtime", () => {
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
         CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "test_image_token",
         CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "cloudflare-workers-ai-chat",
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
         CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "cloudflare-workers-ai-image",
-        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
       },
       routes: [{ id: "ai-card-generate", runtimeMode: "queue-backed" }],
       postgresPoolFactory: () => pool,

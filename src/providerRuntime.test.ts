@@ -164,7 +164,6 @@ const readyEnv: ProviderRuntimeEnv = {
   REPLICATE_API_TOKEN: "configured-replicate-token",
   RESEND_API_KEY: "configured-resend-key",
   RUNCOMFY_API_TOKEN: "configured-runcomfy-token",
-  RUNCOMFY_IMAGE_MODEL_ID: "blackforestlabs/flux-1-kontext/pro/text-to-image",
   SALESFORCE_CLIENT_ID: "configured-salesforce-client-id",
   SALESFORCE_CLIENT_SECRET: "configured-salesforce-client-secret",
   SALESFORCE_INSTANCE_URL: "https://customcard.my.salesforce.com",
@@ -694,7 +693,7 @@ describe("provider runtime contracts", () => {
       "x-key": "{BFL_API_KEY}"
     });
     expect(buildImageGenerationRuntime("runcomfy-model-api-image", imageInput, readyEnv, openGates).request).toMatchObject({
-      url: "https://model-api.runcomfy.net/v1/models/{RUNCOMFY_IMAGE_MODEL_ID}",
+      url: "https://model-api.runcomfy.net/v1/models/{admin-selected-runcomfy-model}",
       headers: expect.objectContaining({ authorization: "Bearer {RUNCOMFY_API_TOKEN}" })
     });
     expect(buildImageGenerationRuntime("adobe-firefly-image", imageInput, readyEnv, openGates).request?.headers).toMatchObject({

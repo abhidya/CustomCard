@@ -237,8 +237,8 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
   useEffect(() => {
     if (aiDraftPresent.current) setAiStale(true);
     else {
-      setAiCardGenStatus("");
-      setAiPanelGenerationProgress({});
+      setAiCardGenStatus((current) => (current ? "" : current));
+      setAiPanelGenerationProgress((current) => (Object.keys(current).length > 0 ? {} : current));
     }
   }, [draftInput]);
 

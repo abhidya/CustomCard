@@ -638,6 +638,7 @@ describe("production infrastructure contract", () => {
       outputDirectory: "dist"
     });
     expect(vercel.rewrites).toEqual([
+      { source: "/robots.txt", destination: "/api/robots" },
       { source: "/api/artifacts/(.*)", destination: "/api/artifacts?objectKey=$1" },
       { source: "/api/(.*)", destination: "/api/$1" },
       { source: "/oauth/callback", destination: "/api/oauth/callback" },
@@ -1711,7 +1712,7 @@ describe("production infrastructure contract", () => {
       providerUsageLedger: true,
       queueJobs: true
     });
-    expect(report.readiness.api).toMatchObject({ statefulRoutes: 28, idempotentMutations: 14 });
+    expect(report.readiness.api).toMatchObject({ statefulRoutes: 31, idempotentMutations: 17 });
     expect(report.readiness.localBrowserState).toMatchObject({
       auditItems: 6,
       dbRequiredItems: 0,

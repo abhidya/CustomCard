@@ -42,8 +42,8 @@ Environment:
 
 Provider fallback configuration:
 
-- Flow config lives in `src/aiFlowConfigData.mjs` and is resolved server-side from `CUSTOMCARD_AI_*` env plus trusted admin overrides.
-- Live calls require allowed adapter, required credentials, positive rate limit, non-negative budget, and `CUSTOMCARD_AI_<FLOW>_LIVE_ENABLED=true` or auto-live credentials.
+- Flow config lives in `src/aiFlowConfigData.mjs` and is resolved server-side from provider credentials plus trusted Admin provider controls.
+- Live calls require an Admin-enabled flow, allowed adapter, required credentials, positive rate limit, and non-negative budget.
 - If card-copy provider config is missing, disabled, rate-limited, over budget, or fails during execution, the service returns user-content-only card fields and no images.
 - If card-image provider config is missing, disabled, rate-limited, over budget, or fails after provider copy succeeds, the service returns provider-generated text-only card output with no local image substitute.
 - If customer-chat provider config is missing, disabled, rate-limited, over budget, or fails, the service returns blank `assistant_message` with provider evidence.

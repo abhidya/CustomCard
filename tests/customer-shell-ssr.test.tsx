@@ -315,7 +315,7 @@ describe("customer shell server render", () => {
       expect(text).toContain("Free to create. Private by default.");
       expect(text).toContain("Free to create. Pay the print shop only if you print.");
       expect(text).toContain("You choose the printer and confirm payment directly with them.");
-      expect(text).toContain("AI generation, saved history, and Google Calendar require an account.");
+      expect(text).toContain("AI generation, saved history, Google Calendar, and Walgreens checkout require an account.");
       expect(text).toContain("Calendar connections are optional and separate from creating an account.");
       expect(text).not.toContain("Email and calendar connections are optional");
       expect(text).toContain("You review every word before creating the print-shop package.");

@@ -10,6 +10,7 @@ export interface AiRequestContext {
   rateKey?: string;
   idempotencyKey?: string;
   trustRequestAiFlowConfig?: boolean;
+  aiFlowAdminConfig?: unknown;
   authContext?: {
     userId?: string;
     sessionId?: string;
@@ -31,6 +32,7 @@ export function createAiCardGenerationService(options?: {
   env?: Record<string, string | undefined>;
   fetchImpl?: typeof fetch;
   costGate?: unknown;
+  aiFlowAdminConfig?: unknown;
 }): AiService;
 
 export function describeAiCardGenerationAdapters(): {

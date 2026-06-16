@@ -48,8 +48,7 @@ const generated: CardGenerateResponse = {
   images: [],
   generated_by: "browser-svg-renderer",
   ai_flow: {},
-  fallback_queued: false,
-  external_network_calls: false
+  fallback_queued: false
 };
 
 const mockApi: Partial<CustomCardApi> = {};

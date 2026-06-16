@@ -359,7 +359,6 @@ export interface ChatRespondRequest {
 export interface AiFlowState {
   flow_id: string;
   adapter_id: string;
-  live_provider_calls_enabled: boolean;
   ready_for_live_calls: boolean;
   blocked_reasons: string[];
 }
@@ -369,7 +368,6 @@ export interface ChatRespondResponse {
   assistant_message: string;
   ai_flow: Record<string, AiFlowState>;
   fallback_queued: boolean;
-  external_network_calls: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -424,7 +422,6 @@ export interface CardGenerateResponse {
   generated_by: string;
   ai_flow: Record<string, AiFlowState>;
   fallback_queued: boolean;
-  external_network_calls: boolean;
 }
 
 // ---------------------------------------------------------------------------

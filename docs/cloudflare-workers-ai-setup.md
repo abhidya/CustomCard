@@ -112,6 +112,6 @@ evidence.
 
 Set the same Cloudflare env vars in Vercel for Production, Preview, and
 Development before promoting a live AI path. For the preferred live card-image
-route, set `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=cloudflare-workers-ai-image` and
-`CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED=true`. Do not commit `.env`,
-`.env.local`, or copied Cloudflare API tokens.
+route, set `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=cloudflare-workers-ai-image`
+and enable the card-image flow from the Admin provider controls. Do not commit
+`.env`, `.env.local`, or copied Cloudflare API tokens.

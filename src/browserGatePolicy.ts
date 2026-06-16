@@ -1,4 +1,3 @@
-export const adminPreviewEnvName = "VITE_CUSTOMCARD_ENABLE_ADMIN_PREVIEW";
 export const cardGenerationUrlEnvName = "VITE_CARD_GEN_URL";
 export const sameOriginCardGenerationPath = "/api/ai/card/generate";
 
@@ -77,9 +76,8 @@ export function resolveBrowserAdminAccess({
 }
 
 export function resolveLocalAdminPreview(env: BrowserGateEnv, href: string): boolean {
-  const enabledByEnv = stringEnvValue(env, adminPreviewEnvName).trim().toLowerCase() === "enabled";
   const enabledInDev = env?.DEV === true;
-  if (!enabledByEnv && !enabledInDev) return false;
+  if (!enabledInDev) return false;
   try {
     const url = new URL(href, "http://localhost");
     const value = normalizeText(url.searchParams.get("adminPreview") ?? "");

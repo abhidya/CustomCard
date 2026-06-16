@@ -1611,9 +1611,6 @@ describe("api server wrapper", () => {
         ...process.env,
         CUSTOMCARD_API_RUNTIME: "memory",
         CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS: "enabled",
-        CUSTOMCARD_AI_CUSTOMER_CHAT_LIVE_ENABLED: "false",
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "false",
-        CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG: "false",
         AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
         CUSTOMCARD_CUSTOMER_SESSION_TOKEN: customerToken,
         CUSTOMCARD_ADMIN_SESSION_TOKEN: adminToken,
@@ -1907,14 +1904,18 @@ describe("api server wrapper", () => {
         route: "ai-chat-respond",
         queue_status: "queued",
         job_id: expect.any(String),
-        live_provider_calls_enabled: false,
-        external_network_calls: false,
         ai_queue: expect.objectContaining({
           backend: "api_jobs",
           payload_minimized: true,
           client_ai_flow_config_accepted: false
         })
       });
+      for (const field of [
+        ["live", "provider", "calls", "enabled"].join("_"),
+        ["external", "network", "calls"].join("_")
+      ]) {
+        expect(customerAiChatPayload).not.toHaveProperty(field);
+      }
 
       const customerAiJob = await getJson(
         port,

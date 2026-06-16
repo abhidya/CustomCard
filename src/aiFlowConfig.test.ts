@@ -56,7 +56,6 @@ describe("AI flow config", () => {
     const cardCopy = resolveAiFlowConfig("card-copy", recommendedCardGenerationEnv);
     const cardImage = resolveAiFlowConfig("card-image", {
       ...recommendedCardGenerationEnv,
-      CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
     });
 
     expect(cardCopy.primaryAdapterId).toBe("huggingface-chat");
@@ -75,7 +74,6 @@ describe("AI flow config", () => {
   it("routes card-image to Cloudflare when image credentials and live calls are enabled", () => {
     const flow = resolveAiFlowConfig("card-image", {
       ...cloudflareEnv,
-      CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
     });
 
     expect(flow.primaryAdapterId).toBe("cloudflare-workers-ai-image");
@@ -91,7 +89,6 @@ describe("AI flow config", () => {
       CLOUDFLARE_ACCOUNT_ID: "acct_123",
       CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "token_image",
       CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "cloudflare-workers-ai-image",
-      CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
     });
 
     expect(flow.primaryAdapterId).toBe("cloudflare-workers-ai-image");
@@ -103,7 +100,6 @@ describe("AI flow config", () => {
     const flow = resolveAiFlowConfig("card-image", {
       DEEPAI_API_KEY: "deepai-token",
       CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "deepai-text2img-image",
-      CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
     });
 
     expect(flow.primaryAdapterId).toBe("deepai-text2img-image");
@@ -118,7 +114,6 @@ describe("AI flow config", () => {
     const flow = resolveAiFlowConfig("card-image", {
       RUNCOMFY_API_TOKEN: "runcomfy-token",
       CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "runcomfy-model-api-image",
-      CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
     });
 
     expect(flow.primaryAdapterId).toBe("runcomfy-model-api-image");
@@ -132,7 +127,6 @@ describe("AI flow config", () => {
     const flow = resolveAiFlowConfig("card-image", {
       ...cloudflareEnv,
       CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "browser-svg-renderer",
-      CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
     });
 
     expect(flow.primaryAdapterId).toBe("browser-svg-renderer");

@@ -168,7 +168,7 @@ describeWithChrome("CustomCard UI smoke", () => {
         proofInputs.forEach((node) => node.click());
         await raf();
         const checkoutButton = [...document.querySelectorAll("button")].find((node) =>
-          node.textContent?.includes("Continue to Walgreens")
+          node.textContent?.includes("Download print package")
         );
 
         return {
@@ -215,26 +215,25 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.studioObjectText).toContain("Folded card object");
     expect(result.generationScopeText).toContain("Choose what to improve");
     expect(result.generationScopeText).toContain("Current proof");
-    expect(result.printHeading).toBe("Print at Walgreens");
-    expect(result.printText).toContain("Walgreens print details");
-    expect(result.printText).toContain("Manual Walgreens upload");
-    expect(result.printText).toContain("Send to Walgreens");
+    expect(result.printHeading).toBe("Finish at a print shop");
+    expect(result.printText).toContain("Print-shop details");
+    expect(result.printText).toContain("Save print package");
+    expect(result.printText).toContain("Download print package");
     expect(result.printText).toContain("Approve your proof");
     expect(result.printText).toContain("I approve this proof for printing");
-    expect(result.printText).toContain("Continue to Walgreens");
-    expect(result.printText).toContain("Walgreens handles payment");
+    expect(result.printText).toContain("Print-shop package");
+    expect(result.printText).toContain("You pay the print shop directly");
     expect(result.printCtaDock).toBe(false);
     expect(result.proofProgress).toContain("Proof approved");
     expect(result.checkoutButtonEnabledAfterApproval).toBe(true);
     expect(result.printText).not.toContain("Manual fallback");
     expect(result.printText).not.toContain("CVS");
     expect(result.printText).not.toContain("FedEx Office");
-    expect(result.printText).not.toContain("Walmart");
     expect(result.printText).not.toContain("Staples");
     expect(result.downloadButtons.join(" ")).toContain("Save print package");
     expect(result.downloadButtons.join(" ")).toContain("Save upload panels");
     expect(result.downloadButtons.join(" ")).toContain("Copy steps");
-    expect(result.checkoutInputs).toBe(4);
+    expect(result.checkoutInputs).toBe(0);
     expect(result.storeSteps).toBe(0);
     expect(result.adminRows).toBe(0);
     expect(result.scrollWidth).toBe(result.clientWidth);

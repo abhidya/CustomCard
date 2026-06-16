@@ -95,7 +95,7 @@ describe("api runtime safety", () => {
     const runtime = createApiRuntime({
       env: {
         CUSTOMCARD_API_RUNTIME: "postgres",
-        DATABASE_URL: "postgres://example/customcard",
+        DATABASE_URL: "postgres://customcard-db.internal/customcard",
         AUTH_SESSION_SECRET: "too-short"
       },
       routes: apiRouteContracts
@@ -185,12 +185,18 @@ describe("api runtime safety", () => {
       env: {
         CUSTOMCARD_ENV: "production",
         CUSTOMCARD_API_RUNTIME: "postgres",
-        DATABASE_URL: "postgres://example/customcard",
-        QUEUE_URL: "redis://example",
+        DATABASE_URL: "postgres://customcard-db.internal/customcard",
+        QUEUE_URL: "redis://customcard-queue.internal",
         OBJECT_STORE_URL: "https://objects.customcard.test",
+        OBJECT_STORE_BUCKET: "customcard-prod-artifacts",
+        OBJECT_STORE_ACCESS_KEY_ID: "test-object-store-access-key",
+        OBJECT_STORE_SECRET_ACCESS_KEY: "test-object-store-secret-key",
+        OBJECT_STORE_PUBLIC_BASE_URL: "https://artifacts.customcard.test",
         OBJECT_STORE_SIGNING_SECRET: "test-object-store-signing-secret-32",
         AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
-        CLERK_JWT_KEY: "-----BEGIN PUBLIC KEY-----\\ntest-clerk-jwt-key\\n-----END PUBLIC KEY-----",
+        CLERK_JWT_KEY: `-----BEGIN PUBLIC KEY-----
+test-clerk-jwt-key
+-----END PUBLIC KEY-----`,
         CLERK_AUTHORIZED_PARTIES: "https://customcard.test",
         CLERK_ISSUER: "https://clerk.customcard.test",
         CLERK_AUDIENCE: "customcard-api"
@@ -203,8 +209,8 @@ describe("api runtime safety", () => {
   });
 
   it("bounds Postgres pool settings for serverless-safe defaults", () => {
-    expect(postgresPoolConfig({ DATABASE_URL: "postgres://example/customcard" })).toMatchObject({
-      connectionString: "postgres://example/customcard",
+    expect(postgresPoolConfig({ DATABASE_URL: "postgres://customcard-db.internal/customcard" })).toMatchObject({
+      connectionString: "postgres://customcard-db.internal/customcard",
       max: 5,
       connectionTimeoutMillis: 5000,
       idleTimeoutMillis: 10_000,
@@ -213,7 +219,7 @@ describe("api runtime safety", () => {
 
     expect(
       postgresPoolConfig({
-        DATABASE_URL: "postgres://example/customcard",
+        DATABASE_URL: "postgres://customcard-db.internal/customcard",
         CUSTOMCARD_POSTGRES_POOL_MAX: "500",
         CUSTOMCARD_POSTGRES_POOL_CONNECTION_TIMEOUT_MS: "1",
         CUSTOMCARD_POSTGRES_POOL_IDLE_TIMEOUT_MS: "999999"
@@ -287,7 +293,7 @@ describe("api runtime safety", () => {
     const attached: unknown[] = [];
     const runtime = createPostgresRuntime({
       env: {
-        DATABASE_URL: "postgres://example/customcard",
+        DATABASE_URL: "postgres://customcard-db.internal/customcard",
         CUSTOMCARD_POSTGRES_ATTACH_DATABASE_POOL: "enabled"
       },
       postgresPoolFactory: () => pool,

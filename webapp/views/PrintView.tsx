@@ -46,6 +46,7 @@ export function PrintView({
 }) {
   const [proofChecklist, setProofChecklist] = useState<ProofChecklistState>(emptyProofChecklistState);
   const [showTrimGuides, setShowTrimGuides] = useState(false);
+  const [emittedReadyProofSignature, setEmittedReadyProofSignature] = useState("");
   const overflowPanels = panels.filter((candidate) => candidate.overflowRisk);
   const rtlReview = panels.some((candidate) => candidate.rtl);
   const approvalBlocked = overflowPanels.length > 0 || panels.length < 4;
@@ -58,8 +59,14 @@ export function PrintView({
   }, [proofSignature]);
   // Real lifecycle events: status history is driven by what actually happened.
   useEffect(() => {
-    if (proofApproved) onCardEvent?.("ready-to-print");
-  }, [onCardEvent, proofApproved]);
+    if (!proofApproved) {
+      setEmittedReadyProofSignature((current) => (current ? "" : current));
+      return;
+    }
+    if (emittedReadyProofSignature === proofSignature) return;
+    onCardEvent?.("ready-to-print");
+    setEmittedReadyProofSignature(proofSignature);
+  }, [emittedReadyProofSignature, onCardEvent, proofApproved, proofSignature]);
   const recommendedEstimate = pricingComparison.rankedKnownPrices[0];
   const recommendedOption = pricingComparison.selectedVendorOptions.find(
     (option) => option.observation.vendorId === recommendedEstimate?.observation.vendorId

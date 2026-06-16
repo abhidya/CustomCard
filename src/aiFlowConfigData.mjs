@@ -309,11 +309,7 @@ export function resolveAiFlowConfig(flowId, env = {}, adminOverrides = []) {
     definition.liveDefault === "auto"
       ? isAiAdapterConfigured(primaryAdapterId, env)
       : Boolean(definition.liveDefault);
-  const liveProviderCallsEnabled = readEnvBoolean(
-    env,
-    `CUSTOMCARD_AI_${key}_LIVE_ENABLED`,
-    override.liveProviderCallsEnabled ?? liveDefault
-  );
+  const liveProviderCallsEnabled = Boolean(override.liveProviderCallsEnabled ?? liveDefault);
   const maxRetries = readEnvNumber(env, `CUSTOMCARD_AI_${key}_MAX_RETRIES`, override.maxRetries ?? definition.maxRetries);
   const maxTokens = readEnvNumber(env, `CUSTOMCARD_AI_${key}_MAX_TOKENS`, override.maxTokens ?? definition.maxTokens);
   const temperature = readEnvNumber(

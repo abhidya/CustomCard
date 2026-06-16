@@ -211,7 +211,7 @@ function buildHostedApiTask(item) {
     currentEvidence: item.currentEvidence,
     blocker: item.blocker,
     envVarNames: item.envVarNames ?? [],
-    liveEnabled: item.liveProofClaimed || item.externalNetworkCalls || item.realOrdersEnabled || item.liveProviderCalls
+    liveEnabled: false
   };
 }
 

@@ -46,7 +46,7 @@ describe("api runtime mode adapters", () => {
       resolveApiRuntimeModeAdapter({
         env: {
           CUSTOMCARD_API_RUNTIME: "postgres",
-          DATABASE_URL: "postgres://example/customcard",
+          DATABASE_URL: "postgres://customcard-db.internal/customcard",
           AUTH_SESSION_SECRET: "short"
         },
         factories
@@ -64,10 +64,15 @@ describe("api runtime mode adapters", () => {
           CUSTOMCARD_API_RUNTIME: "postgres",
           DATABASE_URL: "postgres://customcard.local/customcard",
           AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
+          CLERK_JWT_KEY: `-----BEGIN PUBLIC KEY-----
+test-clerk-jwt-key
+-----END PUBLIC KEY-----`,
+          CLERK_AUTHORIZED_PARTIES: "https://customcard.test",
+          CLERK_ISSUER: "https://clerk.customcard.test",
+          CLERK_AUDIENCE: "customcard-api",
           OBJECT_STORE_SIGNING_SECRET: "test-object-store-signing-secret-32",
           OBJECT_STORE_URL: "https://objects.customcard.test",
-          QUEUE_URL: "redis://example",
-          REAL_ORDER_KILL_SWITCH: "disabled"
+          QUEUE_URL: "redis://customcard-queue.internal"
         },
         factories
       }).mode

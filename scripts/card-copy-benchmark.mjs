@@ -293,10 +293,9 @@ async function main() {
   const selectedFixtureIds = (args.fixtures || defaultFixtureIds.join(",")).split(",").map((value) => value.trim()).filter(Boolean);
   const env = loadBenchmarkEnv();
   const live = isLiveBenchmarkEnabled(args, env);
-  env.CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED = live ? "true" : "false";
-  env.CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED = "false";
   if (args["copy-adapter"]) env.CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID = args["copy-adapter"];
   if (args.model) env.CUSTOMCARD_AI_CARD_COPY_MODEL = args.model;
+  const aiFlowAdminConfig = buildBenchmarkAiFlowConfig(env, { copyLive: live, imageLive: false });
 
   const runStamp = new Date().toISOString().replace(/[:.]/g, "-");
   const runId = `card-copy-benchmark-${runStamp}`;
@@ -306,7 +305,7 @@ async function main() {
 
   const providerHttp = [];
   const fetchImpl = createLoggingFetch(providerHttp, env);
-  const service = createAiCardGenerationService({ env, fetchImpl });
+  const service = createAiCardGenerationService({ env, fetchImpl, aiFlowAdminConfig });
   const summary = {
     runId,
     createdAtIso: new Date().toISOString(),
@@ -319,7 +318,7 @@ async function main() {
       configuredProviderKeys: Object.keys(env).filter((key) => isSafeConfiguredKey(key)).sort(),
       secretsRedacted: true
     },
-    resolvedFlowsBeforeRun: summarizeFlows(resolveAiFlowConfigs(env)),
+    resolvedFlowsBeforeRun: summarizeFlows(resolveAiFlowConfigs(env, aiFlowAdminConfig)),
     fixtures: []
   };
 
@@ -642,6 +641,25 @@ function summarizeFlows(flows) {
     fallbackQueueEnabled: flow.fallbackQueueEnabled,
     configuredAdapterIds: flow.configuredAdapterIds,
     blockedReasons: flow.blockedReasons
+  }));
+}
+
+function buildBenchmarkAiFlowConfig(env, { copyLive, imageLive }) {
+  return resolveAiFlowConfigs(env).map((flow) => ({
+    flowId: flow.flowId,
+    primaryAdapterId: flow.primaryAdapterId,
+    fallbackAdapterId: flow.fallbackAdapterId,
+    model: flow.model,
+    promptInstructions: flow.promptInstructions,
+    rateLimitPerMinute: flow.rateLimitPerMinute,
+    monthlyBudgetCents: flow.monthlyBudgetCents,
+    perRequestBudgetCents: flow.perRequestBudgetCents,
+    queueEnabled: flow.queueEnabled,
+    fallbackQueueEnabled: flow.fallbackQueueEnabled,
+    liveProviderCallsEnabled: flow.flowId === "card-copy" ? copyLive : flow.flowId === "card-image" ? imageLive : flow.liveProviderCallsEnabled,
+    maxRetries: flow.maxRetries,
+    maxTokens: flow.maxTokens,
+    temperature: flow.temperature
   }));
 }
 

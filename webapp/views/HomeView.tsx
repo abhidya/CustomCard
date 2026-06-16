@@ -78,7 +78,7 @@ const trustPoints = [
   "Free to create. Pay the print shop only if you print.",
   "You choose the printer and confirm payment directly with them.",
   "Designing and saving a print package can start without an account.",
-  "AI generation, saved history, and Google Calendar require an account.",
+  "AI generation, saved history, Google Calendar, and Walgreens checkout require an account.",
   "Calendar connections are optional and separate from creating an account.",
   "You review every word before creating the print-shop package.",
   "Saved personal details are yours to edit or delete at any time."

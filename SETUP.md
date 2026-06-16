@@ -475,7 +475,6 @@ DATABASE_URL="postgres://..." node scripts/hosted-api-readiness-doctor.mjs
 | `DATABASE_URL` | Vercel / shell | For API | Postgres connection string |
 | `CUSTOMCARD_API_RUNTIME` | Vercel / shell | For API | `postgres` in production; `contract`/`memory` only for local reviewer checks |
 | `CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS` | Local shell only | No | Set `enabled` only for local reviewer memory-token drills; keep disabled in QA/production |
-| `CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG` | Server env only | No | Defaults to `false`; set `true` only for trusted admin/operator flows that may override server AI provider config |
 | `CUSTOMCARD_TRUST_PROXY_HEADERS` | Server env only | No | Defaults to `false`; set `true` only behind a trusted proxy before using `X-Forwarded-For` for rate limits |
 | `CLOUDFLARE_ACCOUNT_ID` | Server env only | For live AI route | Cloudflare account for Workers AI text/image routes |
 | `CLOUDFLARE_API_TOKEN` | Server env only | For live AI route | Shared Workers AI API token if lane-specific tokens are unset |
@@ -486,8 +485,6 @@ DATABASE_URL="postgres://..." node scripts/hosted-api-readiness-doctor.mjs
 | `RUNCOMFY_API_TOKEN` | Server env only | For RunComfy image route | RunComfy Model API bearer token; never expose through `VITE_*` |
 | `CUSTOMCARD_RUNCOMFY_IMAGE_INPUT_JSON` | Server env only | No | Optional JSON request-body overrides for model-specific RunComfy input schemas; supports `{{prompt}}`, `{{negative_prompt}}`, `{{panel_id}}`, and `{{seed}}` placeholders |
 | `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID` | Server env only | No | Defaults to `cloudflare-workers-ai-image`; use `runcomfy-model-api-image` to route panel images through RunComfy. Select the RunComfy model in the admin provider panel; the default is `blackforestlabs/flux-2/dev/text-to-image`. |
-| `CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED` | Server env only | No | Enables server-owned live card-copy calls when provider env and gates are ready |
-| `CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED` | Server env only | No | Enables server-owned live panel image calls when provider env and gates are ready |
 | `ANTHROPIC_API_KEY` | Sidecar server only | For AI gen | Text generation model — never in browser |
 | `CARD_GEN_API_TOKEN` | Sidecar server only | For AI gen | Bearer token required by `/generate` outside local dev |
 | `CARD_GEN_ALLOWED_ORIGINS` | Sidecar server only | For AI gen | Comma-separated CORS origins |

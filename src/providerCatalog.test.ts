@@ -273,7 +273,7 @@ describe("provider catalog", () => {
     expect(admin.coverage.requiredEnv).toContain("FAL_KEY");
     expect(admin.coverage.requiredEnv).toContain("BFL_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("RUNCOMFY_API_TOKEN");
-    expect(admin.coverage.requiredEnv).toContain("RUNCOMFY_IMAGE_MODEL_ID");
+    expect(admin.coverage.requiredEnv).not.toContain("RUNCOMFY_IMAGE_MODEL_ID");
     expect(admin.coverage.requiredEnv).toContain("ADOBE_FIREFLY_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("RECRAFT_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("LUMA_API_KEY");

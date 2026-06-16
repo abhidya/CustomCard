@@ -343,8 +343,7 @@ readiness, emulator render proof, and signed native artifact proof. Run
 `npm run mobile:render:doctor`; iOS Expo Go smoke, tooling-free Release
 simulator home, compact, standard, large, and tablet Release viewport artifacts,
 guarded stale native-install proof, and fresh exported iOS JS bundle proof are
-attached under `docs/evidence/mobile-render/`, but this is not a complete
-emulator render proof matrix or signed native build.
+attached under `docs/evidence/mobile-render/`, but this is not a complete emulator render proof matrix or signed native build.
 Print-proof, RTL review, EAS artifacts, and platform signing remain outside the
 current repo-local verification loop.
 

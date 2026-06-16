@@ -5,6 +5,10 @@ import {
   createWalgreensHostedCheckoutService
 } from "./walgreensHostedCheckout.mjs";
 
+const createCheckoutService = createWalgreensHostedCheckoutService as (
+  options: Parameters<typeof createWalgreensHostedCheckoutService>[0] & { safetyControls?: unknown }
+) => ReturnType<typeof createWalgreensHostedCheckoutService>;
+
 describe("Walgreens hosted checkout", () => {
   it("does not emit wildcard postMessage targets in callback HTML", () => {
     const html = buildWalgreensCallbackHtml("*");
@@ -29,14 +33,14 @@ describe("Walgreens hosted checkout", () => {
         status: 200,
         headers: { "Content-Type": "application/json" }
       })) as typeof fetch;
-    const service = createWalgreensHostedCheckoutService({
+    const service = createCheckoutService({
       env: {
         WALGREENS_API_KEY: "test-api-key",
         WALGREENS_AFF_ID: "photoapi",
         PUBLIC_APP_ORIGIN: "http://127.0.0.1:5173"
       },
       fetchImpl,
-      safetyControls: { vendorModes: { walgreens: "sandbox" } }
+      safetyControls: { vendorModes: { walgreens: "sandbox" as const } }
     });
     const jpegBase64 = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff]), Buffer.alloc(1024)]).toString("base64");
 
@@ -52,7 +56,7 @@ describe("Walgreens hosted checkout", () => {
 
   it("preflights Walgreens hosted checkout readiness before image uploads", async () => {
     const fetchImpl = createWalgreensCheckoutDummyFetch();
-    const service = createWalgreensHostedCheckoutService({
+    const service = createCheckoutService({
       env: {
         WALGREENS_API_KEY: "test-api-key",
         WALGREENS_AFF_ID: "photoapi",
@@ -86,7 +90,7 @@ describe("Walgreens hosted checkout", () => {
         status: 200,
         headers: { "Content-Type": "application/json" }
       })) as typeof fetch;
-    const service = createWalgreensHostedCheckoutService({
+    const service = createCheckoutService({
       env: {
         WALGREENS_API_KEY: "test-api-key",
         WALGREENS_AFF_ID: "photoapi",
@@ -110,14 +114,14 @@ describe("Walgreens hosted checkout", () => {
 
   it("sends the PhotoPrints AffiliateID to the upload credential request", async () => {
     const fetchImpl = createWalgreensCheckoutDummyFetch();
-    const service = createWalgreensHostedCheckoutService({
+    const service = createCheckoutService({
       env: {
         WALGREENS_API_KEY: "test-api-key",
         WALGREENS_AFF_ID: "photoapi",
         PUBLIC_APP_ORIGIN: "http://127.0.0.1:5173"
       },
       fetchImpl,
-      safetyControls: { vendorModes: { walgreens: "sandbox" } }
+      safetyControls: { vendorModes: { walgreens: "sandbox" as const } }
     });
     const jpegBase64 = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff]), Buffer.alloc(1024)]).toString("base64");
 
@@ -156,7 +160,7 @@ describe("Walgreens hosted checkout", () => {
 function productionSafetyControls() {
   return {
     realOrdersEnabled: true,
-    vendorModes: { walgreens: "production" },
+    vendorModes: { walgreens: "production" as const },
     vendorCertification: { walgreens: true },
     productionMutationAcknowledged: true,
     liveWriteAcknowledged: true

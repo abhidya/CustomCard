@@ -26,9 +26,7 @@ export function createAiCardDraftPolicy({ buildDraftId }) {
         },
         provider_call_events: publicProviderCallEvents(providerCallEvents),
         ai_cost_gate: publicCostGateSummary(providerCallEvents),
-        live_provider_calls_enabled: hasLiveProviderEvent(providerCallEvents),
-        fallback_queued: fallbackQueued,
-        external_network_calls: hasExternalNetworkEvent(providerCallEvents)
+        fallback_queued: fallbackQueued
       }
     };
   }
@@ -61,9 +59,7 @@ export function createAiCardDraftPolicy({ buildDraftId }) {
         },
         provider_call_events: publicProviderCallEvents(providerCallEvents),
         ai_cost_gate: publicCostGateSummary(providerCallEvents),
-        live_provider_calls_enabled: hasLiveProviderEvent(providerCallEvents),
-        fallback_queued: fallbackQueued,
-        external_network_calls: hasExternalNetworkEvent(providerCallEvents)
+        fallback_queued: fallbackQueued
       }
     };
   }
@@ -80,7 +76,6 @@ export function createAiCardDraftPolicy({ buildDraftId }) {
       per_request_budget_cents: flow.perRequestBudgetCents,
       queue_enabled: flow.queueEnabled,
       fallback_queue_enabled: flow.fallbackQueueEnabled,
-      live_provider_calls_enabled: flow.readyForLiveCalls,
       ready_for_live_calls: flow.readyForLiveCalls,
       blocked_reasons: flow.blockedReasons,
       provider_failure: providerFailure || undefined

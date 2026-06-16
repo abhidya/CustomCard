@@ -1,0 +1,20 @@
+{
+  "phase": "pipeline-quality",
+  "phaseDir": "pipeline-quality-runcomfy-flux2",
+  "outputDir": "docs/evidence/generated-card-comparisons/model-benchmark-20260616-runcomfy-flux2",
+  "dryRun": true,
+  "liveProviderCallsEnabled": false,
+  "plannedRuns": [
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "imageCandidateId": "image-runcomfy-flux-2-dev-free",
+      "imageAdapterId": "runcomfy-model-api-image",
+      "imageModel": "blackforestlabs/flux-2/dev/text-to-image"
+    }
+  ]
+}

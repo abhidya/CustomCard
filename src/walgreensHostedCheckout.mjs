@@ -338,6 +338,15 @@ function defaultUuid() {
       });
 }
 
+/**
+ * @param {{
+ *   env: Record<string, string | undefined>,
+ *   fetchImpl: (url: string, init?: RequestInit) => Promise<Response>,
+ *   now?: () => number,
+ *   uuid?: () => string,
+ *   safetyControls?: Partial<import("./adminSafetyControlsData.mjs").AdminSafetyControls> | (() => Partial<import("./adminSafetyControlsData.mjs").AdminSafetyControls>)
+ * }} options
+ */
 export function createWalgreensHostedCheckoutService({
   env,
   fetchImpl,

@@ -148,6 +148,7 @@ export function StudioView({
   const [templateReviewStarted, setTemplateReviewStarted] = useState(false);
   const [rawGenerationPanelIds, setGenerationPanelIds] = useState<CardPanel["id"][]>(["front"]);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const generationPanelIds = normalizeGenerationPanelIds({ activePanelId: activePanel, draft, generationPanelIds: rawGenerationPanelIds });
   const {
     activePanel: panel,
     activePanelStatus,
@@ -183,8 +184,6 @@ export function StudioView({
   useEffect(() => {
     if (sensitive && toneImpliesHumor(draftInput.tone)) onField("tone", "simple");
   }, [draftInput.tone, onField, sensitive]);
-  const generationPanelIds = normalizeGenerationPanelIds({ activePanelId: activePanel, draft, generationPanelIds: rawGenerationPanelIds });
-
   function handleTabKeys(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     const lastIndex = draft.panels.length - 1;
     const nextIndexByKey: Partial<Record<string, number>> = {

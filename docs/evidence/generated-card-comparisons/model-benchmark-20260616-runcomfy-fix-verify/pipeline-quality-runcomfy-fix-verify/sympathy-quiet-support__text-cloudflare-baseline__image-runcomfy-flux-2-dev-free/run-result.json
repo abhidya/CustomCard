@@ -1,0 +1,36 @@
+{
+  "phase": "pipeline-quality",
+  "focus": "full-card-quality",
+  "storyId": "sympathy-quiet-support",
+  "textCandidateId": "text-cloudflare-baseline",
+  "textAdapterId": "cloudflare-workers-ai-chat",
+  "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "imageCandidateId": "image-runcomfy-flux-2-dev-free",
+  "imageAdapterId": "runcomfy-model-api-image",
+  "imageModel": "blackforestlabs/flux-2/dev/text-to-image",
+  "runDir": "docs/evidence/generated-card-comparisons/model-benchmark-20260616-runcomfy-fix-verify/pipeline-quality-runcomfy-fix-verify/sympathy-quiet-support__text-cloudflare-baseline__image-runcomfy-flux-2-dev-free",
+  "startedAt": "2026-06-16T06:49:44.405Z",
+  "finishedAt": "2026-06-16T06:50:00.046Z",
+  "statusCode": 502,
+  "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "providerFailures": {
+    "image": "RunComfy image provider result failed: AiError: AiError: Internal server error (c1839006-5186-4061-a807-290cade8fda1) code 3043."
+  },
+  "panelCount": 0,
+  "panelFiles": [],
+  "effectiveProviderRequests": "docs/evidence/generated-card-comparisons/model-benchmark-20260616-runcomfy-fix-verify/pipeline-quality-runcomfy-fix-verify/sympathy-quiet-support__text-cloudflare-baseline__image-runcomfy-flux-2-dev-free/effective-provider-requests.json",
+  "providerCallCount": 7,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": false,
+      "noProviderFailure": false,
+      "mustIncludeCovered": true,
+      "mustAvoidClean": true,
+      "providerCalls": 7
+    },
+    "missingMustInclude": [],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

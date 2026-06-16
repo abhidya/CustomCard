@@ -186,11 +186,16 @@ export function loadLocalAiEnvFiles({ cwd = process.cwd(), target = process.env 
   return target;
 }
 
-export function createAiCardGenerationService({ env = process.env, fetchImpl = globalThis.fetch, costGate = createAiFlowCostGate() } = {}) {
+export function createAiCardGenerationService({
+  env = process.env,
+  fetchImpl = globalThis.fetch,
+  costGate = createAiFlowCostGate(),
+  aiFlowAdminConfig = []
+} = {}) {
 
   return {
     async generateCard(body, requestContext = {}) {
-      const adminConfig = runtimeAiFlowConfig(body, env, requestContext);
+      const adminConfig = runtimeAiFlowConfig(body, env, requestContext, aiFlowAdminConfig);
       const copyFlow = resolveAiFlowConfig("card-copy", env, adminConfig);
       const imageFlow = resolveAiFlowConfig("card-image", env, adminConfig);
       const draftInput = normalizeCardInput(body);
@@ -282,7 +287,7 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
     },
 
     async respondChat(body, requestContext = {}) {
-      const adminConfig = runtimeAiFlowConfig(body, env, requestContext);
+      const adminConfig = runtimeAiFlowConfig(body, env, requestContext, aiFlowAdminConfig);
       const flow = resolveAiFlowConfig("customer-chat", env, adminConfig);
 
       const input = normalizeChatInput(body);
@@ -358,9 +363,7 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
           },
           provider_call_events: publicProviderCallEvents(providerCallEvents),
           ai_cost_gate: publicCostGateSummary(providerCallEvents),
-          live_provider_calls_enabled: hasLiveProviderEvent(providerCallEvents),
-          fallback_queued: false,
-          external_network_calls: hasExternalNetworkEvent(providerCallEvents)
+          fallback_queued: false
         }
       };
     }
@@ -431,8 +434,17 @@ function aiCostGateInput({ flow, requestContext, routeId, requestUnits, phase, m
   };
 }
 
-function runtimeAiFlowConfig(body, env, requestContext = {}) {
-  return mergeAiFlowAdminConfigs(serverScopedAiFlowConfig(env), requestScopedAiFlowConfig(body, env, requestContext));
+function runtimeAiFlowConfig(body, env, requestContext = {}, serviceAiFlowAdminConfig = []) {
+  return mergeAiFlowAdminConfigs(
+    normalizeOptionalAiFlowAdminConfigs(serviceAiFlowAdminConfig, env),
+    normalizeOptionalAiFlowAdminConfigs(requestContext.aiFlowAdminConfig, env),
+    serverScopedAiFlowConfig(env),
+    requestScopedAiFlowConfig(body, env, requestContext)
+  );
+}
+
+function normalizeOptionalAiFlowAdminConfigs(input, env) {
+  return Array.isArray(input) && input.length > 0 ? normalizeAiFlowAdminConfigs(input, env) : [];
 }
 
 function serverScopedAiFlowConfig(env) {
@@ -459,9 +471,8 @@ function mergeAiFlowAdminConfigs(...groups) {
 }
 
 function requestScopedAiFlowConfig(body, env, requestContext = {}) {
-  if (String(env.CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG ?? "false").toLowerCase() !== "true") return [];
   if (requestContext.trustRequestAiFlowConfig !== true) return [];
-  return normalizeAiFlowAdminConfigs(body.aiFlowConfig ?? body.ai_flow_config ?? []);
+  return normalizeAiFlowAdminConfigs(body.aiFlowConfig ?? body.ai_flow_config ?? [], env);
 }
 
 function isAiEnvKey(key) {
@@ -1000,6 +1011,14 @@ async function executeRunComfyModelApiImage({ flow, env, fetchImpl, panelId, pro
   const submission = await submitResponse.json().catch(() => undefined);
   const requestId = String(submission?.request_id || submission?.id || "").trim();
   if (!requestId) throw new Error("RunComfy image provider response did not include request_id.");
+  const statusUrl = runComfyQueueUrl(
+    submission?.status_url,
+    `${baseUrl}/v1/requests/${encodeURIComponent(requestId)}/status`
+  );
+  const resultUrl = runComfyQueueUrl(
+    submission?.result_url,
+    `${baseUrl}/v1/requests/${encodeURIComponent(requestId)}/result`
+  );
 
   const maxPolls = boundedIntegerEnv(env.CUSTOMCARD_RUNCOMFY_IMAGE_MAX_POLLS || env.RUNCOMFY_IMAGE_MAX_POLLS, 1, 120, 30);
   const pollIntervalMs = boundedIntegerEnv(
@@ -1010,7 +1029,7 @@ async function executeRunComfyModelApiImage({ flow, env, fetchImpl, panelId, pro
   );
   let completed = false;
   for (let attempt = 0; attempt < maxPolls; attempt += 1) {
-    const statusResponse = await fetchImpl(`${baseUrl}/v1/requests/${encodeURIComponent(requestId)}/status`, {
+    const statusResponse = await fetchImpl(statusUrl, {
       method: "GET",
       headers: { authorization: `Bearer ${token}` }
     });
@@ -1025,13 +1044,13 @@ async function executeRunComfyModelApiImage({ flow, env, fetchImpl, panelId, pro
       break;
     }
     if (status === "failed" || status === "cancelled" || status === "canceled") {
-      throw new Error(`RunComfy image provider request ${status || "failed"}.`);
+      throw new Error(runComfyFailureMessage(statusData, `RunComfy image provider request ${status || "failed"}`));
     }
     if (attempt + 1 < maxPolls && pollIntervalMs > 0) await sleep(pollIntervalMs);
   }
   if (!completed) throw new Error("RunComfy image provider timed out before completion.");
 
-  const resultResponse = await fetchImpl(`${baseUrl}/v1/requests/${encodeURIComponent(requestId)}/result`, {
+  const resultResponse = await fetchImpl(resultUrl, {
     method: "GET",
     headers: { authorization: `Bearer ${token}` }
   });
@@ -1042,7 +1061,7 @@ async function executeRunComfyModelApiImage({ flow, env, fetchImpl, panelId, pro
   const resultData = await resultResponse.json().catch(() => undefined);
   const resultStatus = String(resultData?.status || "").toLowerCase();
   if (resultStatus === "failed" || resultStatus === "cancelled" || resultStatus === "canceled") {
-    throw new Error(`RunComfy image provider result ${resultStatus}.`);
+    throw new Error(runComfyFailureMessage(resultData, `RunComfy image provider result ${resultStatus}`));
   }
   return materializeGeneratedImageUrl(extractImageUrl(resultData, resultContentType || "image/png"), fetchImpl, env);
 }
@@ -1216,6 +1235,56 @@ function requiredRunComfyModelId(flow, env) {
 
 function encodeRunComfyModelId(modelId) {
   return String(modelId).split("/").map(encodeURIComponent).join("/");
+}
+
+function runComfyQueueUrl(value, fallbackUrl) {
+  const raw = String(value || "").trim();
+  if (!raw) return fallbackUrl;
+  try {
+    const url = new URL(raw);
+    if (url.origin === "https://model-api.runcomfy.net" && url.pathname.startsWith("/v1/requests/")) {
+      return url.href;
+    }
+  } catch {
+    /* Fall back to the documented queue URL shape below. */
+  }
+  return fallbackUrl;
+}
+
+function runComfyFailureMessage(data, fallback) {
+  const detail = runComfyFailureDetail(data);
+  return detail ? `${fallback}: ${detail}.` : `${fallback}.`;
+}
+
+function runComfyFailureDetail(data) {
+  const parsedError = parseRunComfyError(data?.error);
+  const candidate =
+    parsedError?.errors?.[0] ??
+    parsedError?.error ??
+    parsedError?.message ??
+    data?.errors?.[0] ??
+    data?.message ??
+    data?.detail;
+  const message =
+    typeof candidate === "object"
+      ? candidate?.message || candidate?.detail || JSON.stringify(candidate)
+      : String(candidate || "").trim();
+  const code =
+    parsedError?.errors?.[0]?.code ??
+    parsedError?.code ??
+    data?.errors?.[0]?.code ??
+    data?.code;
+  const compactMessage = message ? message.replace(/\s+/g, " ").slice(0, 260) : "";
+  return [compactMessage, code ? `code ${code}` : ""].filter(Boolean).join(" ");
+}
+
+function parseRunComfyError(value) {
+  if (!value || typeof value !== "string") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
 }
 
 function buildRunComfyImageRequestBody({ flow, env, panelId, prompt, negativePrompt }) {

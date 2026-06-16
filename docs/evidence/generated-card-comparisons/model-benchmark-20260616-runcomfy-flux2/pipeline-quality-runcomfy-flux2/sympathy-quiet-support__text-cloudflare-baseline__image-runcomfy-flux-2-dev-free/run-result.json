@@ -1,0 +1,36 @@
+{
+  "phase": "pipeline-quality",
+  "focus": "full-card-quality",
+  "storyId": "sympathy-quiet-support",
+  "textCandidateId": "text-cloudflare-baseline",
+  "textAdapterId": "cloudflare-workers-ai-chat",
+  "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "imageCandidateId": "image-runcomfy-flux-2-dev-free",
+  "imageAdapterId": "runcomfy-model-api-image",
+  "imageModel": "blackforestlabs/flux-2/dev/text-to-image",
+  "runDir": "docs/evidence/generated-card-comparisons/model-benchmark-20260616-runcomfy-flux2/pipeline-quality-runcomfy-flux2/sympathy-quiet-support__text-cloudflare-baseline__image-runcomfy-flux-2-dev-free",
+  "startedAt": "2026-06-16T06:01:38.867Z",
+  "finishedAt": "2026-06-16T06:01:55.957Z",
+  "statusCode": 502,
+  "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "providerFailures": {
+    "image": "RunComfy image provider result failed."
+  },
+  "panelCount": 0,
+  "panelFiles": [],
+  "effectiveProviderRequests": "docs/evidence/generated-card-comparisons/model-benchmark-20260616-runcomfy-flux2/pipeline-quality-runcomfy-flux2/sympathy-quiet-support__text-cloudflare-baseline__image-runcomfy-flux-2-dev-free/effective-provider-requests.json",
+  "providerCallCount": 7,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": false,
+      "noProviderFailure": false,
+      "mustIncludeCovered": true,
+      "mustAvoidClean": true,
+      "providerCalls": 7
+    },
+    "missingMustInclude": [],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

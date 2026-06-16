@@ -1,0 +1,251 @@
+{
+  "draft_id": "ai-mqg8imss-eli",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "Quiet Support",
+      "palette": [
+        "deep moss green",
+        "warm ivory",
+        "ivory"
+      ],
+      "motifs": [
+        "practical-care forms",
+        "sparse edge/corner or lower-edge artwork",
+        "layered paper-cut threshold relief"
+      ],
+      "border_style": "layered paper-cut threshold relief",
+      "front_back_pairing": "deep moss green",
+      "interior_pairing": "warm ivory"
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "Eli, I'm so sorry.",
+        "body": "",
+        "art_direction": "Front cover: Deep moss green background with a layered paper-cut threshold relief, a small practical-care forms integrated as one lower tableau. Inside-left and inside-right: Warm ivory interiors with a sparse edge/corner or lower-edge artwork. Back: Mostly negative space with one small coordinating lower mark or border echo.",
+        "visual_cue": "A single, sparse, layered paper-cut threshold relief on a deep moss green background, with a small practical-care forms integrated as one lower tableau, and a clean text-safe area for the app overlay.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "upper",
+          "alignment": "center",
+          "font_pairing": "soft-serif",
+          "color_mode": "light-ink",
+          "scale": "large"
+        },
+        "image_prompt": "A 5x7 vertical flat print panel artwork of a deep moss green background with a layered paper-cut threshold relief, a small practical-care forms integrated as one lower tableau. The panel role is the front cover. Keep natural negative space for app-rendered typography in the main message field; do not draw words, labels, or handwriting. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Avoid all-over repeating wallpaper patterns; use restrained hierarchy and negative space. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy art must keep a plain text field and use only sparse lower-edge abstract support relief; no fruit, flowers, vases, urns, table settings, phones, devices, note cards, envelopes, bright yellow, neon green, sun, landscape, window bars, ornate frames, or line-art thickets. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "inside-left",
+        "headline": "With You In This",
+        "body": "I am so sorry about your father. I will not try to explain the loss or cover the quiet with easy words; I am here beside you, at whatever pace the day allows.",
+        "art_direction": "Inside-left: Warm ivory interiors with a quiet center, clean text-safe area, generous margins, light low-contrast interior, and sparse edge/corner or lower-edge artwork. Inside-right: Same as inside-left but with a calm blank/low-contrast center reserved for app-rendered text.",
+        "visual_cue": "A warm ivory interior with a quiet center, clean text-safe area, generous margins, light low-contrast interior, and sparse edge/corner or lower-edge artwork.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "center",
+          "alignment": "center",
+          "font_pairing": "soft-serif",
+          "color_mode": "dark-ink",
+          "scale": "large"
+        },
+        "image_prompt": "A 5x7 vertical flat print panel artwork of a warm ivory interior with a quiet center, clean text-safe area, generous margins, light low-contrast interior, and sparse edge/corner or lower-edge artwork. The panel role is the inside-left. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy art must keep a plain text field and use only sparse lower-edge abstract support relief; no fruit, flowers, vases, urns, table settings, phones, devices, note cards, envelopes, bright yellow, neon green, sun, landscape, window bars, ornate frames, or line-art thickets. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "inside-right",
+        "headline": "From Jordan",
+        "body": "Meals can be left at your door. Rides can be quiet. Calls can be answered or missed. Silence counts too. You do not have to manage this alone. With sympathy and friendship, Jordan.",
+        "art_direction": "Inside-right: Same as inside-left but with a calm blank/low-contrast center reserved for app-rendered text.",
+        "visual_cue": "A warm ivory interior with a calm blank/low-contrast center reserved for app-rendered text, and sparse edge/corner or lower-edge artwork.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "center",
+          "alignment": "center",
+          "font_pairing": "soft-serif",
+          "color_mode": "dark-ink",
+          "scale": "large"
+        },
+        "image_prompt": "A 5x7 vertical flat print panel artwork of a warm ivory interior with a calm blank/low-contrast center reserved for app-rendered text, and sparse edge/corner or lower-edge artwork. The panel role is the inside-right. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy art must keep a plain text field and use only sparse lower-edge abstract support relief; no fruit, flowers, vases, urns, table settings, phones, devices, note cards, envelopes, bright yellow, neon green, sun, landscape, window bars, ornate frames, or line-art thickets. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "back",
+        "headline": "With Steady Care",
+        "body": "For practical help, quiet support, and steady care on days words cannot hold.",
+        "art_direction": "Back: Mostly negative space with one small coordinating lower mark or border echo.",
+        "visual_cue": "Mostly negative space with one small coordinating lower mark or border echo.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "center",
+          "alignment": "center",
+          "font_pairing": "soft-serif",
+          "color_mode": "light-ink",
+          "scale": "large"
+        },
+        "image_prompt": "A 5x7 vertical flat print panel artwork of mostly negative space with one small coordinating lower mark or border echo. The panel role is the back. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy art must keep a plain text field and use only sparse lower-edge abstract support relief; no fruit, flowers, vases, urns, table settings, phones, devices, note cards, envelopes, bright yellow, neon green, sun, landscape, window bars, ornate frames, or line-art thickets. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      }
+    ],
+    "memory_citations": []
+  },
+  "images": [],
+  "status": "provider-unavailable",
+  "detail": "RunComfy image provider result failed.",
+  "error": "RunComfy image provider result failed.",
+  "user_content_only": false,
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "cloudflare-workers-ai-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 5000,
+      "per_request_budget_cents": 5,
+      "queue_enabled": false,
+      "fallback_queue_enabled": false,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "runcomfy-model-api-image",
+      "primary_adapter_id": "runcomfy-model-api-image",
+      "fallback_adapter_id": "cloudflare-workers-ai-image",
+      "model": "blackforestlabs/flux-2/dev/text-to-image",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 4000,
+      "per_request_budget_cents": 1,
+      "queue_enabled": false,
+      "fallback_queue_enabled": false,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": [],
+      "provider_failure": "RunComfy image provider result failed."
+    }
+  },
+  "provider_call_events": [
+    {
+      "id": "provider-call-b7de9b97",
+      "tenant_id": "model-benchmark-sympathy-quiet-support__text-cloudflare-baseline__image-runcomfy-flux-2-dev-free-1781589698869",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "provider": "Cloudflare",
+      "capability": "text-chat",
+      "status": "reserved",
+      "fallback_from_adapter_id": "cloudflare-workers-ai-chat",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 5,
+      "rate_limit_window_start": "2026-06-16T06:01:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "providerAttempt": 1,
+        "fallbackAttempt": false,
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "cloudflare-workers-ai-chat",
+        "fallbackAdapterId": "cloudflare-workers-ai-chat",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-f2645952",
+      "tenant_id": "model-benchmark-sympathy-quiet-support__text-cloudflare-baseline__image-runcomfy-flux-2-dev-free-1781589698869",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "provider": "Cloudflare",
+      "capability": "text-chat",
+      "status": "succeeded",
+      "fallback_from_adapter_id": "cloudflare-workers-ai-chat",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 5,
+      "rate_limit_window_start": "2026-06-16T06:01:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "providerAttempt": 1,
+        "fallbackAttempt": false,
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "cloudflare-workers-ai-chat",
+        "fallbackAdapterId": "cloudflare-workers-ai-chat",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-993eddfa",
+      "tenant_id": "model-benchmark-sympathy-quiet-support__text-cloudflare-baseline__image-runcomfy-flux-2-dev-free-1781589698869",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-image",
+      "adapter_id": "runcomfy-model-api-image",
+      "provider": "AI provider",
+      "capability": "image-generation",
+      "status": "reserved",
+      "fallback_from_adapter_id": "runcomfy-model-api-image",
+      "month_bucket": "2026-06",
+      "request_units": 4,
+      "estimated_cost_cents": 4,
+      "rate_limit_window_start": "2026-06-16T06:01:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-image",
+        "panelCount": 4,
+        "providerAttempt": 1,
+        "fallbackAttempt": false,
+        "flowLabel": "Card image",
+        "primaryAdapterId": "runcomfy-model-api-image",
+        "fallbackAdapterId": "cloudflare-workers-ai-image",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-fa708afd",
+      "tenant_id": "model-benchmark-sympathy-quiet-support__text-cloudflare-baseline__image-runcomfy-flux-2-dev-free-1781589698869",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-image",
+      "adapter_id": "runcomfy-model-api-image",
+      "provider": "AI provider",
+      "capability": "image-generation",
+      "status": "failed",
+      "fallback_from_adapter_id": "runcomfy-model-api-image",
+      "month_bucket": "2026-06",
+      "request_units": 4,
+      "estimated_cost_cents": 4,
+      "rate_limit_window_start": "2026-06-16T06:01:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-image",
+        "panelCount": 4,
+        "providerAttempt": 1,
+        "fallbackAttempt": false,
+        "flowLabel": "Card image",
+        "primaryAdapterId": "runcomfy-model-api-image",
+        "fallbackAdapterId": "cloudflare-workers-ai-image",
+        "localAdapter": false,
+        "costGateEvent": true,
+        "providerFailure": "RunComfy image provider result failed.",
+        "generatedPanelCount": 0
+      }
+    }
+  ],
+  "ai_cost_gate": {
+    "event_count": 4,
+    "reserved_or_spent_cents": 9,
+    "actual_spend_cents": 0,
+    "request_units": 5,
+    "live_network_calls": true,
+    "blocked_reasons": []
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

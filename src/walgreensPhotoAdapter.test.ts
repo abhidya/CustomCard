@@ -12,10 +12,10 @@ import {
 
 describe("buildWalgreensAdapterConfig", () => {
   const dummy = createWalgreensDummyFetch();
-  const sandboxSafetyControls = { vendorModes: { walgreens: "sandbox" } };
+  const sandboxSafetyControls = { vendorModes: { walgreens: "sandbox" as const } };
   const productionSafetyControls = {
     realOrdersEnabled: true,
-    vendorModes: { walgreens: "production" },
+    vendorModes: { walgreens: "production" as const },
     vendorCertification: { walgreens: true },
     productionMutationAcknowledged: true,
     liveWriteAcknowledged: true
@@ -51,7 +51,7 @@ describe("buildWalgreensAdapterConfig", () => {
       buildWalgreensAdapterConfig(
         { WALGREENS_API_KEY: "key", WALGREENS_AFF_ID: "photoapi" },
         dummy,
-        { vendorModes: { walgreens: "production" } }
+        { vendorModes: { walgreens: "production" as const } }
       )
     ).toThrow("Walgreens production adapter blocked");
   });
@@ -78,7 +78,7 @@ function sandboxAdapter() {
   const cfg = buildWalgreensAdapterConfig(
     { WALGREENS_VENDOR_MODE: "production", WALGREENS_API_KEY: "test-key", WALGREENS_AFF_ID: "photoapi" },
     createWalgreensDummyFetch(),
-    { vendorModes: { walgreens: "sandbox" } }
+    { vendorModes: { walgreens: "sandbox" as const } }
   );
   return createWalgreensPhotoAdapter(cfg);
 }

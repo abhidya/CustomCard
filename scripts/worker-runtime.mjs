@@ -337,7 +337,7 @@ async function completeJob({ postgresRuntime, job, result, now }) {
         JSON.stringify({
           ...result,
           completedAtIso: now().toISOString(),
-          liveNetworkCalls: Boolean(result?.liveNetworkCalls ?? result?.payload?.external_network_calls ?? false)
+          liveNetworkCalls: Boolean(result?.liveNetworkCalls ?? hasLiveProviderNetworkCall(result?.payload))
         })
       ]
     );
@@ -440,10 +440,16 @@ async function runQueuedAiJob({ job, aiService, method, persistGeneratedImageArt
     status: "ai-result-ready",
     routeId: job.routeId,
     httpStatusCode: result.statusCode,
-    providerCallMode: payload?.external_network_calls ? "live-provider" : "provider-disabled",
+    providerCallMode: hasLiveProviderNetworkCall(payload) ? "live-provider" : "provider-disabled",
     payload: compactAiWorkerPayload(payload),
     evidence: "Worker completed queued AI flow with server-selected provider config and durable cost gate."
   };
+}
+
+function hasLiveProviderNetworkCall(payload = {}) {
+  return Array.isArray(payload.provider_call_events)
+    ? payload.provider_call_events.some((event) => event?.live_network_call === true && event?.status !== "blocked")
+    : false;
 }
 
 function compactAiWorkerPayload(payload = {}) {

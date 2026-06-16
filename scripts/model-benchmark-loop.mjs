@@ -278,6 +278,102 @@ export const stories = {
     must_include: ["Noura", "graduation", "navy", "gold", "stethoscope"],
     must_avoid: ["fake diploma", "hospital room", "patients", "anatomy gore"]
   },
+  "fandom-inspired-birthday": {
+    id: "fandom-inspired-birthday",
+    customer_type: "fan community / close friend",
+    occasion: "birthday for a fandom fan",
+    memory_load: "medium",
+    request: {
+      sender: "Ari",
+      recipient: "Mina",
+      relationship: "best friend",
+      occasion: "birthday",
+      tone: "playful, affectionate, fan-coded, not cringe",
+      style: "cosmic book-club fantasy stationery with subtle stars, enamel-pin details, and cozy midnight colors",
+      language: "English",
+      personal_note:
+        "Mina is a huge fan of a fictional starship academy fandom and loves midnight blue, enamel pins, and our weekly watch-party jokes. Make it feel like a birthday card from a friend, not merch.",
+      memory_notes: [
+        "Mina hosts weekly watch parties for her favorite starship academy series.",
+        "Inside joke: she calls every birthday a new season premiere.",
+        "She loves midnight blue, little enamel pins, and subtle star maps."
+      ]
+    },
+    must_include: ["Mina", "birthday", "watch party", "season premiere", "star"],
+    must_avoid: ["licensed character names", "logos", "copyrighted quotes", "generic fandom"]
+  },
+  "discipline-specific-graduation": {
+    id: "discipline-specific-graduation",
+    customer_type: "family/friend",
+    occasion: "architecture graduation",
+    memory_load: "medium",
+    request: {
+      sender: "Uncle Ray",
+      recipient: "Ibrahim",
+      relationship: "uncle to nephew",
+      occasion: "architecture school graduation",
+      tone: "proud, modern, thoughtful, specific to the discipline",
+      style: "clean architectural stationery with blueprint lines, warm concrete, vellum, and soft graphite accents",
+      language: "English",
+      personal_note:
+        "Ibrahim is graduating from architecture school after years of studio nights, model-building, and critiques. Mention his patience, craft, and how he sees possibilities in ordinary spaces.",
+      memory_notes: [
+        "Ibrahim is graduating from architecture school.",
+        "He spent years in studio building models and preparing critiques.",
+        "His family admires his patience, craft, and eye for ordinary spaces."
+      ]
+    },
+    must_include: ["Ibrahim", "architecture", "studio", "models", "spaces"],
+    must_avoid: ["generic graduation", "fake diploma", "construction cliche", "corporate office"]
+  },
+  "award-achievement-robotics": {
+    id: "award-achievement-robotics",
+    customer_type: "family/friend",
+    occasion: "robotics award achievement",
+    memory_load: "high",
+    request: {
+      sender: "Maya",
+      recipient: "Leo",
+      relationship: "older sister to younger brother",
+      occasion: "state robotics award",
+      tone: "proud, energetic, specific, not cheesy",
+      style: "bright maker-lab stationery with clean circuits, trophy glow, teal, safety orange, and notebook-grid details",
+      language: "English",
+      personal_note:
+        "Leo's robotics team reached the state finals and won the design award. Mention the late nights debugging the arm, the broken wheel incident, and how he kept the team laughing.",
+      memory_notes: [
+        "Leo's robotics team reached the state finals.",
+        "The team won the design award.",
+        "Leo stayed late debugging the robot arm and joked through the broken wheel incident."
+      ]
+    },
+    must_include: ["Leo", "state finals", "design award", "robot arm", "team"],
+    must_avoid: ["world champion", "scholarship claim", "battle robot", "generic congrats"]
+  },
+  "new-baby-welcome": {
+    id: "new-baby-welcome",
+    customer_type: "family/friend",
+    occasion: "new baby",
+    memory_load: "low",
+    request: {
+      sender: "Nadia",
+      recipient: "Sofia and Ben",
+      relationship: "friend to new parents",
+      occasion: "new baby welcome",
+      tone: "gentle, joyful, grounded, not overly sentimental",
+      style: "soft nursery stationery with warm cream, sage, tiny moon, quilt-stitch border, and calm negative space",
+      language: "English",
+      personal_note:
+        "Congratulate Sofia and Ben on baby Noor. Keep it warm but practical, with a note that meals and laundry help are available whenever they want them.",
+      memory_notes: [
+        "Sofia and Ben welcomed baby Noor.",
+        "The sender wants to offer practical help with meals and laundry.",
+        "The tone should feel calm, gentle, and real."
+      ]
+    },
+    must_include: ["Sofia", "Ben", "Noor", "meals", "laundry"],
+    must_avoid: ["sleep forever", "perfect baby", "parenting advice", "medical claims"]
+  },
   "small-business-thank-you": {
     id: "small-business-thank-you",
     customer_type: "small business / ecommerce retention",
@@ -2188,9 +2284,6 @@ function loadBenchmarkEnv() {
     for (const [key, value] of Object.entries(parsed)) if (!target[key]) target[key] = value;
   }
   loadLocalAiEnvFiles({ cwd: repoRoot, target });
-  target.CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG = "true";
-  target.CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED = "true";
-  target.CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED = "true";
   return target;
 }
 

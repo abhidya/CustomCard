@@ -11,8 +11,6 @@ describe("Vite API middleware", () => {
   let previousGoogleRedirectUri: string | undefined;
   let previousGoogleStateSecret: string | undefined;
   let previousGoogleTokenEncryptionKey: string | undefined;
-  let previousAiCardCopyLive: string | undefined;
-  let previousAiCardImageLive: string | undefined;
 
   beforeAll(async () => {
     previousApiRuntime = process.env.CUSTOMCARD_API_RUNTIME;
@@ -21,16 +19,12 @@ describe("Vite API middleware", () => {
     previousGoogleRedirectUri = process.env.GOOGLE_OAUTH_REDIRECT_URI;
     previousGoogleStateSecret = process.env.GOOGLE_OAUTH_STATE_SECRET;
     previousGoogleTokenEncryptionKey = process.env.GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY;
-    previousAiCardCopyLive = process.env.CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED;
-    previousAiCardImageLive = process.env.CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED;
     process.env.CUSTOMCARD_API_RUNTIME = "contract";
     process.env.GOOGLE_OAUTH_CLIENT_ID = "test-google-calendar-client.apps.googleusercontent.com";
     process.env.GOOGLE_OAUTH_CLIENT_SECRET = "test-google-calendar-secret";
     process.env.GOOGLE_OAUTH_REDIRECT_URI = "http://127.0.0.1:5173/oauth/callback";
     process.env.GOOGLE_OAUTH_STATE_SECRET = "test-google-oauth-state-secret-32-chars";
     process.env.GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY = "test-google-oauth-token-key-32-chars";
-    process.env.CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED = "false";
-    process.env.CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED = "false";
 
     server = await createServer({
       root: process.cwd(),
@@ -55,8 +49,6 @@ describe("Vite API middleware", () => {
     restoreEnv("GOOGLE_OAUTH_REDIRECT_URI", previousGoogleRedirectUri);
     restoreEnv("GOOGLE_OAUTH_STATE_SECRET", previousGoogleStateSecret);
     restoreEnv("GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY", previousGoogleTokenEncryptionKey);
-    restoreEnv("CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED", previousAiCardCopyLive);
-    restoreEnv("CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED", previousAiCardImageLive);
   });
 
   it("serves Google Calendar connection start through the JSON API handler", async () => {

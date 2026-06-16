@@ -169,9 +169,7 @@ export const apiRouteContracts = [
       "ai_cost_gate",
       "ai_cost_ledger",
       "provider_call_events",
-      "live_provider_calls_enabled",
-      "fallback_queued",
-      "external_network_calls"
+      "fallback_queued"
     ],
     idempotencyKeyRequired: true,
     externalNetworkCalls: true,
@@ -215,9 +213,7 @@ export const apiRouteContracts = [
       "ai_cost_gate",
       "ai_cost_ledger",
       "provider_call_events",
-      "live_provider_calls_enabled",
-      "fallback_queued",
-      "external_network_calls"
+      "fallback_queued"
     ],
     idempotencyKeyRequired: true,
     externalNetworkCalls: true,

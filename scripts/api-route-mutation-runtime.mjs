@@ -374,8 +374,6 @@ export function createRouteMutationRuntime({
       retry_after_seconds: 2,
       result_available: false,
       worker_required: true,
-      live_provider_calls_enabled: false,
-      external_network_calls: false,
       fallback_queued: true,
       ai_queue: {
         backend: "api_jobs",
@@ -422,9 +420,7 @@ export function createRouteMutationRuntime({
         last_error: job.lastError || undefined,
         created_at: job.createdAtIso,
         updated_at: job.updatedAtIso,
-        result: resultAvailable ? result : undefined,
-        live_provider_calls_enabled: Boolean(result.live_provider_calls_enabled),
-        external_network_calls: Boolean(result.external_network_calls)
+        result: resultAvailable ? result : undefined
       }
     };
   }

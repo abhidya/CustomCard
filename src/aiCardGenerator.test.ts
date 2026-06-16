@@ -21,6 +21,31 @@ const cardRequest = {
 };
 
 const cloudflareTextModel = "@cf/meta/llama-3.1-8b-instruct-fast";
+const runComfyImageModel = "blackforestlabs/flux-2/dev/text-to-image";
+
+function runComfyAiFlowConfig() {
+  return buildDefaultAiFlowAdminConfigs().map((config) => {
+    if (config.flowId === "card-copy") {
+      return {
+        ...config,
+        primaryAdapterId: "cloudflare-workers-ai-chat",
+        fallbackAdapterId: "cloudflare-workers-ai-chat",
+        model: cloudflareTextModel,
+        liveProviderCallsEnabled: true
+      };
+    }
+    if (config.flowId === "card-image") {
+      return {
+        ...config,
+        primaryAdapterId: "runcomfy-model-api-image",
+        fallbackAdapterId: "runcomfy-model-api-image",
+        model: runComfyImageModel,
+        liveProviderCallsEnabled: true
+      };
+    }
+    return config;
+  });
+}
 
 const cardCopyResponse = {
   panels: [
@@ -111,7 +136,6 @@ describe("AI card generator service", () => {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true"
       },
       fetchImpl
     });
@@ -244,9 +268,11 @@ describe("AI card generator service", () => {
         CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "huggingface-chat",
         CUSTOMCARD_AI_CARD_COPY_FALLBACK_ADAPTER_ID: "cloudflare-workers-ai-chat",
         CUSTOMCARD_AI_CARD_COPY_FALLBACK_QUEUE_ENABLED: "true",
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true"
       },
-      fetchImpl
+      fetchImpl,
+      aiFlowAdminConfig: buildDefaultAiFlowAdminConfigs().map((config) =>
+        config.flowId === "card-image" ? { ...config, liveProviderCallsEnabled: false } : config
+      )
     });
 
     const result = await service.generateCard(cardRequest, { rateKey: "test-card-copy-fallback" });
@@ -293,7 +319,6 @@ describe("AI card generator service", () => {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
         CUSTOMCARD_AI_CARD_COPY_MONTHLY_BUDGET_CENTS: "12",
         CUSTOMCARD_AI_CARD_COPY_PER_REQUEST_BUDGET_CENTS: "12"
       },
@@ -341,8 +366,6 @@ describe("AI card generator service", () => {
         CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "test_image_token",
         CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "cloudflare-workers-ai-image",
         CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning",
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
-        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true",
         CUSTOMCARD_AI_CARD_IMAGE_RATE_LIMIT_PER_MINUTE: "3"
       },
       fetchImpl
@@ -434,7 +457,6 @@ describe("AI card generator service", () => {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true"
       },
       fetchImpl
     });
@@ -535,7 +557,6 @@ describe("AI card generator service", () => {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true"
       },
       fetchImpl
     });
@@ -617,7 +638,6 @@ describe("AI card generator service", () => {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true"
       },
       fetchImpl
     });
@@ -679,7 +699,6 @@ describe("AI card generator service", () => {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true"
       },
       fetchImpl
     });
@@ -740,7 +759,6 @@ describe("AI card generator service", () => {
           CLOUDFLARE_ACCOUNT_ID: "acct_123",
           CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
           CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
-          CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true"
         },
         fetchImpl
       });
@@ -891,7 +909,6 @@ describe("AI card generator service", () => {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true"
       },
       fetchImpl
     });
@@ -960,7 +977,6 @@ describe("AI card generator service", () => {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
-        CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG: "true"
       },
       fetchImpl
     });
@@ -1044,12 +1060,13 @@ describe("AI card generator service", () => {
 
     expect(result.statusCode).toBe(200);
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+    for (const field of removedAiPayloadFields()) expect(result.payload).not.toHaveProperty(field);
     expect(result.payload).toMatchObject({
-      live_provider_calls_enabled: true
+      provider_call_events: expect.arrayContaining([expect.objectContaining({ status: "succeeded" })])
     });
   });
 
-  it("ignores request-scoped provider toggles from untrusted customer contexts even when env opt-in exists", async () => {
+  it("ignores request-scoped provider toggles from untrusted customer contexts", async () => {
     const fetchImpl = vi.fn(async () =>
       new Response(
         JSON.stringify({
@@ -1063,7 +1080,6 @@ describe("AI card generator service", () => {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
-        CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG: "true"
       },
       fetchImpl
     });
@@ -1075,9 +1091,9 @@ describe("AI card generator service", () => {
 
     expect(result.statusCode).toBe(200);
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+    for (const field of removedAiPayloadFields()) expect(result.payload).not.toHaveProperty(field);
     expect(result.payload).toMatchObject({
-      live_provider_calls_enabled: true,
-      external_network_calls: true
+      provider_call_events: expect.arrayContaining([expect.objectContaining({ live_network_call: true, status: "succeeded" })])
     });
     expect(JSON.stringify(result.payload)).not.toContain("test_text_token");
   });
@@ -1103,8 +1119,6 @@ describe("AI card generator service", () => {
         CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "test_image_token",
         CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "cloudflare-workers-ai-image",
         CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning",
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
-        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
       },
       fetchImpl
     });
@@ -1171,8 +1185,6 @@ describe("AI card generator service", () => {
         CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "test_image_token",
         CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "cloudflare-workers-ai-image",
         CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/black-forest-labs/flux-1-schnell",
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
-        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
       },
       fetchImpl
     });
@@ -1226,8 +1238,6 @@ describe("AI card generator service", () => {
         CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "test_image_token",
         CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "cloudflare-workers-ai-image",
         CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/black-forest-labs/flux-1-schnell",
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
-        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
       },
       fetchImpl
     });
@@ -1262,8 +1272,6 @@ describe("AI card generator service", () => {
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
         DEEPAI_API_KEY: "test_deepai_token",
         CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "deepai-text2img-image",
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
-        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
       },
       fetchImpl
     });
@@ -1324,8 +1332,6 @@ describe("AI card generator service", () => {
         CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "deepai-text2img-image",
         CUSTOMCARD_AI_CARD_IMAGE_FALLBACK_ADAPTER_ID: "cloudflare-workers-ai-image",
         CUSTOMCARD_AI_CARD_IMAGE_FALLBACK_QUEUE_ENABLED: "true",
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
-        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true",
         CUSTOMCARD_AI_CARD_IMAGE_RATE_LIMIT_PER_MINUTE: "8",
         CUSTOMCARD_AI_CARD_IMAGE_MAX_RETRIES: "0"
       },
@@ -1403,8 +1409,6 @@ describe("AI card generator service", () => {
         CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "cloudflare-workers-ai-chat",
         CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "huggingface-image",
         HUGGINGFACE_IMAGE_MODEL: "Qwen/Qwen-Image",
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
-        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
       },
       fetchImpl
     });
@@ -1443,7 +1447,7 @@ describe("AI card generator service", () => {
           headers: { "content-type": "application/json" }
         });
       }
-      if (requestUrl === "https://model-api.runcomfy.net/v1/models/blackforestlabs/flux-1-kontext/pro/text-to-image") {
+      if (requestUrl === "https://model-api.runcomfy.net/v1/models/blackforestlabs/flux-2/dev/text-to-image") {
         imageIndex += 1;
         return new Response(JSON.stringify({ request_id: `runcomfy-${imageIndex}` }), {
           status: 200,
@@ -1477,11 +1481,9 @@ describe("AI card generator service", () => {
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
         RUNCOMFY_API_TOKEN: "test_runcomfy_token",
-        RUNCOMFY_IMAGE_MODEL_ID: "blackforestlabs/flux-1-kontext/pro/text-to-image",
+        CUSTOMCARD_AI_FLOW_CONFIG_JSON: JSON.stringify({ flows: runComfyAiFlowConfig() }),
         CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "cloudflare-workers-ai-chat",
         CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "runcomfy-model-api-image",
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
-        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true",
         CUSTOMCARD_RUNCOMFY_IMAGE_POLL_INTERVAL_MS: "0"
       },
       fetchImpl
@@ -1506,12 +1508,84 @@ describe("AI card generator service", () => {
       )
     ).toBe(true);
     expect(submitBodies.every((body) => body.prompt.includes("Full-bleed flat 2D artwork layer"))).toBe(true);
-    expect(submitBodies.every((body) => body.aspect_ratio === "5:7" && Number.isInteger(body.seed))).toBe(true);
+    expect(submitBodies.every((body) => body.image_size === "portrait_4_3")).toBe(true);
+    expect(submitBodies.every((body) => body.aspect_ratio === undefined && body.seed === undefined)).toBe(true);
     expect(payload.ai_flow.card_image).toMatchObject({
       adapter_id: "runcomfy-model-api-image",
-      model: "blackforestlabs/flux-1-kontext/pro/text-to-image"
+      model: runComfyImageModel
     });
     expect(payload.images.every((image) => image.image_url.startsWith("data:image/png;base64,"))).toBe(true);
+    expect(JSON.stringify(result.payload)).not.toContain("test_runcomfy_token");
+  });
+
+  it("surfaces RunComfy result failure details without leaking the token", async () => {
+    const fetchImpl = vi.fn(async (url: RequestInfo | URL) => {
+      const requestUrl = String(url);
+      if (requestUrl.includes("/ai/v1/chat/completions")) {
+        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      if (requestUrl === "https://model-api.runcomfy.net/v1/models/blackforestlabs/flux-2/dev/text-to-image") {
+        return new Response(
+          JSON.stringify({
+            request_id: "runcomfy-failed-1",
+            status_url: "https://model-api.runcomfy.net/v1/requests/runcomfy-failed-1/status?from=submit",
+            result_url: "https://model-api.runcomfy.net/v1/requests/runcomfy-failed-1/result?from=submit"
+          }),
+          { status: 200, headers: { "content-type": "application/json" } }
+        );
+      }
+      if (requestUrl === "https://model-api.runcomfy.net/v1/requests/runcomfy-failed-1/status?from=submit") {
+        return new Response(JSON.stringify({ status: "completed" }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      if (requestUrl === "https://model-api.runcomfy.net/v1/requests/runcomfy-failed-1/result?from=submit") {
+        return new Response(
+          JSON.stringify({
+            status: "failed",
+            error: JSON.stringify({
+              errors: [{ message: "AiError: Internal server error", code: 3043 }],
+              success: false
+            })
+          }),
+          { status: 200, headers: { "content-type": "application/json" } }
+        );
+      }
+      throw new Error(`Unexpected fetch ${requestUrl}`);
+    });
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
+        RUNCOMFY_API_TOKEN: "test_runcomfy_token",
+        CUSTOMCARD_AI_FLOW_CONFIG_JSON: JSON.stringify({ flows: runComfyAiFlowConfig() }),
+        CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "cloudflare-workers-ai-chat",
+        CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "runcomfy-model-api-image",
+        CUSTOMCARD_AI_CARD_IMAGE_FALLBACK_ADAPTER_ID: "runcomfy-model-api-image",
+        CUSTOMCARD_RUNCOMFY_IMAGE_POLL_INTERVAL_MS: "0"
+      },
+      fetchImpl
+    });
+
+    const result = await service.generateCard(cardRequest, { rateKey: "test-runcomfy-failure-details" });
+    const payload = result.payload as { detail?: string; error?: string };
+
+    expect(result.statusCode).toBe(502);
+    expect(fetchImpl).toHaveBeenCalledTimes(4);
+    expect(fetchImpl.mock.calls.map(([url]) => String(url))).toContain(
+      "https://model-api.runcomfy.net/v1/requests/runcomfy-failed-1/status?from=submit"
+    );
+    expect(fetchImpl.mock.calls.map(([url]) => String(url))).toContain(
+      "https://model-api.runcomfy.net/v1/requests/runcomfy-failed-1/result?from=submit"
+    );
+    expect(payload.detail).toContain("Internal server error");
+    expect(payload.detail).toContain("code 3043");
+    expect(payload.error).toBe(payload.detail);
     expect(JSON.stringify(result.payload)).not.toContain("test_runcomfy_token");
   });
 
@@ -1533,8 +1607,6 @@ describe("AI card generator service", () => {
         OPENAI_API_KEY: "test_openai_token",
         CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "openai-responses-chat",
         CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "openai-images",
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
-        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
       },
       fetchImpl
     });
@@ -1594,8 +1666,6 @@ describe("AI card generator service", () => {
         OPENAI_API_KEY: "test_openai_token",
         CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "openai-responses-chat",
         CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "openai-images",
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
-        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
       },
       fetchImpl
     });
@@ -1633,8 +1703,6 @@ describe("AI card generator service", () => {
         GOOGLE_GENERATIVE_AI_API_KEY: "test_google_token",
         CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "google-gemini-chat",
         CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "google-gemini-image",
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
-        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
       },
       fetchImpl
     });
@@ -1697,8 +1765,6 @@ describe("AI card generator service", () => {
         CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "test_image_token",
         CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "cloudflare-workers-ai-image",
         CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning",
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
-        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
       },
       fetchImpl
     });
@@ -1759,8 +1825,6 @@ describe("AI card generator service", () => {
         CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "test_image_token",
         CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "cloudflare-workers-ai-image",
         CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning",
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
-        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
       },
       fetchImpl
     });
@@ -1802,8 +1866,6 @@ describe("AI card generator service", () => {
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
         CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "browser-svg-renderer",
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
-        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
       },
       fetchImpl
     });
@@ -1848,8 +1910,6 @@ describe("AI card generator service", () => {
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
         CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "browser-svg-renderer",
-        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
-        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
       },
       fetchImpl
     });
@@ -1888,7 +1948,6 @@ describe("AI card generator service", () => {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
-        CUSTOMCARD_AI_CUSTOMER_CHAT_LIVE_ENABLED: "true"
       },
       fetchImpl
     });
@@ -1965,3 +2024,10 @@ describe("AI card generator service", () => {
     expect(isPrivateGeneratedImageAddress("8.8.8.8")).toBe(false);
   });
 });
+
+function removedAiPayloadFields() {
+  return [
+    ["live", "provider", "calls", "enabled"].join("_"),
+    ["external", "network", "calls"].join("_")
+  ];
+}
