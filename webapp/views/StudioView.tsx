@@ -63,6 +63,9 @@ import { Chips, Field, FoldedCardPreview, PanelArt, Step } from "../ui";
 
 const aiButtonLogoSrc = "/customcard-ai-button-logo.png";
 
+const EMPTY_PANEL_OVERRIDES: PanelOverrides = {};
+const NOOP = () => undefined;
+
 const imageFrameLabels: Record<CardImageFrame, string> = {
   fill: "Fill panel",
   fit: "Fit image",
@@ -108,7 +111,7 @@ export function StudioView({
   aiStatus,
   aiPanelProgress,
   aiRequiresSignIn,
-  panelOverrides = {},
+  panelOverrides = EMPTY_PANEL_OVERRIDES,
   printFitPassed,
   sourceMoment,
   onAddNote,
@@ -116,8 +119,8 @@ export function StudioView({
   onGenerateAi,
   onKeepArtwork,
   onReviewProof,
-  onPanelEdit = () => undefined,
-  onPanelRevert = () => undefined
+  onPanelEdit = NOOP,
+  onPanelRevert = NOOP
 }: {
   draft: CardDraft;
   draftInput: CardDraftInput;
@@ -143,7 +146,7 @@ export function StudioView({
   const [activePanel, setActivePanel] = useState<CardPanel["id"]>("front");
   const [previewMode, setPreviewMode] = useState<"proof" | "folded">("proof");
   const [templateReviewStarted, setTemplateReviewStarted] = useState(false);
-  const [generationPanelIds, setGenerationPanelIds] = useState<CardPanel["id"][]>(["front"]);
+  const [rawGenerationPanelIds, setGenerationPanelIds] = useState<CardPanel["id"][]>(["front"]);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const {
     activePanel: panel,
@@ -180,11 +183,7 @@ export function StudioView({
   useEffect(() => {
     if (sensitive && toneImpliesHumor(draftInput.tone)) onField("tone", "simple");
   }, [draftInput.tone, onField, sensitive]);
-  useEffect(() => {
-    setGenerationPanelIds((current) => {
-      return normalizeGenerationPanelIds({ activePanelId: activePanel, draft, generationPanelIds: current });
-    });
-  }, [activePanel, draft.panels]);
+  const generationPanelIds = normalizeGenerationPanelIds({ activePanelId: activePanel, draft, generationPanelIds: rawGenerationPanelIds });
 
   function handleTabKeys(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     const lastIndex = draft.panels.length - 1;

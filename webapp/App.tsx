@@ -746,19 +746,17 @@ function AdminLazyPanel({ children }: { children: ReactNode }) {
   );
 }
 
-function AppFooter() {
-  return (
-    <footer className="appFooter" aria-label="Legal documents">
-      <nav aria-label="Legal document links">
-        {legalDocumentLinks.map((link) => (
-          <a href={link.path} key={link.id}>
-            {link.label}
-          </a>
-        ))}
-      </nav>
-    </footer>
-  );
-}
+const appFooter = (
+  <footer className="appFooter" aria-label="Legal documents">
+    <nav aria-label="Legal document links">
+      {legalDocumentLinks.map((link) => (
+        <a href={link.path} key={link.id}>
+          {link.label}
+        </a>
+      ))}
+    </nav>
+  </footer>
+);
 
 function AdminGate({ access, target }: { access: AdminAccess; target: string }) {
   const status = getAdminAccessStatus(access);

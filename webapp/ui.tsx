@@ -173,7 +173,7 @@ type FoldedPreviewMode = "closed" | "open" | "back";
  */
 export function FoldedCardPreview({ panels }: { panels: CardPanel[] }) {
   const [mode, setMode] = useState<FoldedPreviewMode>("closed");
-  const byId = new Map(panels.map((panel) => [panel.id, panel]));
+  const byId = useMemo(() => new Map(panels.map((panel) => [panel.id, panel])), [panels]);
   const front = byId.get("front") ?? panels[0];
   const insideLeft = byId.get("inside-left") ?? panels[1];
   const insideRight = byId.get("inside-right") ?? panels[2];
