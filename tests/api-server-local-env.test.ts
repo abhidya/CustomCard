@@ -20,7 +20,7 @@ describe("API server local env loading", () => {
     }
   });
 
-  it("loads Walgreens hosted-checkout sandbox config from .env.local", async () => {
+  it("keeps Walgreens hosted-checkout mode in admin controls instead of .env.local", async () => {
     const cwd = mkdtempSync(join(tmpdir(), "customcard-api-env-"));
     tempDirs.push(cwd);
     writeFileSync(
@@ -41,7 +41,6 @@ describe("API server local env loading", () => {
       HOST: "127.0.0.1",
       PORT: String(port)
     };
-    delete env.WALGREENS_VENDOR_MODE;
     delete env.WALGREENS_API_KEY;
     delete env.WALGREENS_AFF_ID;
     delete env.WALGREENS_PUBLISHER_ID;
@@ -64,11 +63,12 @@ describe("API server local env loading", () => {
       body: JSON.stringify({ imageBase64: "" })
     });
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(503);
     await expect(response.json()).resolves.toMatchObject({
       service: "customcard-api",
       ok: false,
-      error: "imageBase64 is required."
+      error: "Walgreens checkout is not enabled.",
+      blockers: ["Admin safety controls set Walgreens checkout to disabled_until_certified."]
     });
   }, 30000);
 });

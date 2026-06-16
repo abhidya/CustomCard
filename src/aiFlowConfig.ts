@@ -17,6 +17,7 @@ export {
   aiFlowAdminConfigStorageKey,
   aiFlowDefinitions,
   aiProviderEnvRequirements,
+  aiProviderModelPresets,
   buildDefaultAiFlowAdminConfigs,
   flowEnvKey,
   getAiFlowDefinition,
@@ -35,6 +36,7 @@ export type {
   AiFlowConfigSummary,
   AiFlowDefinition,
   AiFlowId,
+  AiProviderModelPreset,
   ResolvedAiFlowConfig
 } from "./aiFlowConfigData.mjs";
 

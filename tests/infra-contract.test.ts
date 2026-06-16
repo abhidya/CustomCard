@@ -960,7 +960,7 @@ describe("production infrastructure contract", () => {
       status: "repo-consistent",
       items: 8,
       textProviderContracts: 16,
-      imageProviderContracts: 17,
+      imageProviderContracts: 18,
       localFallbacks: 0,
       promptAuditRequired: 6,
       humanReviewRequired: 5,
@@ -1224,7 +1224,7 @@ describe("production infrastructure contract", () => {
       hostedTokenVerificationProofs: 0,
       backupPolicies: 0,
       deploymentProtectionBypasses: 1,
-      evidenceArtifacts: 11,
+      evidenceArtifacts: 10,
       externalNetworkCalls: 0,
       realOrdersEnabled: 0,
       liveProviderCalls: 0,
@@ -1711,7 +1711,7 @@ describe("production infrastructure contract", () => {
       providerUsageLedger: true,
       queueJobs: true
     });
-    expect(report.readiness.api).toMatchObject({ statefulRoutes: 26, idempotentMutations: 14 });
+    expect(report.readiness.api).toMatchObject({ statefulRoutes: 28, idempotentMutations: 14 });
     expect(report.readiness.localBrowserState).toMatchObject({
       auditItems: 6,
       dbRequiredItems: 0,

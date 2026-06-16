@@ -12,11 +12,16 @@
  * The API key and affiliate ID NEVER leave the server. The browser only ever
  * receives a short-lived hosted-checkout URL and write-only blob upload results.
  *
- * Mode routing (WALGREENS_VENDOR_MODE):
+ * Mode routing (admin safety controls):
  *   disabled_until_certified → endpoints respond 503, no network
  *   sandbox                  → services-qa.walgreens.com
- *   production               → services.walgreens.com
+ *   production               → services.walgreens.com after all live gates pass
  */
+
+import {
+  walgreensCheckoutModeFromSafetyControls,
+  walgreensCheckoutSafetyBlockers
+} from "./adminSafetyControlsData.mjs";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -80,8 +85,8 @@ const WALGREENS_PROVIDER_CREDENTIAL_ERRORS = {
 
 // ── Config ───────────────────────────────────────────────────────────────────
 
-export function resolveWalgreensCheckoutConfig(env) {
-  const mode = env.WALGREENS_VENDOR_MODE ?? "disabled_until_certified";
+export function resolveWalgreensCheckoutConfig(env, safetyControls) {
+  const mode = walgreensCheckoutModeFromSafetyControls(safetyControls);
   const apiKey = env.WALGREENS_API_KEY ?? "";
   const affId = env.WALGREENS_AFF_ID ?? "";
   const publisherId = env.WALGREENS_PUBLISHER_ID ?? "";
@@ -89,8 +94,9 @@ export function resolveWalgreensCheckoutConfig(env) {
 
   const blockers = [];
   if (mode !== "sandbox" && mode !== "production") {
-    blockers.push(`WALGREENS_VENDOR_MODE=${mode} — hosted checkout stays off until set to sandbox or production.`);
+    blockers.push(`Admin safety controls set Walgreens checkout to ${mode}.`);
   }
+  blockers.push(...walgreensCheckoutSafetyBlockers(safetyControls));
   if ((mode === "sandbox" || mode === "production") && (!apiKey || apiKey === "replace-me")) {
     blockers.push("WALGREENS_API_KEY is missing.");
   }
@@ -332,11 +338,21 @@ function defaultUuid() {
       });
 }
 
-export function createWalgreensHostedCheckoutService({ env, fetchImpl, now = () => Date.now(), uuid = defaultUuid }) {
-  const config = resolveWalgreensCheckoutConfig(env);
+export function createWalgreensHostedCheckoutService({
+  env,
+  fetchImpl,
+  now = () => Date.now(),
+  uuid = defaultUuid,
+  safetyControls
+}) {
   const upstreamTimeoutMs = 15_000;
+  const readSafetyControls = typeof safetyControls === "function" ? safetyControls : () => safetyControls;
 
-  async function postJson(path, body) {
+  function currentConfig() {
+    return resolveWalgreensCheckoutConfig(env, readSafetyControls());
+  }
+
+  async function postJson(path, body, config) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), upstreamTimeoutMs);
     try {
@@ -376,7 +392,7 @@ export function createWalgreensHostedCheckoutService({ env, fetchImpl, now = () 
     }
   }
 
-  async function fetchUploadCredentials() {
+  async function fetchUploadCredentials(config) {
     return postJson("/api/photo/creds/v3", {
       apiKey: config.apiKey,
       affId: config.affId,
@@ -387,17 +403,20 @@ export function createWalgreensHostedCheckoutService({ env, fetchImpl, now = () 
       transaction: "photocheckoutv2",
       appVer: DEFAULT_APP_VER,
       devInf: DEFAULT_DEV_INF
-    });
+    }, config);
   }
 
   return {
-    config,
+    get config() {
+      return currentConfig();
+    },
 
     /**
      * Production preflight: prove credentials can obtain Walgreens upload
      * credentials before the browser renders panels and attempts uploads.
      */
     async checkReadiness() {
+      const config = currentConfig();
       if (!config.enabled) {
         return {
           ok: false,
@@ -413,7 +432,7 @@ export function createWalgreensHostedCheckoutService({ env, fetchImpl, now = () 
 
       let credentials;
       try {
-        credentials = await fetchUploadCredentials();
+        credentials = await fetchUploadCredentials(config);
       } catch (error) {
         return {
           ...walgreensUpstreamResult(error),
@@ -435,6 +454,7 @@ export function createWalgreensHostedCheckoutService({ env, fetchImpl, now = () 
 
     /** Step 1+2: fetch SAS credentials and push one JPEG into Walgreens storage. */
     async uploadCardImage(imageBase64) {
+      const config = currentConfig();
       if (!config.enabled) {
         return { ok: false, statusCode: 503, error: "Walgreens checkout is not enabled.", blockers: config.blockers };
       }
@@ -445,7 +465,7 @@ export function createWalgreensHostedCheckoutService({ env, fetchImpl, now = () 
 
       let credentials;
       try {
-        credentials = await fetchUploadCredentials();
+        credentials = await fetchUploadCredentials(config);
       } catch (error) {
         return walgreensUpstreamResult(error);
       }
@@ -487,6 +507,7 @@ export function createWalgreensHostedCheckoutService({ env, fetchImpl, now = () 
 
     /** Step 3: exchange uploaded image URLs + customer info for a hosted checkout URL. */
     async createCheckoutSession(input) {
+      const config = currentConfig();
       if (!config.enabled) {
         return { ok: false, statusCode: 503, error: "Walgreens checkout is not enabled.", blockers: config.blockers };
       }
@@ -527,7 +548,7 @@ export function createWalgreensHostedCheckoutService({ env, fetchImpl, now = () 
           devInf: DEFAULT_DEV_INF,
           appVer: DEFAULT_APP_VER,
           ...(typeof body.affNotes === "string" && body.affNotes ? { affNotes: cleanText(body.affNotes, 240) } : {})
-        });
+        }, config);
       } catch (error) {
         return walgreensUpstreamResult(error);
       }

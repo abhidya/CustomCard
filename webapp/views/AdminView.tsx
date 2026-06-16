@@ -1,8 +1,23 @@
-import { Activity, ChevronDown, ChevronLeft, ChevronRight, ExternalLink, FileJson, Image, Info, RefreshCw, Users } from "lucide-react";
+import {
+  Activity,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  FileJson,
+  FlaskConical,
+  Image,
+  Info,
+  Play,
+  RefreshCw,
+  Save,
+  ShieldAlert,
+  Users
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { AiFlowAdminConfig, AiFlowConfigSummary } from "../../src/aiFlowConfig";
 import type { AiGenerationJobEvidence } from "../../src/aiGenerationJobs";
-import { fetchBrowser, requestBrowserJson } from "../../src/browserRequestAdapter";
+import { buildBrowserIdempotencyKey, fetchBrowser, requestBrowserJson } from "../../src/browserRequestAdapter";
 import { resolveCardGenerationEndpoint } from "../../src/browserGatePolicy";
 import { providerCatalog } from "../../src/providerCatalog";
 import { normalizeBrowserImageUrl } from "../browserImageUrl";
@@ -81,10 +96,65 @@ interface BucketJsonPreview {
   message?: string;
 }
 
+type SafetyVendorMode = "disabled_until_certified" | "sandbox" | "production";
+
+interface AdminSafetyControlsPayload {
+  service?: string;
+  status?: string;
+  realOrdersEnabled?: boolean;
+  vendorModes?: Record<string, SafetyVendorMode>;
+  vendorCertification?: Record<string, boolean>;
+  productionMutationAcknowledged?: boolean;
+  liveWriteAcknowledged?: boolean;
+  updatedAtIso?: string | null;
+  updatedBy?: string | null;
+  allowedVendorModes?: SafetyVendorMode[];
+  blockers?: string[];
+}
+
+interface ModelBenchmarkCandidate {
+  id: string;
+  label: string;
+  adapterId: string;
+  model?: string;
+  configured?: boolean;
+}
+
+interface ModelBenchmarkStory {
+  id: string;
+  customerType: string;
+  occasion: string;
+  brief: string;
+}
+
+interface ModelBenchmarkCatalogPayload {
+  service?: string;
+  status?: string;
+  phases?: string[];
+  stories?: ModelBenchmarkStory[];
+  textCandidates?: ModelBenchmarkCandidate[];
+  imageCandidates?: ModelBenchmarkCandidate[];
+  recentRuns?: Array<{ runDir?: string; storyId?: string; textCandidateId?: string; imageCandidateId?: string }>;
+  liveRunsAllowed?: boolean;
+  liveRunGate?: string;
+  evidenceRoot?: string;
+}
+
+interface ModelBenchmarkRunPayload {
+  service?: string;
+  status?: string;
+  dryRun?: boolean;
+  phase?: string;
+  outputDir?: string;
+  summaryPath?: string | null;
+  error?: string;
+}
+
 type BucketSort = "lastModified" | "key";
 type BucketOrder = "asc" | "desc";
 
 const defaultBucketPageSize = 5;
+const defaultBenchmarkPhase = "pipeline-quality";
 
 function buildProbeTargets(): ProbeTarget[] {
   const { legacyBaseUrl: cardGenUrl } = resolveCardGenerationEndpoint(import.meta.env);
@@ -142,6 +212,151 @@ export function AdminView({
 
   const apiResult = results.api;
   const serviceUp = apiResult !== undefined && apiResult !== "running" && apiResult.ok;
+
+  /* ---------- safety controls ---------- */
+  const [safetyControls, setSafetyControls] = useState<AdminSafetyControlsPayload | null>(null);
+  const [safetyDraft, setSafetyDraft] = useState<AdminSafetyControlsPayload | null>(null);
+  const [safetyLoading, setSafetyLoading] = useState(false);
+  const [safetySaving, setSafetySaving] = useState(false);
+  const [safetyError, setSafetyError] = useState("");
+
+  const loadSafetyControls = useCallback(() => {
+    setSafetyLoading(true);
+    setSafetyError("");
+    requestBrowserJson<AdminSafetyControlsPayload>("/api/admin/safety-controls", {
+      cache: "no-store",
+      getToken: getAdminApiToken
+    })
+      .then(({ payload, response }) => {
+        if (!response.ok) throw new Error(payload?.status || `Safety controls returned HTTP ${response.status}`);
+        setSafetyControls(payload ?? null);
+        setSafetyDraft(payload ?? null);
+      })
+      .catch((error: unknown) => {
+        setSafetyError(error instanceof Error ? error.message : "Safety controls are unavailable.");
+      })
+      .finally(() => setSafetyLoading(false));
+  }, [getAdminApiToken]);
+
+  useEffect(() => {
+    loadSafetyControls();
+  }, [loadSafetyControls]);
+
+  const updateSafetyDraft = useCallback((patch: Partial<AdminSafetyControlsPayload>) => {
+    setSafetyDraft((current) => ({ ...(current ?? safetyControls ?? {}), ...patch }));
+  }, [safetyControls]);
+
+  const updateSafetyVendorMode = useCallback((vendorId: string, mode: SafetyVendorMode) => {
+    setSafetyDraft((current) => {
+      const base = current ?? safetyControls ?? {};
+      return { ...base, vendorModes: { ...(base.vendorModes ?? {}), [vendorId]: mode } };
+    });
+  }, [safetyControls]);
+
+  const updateSafetyVendorCertification = useCallback((vendorId: string, certified: boolean) => {
+    setSafetyDraft((current) => {
+      const base = current ?? safetyControls ?? {};
+      return { ...base, vendorCertification: { ...(base.vendorCertification ?? {}), [vendorId]: certified } };
+    });
+  }, [safetyControls]);
+
+  const saveSafetyControls = useCallback(() => {
+    setSafetySaving(true);
+    setSafetyError("");
+    requestBrowserJson<AdminSafetyControlsPayload>("/api/admin/safety-controls", {
+      body: safetyDraft ?? {},
+      getToken: getAdminApiToken,
+      idempotencyKey: buildBrowserIdempotencyKey("/api/admin/safety-controls")
+    })
+      .then(({ payload, response }) => {
+        if (!response.ok) throw new Error(payload?.status || `Safety controls save returned HTTP ${response.status}`);
+        setSafetyControls(payload ?? null);
+        setSafetyDraft(payload ?? null);
+      })
+      .catch((error: unknown) => {
+        setSafetyError(error instanceof Error ? error.message : "Safety controls were not saved.");
+      })
+      .finally(() => setSafetySaving(false));
+  }, [getAdminApiToken, safetyDraft]);
+
+  const activeSafetyControls = safetyDraft ?? safetyControls;
+  const safetyModeOptions: SafetyVendorMode[] = activeSafetyControls?.allowedVendorModes?.length
+    ? activeSafetyControls.allowedVendorModes
+    : ["disabled_until_certified", "sandbox", "production"];
+  const walgreensMode = activeSafetyControls?.vendorModes?.walgreens ?? "disabled_until_certified";
+  const walgreensCertified = Boolean(activeSafetyControls?.vendorCertification?.walgreens);
+  const safetyBlockers = activeSafetyControls?.blockers ?? [];
+
+  /* ---------- model benchmark loop ---------- */
+  const [benchmarkCatalog, setBenchmarkCatalog] = useState<ModelBenchmarkCatalogPayload | null>(null);
+  const [benchmarkCatalogLoading, setBenchmarkCatalogLoading] = useState(false);
+  const [benchmarkCatalogError, setBenchmarkCatalogError] = useState("");
+  const [benchmarkPhase, setBenchmarkPhase] = useState(defaultBenchmarkPhase);
+  const [benchmarkStory, setBenchmarkStory] = useState("");
+  const [benchmarkText, setBenchmarkText] = useState("");
+  const [benchmarkImage, setBenchmarkImage] = useState("");
+  const [benchmarkLiveRun, setBenchmarkLiveRun] = useState(false);
+  const [benchmarkRunning, setBenchmarkRunning] = useState(false);
+  const [benchmarkRunResult, setBenchmarkRunResult] = useState<ModelBenchmarkRunPayload | null>(null);
+  const [benchmarkRunError, setBenchmarkRunError] = useState("");
+
+  const loadModelBenchmarkCatalog = useCallback(() => {
+    setBenchmarkCatalogLoading(true);
+    setBenchmarkCatalogError("");
+    requestBrowserJson<ModelBenchmarkCatalogPayload>("/api/admin/model-benchmarks", {
+      cache: "no-store",
+      getToken: getAdminApiToken
+    })
+      .then(({ payload, response }) => {
+        if (!response.ok) throw new Error(payload?.status || `Model benchmark catalog returned HTTP ${response.status}`);
+        setBenchmarkCatalog(payload ?? null);
+      })
+      .catch((error: unknown) => {
+        setBenchmarkCatalog(null);
+        setBenchmarkCatalogError(error instanceof Error ? error.message : "Model benchmark catalog is unavailable.");
+      })
+      .finally(() => setBenchmarkCatalogLoading(false));
+  }, [getAdminApiToken]);
+
+  useEffect(() => {
+    loadModelBenchmarkCatalog();
+  }, [loadModelBenchmarkCatalog]);
+
+  useEffect(() => {
+    const phases = benchmarkCatalog?.phases ?? [];
+    const stories = benchmarkCatalog?.stories ?? [];
+    const textCandidates = benchmarkCatalog?.textCandidates ?? [];
+    const imageCandidates = benchmarkCatalog?.imageCandidates ?? [];
+    if (phases.length && !phases.includes(benchmarkPhase)) setBenchmarkPhase(phases[0]);
+    if (stories.length && !stories.some((story) => story.id === benchmarkStory)) setBenchmarkStory(stories[0].id);
+    if (textCandidates.length && !textCandidates.some((candidate) => candidate.id === benchmarkText)) setBenchmarkText(textCandidates[0].id);
+    if (imageCandidates.length && !imageCandidates.some((candidate) => candidate.id === benchmarkImage)) setBenchmarkImage(imageCandidates[0].id);
+  }, [benchmarkCatalog, benchmarkImage, benchmarkPhase, benchmarkStory, benchmarkText]);
+
+  const runModelBenchmark = useCallback(() => {
+    setBenchmarkRunning(true);
+    setBenchmarkRunError("");
+    requestBrowserJson<ModelBenchmarkRunPayload>("/api/admin/model-benchmarks/run", {
+      body: {
+        phase: benchmarkPhase,
+        story: benchmarkStory,
+        text: benchmarkText,
+        image: benchmarkImage,
+        live: benchmarkLiveRun
+      },
+      getToken: getAdminApiToken,
+      idempotencyKey: buildBrowserIdempotencyKey("/api/admin/model-benchmarks/run")
+    })
+      .then(({ payload, response }) => {
+        if (!response.ok) throw new Error(payload?.error || payload?.status || `Model benchmark run returned HTTP ${response.status}`);
+        setBenchmarkRunResult(payload ?? null);
+        loadModelBenchmarkCatalog();
+      })
+      .catch((error: unknown) => {
+        setBenchmarkRunError(error instanceof Error ? error.message : "Model benchmark run failed.");
+      })
+      .finally(() => setBenchmarkRunning(false));
+  }, [benchmarkImage, benchmarkLiveRun, benchmarkPhase, benchmarkStory, benchmarkText, getAdminApiToken, loadModelBenchmarkCatalog]);
 
   /* ---------- provider policy edits ---------- */
   function updateFlow(flowId: AiFlowAdminConfig["flowId"], patch: Partial<AiFlowAdminConfig>) {
@@ -383,8 +598,201 @@ export function AdminView({
           </a>
         </section>
 
+        {/* ---- Safety controls ---- */}
+        <section className="panelcard opsCard">
+          <div className="opsCardHead">
+            <h2>Safety controls</h2>
+            <span className="opsStatus" data-ok={Boolean(activeSafetyControls && safetyBlockers.length === 0)}>
+              <ShieldAlert size={14} />
+              {safetyLoading ? "Loading" : activeSafetyControls?.status === "ready" ? "Ready" : "Fail closed"}
+            </span>
+          </div>
+          <ul className="opsFacts">
+            <li>
+              <span>Real orders</span>
+              <strong>{activeSafetyControls?.realOrdersEnabled ? "Enabled" : "Off"}</strong>
+            </li>
+            <li>
+              <span>Walgreens mode</span>
+              <strong>{safetyModeLabel(walgreensMode)}</strong>
+            </li>
+            <li>
+              <span>Live writes</span>
+              <strong>{activeSafetyControls?.liveWriteAcknowledged ? "Acknowledged" : "Blocked"}</strong>
+            </li>
+          </ul>
+          <div className="flowControls">
+            <label>
+              Walgreens
+              <select
+                disabled={safetyLoading || safetySaving}
+                onChange={(event) => updateSafetyVendorMode("walgreens", event.target.value as SafetyVendorMode)}
+                value={walgreensMode}
+              >
+                {safetyModeOptions.map((mode) => (
+                  <option key={mode} value={mode}>
+                    {safetyModeLabel(mode)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div className="flowControls">
+            <label>
+              <input
+                checked={Boolean(activeSafetyControls?.realOrdersEnabled)}
+                disabled={safetyLoading || safetySaving}
+                onChange={(event) => updateSafetyDraft({ realOrdersEnabled: event.target.checked })}
+                type="checkbox"
+              />
+              Real order enablement
+            </label>
+            <label>
+              <input
+                checked={walgreensCertified}
+                disabled={safetyLoading || safetySaving}
+                onChange={(event) => updateSafetyVendorCertification("walgreens", event.target.checked)}
+                type="checkbox"
+              />
+              Vendor certification
+            </label>
+            <label>
+              <input
+                checked={Boolean(activeSafetyControls?.productionMutationAcknowledged)}
+                disabled={safetyLoading || safetySaving}
+                onChange={(event) => updateSafetyDraft({ productionMutationAcknowledged: event.target.checked })}
+                type="checkbox"
+              />
+              Production mutation acknowledgement
+            </label>
+            <label>
+              <input
+                checked={Boolean(activeSafetyControls?.liveWriteAcknowledged)}
+                disabled={safetyLoading || safetySaving}
+                onChange={(event) => updateSafetyDraft({ liveWriteAcknowledged: event.target.checked })}
+                type="checkbox"
+              />
+              Explicit live-write acknowledgement
+            </label>
+          </div>
+          {safetyError || safetyBlockers.length ? (
+            <div className="opsEmpty">
+              <Info size={16} />
+              <span>{safetyError || safetyBlockers[0]}</span>
+            </div>
+          ) : null}
+          <button className="btn btn-primary btn-sm" disabled={safetyLoading || safetySaving} onClick={saveSafetyControls} type="button">
+            <Save size={14} />
+            {safetySaving ? "Saving" : "Save controls"}
+          </button>
+        </section>
+
         {/* ---- Card gallery curation ---- */}
         <AdminCardGalleryView getAdminApiToken={getAdminApiToken} />
+
+        {/* ---- Model benchmark loop ---- */}
+        <section className="panelcard opsCard opsCard-wide">
+          <div className="opsCardHead">
+            <h2>Model benchmarks</h2>
+            <span className="opsStatus" data-ok={Boolean(benchmarkCatalog && !benchmarkCatalogError)}>
+              <FlaskConical size={14} />
+              {benchmarkCatalogLoading ? "Loading" : benchmarkLiveRun ? "Live selected" : "Dry-run default"}
+            </span>
+          </div>
+          <ul className="opsFacts opsFacts-five">
+            <li>
+              <span>Stories</span>
+              <strong>{benchmarkCatalog?.stories?.length ?? 0}</strong>
+            </li>
+            <li>
+              <span>Text candidates</span>
+              <strong>{configuredBenchmarkCount(benchmarkCatalog?.textCandidates)}/{benchmarkCatalog?.textCandidates?.length ?? 0}</strong>
+            </li>
+            <li>
+              <span>Image candidates</span>
+              <strong>{configuredBenchmarkCount(benchmarkCatalog?.imageCandidates)}/{benchmarkCatalog?.imageCandidates?.length ?? 0}</strong>
+            </li>
+            <li>
+              <span>Recent runs</span>
+              <strong>{benchmarkCatalog?.recentRuns?.length ?? 0}</strong>
+            </li>
+            <li>
+              <span>Evidence root</span>
+              <strong>{benchmarkCatalog?.evidenceRoot ?? "docs/evidence"}</strong>
+            </li>
+          </ul>
+          <div className="flowControls">
+            <label>
+              Phase
+              <select onChange={(event) => setBenchmarkPhase(event.target.value)} value={benchmarkPhase}>
+                {(benchmarkCatalog?.phases?.length ? benchmarkCatalog.phases : [defaultBenchmarkPhase]).map((phase) => (
+                  <option key={phase} value={phase}>
+                    {benchmarkPhaseLabel(phase)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Story
+              <select onChange={(event) => setBenchmarkStory(event.target.value)} value={benchmarkStory}>
+                {(benchmarkCatalog?.stories ?? []).map((story) => (
+                  <option key={story.id} value={story.id}>
+                    {story.occasion} · {story.customerType}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Text
+              <select onChange={(event) => setBenchmarkText(event.target.value)} value={benchmarkText}>
+                {(benchmarkCatalog?.textCandidates ?? []).map((candidate) => (
+                  <option key={candidate.id} value={candidate.id}>
+                    {benchmarkCandidateLabel(candidate)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Image
+              <select onChange={(event) => setBenchmarkImage(event.target.value)} value={benchmarkImage}>
+                {(benchmarkCatalog?.imageCandidates ?? []).map((candidate) => (
+                  <option key={candidate.id} value={candidate.id}>
+                    {benchmarkCandidateLabel(candidate)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <input checked={benchmarkLiveRun} onChange={(event) => setBenchmarkLiveRun(event.target.checked)} type="checkbox" />
+              Live provider calls
+            </label>
+          </div>
+          {benchmarkCatalogError || benchmarkRunError ? (
+            <div className="opsEmpty">
+              <Info size={16} />
+              <span>{benchmarkRunError || benchmarkCatalogError}</span>
+            </div>
+          ) : null}
+          {benchmarkRunResult ? (
+            <div className="opsEmpty">
+              <Info size={16} />
+              <span>
+                {benchmarkRunResult.dryRun ? "Dry-run plan" : "Completed run"} · {benchmarkRunResult.phase ?? "benchmark"}
+                {benchmarkRunResult.summaryPath ? ` · ${benchmarkRunResult.summaryPath}` : ""}
+              </span>
+            </div>
+          ) : null}
+          <div className="flowControls">
+            <button className="btn btn-primary btn-sm" disabled={benchmarkRunning || benchmarkCatalogLoading} onClick={runModelBenchmark} type="button">
+              {benchmarkRunning ? <RefreshCw size={14} /> : <Play size={14} />}
+              {benchmarkLiveRun ? "Run live" : "Run dry"}
+            </button>
+            <button className="btn btn-ghost btn-sm" disabled={benchmarkCatalogLoading} onClick={loadModelBenchmarkCatalog} type="button">
+              <RefreshCw size={14} />
+              Refresh
+            </button>
+          </div>
+        </section>
 
         {/* ---- AI generation jobs ---- */}
         <section className="panelcard opsCard opsCard-wide opsJobsCard">
@@ -886,6 +1294,35 @@ function formatBytes(value: number): string {
 
 function formatCents(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
+}
+
+function configuredBenchmarkCount(candidates: ModelBenchmarkCandidate[] | undefined): number {
+  return (candidates ?? []).filter((candidate) => candidate.configured).length;
+}
+
+function benchmarkPhaseLabel(phase: string): string {
+  const labels: Record<string, string> = {
+    smoke: "Smoke",
+    full: "Full",
+    "pipeline-quality": "Pipeline quality",
+    typography: "Typography"
+  };
+  return labels[phase] ?? phase;
+}
+
+function benchmarkCandidateLabel(candidate: ModelBenchmarkCandidate): string {
+  const model = candidate.model ? ` · ${candidate.model}` : "";
+  const missing = candidate.configured ? "" : " · missing env";
+  return `${candidate.label}${model}${missing}`;
+}
+
+function safetyModeLabel(mode: SafetyVendorMode): string {
+  const labels: Record<SafetyVendorMode, string> = {
+    disabled_until_certified: "Disabled until certified",
+    sandbox: "Sandbox",
+    production: "Production"
+  };
+  return labels[mode] ?? mode;
 }
 
 function BucketRenderPacketCard({

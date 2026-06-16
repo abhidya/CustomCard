@@ -180,7 +180,7 @@ describe("api runtime safety", () => {
     });
   });
 
-  it("fails closed when production Postgres runtime enables real orders", () => {
+  it("does not require real-order safety controls as runtime env vars", () => {
     const runtime = createApiRuntime({
       env: {
         CUSTOMCARD_ENV: "production",
@@ -193,14 +193,13 @@ describe("api runtime safety", () => {
         CLERK_JWT_KEY: "-----BEGIN PUBLIC KEY-----\\ntest-clerk-jwt-key\\n-----END PUBLIC KEY-----",
         CLERK_AUTHORIZED_PARTIES: "https://customcard.test",
         CLERK_ISSUER: "https://clerk.customcard.test",
-        CLERK_AUDIENCE: "customcard-api",
-        REAL_ORDER_KILL_SWITCH: "enabled"
+        CLERK_AUDIENCE: "customcard-api"
       },
       routes: apiRouteContracts
     });
 
-    expect(runtime.mode).toBe("invalid");
-    expect(runtime.validate()).toContain("CustomCard runtime requires REAL_ORDER_KILL_SWITCH=disabled until certification is recorded.");
+    expect(runtime.mode).toBe("postgres");
+    expect(runtime.validate()).toEqual([]);
   });
 
   it("bounds Postgres pool settings for serverless-safe defaults", () => {

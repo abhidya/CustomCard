@@ -1,13 +1,19 @@
 /**
  * Walgreens Native Photo Prints API adapter.
  *
- * Mode routing (WALGREENS_VENDOR_MODE):
+ * Mode routing (admin safety controls):
  *   disabled_until_certified → all methods throw — no network, no credentials needed
  *   sandbox                  → services-qa.walgreens.com  (safe to call freely, no orders fulfill)
- *   production               → services.walgreens.com     (requires Walgreens production approval)
+ *   production               → services.walgreens.com     (requires Walgreens production approval + live acknowledgements)
  *
  * Unit tests: pass fetch = createWalgreensDummyFetch() — returns canned responses, zero network.
  */
+
+import {
+  type AdminSafetyControls,
+  walgreensCheckoutModeFromSafetyControls,
+  walgreensCheckoutSafetyBlockers
+} from "./adminSafetyControlsData.mjs";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -24,7 +30,7 @@ export type WalgreensAdapterMode = "disabled_until_certified" | "sandbox" | "pro
 function resolveBaseUrl(mode: WalgreensAdapterMode): string {
   if (mode === "sandbox") return WALGREENS_SANDBOX_BASE_URL;
   if (mode === "production") return WALGREENS_PRODUCTION_BASE_URL;
-  throw new Error(`Walgreens adapter not enabled — WALGREENS_VENDOR_MODE=${mode}`);
+  throw new Error(`Walgreens adapter not enabled by admin safety controls: ${mode}`);
 }
 
 // ── Fetch injectable ──────────────────────────────────────────────────────────
@@ -45,14 +51,20 @@ export interface WalgreensAdapterConfig {
 
 export function buildWalgreensAdapterConfig(
   env: Record<string, string | undefined>,
-  fetchImpl: WalgreensFetch
+  fetchImpl: WalgreensFetch,
+  safetyControls?: Partial<AdminSafetyControls>
 ): WalgreensAdapterConfig {
-  const mode = (env["WALGREENS_VENDOR_MODE"] ?? "disabled_until_certified") as WalgreensAdapterMode;
+  const mode = walgreensCheckoutModeFromSafetyControls(safetyControls);
   const apiKey = env["WALGREENS_API_KEY"] ?? "";
   const affId = env["WALGREENS_AFF_ID"] ?? "";
+  const productionBlockers = walgreensCheckoutSafetyBlockers(safetyControls);
+
+  if (mode === "production" && productionBlockers.length > 0) {
+    throw new Error(`Walgreens production adapter blocked: ${productionBlockers.join(" ")}`);
+  }
 
   if (mode !== "disabled_until_certified" && (!apiKey || !affId)) {
-    throw new Error("WALGREENS_API_KEY and WALGREENS_AFF_ID are required when WALGREENS_VENDOR_MODE is not disabled_until_certified");
+    throw new Error("WALGREENS_API_KEY and WALGREENS_AFF_ID are required when admin safety controls enable Walgreens calls");
   }
 
   return {
@@ -220,7 +232,7 @@ export interface WalgreensPhotoAdapter {
 
 export function createWalgreensPhotoAdapter(config: WalgreensAdapterConfig): WalgreensPhotoAdapter {
   if (config.mode === "disabled_until_certified") {
-    throw new Error("Walgreens adapter is disabled_until_certified. Set WALGREENS_VENDOR_MODE=production to enable Walgreens calls.");
+    throw new Error("Walgreens adapter is disabled_until_certified. Select sandbox or production in admin safety controls to enable Walgreens calls.");
   }
 
   const base = config.baseUrl;

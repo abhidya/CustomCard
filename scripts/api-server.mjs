@@ -9,6 +9,7 @@ import {
   validateReadinessDomains,
   validateReadinessSummary
 } from "../src/readinessSummaryData.mjs";
+import { createAdminSafetyControlStore } from "../src/adminSafetyControlsData.mjs";
 import {
   buildRetailPrinterOperationStartPackets,
   buildRetailPrinterOperationStartResponse
@@ -43,14 +44,15 @@ loadLocalAiEnvFiles();
 
 export const routes = apiRouteContracts;
 
+const adminSafetyControls = createAdminSafetyControlStore();
 const walgreensCheckout = createWalgreensHostedCheckoutService({
   env: process.env,
-  fetchImpl: (...args) => globalThis.fetch(...args)
+  fetchImpl: (...args) => globalThis.fetch(...args),
+  safetyControls: () => adminSafetyControls.read()
 });
 
 function loadLocalApiEnvFiles({ cwd = process.cwd(), target = process.env } = {}) {
   const localApiEnvKeys = new Set([
-    "WALGREENS_VENDOR_MODE",
     "WALGREENS_API_KEY",
     "WALGREENS_AFF_ID",
     "WALGREENS_PUBLISHER_ID",
@@ -172,21 +174,21 @@ export const readiness = {
     idempotentMutations: routes.filter((route) => route.method === "POST" && route.idempotencyKeyRequired).length
   },
   providers: {
-    total: 129,
+    total: 130,
     readyLocal: 16,
-    credentialGated: 97,
+    credentialGated: 98,
     contractOnly: 10,
     blocked: 6
   },
   providerGovernance: {
-    total: 129,
+    total: 130,
     zeroPlatformSpend: 19,
-    budgetCapped: 104,
+    budgetCapped: 105,
     blockedZeroSpend: 6,
-    monthlyBudgetCents: 202600,
+    monthlyBudgetCents: 206600,
     maxPerRequestBudgetCents: 5,
-    rateLimited: 123,
-    queueRequired: 90,
+    rateLimited: 124,
+    queueRequired: 91,
     fallbackCovered: 96,
     liveNetworkDefault: false,
     realOrdersEnabled: false,
@@ -270,7 +272,7 @@ export const readiness = {
   },
   persistence: {
     tables: 21,
-    schemaBackedRoutes: 22,
+    schemaBackedRoutes: 24,
     authSessionTable: true,
     accountIdentityTable: true,
     accountRecoveryTable: true,
@@ -313,6 +315,7 @@ const aiGenerationService = createAiCardGenerationService({
   })
 });
 const apiRouteFamilies = createApiRouteFamilyAdapter({
+  adminSafetyControls,
   aiGenerationService,
   apiRuntime,
   buildMutationContractPayload,

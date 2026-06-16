@@ -58,9 +58,16 @@ export interface AiFlowConfigSummary {
   flows: ResolvedAiFlowConfig[];
 }
 
+export interface AiProviderModelPreset {
+  id: string;
+  label: string;
+  detail?: string;
+}
+
 export const aiFlowAdminConfigStorageKey: string;
 export const aiFlowDefinitions: AiFlowDefinition[];
 export const aiProviderEnvRequirements: Record<string, string[][]>;
+export const aiProviderModelPresets: Record<string, AiProviderModelPreset[]>;
 
 export function hasUsableAiEnvValue(value: unknown): boolean;
 export function adapterMissingEnv(adapterId: string, env?: Record<string, string | undefined>): string[];

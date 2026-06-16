@@ -91,7 +91,8 @@ describe("AI card generator service", () => {
         "deepai-text2img-image",
         "google-gemini-image",
         "huggingface-image",
-        "openai-images"
+        "openai-images",
+        "runcomfy-model-api-image"
       ]
     });
   });
@@ -1430,6 +1431,88 @@ describe("AI card generator service", () => {
     expect(hfBodies.every((body) => Number.isInteger(body.seed))).toBe(true);
     expect(payload.images.every((image) => image.image_url.startsWith("data:image/png;base64,"))).toBe(true);
     expect(JSON.stringify(result.payload)).not.toContain("test_hf_token");
+  });
+
+  it("uses RunComfy Model API async image generation and materializes hosted results", async () => {
+    let imageIndex = 0;
+    const fetchImpl = vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
+      const requestUrl = String(url);
+      if (requestUrl.includes("/ai/v1/chat/completions")) {
+        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      if (requestUrl === "https://model-api.runcomfy.net/v1/models/blackforestlabs/flux-1-kontext/pro/text-to-image") {
+        imageIndex += 1;
+        return new Response(JSON.stringify({ request_id: `runcomfy-${imageIndex}` }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      if (requestUrl.includes("/status")) {
+        return new Response(JSON.stringify({ status: "completed" }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      if (requestUrl.includes("/result")) {
+        const panelNumber = requestUrl.match(/runcomfy-(\d+)/)?.[1] ?? "0";
+        return new Response(
+          JSON.stringify({ status: "succeeded", output: { image: `https://8.8.4.4/panel-${panelNumber}.png` } }),
+          { status: 200, headers: { "content-type": "application/json" } }
+        );
+      }
+      if (requestUrl.startsWith("https://8.8.4.4/")) {
+        return new Response(new Uint8Array([4, 3, 2, imageIndex]), {
+          status: 200,
+          headers: { "content-type": "image/png" }
+        });
+      }
+      throw new Error(`Unexpected fetch ${requestUrl}`);
+    });
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
+        RUNCOMFY_API_TOKEN: "test_runcomfy_token",
+        RUNCOMFY_IMAGE_MODEL_ID: "blackforestlabs/flux-1-kontext/pro/text-to-image",
+        CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "cloudflare-workers-ai-chat",
+        CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "runcomfy-model-api-image",
+        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
+        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true",
+        CUSTOMCARD_RUNCOMFY_IMAGE_POLL_INTERVAL_MS: "0"
+      },
+      fetchImpl
+    });
+
+    const result = await service.generateCard(cardRequest, { rateKey: "test-runcomfy-images" });
+    const submitCalls = fetchImpl.mock.calls.filter(([url]) => String(url).includes("/v1/models/"));
+    const submitBodies = submitCalls.map((call) => JSON.parse(String((call[1] as RequestInit | undefined)?.body)));
+    const hostedFetches = fetchImpl.mock.calls.filter(([url]) => String(url).startsWith("https://8.8.4.4/"));
+    const payload = result.payload as {
+      images: Array<{ image_url: string; revised_prompt: string }>;
+      ai_flow: { card_image: { adapter_id: string; model: string } };
+    };
+
+    expect(result.statusCode).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(17);
+    expect(submitCalls).toHaveLength(4);
+    expect(hostedFetches).toHaveLength(4);
+    expect(
+      submitCalls.every(
+        ([, init]) => (init?.headers as Record<string, string>).authorization === "Bearer test_runcomfy_token"
+      )
+    ).toBe(true);
+    expect(submitBodies.every((body) => body.prompt.includes("Full-bleed flat 2D artwork layer"))).toBe(true);
+    expect(submitBodies.every((body) => body.aspect_ratio === "5:7" && Number.isInteger(body.seed))).toBe(true);
+    expect(payload.ai_flow.card_image).toMatchObject({
+      adapter_id: "runcomfy-model-api-image",
+      model: "blackforestlabs/flux-1-kontext/pro/text-to-image"
+    });
+    expect(payload.images.every((image) => image.image_url.startsWith("data:image/png;base64,"))).toBe(true);
+    expect(JSON.stringify(result.payload)).not.toContain("test_runcomfy_token");
   });
 
   it("uses OpenAI Responses structured output and OpenAI image generation when configured", async () => {

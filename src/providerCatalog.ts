@@ -1420,6 +1420,21 @@ export const providerCatalog: ProviderAdapter[] = [
     docsUrl: "https://docs.us.bfl.ai/quick_start/generating_images"
   },
   {
+    id: "runcomfy-model-api-image",
+    label: "RunComfy Model API image",
+    provider: "RunComfy",
+    capability: "image-generation",
+    lane: "AI provider",
+    status: "credential-gated",
+    cost: "usage-based",
+    credentials: ["RUNCOMFY_API_TOKEN"],
+    safetyGates: ["Model allowlist", "Spend limit", "Human approval before print", "Network allowlist"],
+    roleSurface: ["admin"],
+    priority: 57.5,
+    detail: "Optional RunComfy Model API adapter for queued hosted image model runs; submits one request per card panel and fetches hosted result URLs after completion.",
+    docsUrl: "https://docs.runcomfy.com/model-apis/quickstart"
+  },
+  {
     id: "adobe-firefly-image",
     label: "Adobe Firefly image",
     provider: "Adobe Firefly Services",

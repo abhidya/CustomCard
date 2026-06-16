@@ -35,8 +35,13 @@ describe("api contracts", () => {
         "admin-readiness",
         "admin-provider-catalog",
         "admin-provider-governance",
+        "admin-safety-controls",
+        "admin-safety-controls-save",
         "admin-persistence-readiness",
         "admin-artifact-bucket",
+        "admin-model-benchmarks",
+        "admin-model-benchmark-run",
+        "admin-model-benchmark-grade",
         "admin-demo-reset",
         "import-preview",
         "calendar-connection-start",
@@ -320,7 +325,7 @@ describe("api contracts", () => {
     expect(summary.aiProviderReadiness).toMatchObject({
       total: 8,
       textProviderContracts: 16,
-      imageProviderContracts: 17,
+      imageProviderContracts: 18,
       localFallbacks: 0,
       liveProviderCallsEnabled: 0,
       externalNetworkCalls: 0,
@@ -365,7 +370,7 @@ describe("api contracts", () => {
       hostedTokenVerificationProofs: 0,
       backupPolicies: 0,
       deploymentProtectionBypasses: 1,
-      evidenceArtifacts: 11,
+      evidenceArtifacts: 10,
       realOrdersEnabled: 0,
       liveProviderCalls: 0,
       blockers: []
@@ -678,7 +683,7 @@ describe("api contracts", () => {
     expect(payload.aiProviderReadiness.summary).toMatchObject({
       total: 8,
       textProviderContracts: 16,
-      imageProviderContracts: 17,
+      imageProviderContracts: 18,
       liveProviderCallsEnabled: 0,
       productionTrafficEnabled: 0
     });

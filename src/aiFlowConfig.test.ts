@@ -114,6 +114,21 @@ describe("AI flow config", () => {
     expect(flow.blockedReasons).toEqual([]);
   });
 
+  it("allows RunComfy Model API image generation when token and model id are configured", () => {
+    const flow = resolveAiFlowConfig("card-image", {
+      RUNCOMFY_API_TOKEN: "runcomfy-token",
+      RUNCOMFY_IMAGE_MODEL_ID: "blackforestlabs/flux-1-kontext/pro/text-to-image",
+      CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "runcomfy-model-api-image",
+      CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
+    });
+
+    expect(flow.primaryAdapterId).toBe("runcomfy-model-api-image");
+    expect(flow.model).toBe("blackforestlabs/flux-1-kontext/pro/text-to-image");
+    expect(flow.liveProviderCallsEnabled).toBe(true);
+    expect(flow.readyForLiveCalls).toBe(true);
+    expect(flow.blockedReasons).toEqual([]);
+  });
+
   it("rejects the removed deterministic SVG renderer as a card-image override", () => {
     const flow = resolveAiFlowConfig("card-image", {
       ...cloudflareEnv,

@@ -31,12 +31,12 @@ describe("Walgreens hosted checkout", () => {
       })) as typeof fetch;
     const service = createWalgreensHostedCheckoutService({
       env: {
-        WALGREENS_VENDOR_MODE: "sandbox",
         WALGREENS_API_KEY: "test-api-key",
         WALGREENS_AFF_ID: "photoapi",
         PUBLIC_APP_ORIGIN: "http://127.0.0.1:5173"
       },
-      fetchImpl
+      fetchImpl,
+      safetyControls: { vendorModes: { walgreens: "sandbox" } }
     });
     const jpegBase64 = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff]), Buffer.alloc(1024)]).toString("base64");
 
@@ -54,13 +54,13 @@ describe("Walgreens hosted checkout", () => {
     const fetchImpl = createWalgreensCheckoutDummyFetch();
     const service = createWalgreensHostedCheckoutService({
       env: {
-        WALGREENS_VENDOR_MODE: "production",
         WALGREENS_API_KEY: "test-api-key",
         WALGREENS_AFF_ID: "photoapi",
         PUBLIC_APP_ORIGIN: "https://customcard.example"
       },
       fetchImpl,
-      now: () => Date.parse("2026-06-12T12:00:00.000Z")
+      now: () => Date.parse("2026-06-12T12:00:00.000Z"),
+      safetyControls: productionSafetyControls()
     });
 
     await expect(service.checkReadiness()).resolves.toMatchObject({
@@ -88,12 +88,12 @@ describe("Walgreens hosted checkout", () => {
       })) as typeof fetch;
     const service = createWalgreensHostedCheckoutService({
       env: {
-        WALGREENS_VENDOR_MODE: "production",
         WALGREENS_API_KEY: "test-api-key",
         WALGREENS_AFF_ID: "photoapi",
         PUBLIC_APP_ORIGIN: "https://customcard.example"
       },
-      fetchImpl
+      fetchImpl,
+      safetyControls: productionSafetyControls()
     });
 
     await expect(service.checkReadiness()).resolves.toMatchObject({
@@ -112,12 +112,12 @@ describe("Walgreens hosted checkout", () => {
     const fetchImpl = createWalgreensCheckoutDummyFetch();
     const service = createWalgreensHostedCheckoutService({
       env: {
-        WALGREENS_VENDOR_MODE: "sandbox",
         WALGREENS_API_KEY: "test-api-key",
         WALGREENS_AFF_ID: "photoapi",
         PUBLIC_APP_ORIGIN: "http://127.0.0.1:5173"
       },
-      fetchImpl
+      fetchImpl,
+      safetyControls: { vendorModes: { walgreens: "sandbox" } }
     });
     const jpegBase64 = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff]), Buffer.alloc(1024)]).toString("base64");
 
@@ -130,4 +130,35 @@ describe("Walgreens hosted checkout", () => {
       transaction: "photocheckoutv2"
     });
   });
+
+  it("ignores legacy WALGREENS_VENDOR_MODE and stays closed until admin safety controls select a mode", async () => {
+    const fetchImpl = createWalgreensCheckoutDummyFetch();
+    const service = createWalgreensHostedCheckoutService({
+      env: {
+        WALGREENS_VENDOR_MODE: "sandbox",
+        WALGREENS_API_KEY: "test-api-key",
+        WALGREENS_AFF_ID: "photoapi",
+        PUBLIC_APP_ORIGIN: "http://127.0.0.1:5173"
+      },
+      fetchImpl
+    });
+
+    await expect(service.checkReadiness()).resolves.toMatchObject({
+      ok: false,
+      statusCode: 503,
+      mode: "disabled_until_certified",
+      blockers: ["Admin safety controls set Walgreens checkout to disabled_until_certified."]
+    });
+    expect(fetchImpl.calls).toEqual([]);
+  });
 });
+
+function productionSafetyControls() {
+  return {
+    realOrdersEnabled: true,
+    vendorModes: { walgreens: "production" },
+    vendorCertification: { walgreens: true },
+    productionMutationAcknowledged: true,
+    liveWriteAcknowledged: true
+  };
+}

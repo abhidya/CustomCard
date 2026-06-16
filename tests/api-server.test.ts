@@ -17,8 +17,7 @@ const runtimeDoctorEnv = {
   CLERK_JWT_KEY: "test-clerk-jwt-key",
   CLERK_AUTHORIZED_PARTIES: "https://customcard.test",
   CLERK_ISSUER: "https://clerk.customcard.test",
-  CLERK_AUDIENCE: "customcard-api",
-  REAL_ORDER_KILL_SWITCH: "disabled"
+  CLERK_AUDIENCE: "customcard-api"
 };
 const expectedIdempotentMutations = apiRouteContracts.filter((route) => route.method === "POST" && route.idempotencyKeyRequired).length;
 
@@ -340,8 +339,8 @@ describe("api server wrapper", () => {
     expect(report.blockers).toEqual([]);
     expect(report.readiness.providers.total).toBeGreaterThanOrEqual(124);
     expect(report.readiness.providerGovernance).toMatchObject({
-      total: 129,
-      budgetCapped: 104,
+      total: 130,
+      budgetCapped: 105,
       blockedZeroSpend: 6,
       fallbackCovered: 96,
       liveNetworkDefault: false,
@@ -375,7 +374,7 @@ describe("api server wrapper", () => {
       repoLocalReady: 4,
       evidenceMissing: 4,
       textProviderContracts: 16,
-      imageProviderContracts: 17,
+      imageProviderContracts: 18,
       localFallbacks: 0,
       promptAuditRequired: 6,
       humanReviewRequired: 5,
@@ -460,7 +459,7 @@ describe("api server wrapper", () => {
       hostedTokenVerificationProofs: 0,
       backupPolicies: 0,
       deploymentProtectionBypasses: 1,
-      evidenceArtifacts: 11,
+      evidenceArtifacts: 10,
       realOrdersEnabled: 0,
       liveProviderCalls: 0,
       blockers: []
@@ -559,7 +558,7 @@ describe("api server wrapper", () => {
         "No physical print sample, pickup proof, or retailer QA certification is attached."
       ])
     );
-    expect(report.readiness.routes.total).toBe(32);
+    expect(report.readiness.routes.total).toBe(37);
     expect(report.readiness.routes.idempotentMutations).toBe(expectedIdempotentMutations);
     expect(report.readiness.security).toMatchObject({
       headers: 8,
@@ -571,7 +570,7 @@ describe("api server wrapper", () => {
     });
     expect(report.readiness.persistence).toMatchObject({
       tables: 21,
-      schemaBackedRoutes: 22,
+      schemaBackedRoutes: 24,
       authSessionTable: true,
       accountIdentityTable: true,
       accountRecoveryTable: true,
@@ -773,12 +772,12 @@ describe("api server wrapper", () => {
       expect(staticResponse.headers.get("cache-control")).toBe("no-store");
 
       const readiness = await getJson(port, "/api/admin/readiness");
-      expect(readiness.routes).toMatchObject({ total: 32, admin: 9, idempotentMutations: expectedIdempotentMutations });
-      expect(readiness.providers).toMatchObject({ total: 129, readyLocal: 16, credentialGated: 97, blocked: 6 });
+      expect(readiness.routes).toMatchObject({ total: 37, admin: 14, idempotentMutations: expectedIdempotentMutations });
+      expect(readiness.providers).toMatchObject({ total: 130, readyLocal: 16, credentialGated: 98, blocked: 6 });
       expect(readiness.providerGovernance).toMatchObject({
-        total: 129,
+        total: 130,
         fallbackCovered: 96,
-        budgetCapped: 104,
+        budgetCapped: 105,
         liveNetworkDefault: false,
         realOrdersEnabled: false,
         blockers: []
@@ -817,7 +816,7 @@ describe("api server wrapper", () => {
         repoLocalReady: 4,
         evidenceMissing: 4,
         textProviderContracts: 16,
-        imageProviderContracts: 17,
+        imageProviderContracts: 18,
         localFallbacks: 0,
         promptAuditRequired: 6,
         humanReviewRequired: 5,
@@ -899,7 +898,7 @@ describe("api server wrapper", () => {
         hostedTokenVerificationProofs: 0,
         backupPolicies: 0,
         deploymentProtectionBypasses: 1,
-        evidenceArtifacts: 11,
+        evidenceArtifacts: 10,
         realOrdersEnabled: 0,
         liveProviderCalls: 0,
         blockers: []
@@ -976,7 +975,7 @@ describe("api server wrapper", () => {
       const persistence = await getJson(port, "/api/admin/persistence-readiness");
       expect(persistence.persistence).toMatchObject({
         tables: 21,
-        schemaBackedRoutes: 22,
+        schemaBackedRoutes: 24,
         authSessionTable: true,
         accountIdentityTable: true,
         accountRecoveryTable: true,
@@ -995,11 +994,11 @@ describe("api server wrapper", () => {
 
       const governance = await getJson(port, "/api/admin/provider-governance");
       expect(governance.providerGovernance).toMatchObject({
-        total: 129,
-        monthlyBudgetCents: 202600,
+        total: 130,
+        monthlyBudgetCents: 206600,
         maxPerRequestBudgetCents: 5,
-        rateLimited: 123,
-        queueRequired: 90,
+        rateLimited: 124,
+        queueRequired: 91,
         fallbackCovered: 96,
         liveNetworkDefault: false,
         realOrdersEnabled: false,
@@ -1615,7 +1614,6 @@ describe("api server wrapper", () => {
         CUSTOMCARD_AI_CUSTOMER_CHAT_LIVE_ENABLED: "false",
         CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "false",
         CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG: "false",
-        WALGREENS_VENDOR_MODE: "disabled_until_certified",
         AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
         CUSTOMCARD_CUSTOMER_SESSION_TOKEN: customerToken,
         CUSTOMCARD_ADMIN_SESSION_TOKEN: adminToken,
@@ -1655,6 +1653,87 @@ describe("api server wrapper", () => {
         orderEventRecords: 0,
         consentRecords: 0,
         dataRequestRecords: 0
+      });
+
+      const unauthenticatedSafetyControls = await fetch(`http://127.0.0.1:${port}/api/admin/safety-controls`);
+      expect(unauthenticatedSafetyControls.status).toBe(401);
+      expect(await unauthenticatedSafetyControls.json()).toMatchObject({
+        status: "auth-required",
+        requiredAuth: "admin-session"
+      });
+
+      const initialSafetyControls = await getJson(port, "/api/admin/safety-controls", bearer(adminToken));
+      expect(initialSafetyControls).toMatchObject({
+        service: "customcard-admin-safety-controls",
+        status: "fail-closed",
+        realOrdersEnabled: false,
+        vendorModes: { walgreens: "disabled_until_certified" },
+        vendorCertification: { walgreens: false }
+      });
+
+      const safetyControlsMissingKey = await postJson(
+        port,
+        "/api/admin/safety-controls",
+        { vendorModes: { walgreens: "sandbox" } },
+        bearer(adminToken)
+      );
+      expect(safetyControlsMissingKey.status).toBe(400);
+      expect(await safetyControlsMissingKey.json()).toMatchObject({
+        status: "idempotency-key-required",
+        path: "/api/admin/safety-controls"
+      });
+
+      const savedSafetyControls = await postJson(
+        port,
+        "/api/admin/safety-controls",
+        {
+          vendorModes: { walgreens: "sandbox" },
+          vendorCertification: { walgreens: true },
+          productionMutationAcknowledged: true,
+          liveWriteAcknowledged: false,
+          realOrdersEnabled: "true"
+        },
+        {
+          ...bearer(adminToken),
+          "X-Idempotency-Key": "admin-safety-controls-0001"
+        }
+      );
+      expect(savedSafetyControls.status).toBe(200);
+      expect(await savedSafetyControls.json()).toMatchObject({
+        vendorModes: { walgreens: "sandbox" },
+        vendorCertification: { walgreens: true },
+        realOrdersEnabled: false,
+        updatedBy: "admin-demo"
+      });
+      const resetSafetyControls = await postJson(
+        port,
+        "/api/admin/safety-controls",
+        { vendorModes: { walgreens: "disabled_until_certified" } },
+        {
+          ...bearer(adminToken),
+          "X-Idempotency-Key": "admin-safety-controls-0002"
+        }
+      );
+      expect(resetSafetyControls.status).toBe(200);
+
+      const adminModelBenchmarks = await getJson(port, "/api/admin/model-benchmarks", bearer(adminToken));
+      expect(adminModelBenchmarks).toMatchObject({
+        service: "customcard-api",
+        status: "ready",
+        liveRunsAllowed: true,
+        liveRunGate: "admin-live-checkbox"
+      });
+
+      const benchmarkMissingKey = await postJson(
+        port,
+        "/api/admin/model-benchmarks/run",
+        { phase: "pipeline-quality", live: true },
+        bearer(adminToken)
+      );
+      expect(benchmarkMissingKey.status).toBe(400);
+      expect(await benchmarkMissingKey.json()).toMatchObject({
+        status: "idempotency-key-required",
+        path: "/api/admin/model-benchmarks/run"
       });
 
       const customerBootstrap = await getJson(port, "/api/customer/bootstrap", bearer(customerToken));

@@ -12,8 +12,7 @@ export const durableRuntimeRequiredEnv = Object.freeze([
   "CLERK_JWT_KEY",
   "CLERK_AUTHORIZED_PARTIES",
   "CLERK_ISSUER",
-  "CLERK_AUDIENCE",
-  "REAL_ORDER_KILL_SWITCH"
+  "CLERK_AUDIENCE"
 ]);
 
 export const workerRequiredEnv = durableRuntimeRequiredEnv;
@@ -66,9 +65,6 @@ export function validateDurableRuntimeEnv(env = process.env) {
   if (isProductionRuntimeEnv(env) && mode !== "postgres") {
     blockers.push("CustomCard production runtime requires CUSTOMCARD_API_RUNTIME=postgres.");
   }
-  if (env.REAL_ORDER_KILL_SWITCH !== "disabled") {
-    blockers.push("CustomCard runtime requires REAL_ORDER_KILL_SWITCH=disabled until certification is recorded.");
-  }
   if (!hasStrongEnvSecret(env, "AUTH_SESSION_SECRET")) {
     blockers.push("CustomCard runtime requires AUTH_SESSION_SECRET to be at least 32 characters.");
   }
@@ -91,9 +87,6 @@ export function validateWorkerRuntimeEnv(env = process.env, { requirePostgres = 
   }
   if ((isProductionRuntimeEnv(env) || requirePostgres) && mode !== "postgres") {
     blockers.push("CustomCard worker execution requires CUSTOMCARD_API_RUNTIME=postgres.");
-  }
-  if (env.REAL_ORDER_KILL_SWITCH !== "disabled") {
-    blockers.push("CustomCard worker requires REAL_ORDER_KILL_SWITCH=disabled until certification is recorded.");
   }
   if (!hasStrongEnvSecret(env, "AUTH_SESSION_SECRET")) {
     blockers.push("CustomCard worker requires AUTH_SESSION_SECRET to be at least 32 characters.");

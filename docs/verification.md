@@ -71,7 +71,7 @@ it after each meaningful implementation pass.
   live S3-compatible endpoint such as MinIO with path-style SigV4 requests,
   reads every object back, verifies checksums, writes the manifest, cleans up the
   isolated bucket, and keeps external vendor calls plus real orders disabled.
-- Provider adapter coverage currently includes 131 adapters: 18 ready-local, 97
+- Provider adapter coverage currently includes 130 adapters: 16 ready-local, 98
   credential-gated, 10 contract-only, and 6 blocked.
 - Production readiness tests cover 13 launch gates for live auth, OAuth,
   AI/image generation, vendor quotes, payments/refunds, direct retail ordering,
@@ -244,8 +244,8 @@ it after each meaningful implementation pass.
   tests, admin/API surfaces, CI wiring, 100% repo-local coverage, and zero live
   production proofs, real orders, or live external network requirements.
 - AI provider readiness is checked by `npm run ai:doctor`, which verifies the
-  8-item text/image provider readiness register, 16 text provider contracts, 17
-  image provider contracts, 2 local fallbacks, prompt/human-review gates,
+  8-item text/image provider readiness register, 16 text provider contracts, 18
+  image provider contracts, 0 local fallbacks, prompt/human-review gates,
   admin/API surfaces, docs, CI wiring, and zero live provider calls, production
   AI traffic, or live external network requirements.
 - Observability readiness is checked by `npm run observability:doctor`, which
@@ -429,7 +429,7 @@ npm run ai:doctor
 
 Result: passed. The JSON report marked register, provider-contracts, surfaces,
 docs, CI, and evidence lanes `ready`; it verified 8 AI readiness items, 16 text
-provider contracts, 17 image provider contracts, 2 local fallbacks, 6 prompt
+provider contracts, 18 image provider contracts, 0 local fallbacks, 6 prompt
 audit gates, 5 human-review gates, zero live provider calls, zero production AI
 traffic, and zero live external network requirements.
 
@@ -556,7 +556,7 @@ npm run provider:governance:doctor
 ```
 
 Result: passed. The JSON report marked catalog, governance, tests, surfaces,
-CI, and safety lanes `ready`; it verified 131 adapter-id signals, 62 usage-based markers,
+CI, and safety lanes `ready`; it verified 130 adapter-id signals, 63 usage-based markers,
 6 blocked live vendor adapters, budget/rate/fallback policy signals, admin/API
 governance surfaces, CI wiring, and no live provider calls or real orders.
 
@@ -596,8 +596,8 @@ npm run api:doctor
 ```
 
 Result: passed. API service readiness reported `ready`, 32 routes, 16
-mutations, 14 idempotent mutation contracts, 129 API-summary providers, provider
-governance for those 129 adapters, 21 persistence tables, 22 schema-backed
+mutations, 14 idempotent mutation contracts, 130 API-summary providers, provider
+governance for those 130 adapters, 21 persistence tables, 24 schema-backed
 routes, 28 stateful routes, contract runtime mode, no live external calls, no
 real vendor orders, no raw content storage, and no blockers. The local
 persistence audit now reports account-scoped API routes for customer data and no

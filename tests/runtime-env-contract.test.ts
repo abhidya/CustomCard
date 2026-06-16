@@ -16,8 +16,7 @@ const durableEnv = {
   CLERK_JWT_KEY: "-----BEGIN PUBLIC KEY-----\\ntest-clerk-jwt-key\\n-----END PUBLIC KEY-----",
   CLERK_AUTHORIZED_PARTIES: "https://customcard.test",
   CLERK_ISSUER: "https://clerk.customcard.test",
-  CLERK_AUDIENCE: "customcard-api",
-  REAL_ORDER_KILL_SWITCH: "disabled"
+  CLERK_AUDIENCE: "customcard-api"
 };
 
 describe("runtime env contract", () => {
@@ -53,18 +52,16 @@ describe("runtime env contract", () => {
     });
   });
 
-  it("blocks non-postgres production runtime and unsafe launch switches", () => {
+  it("blocks non-postgres production runtime and weak runtime secrets", () => {
     expect(
       validateDurableRuntimeEnv({
         ...durableEnv,
         CUSTOMCARD_API_RUNTIME: "memory",
-        REAL_ORDER_KILL_SWITCH: "enabled",
         AUTH_SESSION_SECRET: "short"
       }).blockers
     ).toEqual(
       expect.arrayContaining([
         "CustomCard production runtime requires CUSTOMCARD_API_RUNTIME=postgres.",
-        "CustomCard runtime requires REAL_ORDER_KILL_SWITCH=disabled until certification is recorded.",
         "CustomCard runtime requires AUTH_SESSION_SECRET to be at least 32 characters."
       ])
     );
@@ -76,9 +73,6 @@ describe("runtime env contract", () => {
     );
     expect(validateWorkerRuntimeEnv({ ...durableEnv, CUSTOMCARD_API_RUNTIME: "surprise" })).toEqual(
       expect.arrayContaining(["CustomCard worker requires CUSTOMCARD_API_RUNTIME to be one of: contract, memory, postgres."])
-    );
-    expect(validateWorkerRuntimeEnv({ ...durableEnv, REAL_ORDER_KILL_SWITCH: "enabled" })).toEqual(
-      expect.arrayContaining(["CustomCard worker requires REAL_ORDER_KILL_SWITCH=disabled until certification is recorded."])
     );
     expect(validateWorkerRuntimeEnv({ ...durableEnv, QUEUE_URL: "" })).not.toContain(
       "CustomCard worker missing env: QUEUE_URL"

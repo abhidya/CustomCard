@@ -1,5 +1,12 @@
+import {
+  buildAdminModelBenchmarkCatalog,
+  runAdminModelBenchmark,
+  saveAdminModelBenchmarkGrade
+} from "./model-benchmark-admin.mjs";
+
 export function createApiRouteFamilies(deps) {
   const {
+    adminSafetyControls,
     aiCardGenerateRoute,
     aiChatRespondRoute,
     aiGenerationService,
@@ -149,6 +156,19 @@ export function createApiRouteFamilies(deps) {
       return true;
     }
 
+    if (path === "/api/admin/safety-controls" && request?.method === "GET") {
+      sendJson(response, 200, adminSafetyControls.read());
+      return true;
+    }
+
+    if (path === "/api/admin/safety-controls" && request?.method === "POST") {
+      if (!requireIdempotencyKey({ request, response, path })) return true;
+      const body = await readJsonBody({ request, response, path });
+      if (!body.ok) return true;
+      sendJson(response, 200, adminSafetyControls.update(body.value, { authContext }));
+      return true;
+    }
+
     if (path === "/api/admin/persistence-readiness") {
       sendJson(response, 200, {
         service: "customcard-api",
@@ -167,7 +187,50 @@ export function createApiRouteFamilies(deps) {
       return true;
     }
 
+    if (path === "/api/admin/model-benchmarks") {
+      sendJson(response, 200, buildAdminModelBenchmarkCatalog());
+      return true;
+    }
+
+    if (path === "/api/admin/model-benchmarks/run") {
+      if (!requireIdempotencyKey({ request, response, path })) return true;
+      const body = await readJsonBody({ request, response, path });
+      if (!body.ok) return true;
+      const result = await runAdminModelBenchmark({ body: body.value });
+      sendJson(response, result.statusCode, result.payload);
+      return true;
+    }
+
+    if (path === "/api/admin/model-benchmarks/grade") {
+      if (!requireIdempotencyKey({ request, response, path })) return true;
+      const body = await readJsonBody({ request, response, path });
+      if (!body.ok) return true;
+      const result = saveAdminModelBenchmarkGrade({ body: body.value });
+      sendJson(response, result.statusCode, result.payload);
+      return true;
+    }
+
     return false;
+  }
+
+  function requireIdempotencyKey({ request, response, path }) {
+    if (request.headers?.["x-idempotency-key"]) return true;
+    sendJson(response, 400, {
+      service: "customcard-api",
+      status: "idempotency-key-required",
+      path
+    });
+    return false;
+  }
+
+  async function readJsonBody({ request, response, path }) {
+    try {
+      const rawBody = await readRequestBody(request, 128_000);
+      return { ok: true, value: rawBody ? JSON.parse(rawBody) : {} };
+    } catch {
+      sendJson(response, 400, { service: "customcard-api", status: "invalid-json", path });
+      return { ok: false };
+    }
   }
 
   function handleBootstrapRoute({ path, response }) {

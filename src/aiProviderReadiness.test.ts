@@ -16,7 +16,7 @@ describe("AI provider readiness", () => {
       repoLocalReady: 4,
       evidenceMissing: 4,
       textProviderContracts: 16,
-      imageProviderContracts: 17,
+      imageProviderContracts: 18,
       localFallbacks: 0,
       promptAuditRequired: 6,
       humanReviewRequired: 5,
@@ -59,6 +59,7 @@ describe("AI provider readiness", () => {
         "replicate-image",
         "fal-image",
         "bfl-flux-image",
+        "runcomfy-model-api-image",
         "adobe-firefly-image",
         "recraft-image",
         "luma-image"

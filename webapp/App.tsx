@@ -633,7 +633,7 @@ export default function App() {
         ) : null}
       </main>
 
-      <AppFooter />
+      {appFooter}
 
       {showBottomNav ? (
         <nav aria-label="CustomCard quick navigation" className="bottomnav">
@@ -683,7 +683,6 @@ function useViewportWidth(): number | undefined {
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
     const syncViewportWidth = () => setViewportWidth(window.innerWidth);
-    syncViewportWidth();
     window.addEventListener("resize", syncViewportWidth);
     return () => window.removeEventListener("resize", syncViewportWidth);
   }, []);
@@ -695,11 +694,12 @@ type AdminAccess = BrowserAdminAccessPolicy & AdminAccessPolicy;
 
 function useAdminAccess(): AdminAccess {
   const { isLoaded, isSignedIn, user } = useUser();
-  const localAdminPreview =
-    typeof window === "undefined" ? false : resolveLocalAdminPreview(import.meta.env, window.location.href);
+  const localAdminPreviewRef = useRef(
+    typeof window === "undefined" ? false : resolveLocalAdminPreview(import.meta.env, window.location.href)
+  );
   return useMemo(
-    () => resolveBrowserAdminAccess({ isLoaded, isSignedIn, user, localAdminPreview }),
-    [isLoaded, isSignedIn, localAdminPreview, user]
+    () => resolveBrowserAdminAccess({ isLoaded, isSignedIn, user, localAdminPreview: localAdminPreviewRef.current }),
+    [isLoaded, isSignedIn, user]
   );
 }
 

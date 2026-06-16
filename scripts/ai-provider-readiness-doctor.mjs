@@ -49,7 +49,7 @@ const itemIds = aiProviderReadinessItems.map((item) => item.id);
 const checks = [
   checkExact("register", "item-count", summary.total, 8),
   checkExact("register", "text-provider-contracts", summary.textProviderContracts, 16),
-  checkExact("register", "image-provider-contracts", summary.imageProviderContracts, 17),
+  checkExact("register", "image-provider-contracts", summary.imageProviderContracts, 18),
   checkExact("register", "local-fallbacks", summary.localFallbacks, 0),
   checkExact("register", "no-live-provider-calls", summary.liveProviderCallsEnabled, 0),
   checkExact("register", "no-live-external-network", summary.externalNetworkCalls, 0),
@@ -124,6 +124,7 @@ const checks = [
       "stability-stable-image",
       "deepai-text2img-image",
       "bfl-flux-image",
+      "runcomfy-model-api-image",
       "adobe-firefly-image",
       "recraft-image",
       "luma-image",

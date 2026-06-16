@@ -8,8 +8,7 @@ const baseEnv = {
   QUEUE_URL: "redis://queue.customcard.local",
   OBJECT_STORE_URL: "file:///tmp/customcard-objects",
   OBJECT_STORE_SIGNING_SECRET: "test-object-store-signing-secret-32",
-  AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
-  REAL_ORDER_KILL_SWITCH: "disabled"
+  AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars"
 };
 
 const routes = [

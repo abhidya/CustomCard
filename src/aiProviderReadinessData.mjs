@@ -45,6 +45,7 @@ const requiredImageAdapterIds = [
   "leonardo-image",
   "fal-image",
   "bfl-flux-image",
+  "runcomfy-model-api-image",
   "adobe-firefly-image",
   "recraft-image",
   "luma-image"

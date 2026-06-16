@@ -998,6 +998,7 @@ function imageModelEnvKeys(adapterId: string): string[] {
     "together-image": ["CUSTOMCARD_TOGETHER_IMAGE_MODEL", "TOGETHER_IMAGE_MODEL"],
     "fal-image": ["CUSTOMCARD_FAL_IMAGE_MODEL", "FAL_IMAGE_MODEL"],
     "bfl-flux-image": ["CUSTOMCARD_BFL_IMAGE_MODEL", "BFL_IMAGE_MODEL"],
+    "runcomfy-model-api-image": [],
     "luma-image": ["CUSTOMCARD_LUMA_IMAGE_MODEL", "LUMA_IMAGE_MODEL"],
     "replicate-image": ["CUSTOMCARD_REPLICATE_IMAGE_MODEL", "REPLICATE_IMAGE_MODEL"]
   };
@@ -1673,6 +1674,23 @@ function buildSinglePanelImageRequest(
       },
       [],
       { "x-key": "{BFL_API_KEY}" }
+    );
+  }
+
+  if (adapter.id === "runcomfy-model-api-image") {
+    return request(
+      adapter,
+      "POST",
+      "https://model-api.runcomfy.net/v1/models/{admin-selected-runcomfy-model}",
+      ["RUNCOMFY_API_TOKEN"],
+      {
+        prompt,
+        image_size: "portrait_4_3",
+        model,
+        metadata
+      },
+      [],
+      { authorization: "Bearer {RUNCOMFY_API_TOKEN}" }
     );
   }
 

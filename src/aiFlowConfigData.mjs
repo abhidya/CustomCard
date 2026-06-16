@@ -26,7 +26,8 @@ const imageProviderAdapterIds = [
   "replicate-image",
   "together-image",
   "fal-image",
-  "bfl-flux-image"
+  "bfl-flux-image",
+  "runcomfy-model-api-image"
 ];
 
 export const aiFlowDefinitions = [
@@ -136,7 +137,8 @@ export const aiProviderEnvRequirements = {
   "stability-stable-image": [["STABILITY_API_KEY"]],
   "replicate-image": [["REPLICATE_API_TOKEN"]],
   "fal-image": [["FAL_KEY"]],
-  "bfl-flux-image": [["BFL_API_KEY"]]
+  "bfl-flux-image": [["BFL_API_KEY"]],
+  "runcomfy-model-api-image": [["RUNCOMFY_API_TOKEN"]]
 };
 
 const aiProviderModelEnvKeys = {
@@ -162,7 +164,8 @@ const aiProviderModelEnvKeys = {
   "stability-stable-image": ["CUSTOMCARD_STABILITY_IMAGE_MODEL", "STABILITY_IMAGE_MODEL"],
   "replicate-image": ["CUSTOMCARD_REPLICATE_IMAGE_MODEL", "REPLICATE_IMAGE_MODEL"],
   "fal-image": ["CUSTOMCARD_FAL_IMAGE_MODEL", "FAL_IMAGE_MODEL"],
-  "bfl-flux-image": ["CUSTOMCARD_BFL_IMAGE_MODEL", "BFL_IMAGE_MODEL"]
+  "bfl-flux-image": ["CUSTOMCARD_BFL_IMAGE_MODEL", "BFL_IMAGE_MODEL"],
+  "runcomfy-model-api-image": []
 };
 
 const defaultModelsByAdapter = {
@@ -187,7 +190,35 @@ const defaultModelsByAdapter = {
   "stability-stable-image": "stable-image-core",
   "replicate-image": "black-forest-labs/flux-schnell",
   "fal-image": "fal-ai/flux/schnell",
-  "bfl-flux-image": "flux-pro"
+  "bfl-flux-image": "flux-pro",
+  "runcomfy-model-api-image": "blackforestlabs/flux-2/dev/text-to-image"
+};
+
+export const aiProviderModelPresets = {
+  "runcomfy-model-api-image": [
+    {
+      id: "blackforestlabs/flux-2/dev/text-to-image",
+      label: "Flux 2 Dev Free",
+      detail: "RunComfy limited-time free multi-image text-to-image model"
+    }
+  ],
+  "deepai-text2img-image": [{ id: "text2img", label: "DeepAI text2img" }],
+  "cloudflare-workers-ai-image": [
+    { id: "@cf/black-forest-labs/flux-1-schnell", label: "Cloudflare FLUX.1 Schnell" },
+    { id: "@cf/bytedance/stable-diffusion-xl-lightning", label: "Cloudflare SDXL Lightning" }
+  ],
+  "openai-images": [{ id: "gpt-image-2", label: "OpenAI gpt-image-2" }],
+  "google-gemini-image": [{ id: "gemini-3.1-flash-image", label: "Gemini 3.1 Flash Image" }],
+  "huggingface-image": [
+    { id: "black-forest-labs/FLUX.1-schnell", label: "FLUX.1 Schnell" },
+    { id: "Qwen/Qwen-Image", label: "Qwen Image" },
+    { id: "Qwen/Qwen-Image-2512", label: "Qwen Image 2512" },
+    { id: "Tongyi-MAI/Z-Image-Turbo", label: "Z-Image Turbo" }
+  ],
+  "stability-stable-image": [{ id: "stable-image-core", label: "Stable Image Core" }],
+  "replicate-image": [{ id: "black-forest-labs/flux-schnell", label: "Replicate FLUX Schnell" }],
+  "fal-image": [{ id: "fal-ai/flux/schnell", label: "fal FLUX Schnell" }],
+  "bfl-flux-image": [{ id: "flux-pro", label: "BFL FLUX Pro" }]
 };
 
 export function hasUsableAiEnvValue(value) {

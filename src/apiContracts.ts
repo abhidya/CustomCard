@@ -56,6 +56,7 @@ import {
   buildSampleRetailPrinterCouponPortalEvidencePayload,
   retailPrinterCouponPortalEvidenceRoute
 } from "./retailPrinterCouponPortalEvidenceData.mjs";
+import { normalizeAdminSafetyControls } from "./adminSafetyControlsData.mjs";
 import {
   buildAdminPanelModel,
   buildCustomerChatTranscript,
@@ -354,6 +355,9 @@ export function resolveApiContractResponse(path: string) {
   if (path === "/api/admin/provider-governance") {
     return summarizeProviderGovernance();
   }
+  if (path === "/api/admin/safety-controls") {
+    return normalizeAdminSafetyControls();
+  }
   if (path === "/api/admin/artifacts/bucket") {
     return {
       service: "customcard-api",
@@ -375,6 +379,24 @@ export function resolveApiContractResponse(path: string) {
       objects: [],
       renderPackets: [],
       blockers: ["Object store persistence is not configured."]
+    };
+  }
+  if (path === "/api/admin/model-benchmarks") {
+    return {
+      service: "customcard-api",
+      status: "ready",
+      phases: ["smoke", "full", "pipeline-quality", "typography"],
+      stories: [],
+      textCandidates: [],
+      imageCandidates: [],
+      recentRuns: [],
+      liveRunsAllowed: true,
+      liveRunGate: "admin-live-checkbox",
+      evidenceRoot: "docs/evidence/generated-card-comparisons",
+      executableAdapters: {
+        text: [],
+        image: []
+      }
     };
   }
   if (path === "/api/calendar/connections/start") {

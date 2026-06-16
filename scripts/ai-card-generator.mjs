@@ -465,7 +465,7 @@ function requestScopedAiFlowConfig(body, env, requestContext = {}) {
 }
 
 function isAiEnvKey(key) {
-  return /^(CUSTOMCARD_AI_|ANTHROPIC_|OPENAI_|CLOUDFLARE_|GOOGLE_|GEMINI_|HUGGINGFACE_|GROQ_|TOGETHER_|MISTRAL_|DEEPSEEK_|DEEPAI_|FIREWORKS_|PERPLEXITY_|XAI_|REPLICATE_|STABILITY_|FAL_|BFL_)/.test(key);
+  return /^(CUSTOMCARD_AI_|CUSTOMCARD_RUNCOMFY_|ANTHROPIC_|OPENAI_|CLOUDFLARE_|GOOGLE_|GEMINI_|HUGGINGFACE_|GROQ_|TOGETHER_|MISTRAL_|DEEPSEEK_|DEEPAI_|FIREWORKS_|PERPLEXITY_|XAI_|REPLICATE_|STABILITY_|FAL_|BFL_|RUNCOMFY_)/.test(key);
 }
 
 const textProviderExecutors = {
@@ -479,7 +479,8 @@ const imageProviderExecutors = {
   "openai-images": executeOpenAiImages,
   "google-gemini-image": executeGoogleGeminiImage,
   "huggingface-image": executeHuggingFaceImage,
-  "deepai-text2img-image": executeDeepAiText2ImgImage
+  "deepai-text2img-image": executeDeepAiText2ImgImage,
+  "runcomfy-model-api-image": executeRunComfyModelApiImage
 };
 const providerExecutionAdapter = createAiProviderExecutionAdapter({
   textProviderExecutors,
@@ -974,6 +975,78 @@ async function executeDeepAiText2ImgImage({ flow, env, fetchImpl, panelId, promp
   return materializeGeneratedImageUrl(extractImageUrl(data, contentType || "image/png"), fetchImpl, env);
 }
 
+async function executeRunComfyModelApiImage({ flow, env, fetchImpl, panelId, prompt, negativePrompt }) {
+  const token = requiredEnv(env, "RUNCOMFY_API_TOKEN");
+  const modelId = requiredRunComfyModelId(flow, env);
+  const baseUrl = "https://model-api.runcomfy.net";
+  const submitResponse = await fetchWithProviderBackoff(
+    fetchImpl,
+    `${baseUrl}/v1/models/${encodeRunComfyModelId(modelId)}`,
+    {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json"
+      },
+      body: JSON.stringify(buildRunComfyImageRequestBody({ flow, env, panelId, prompt, negativePrompt }))
+    },
+    { retries: flow.maxRetries, baseDelayMs: 1500, maxDelayMs: 5000 }
+  );
+  const submitContentType = submitResponse.headers?.get?.("content-type") ?? "";
+  if (!submitResponse.ok) {
+    throw new Error(`RunComfy image provider returned ${submitResponse.status}: ${await readProviderError(submitResponse, submitContentType)}.`);
+  }
+
+  const submission = await submitResponse.json().catch(() => undefined);
+  const requestId = String(submission?.request_id || submission?.id || "").trim();
+  if (!requestId) throw new Error("RunComfy image provider response did not include request_id.");
+
+  const maxPolls = boundedIntegerEnv(env.CUSTOMCARD_RUNCOMFY_IMAGE_MAX_POLLS || env.RUNCOMFY_IMAGE_MAX_POLLS, 1, 120, 30);
+  const pollIntervalMs = boundedIntegerEnv(
+    env.CUSTOMCARD_RUNCOMFY_IMAGE_POLL_INTERVAL_MS || env.RUNCOMFY_IMAGE_POLL_INTERVAL_MS,
+    0,
+    30_000,
+    2000
+  );
+  let completed = false;
+  for (let attempt = 0; attempt < maxPolls; attempt += 1) {
+    const statusResponse = await fetchImpl(`${baseUrl}/v1/requests/${encodeURIComponent(requestId)}/status`, {
+      method: "GET",
+      headers: { authorization: `Bearer ${token}` }
+    });
+    const statusContentType = statusResponse.headers?.get?.("content-type") ?? "";
+    if (!statusResponse.ok) {
+      throw new Error(`RunComfy status poll returned ${statusResponse.status}: ${await readProviderError(statusResponse, statusContentType)}.`);
+    }
+    const statusData = await statusResponse.json().catch(() => undefined);
+    const status = String(statusData?.status || "").toLowerCase();
+    if (status === "completed" || status === "succeeded") {
+      completed = true;
+      break;
+    }
+    if (status === "failed" || status === "cancelled" || status === "canceled") {
+      throw new Error(`RunComfy image provider request ${status || "failed"}.`);
+    }
+    if (attempt + 1 < maxPolls && pollIntervalMs > 0) await sleep(pollIntervalMs);
+  }
+  if (!completed) throw new Error("RunComfy image provider timed out before completion.");
+
+  const resultResponse = await fetchImpl(`${baseUrl}/v1/requests/${encodeURIComponent(requestId)}/result`, {
+    method: "GET",
+    headers: { authorization: `Bearer ${token}` }
+  });
+  const resultContentType = resultResponse.headers?.get?.("content-type") ?? "";
+  if (!resultResponse.ok) {
+    throw new Error(`RunComfy result fetch returned ${resultResponse.status}: ${await readProviderError(resultResponse, resultContentType)}.`);
+  }
+  const resultData = await resultResponse.json().catch(() => undefined);
+  const resultStatus = String(resultData?.status || "").toLowerCase();
+  if (resultStatus === "failed" || resultStatus === "cancelled" || resultStatus === "canceled") {
+    throw new Error(`RunComfy image provider result ${resultStatus}.`);
+  }
+  return materializeGeneratedImageUrl(extractImageUrl(resultData, resultContentType || "image/png"), fetchImpl, env);
+}
+
 function buildCloudflareImageRequestBody({ flow, panelId, prompt, negativePrompt }) {
   const providerPrompt = buildCloudflareImagePrompt({ panelId, prompt });
   const providerNegativePrompt = buildCloudflareNegativePrompt({ negativePrompt, prompt });
@@ -1133,6 +1206,55 @@ function buildDeepAiNegativePrompt({ prompt, negativePrompt }) {
     ? "readable text, fake text, letters, words, handwriting, calligraphy, label, logo, watermark, people, face, portrait, hands, body, folded card mockup, physical card mockup, open book, paper fold, crease line, page seam, room, wall, floor, door, window, envelope, tabletop scene, table, desk, product photo, frame, QR code, busy background, car, road, landscape, horizon, hills, mountains, river, ocean, waves, sunset, sun, bright yellow, neon green, cheerful celebration, phone, device, hospital, religious symbols"
     : negativePrompt;
   return truncate(base || negativePrompt || "", 700);
+}
+
+function requiredRunComfyModelId(flow, env) {
+  const modelId = String(flow.model || "").trim();
+  if (!modelId) throw new Error("RunComfy model is not configured in admin provider settings.");
+  return modelId;
+}
+
+function encodeRunComfyModelId(modelId) {
+  return String(modelId).split("/").map(encodeURIComponent).join("/");
+}
+
+function buildRunComfyImageRequestBody({ flow, env, panelId, prompt, negativePrompt }) {
+  const seed = numericSeed(`${flow.model}:${panelId}:${prompt}`) % 2147483647;
+  const body = {
+    prompt: truncate(prompt, 2048),
+    image_size: String(env.CUSTOMCARD_RUNCOMFY_IMAGE_SIZE || "portrait_4_3"),
+    ...runComfyInputOverrides(env, { prompt, negativePrompt, panelId, seed })
+  };
+  return Object.fromEntries(Object.entries(body).filter(([, value]) => value !== undefined && value !== null && value !== ""));
+}
+
+function runComfyInputOverrides(env, variables) {
+  const raw = env.CUSTOMCARD_RUNCOMFY_IMAGE_INPUT_JSON || env.RUNCOMFY_IMAGE_INPUT_JSON;
+  if (!raw) return {};
+  try {
+    return interpolateRunComfyInput(JSON.parse(String(raw)), variables);
+  } catch {
+    return {};
+  }
+}
+
+function interpolateRunComfyInput(value, variables) {
+  if (Array.isArray(value)) return value.map((item) => interpolateRunComfyInput(item, variables));
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, nested]) => [key, interpolateRunComfyInput(nested, variables)]));
+  }
+  if (typeof value !== "string") return value;
+  return value
+    .replace(/\{\{prompt\}\}/g, variables.prompt)
+    .replace(/\{\{negative_prompt\}\}/g, variables.negativePrompt || "")
+    .replace(/\{\{panel_id\}\}/g, variables.panelId)
+    .replace(/\{\{seed\}\}/g, String(variables.seed));
+}
+
+function boundedIntegerEnv(value, min, max, fallback) {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed)) return fallback;
+  return Math.min(Math.max(parsed, min), max);
 }
 
 function buildDeepAiQuietCarePrompt({ panelId }) {
@@ -2808,6 +2930,8 @@ function stringifyStructuredText(value) {
 
 function extractImageUrl(data, contentType) {
   const inlineImage = extractInlineImage(data);
+  const outputImage = data?.output?.images?.[0];
+  const outputArrayImage = data?.output?.[0];
   const image =
     data?.result?.image_url ??
     data?.result?.url ??
@@ -2816,9 +2940,17 @@ function extractImageUrl(data, contentType) {
     data?.url ??
     data?.data?.[0]?.url ??
     data?.data?.[0]?.b64_json ??
+    data?.output?.image ??
+    data?.output?.image_url ??
+    data?.output?.url ??
+    data?.output?.images?.[0]?.url ??
+    data?.output?.images?.[0]?.image_url ??
+    (typeof outputImage === "string" ? outputImage : undefined) ??
     data?.images?.[0]?.url ??
     data?.images?.[0]?.image_url ??
-    data?.output?.[0] ??
+    data?.output?.[0]?.url ??
+    data?.output?.[0]?.image_url ??
+    (typeof outputArrayImage === "string" ? outputArrayImage : undefined) ??
     data?.result?.image ??
     data?.image ??
     inlineImage?.data;

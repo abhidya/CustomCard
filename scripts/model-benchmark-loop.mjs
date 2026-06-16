@@ -523,6 +523,13 @@ const imageCandidates = [
     requiredEnv: ["DEEPAI_API_KEY"]
   },
   {
+    id: "image-runcomfy-flux-2-dev-free",
+    label: "RunComfy Flux 2 Dev Free",
+    adapterId: "runcomfy-model-api-image",
+    model: "blackforestlabs/flux-2/dev/text-to-image",
+    requiredEnv: ["RUNCOMFY_API_TOKEN"]
+  },
+  {
     id: "image-openai-gpt-image-2",
     label: "OpenAI image model currently supported",
     adapterId: "openai-images",
@@ -577,7 +584,29 @@ if (isMainModule()) {
 }
 
 async function main() {
-  const args = parseArgs(process.argv.slice(2));
+  await runModelBenchmarkLoopFromArgs(parseArgs(process.argv.slice(2)), { log: true });
+}
+
+export function buildModelBenchmarkAdminCatalog(env = process.env) {
+  const candidates = buildCandidateCatalog(env);
+  return {
+    phases: ["smoke", "full", "pipeline-quality", "typography"],
+    stories: Object.values(stories).map((story) => ({
+      id: story.id,
+      customerType: story.request?.relationship ?? "customer",
+      occasion: story.request?.occasion ?? story.id,
+      memoryLoad: story.request?.memory_notes?.length ? `${story.request.memory_notes.length} notes` : "none",
+      brief: story.request?.personal_note ?? story.request?.occasion ?? story.id,
+      mustInclude: story.must_include ?? [],
+      mustAvoid: story.must_avoid ?? []
+    })),
+    textCandidates: candidates.text,
+    imageCandidates: candidates.image,
+    executableAdapters: candidates.executableAdapters
+  };
+}
+
+export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false } = {}) {
   const outputDir = resolve(args["output-dir"] || defaultOutputDir);
   const phase = args.phase || "smoke";
   const phaseDirName = args["phase-dir"] || phase;
@@ -592,13 +621,17 @@ async function main() {
 
   if (!live) {
     const plannedRuns = applyRunFilters(plannedRunsForPhase(phase, candidates), args);
-    writeJson(resolve(outputDir, `${phaseDirName}-dry-run.json`), {
+    const dryRunPayload = {
       phase,
+      phaseDir: phaseDirName,
+      outputDir: relativePath(outputDir),
+      dryRun: true,
       liveProviderCallsEnabled: false,
       plannedRuns: plannedRuns.map(plannedRunSummary)
-    });
-    console.log(JSON.stringify({ outputDir: relativePath(outputDir), phase, dryRun: true }, null, 2));
-    return;
+    };
+    writeJson(resolve(outputDir, `${phaseDirName}-dry-run.json`), dryRunPayload);
+    if (log) console.log(JSON.stringify({ outputDir: relativePath(outputDir), phase, dryRun: true }, null, 2));
+    return dryRunPayload;
   }
 
   const providerHttp = [];
@@ -635,7 +668,18 @@ async function main() {
   writeJson(resolve(outputDir, `${phaseDirName}-provider-http.json`), sanitize(providerHttp, env));
   writeJson(resolve(outputDir, `${phaseDirName}-summary.json`), sanitize(summary, env));
   writeMarkdown(resolve(outputDir, `${phaseDirName}-README.md`), buildPhaseReadme(summary));
-  console.log(JSON.stringify({ outputDir: relativePath(outputDir), phase, runCount: summary.runs.length }, null, 2));
+  const result = {
+    outputDir: relativePath(outputDir),
+    phase,
+    phaseDir: phaseDirName,
+    dryRun: false,
+    liveProviderCallsEnabled: true,
+    runCount: summary.runs.length,
+    plannedRuns: summary.plannedRuns,
+    summary
+  };
+  if (log) console.log(JSON.stringify({ outputDir: relativePath(outputDir), phase, runCount: summary.runs.length }, null, 2));
+  return result;
 }
 
 function buildCandidateCatalog(env) {
@@ -788,6 +832,7 @@ export function pipelineQualityRuns(candidates) {
   ]);
   const imageIds = new Set([
     "image-cloudflare-sdxl-lightning",
+    "image-runcomfy-flux-2-dev-free",
     "image-deepai-text2img",
     "image-openai-gpt-image-2",
     "image-gemini-supported",

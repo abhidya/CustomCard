@@ -316,6 +316,59 @@ export const apiRouteContracts = [
     backedBy: ["summarizeProviderGovernance", "validateProviderGovernance"]
   },
   {
+    id: "admin-safety-controls",
+    method: "GET",
+    path: "/api/admin/safety-controls",
+    audience: "admin",
+    auth: "admin-session",
+    runtimeMode: "durable-api",
+    requestSchema: ["adminSession"],
+    responseSchema: [
+      "realOrdersEnabled",
+      "vendorModes",
+      "vendorCertification",
+      "productionMutationAcknowledged",
+      "liveWriteAcknowledged",
+      "blockers"
+    ],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy: "Admin-only safety gate state; no customer content or provider credentials.",
+    backedBy: ["adminSafetyControlsData", "admin-session auth", "fail-closed gate defaults"]
+  },
+  {
+    id: "admin-safety-controls-save",
+    method: "POST",
+    path: "/api/admin/safety-controls",
+    audience: "admin",
+    auth: "admin-session",
+    runtimeMode: "durable-api",
+    requestSchema: [
+      "X-Idempotency-Key",
+      "realOrdersEnabled",
+      "vendorModes",
+      "vendorCertification",
+      "productionMutationAcknowledged",
+      "liveWriteAcknowledged"
+    ],
+    responseSchema: [
+      "realOrdersEnabled",
+      "vendorModes",
+      "vendorCertification",
+      "productionMutationAcknowledged",
+      "liveWriteAcknowledged",
+      "updatedAtIso",
+      "updatedBy",
+      "blockers"
+    ],
+    idempotencyKeyRequired: true,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy: "Admin-only safety gate state; no customer content or provider credentials.",
+    backedBy: ["adminSafetyControlsData", "admin-session auth", "idempotency key", "fail-closed gate defaults"]
+  },
+  {
     id: "admin-persistence-readiness",
     method: "GET",
     path: "/api/admin/persistence-readiness",
@@ -344,6 +397,62 @@ export const apiRouteContracts = [
     realOrdersEnabled: false,
     piiPolicy: "Object-store metadata only; no raw card text or object-store credentials are returned.",
     backedBy: ["object-store runtime", "signed artifact read contract"]
+  },
+  {
+    id: "admin-model-benchmarks",
+    method: "GET",
+    path: "/api/admin/model-benchmarks",
+    audience: "admin",
+    auth: "admin-session",
+    runtimeMode: "durable-api",
+    requestSchema: ["adminSession"],
+    responseSchema: ["phases", "stories", "textCandidates", "imageCandidates", "recentRuns", "liveRunsAllowed", "evidenceRoot", "executableAdapters"],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy: "Benchmark metadata and redacted evidence paths only; no provider credentials or raw customer content.",
+    backedBy: ["scripts/model-benchmark-loop.mjs", "docs/evidence/generated-card-comparisons"]
+  },
+  {
+    id: "admin-model-benchmark-run",
+    method: "POST",
+    path: "/api/admin/model-benchmarks/run",
+    audience: "admin",
+    auth: "admin-session",
+    runtimeMode: "durable-api",
+    requestSchema: ["X-Idempotency-Key", "phase", "story", "text", "image", "live"],
+    responseSchema: ["dryRun", "outputDir", "phase", "phaseDir", "plannedRuns", "runs", "summaryPath", "providerHttpPath"],
+    idempotencyKeyRequired: true,
+    externalNetworkCalls: true,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Admin-only benchmark execution writes redacted evidence under docs/evidence; live provider calls require an explicit admin request checkbox and never expose provider credentials.",
+    backedBy: ["scripts/model-benchmark-loop.mjs", "admin-session auth", "idempotency key", "admin live-run checkbox"]
+  },
+  {
+    id: "admin-model-benchmark-grade",
+    method: "POST",
+    path: "/api/admin/model-benchmarks/grade",
+    audience: "admin",
+    auth: "admin-session",
+    runtimeMode: "durable-api",
+    requestSchema: [
+      "X-Idempotency-Key",
+      "runDir",
+      "productQualityScore",
+      "promptPipelineContractScore",
+      "routeReliability",
+      "decision",
+      "visibleBlockers",
+      "notes"
+    ],
+    responseSchema: ["grade", "manualGradePath", "manualGradeJsonPath"],
+    idempotencyKeyRequired: true,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Admin-entered manual grade only; persisted to benchmark evidence files with no provider credentials or customer account data.",
+    backedBy: ["manual-grade.md", "manual-grade.json", "admin-session auth", "idempotency key"]
   },
   {
     id: "admin-demo-reset",
@@ -626,7 +735,7 @@ export const apiRouteContracts = [
     realOrdersEnabled: false,
     piiPolicy:
       "Checks Walgreens PhotoPrints credential readiness after customer-session auth; no card images, customer identity, payment fields, or order data are sent or stored.",
-    backedBy: ["walgreensHostedCheckout service", "customer-session boundary", "WALGREENS_VENDOR_MODE gate", "per-IP rate limit"]
+    backedBy: ["walgreensHostedCheckout service", "customer-session boundary", "admin safety controls", "per-IP rate limit"]
   },
   {
     id: "walgreens-checkout-upload",
@@ -642,7 +751,7 @@ export const apiRouteContracts = [
     realOrdersEnabled: false,
     piiPolicy:
       "Card JPEG bytes are forwarded to Walgreens write-only photo storage only after customer-session auth; no customer identity fields are sent and nothing is persisted locally.",
-    backedBy: ["walgreensHostedCheckout service", "customer-session boundary", "WALGREENS_VENDOR_MODE gate", "per-IP rate limit"]
+    backedBy: ["walgreensHostedCheckout service", "customer-session boundary", "admin safety controls", "per-IP rate limit"]
   },
   {
     id: "walgreens-checkout-session",
@@ -658,7 +767,7 @@ export const apiRouteContracts = [
     realOrdersEnabled: false,
     piiPolicy:
       "Customer name, email, and phone are validated, sanitized, and forwarded once after customer-session auth to the Walgreens mweb5url checkout service to pre-fill hosted checkout; nothing is persisted locally.",
-    backedBy: ["walgreensHostedCheckout service", "customer-session boundary", "trusted image URL allowlist", "WALGREENS_VENDOR_MODE gate"]
+    backedBy: ["walgreensHostedCheckout service", "customer-session boundary", "trusted image URL allowlist", "admin safety controls"]
   },
   {
     id: "walgreens-checkout-callback",
@@ -688,7 +797,8 @@ export const gatedProviderNetworkRouteIds = new Set([
   ...hostedCheckoutExemptRouteIds,
   "calendar-connection-start",
   "ai-chat-respond",
-  "ai-card-generate"
+  "ai-card-generate",
+  "admin-model-benchmark-run"
 ]);
 
 export const requiredApiRouteIds = apiRouteContracts.map((route) => route.id);

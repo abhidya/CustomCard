@@ -237,8 +237,21 @@ export const apiPersistenceRouteContracts: ApiRoutePersistenceContract[] = [
   routePersistence("admin-readiness", "read-only", "admin", ["auth_sessions", "account_identities", "account_recovery_challenges", "provider_connections", "provider_call_events", "audit_log"], true, false, false),
   routePersistence("admin-provider-catalog", "read-only", "admin", ["auth_sessions", "provider_connections", "provider_call_events"], true, false, false),
   routePersistence("admin-provider-governance", "read-only", "admin", ["auth_sessions", "provider_connections", "provider_call_events", "audit_log"], true, false, false),
+  routePersistence("admin-safety-controls", "read-only", "admin", ["auth_sessions", "audit_log"], true, false, false),
+  routePersistence("admin-safety-controls-save", "mutation", "admin", ["auth_sessions", "idempotency_keys", "audit_log"], true, true, false),
   routePersistence("admin-persistence-readiness", "read-only", "admin", ["auth_sessions", "idempotency_keys", "api_jobs", "audit_log"], true, false, false),
   routePersistence("admin-artifact-bucket", "read-only", "admin", ["auth_sessions", "render_packets", "audit_log"], true, false, false),
+  routePersistence("admin-model-benchmarks", "read-only", "admin", ["auth_sessions", "provider_call_events", "api_jobs", "audit_log"], true, false, false),
+  routePersistence(
+    "admin-model-benchmark-run",
+    "mutation",
+    "admin",
+    ["auth_sessions", "idempotency_keys", "provider_call_events", "api_jobs", "audit_log"],
+    true,
+    true,
+    true
+  ),
+  routePersistence("admin-model-benchmark-grade", "mutation", "admin", ["auth_sessions", "idempotency_keys", "audit_log"], true, true, false),
   routePersistence(
     "admin-demo-reset",
     "mutation",
