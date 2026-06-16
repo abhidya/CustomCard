@@ -215,7 +215,6 @@ export function HomeView({
             onClick={() => (occasion.value ? onOccasion(occasion.value) : onCreate())}
             type="button"
           >
-            <span className="occasion-dot" style={{ background: occasion.color }} />
             {occasion.label}
           </button>
         ))}
@@ -256,7 +255,6 @@ export function HomeView({
         <div className="howitworksGrid">
           {howItWorksSteps.map((step, index) => (
             <article className="howstep" key={step.title}>
-              <span className="howstepNum" aria-hidden="true">{index + 1}</span>
               <h3>
                 <span className="howstepIcon" aria-hidden="true">{step.icon}</span>
                 {step.title}

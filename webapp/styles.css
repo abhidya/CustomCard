@@ -33,31 +33,32 @@
 
 /* ---------- Theme: atelier ---------- */
 :root[data-theme="atelier"] {
-  --bg: #f6f1e6;
-  --bg-deep: #efe7d6;
-  --surface: #fdfaf3;
-  --surface-alt: #f9f4e9;
-  --ink: #231d12;
-  --ink-soft: #5c5343;
-  --ink-faint: #6e6553;
-  --accent: #b3472c;
-  --accent-deep: #93351e;
-  --accent-soft: #b3472c1a;
-  --accent-contrast: #fff6ec;
-  --second: #33685a;
-  --second-soft: #33685a1c;
-  --line: #d9cfb9;
-  --line-soft: #e7dfcc;
+  --bg: #f2f5f2;
+  --bg-deep: #e6ebe6;
+  --surface: #ffffff;
+  --surface-alt: #f7f9f7;
+  --ink: #121b16;
+  --ink-soft: #3c4e42;
+  --ink-faint: #5a7060;
+  --accent: #1b5d3a;
+  --accent-deep: #144d30;
+  --accent-soft: #1b5d3a18;
+  --accent-contrast: #edf7f1;
+  --second: #b8521a;
+  --second-soft: #b8521a1a;
+  --line: #c8d5ca;
+  --line-soft: #dce6de;
   --radius-s: 9px;
   --radius: 15px;
   --radius-l: 22px;
-  --shadow-card: 0 1px 2px #3d2f1a14, 0 10px 30px -12px #3d2f1a2e;
-  --shadow-pop: 0 18px 50px -12px #3d2f1a52;
-  --display-weight: 590;
-  --display-tracking: -0.015em;
-  --texture: radial-gradient(at 12% 4%, #fffdf6cc 0, transparent 42%),
-    radial-gradient(at 88% 100%, #ecdfc35c 0, transparent 50%);
+  --shadow-card: 0 1px 2px #121b1614, 0 10px 30px -12px #121b162e;
+  --shadow-pop: 0 18px 50px -12px #121b1650;
+  --display-weight: 720;
+  --display-tracking: -0.028em;
+  --texture: radial-gradient(at 12% 4%, #eaf4eec8 0, transparent 42%),
+    radial-gradient(at 88% 100%, #e0ede458 0, transparent 50%);
 }
+:root[data-theme="atelier"] { --font-display: "Instrument Sans", "Helvetica Neue", sans-serif; }
 
 /* ---------- Theme: studio ---------- */
 :root[data-theme="studio"] {
@@ -247,7 +248,6 @@ a { color: inherit; }
   transition: all 0.2s var(--ease);
 }
 .occasion:hover { transform: translateY(-2px); border-color: var(--ink); box-shadow: var(--shadow-pop); }
-.occasion-dot { width: 9px; height: 9px; border-radius: 50%; }
 
 .textlink {
   background: none; border: none; padding: 0;
@@ -3280,11 +3280,6 @@ a { color: inherit; }
   font-size: 13px;
   font-weight: 600;
 }
-.bizKickerDot {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--second);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--second) 22%, transparent);
-}
 .bizHeroCopy h1 {
   margin: 0;
   color: var(--ink);
@@ -4073,15 +4068,7 @@ a { color: inherit; }
   box-shadow: var(--shadow-card);
   padding: 18px 16px 16px;
 }
-.howstepNum {
-  font-family: var(--font-display);
-  font-weight: var(--display-weight);
-  letter-spacing: var(--display-tracking);
-  font-size: 27px;
-  line-height: 1;
-  color: var(--accent);
-}
-.howstepIcon { color: var(--ink-faint); display: inline-flex; flex: none; }
+.howstepIcon { color: var(--accent); display: inline-flex; flex: none; }
 .howstep h3 {
   display: flex;
   align-items: center;

@@ -141,7 +141,6 @@ export function BusinessLandingView({
       <section className="bizHero" aria-label="Business landing hero">
         <div className="bizHeroCopy">
           <p className="bizKicker">
-            <span className="bizKickerDot" aria-hidden="true" />
             For customer lifecycle teams
           </p>
           <h1>Send the right card on time.</h1>
