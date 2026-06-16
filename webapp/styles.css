@@ -567,6 +567,88 @@ a { color: inherit; }
   overflow-wrap: anywhere;
 }
 
+.opsQueueBoard {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  min-width: 0;
+}
+
+.opsQueueLane {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  min-height: 112px;
+  padding: 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-s);
+  background: var(--surface-alt);
+}
+
+.opsQueueLane[data-tone="ready"] {
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--line-soft));
+  background: color-mix(in srgb, var(--accent-soft) 58%, var(--surface));
+}
+
+.opsQueueLane[data-tone="warn"] {
+  border-color: color-mix(in srgb, #c27803 42%, var(--line-soft));
+  background: #fff7e6;
+}
+
+.opsQueueLane[data-tone="ok"] {
+  border-color: color-mix(in srgb, var(--second) 42%, var(--line-soft));
+  background: var(--second-soft);
+}
+
+.opsQueueLane span,
+.opsQueueFoot span {
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.opsQueueLane strong {
+  color: var(--ink);
+  font-size: 30px;
+  font-weight: 860;
+  line-height: 1;
+}
+
+.opsQueueLane small,
+.opsQueueFoot small {
+  min-width: 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.opsQueueFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-s);
+  background: var(--surface);
+}
+
+.opsQueueFoot div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.opsQueueFoot strong {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 820;
+  overflow-wrap: anywhere;
+}
+
 .opsProbes li {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -1765,6 +1847,78 @@ a { color: inherit; }
   border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
   background: var(--accent-soft);
 }
+.proofNextPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+  gap: 14px;
+  align-items: center;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--second) 42%, var(--line));
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--surface), var(--second-soft));
+  box-shadow: var(--shadow-card);
+}
+.proofNextPanel-copy,
+.proofNextPanel-actions {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+.proofNextPanel-copy span {
+  color: var(--second);
+  font-size: 11.5px;
+  font-weight: 840;
+  text-transform: uppercase;
+}
+.proofNextPanel-copy strong {
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 840;
+}
+.proofNextPanel-copy small,
+.proofNextPanel-actions small {
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  font-weight: 650;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.proofNextPanel-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  grid-column: 1 / -1;
+  grid-row: 2;
+  margin: 0;
+}
+.proofNextPanel-facts div {
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid color-mix(in srgb, var(--second) 28%, var(--line-soft));
+  border-radius: var(--radius-s);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+}
+.proofNextPanel-facts dt {
+  color: var(--ink-faint);
+  font-size: 11px;
+  font-weight: 760;
+}
+.proofNextPanel-facts dd {
+  margin: 2px 0 0;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 820;
+  overflow-wrap: anywhere;
+}
+.proofNextPanel-actions {
+  grid-column: 2;
+  grid-row: 1;
+  justify-items: end;
+}
+.proofNextPanel-actions .btn {
+  justify-content: center;
+}
 .studioObject {
   display: grid;
   gap: 14px;
@@ -2607,6 +2761,23 @@ a { color: inherit; }
     width: min(320px, 92%);
   }
   .stage-ai-state {
+    grid-template-columns: 1fr;
+  }
+  .proofNextPanel {
+    grid-template-columns: 1fr;
+  }
+  .proofNextPanel-facts,
+  .proofNextPanel-actions {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .proofNextPanel-actions {
+    justify-items: stretch;
+  }
+  .proofNextPanel-actions .btn {
+    width: 100%;
+  }
+  .proofNextPanel-facts {
     grid-template-columns: 1fr;
   }
   .studioObject {
@@ -3816,6 +3987,7 @@ a { color: inherit; }
   .galleryFieldGrid,
   .galleryChecks,
   .opsJobPanels,
+  .opsQueueBoard,
   .opsBucketControls,
   .opsBucketObject,
   .opsBucketPacketHead,
@@ -3833,6 +4005,14 @@ a { color: inherit; }
   .opsStatus,
   .opsJobHead em {
     justify-self: start;
+  }
+  .opsQueueFoot {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .opsQueueFoot .btn {
+    justify-content: center;
+    width: 100%;
   }
   .galleryToolbar,
   .galleryEditorHead,

@@ -7,6 +7,7 @@ import { AdminView } from "../webapp/views/AdminView";
 import { BusinessLandingView } from "../webapp/views/BusinessLandingView";
 import { StudioView } from "../webapp/views/StudioView";
 import { buildDefaultAiFlowAdminConfigs, summarizeAiFlowConfigs } from "../src/aiFlowConfig";
+import type { AiGenerationJobEvidence } from "../src/aiGenerationJobs";
 import { buildOpportunity, generateCardDraft, getDefaultDraftInput, parseFreeImport } from "../src/customerWorkflow";
 import {
   customerVisibleFixtureTermPattern,
@@ -177,6 +178,68 @@ describe("customer shell server render", () => {
     expect(text).toContain("Max tokens");
     expect(text).toContain("Temperature");
     expect(text).toContain("Prompt instructions");
+    expect(html).toContain('aria-label="AI jobs queue board"');
+    expect(text).toContain("Received");
+    expect(text).toContain("Generating");
+    expect(text).toContain("No active generation jobs yet");
+    expect(text).toContain("Open Studio");
+  });
+
+  it("renders admin AI generation jobs as operator queue lanes", () => {
+    const aiFlowConfigs = buildDefaultAiFlowAdminConfigs();
+    const partialJob: AiGenerationJobEvidence = {
+      id: "job-queue-1",
+      draftId: "draft-queue-1",
+      createdAtIso: "2026-06-11T12:00:00.000Z",
+      status: "partial",
+      generatedBy: "ai-text-and-image",
+      copyProvider: "copy-provider",
+      copyModel: "gpt-test",
+      imageProvider: "image-provider",
+      imageModel: "image-test",
+      textProviderFailure: "",
+      imageProviderFailure: "Inside panel image timed out.",
+      panelCount: 4,
+      imageCount: 2,
+      panels: [
+        {
+          panelId: "front",
+          label: "Front",
+          headline: "Happy birthday",
+          body: "A bright note.",
+          artDirection: "Warm paper collage",
+          visualCue: "Candles",
+          imagePrompt: "Birthday card with candles",
+          negativePrompt: "",
+          revisedPrompt: "Warm birthday card with candles",
+          imageUrl: "data:image/png;base64,AAAA",
+          width: 1500,
+          height: 2100,
+          status: "generated"
+        }
+      ]
+    };
+    const html = renderToString(
+      createElement(AdminView, {
+        aiFlowConfigs,
+        aiFlowSummary: summarizeAiFlowConfigs({}, aiFlowConfigs),
+        aiGenerationJobs: [partialJob],
+        fullAudit: createElement("div", null, "Full audit"),
+        onAiFlowConfigsChange: () => undefined
+      })
+    );
+    const text = textFromHtml(html);
+
+    expect(html).toContain('aria-label="AI jobs queue board"');
+    expect(text).toContain("Received");
+    expect(text).toContain("1 recent browser job captured.");
+    expect(text).toContain("Needs review");
+    expect(text).toContain("1 job needs human review.");
+    expect(text).toContain("Latest run");
+    expect(text).toContain("Partial");
+    expect(text).toContain("draft-queue-1");
+    expect(text).toContain("copy-provider / gpt-test");
+    expect(text).toContain("image-provider / image-test");
   });
 
   it("renders the admin featured-card curation workflow shell", () => {
@@ -511,6 +574,8 @@ describe("customer shell server render", () => {
       expect(html).toContain('data-proof-visible="true"');
       expect(text).toContain("Review details");
       expect(text).toContain("Edit original details");
+      expect(text).toContain("Proof is ready to finish");
+      expect(text).toContain("Continue to proof checks");
       expect(text).toContain("Choose what to improve");
       expect(text).toContain("Editing: Front");
       expect(text).toContain("These are the exact words that print on this panel.");

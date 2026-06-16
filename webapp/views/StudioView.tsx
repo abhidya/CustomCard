@@ -378,7 +378,7 @@ export function StudioView({
         </small>
       </div>
       <div className="aiLaunchActions">
-        {templateReviewStarted ? (
+        {templateReviewStarted && !proofWorkspaceVisible ? (
           <button
             className="btn btn-primary btn-sm"
             disabled={!printFitPassed}
@@ -403,7 +403,7 @@ export function StudioView({
         >
           {minContextReady ? "Review template instead" : "Add details before proof"}
         </button>
-        {templateReviewStarted && !printFitPassed ? (
+        {templateReviewStarted && !proofWorkspaceVisible && !printFitPassed ? (
           <small className="proofblocked">Shorten panels marked too long before proof checks.</small>
         ) : null}
       </div>
@@ -440,7 +440,7 @@ export function StudioView({
         ) : null}
       </div>
       <div className="aiLaunchActions">
-        {aiActive || templateReviewStarted ? (
+        {(aiActive || templateReviewStarted) && !proofWorkspaceVisible ? (
           <button
             className="btn btn-primary btn-sm"
             disabled={!printFitPassed}
@@ -476,7 +476,7 @@ export function StudioView({
             Review template instead
           </button>
         ) : null}
-        {(aiActive || templateReviewStarted) && !printFitPassed ? (
+        {(aiActive || templateReviewStarted) && !proofWorkspaceVisible && !printFitPassed ? (
           <small className="proofblocked">Shorten panels marked too long before proof checks.</small>
         ) : null}
       </div>
@@ -647,6 +647,16 @@ export function StudioView({
             </section>
           ) : null}
 
+          {proofWorkspaceVisible ? (
+            <ProofNextPanel
+              aiActive={aiActive}
+              onReviewProof={onReviewProof}
+              panelCount={draft.panels.length}
+              printFitPassed={printFitPassed}
+              stagePanelSummary={stagePanelSummary}
+            />
+          ) : null}
+
           {proofWorkspaceVisible && aiLaunchPanel ? (
             <details className="aiLaunchDrawer" open={aiLoading || undefined}>
               <summary>
@@ -686,6 +696,51 @@ export function StudioView({
         </div>
       </div>
     </>
+  );
+}
+
+function ProofNextPanel({
+  aiActive,
+  onReviewProof,
+  panelCount,
+  printFitPassed,
+  stagePanelSummary
+}: {
+  aiActive: boolean;
+  onReviewProof: () => void;
+  panelCount: number;
+  printFitPassed: boolean;
+  stagePanelSummary: string;
+}) {
+  return (
+    <section className="proofNextPanel" aria-label="Proof finish action">
+      <div className="proofNextPanel-copy">
+        <span>{aiActive ? "AI draft" : "Template proof"}</span>
+        <strong>Proof is ready to finish</strong>
+        <small>Check the four print panels, approve the proof, then continue to the print-shop handoff.</small>
+      </div>
+      <dl className="proofNextPanel-facts" aria-label="Proof status">
+        <div>
+          <dt>Panels</dt>
+          <dd>{panelCount}</dd>
+        </div>
+        <div>
+          <dt>Draft</dt>
+          <dd>{aiActive ? "AI" : "Template"}</dd>
+        </div>
+        <div>
+          <dt>Fit</dt>
+          <dd>{printFitPassed ? "Passed" : "Fix text"}</dd>
+        </div>
+      </dl>
+      <div className="proofNextPanel-actions">
+        <button className="btn btn-primary btn-sm" disabled={!printFitPassed} onClick={onReviewProof} type="button">
+          Continue to proof checks
+          <ArrowRight size={14} />
+        </button>
+        <small>{printFitPassed ? stagePanelSummary : "Shorten panels marked too long before proof checks."}</small>
+      </div>
+    </section>
   );
 }
 

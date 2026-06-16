@@ -172,6 +172,7 @@ export function AdminView({
   const latestAiJobs = aiGenerationJobs.slice(0, 3);
   const latestAiJob = latestAiJobs[0];
   const generatedPanels = aiGenerationJobs.reduce((total, job) => total + job.imageCount, 0);
+  const aiQueueLanes = buildAiQueueLanes(aiGenerationJobs);
   const [bucketPrefix, setBucketPrefix] = useState("projects/");
   const [bucketSort, setBucketSort] = useState<BucketSort>("lastModified");
   const [bucketOrder, setBucketOrder] = useState<BucketOrder>("desc");
@@ -412,6 +413,31 @@ export function AdminView({
               <strong>10</strong>
             </li>
           </ul>
+
+          <div className="opsQueueBoard" aria-label="AI jobs queue board">
+            {aiQueueLanes.map((lane) => (
+              <article className="opsQueueLane" data-tone={lane.tone} key={lane.id}>
+                <span>{lane.label}</span>
+                <strong>{lane.count}</strong>
+                <small>{lane.detail}</small>
+              </article>
+            ))}
+          </div>
+
+          <div className="opsQueueFoot">
+            <div>
+              <span>Latest run</span>
+              <strong>{latestAiJob ? aiGenerationJobStatusLabel(latestAiJob.status) : "No active generation jobs yet"}</strong>
+              <small>
+                {latestAiJob
+                  ? `${formatJobTime(latestAiJob.createdAtIso)} · ${latestAiJob.generatedBy}`
+                  : "Start a Studio draft to populate prompt, provider, and artifact evidence."}
+              </small>
+            </div>
+            <a className="btn btn-ghost btn-sm" href="/?view=studio">
+              Open Studio
+            </a>
+          </div>
 
           {latestAiJobs.length === 0 ? (
             <div className="opsEmpty">
@@ -798,6 +824,42 @@ export function AdminView({
       {auditOpen ? <div className="opsAudit reveal">{fullAudit}</div> : null}
     </section>
   );
+}
+
+function buildAiQueueLanes(jobs: AiGenerationJobEvidence[]) {
+  const needsReview = jobs.filter((job) => job.status === "partial" || job.status === "copy-only").length;
+  const completed = jobs.filter((job) => job.status === "succeeded").length;
+  return [
+    {
+      id: "received",
+      label: "Received",
+      count: jobs.length,
+      detail: jobs.length === 1 ? "1 recent browser job captured." : `${jobs.length} recent browser jobs captured.`,
+      tone: jobs.length > 0 ? "ready" : "idle"
+    },
+    {
+      id: "generating",
+      label: "Generating",
+      count: 0,
+      detail: "Live worker telemetry is not active in this browser view.",
+      tone: "idle"
+    },
+    {
+      id: "review",
+      label: "Needs review",
+      count: needsReview,
+      detail:
+        needsReview === 1 ? "1 job needs human review." : `${needsReview} jobs need human review.`,
+      tone: needsReview > 0 ? "warn" : "idle"
+    },
+    {
+      id: "completed",
+      label: "Completed",
+      count: completed,
+      detail: completed === 1 ? "1 generated job is complete." : `${completed} generated jobs are complete.`,
+      tone: completed > 0 ? "ok" : "idle"
+    }
+  ];
 }
 
 function aiGenerationJobStatusLabel(status: AiGenerationJobEvidence["status"]): string {
