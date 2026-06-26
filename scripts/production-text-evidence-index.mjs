@@ -12,6 +12,7 @@ if (isMainModule()) {
     status: result.status,
     promotionReady: result.promotionReady,
     reportDir: result.reportDir,
+    rerunPlans: result.rerunPlans.length,
     plannerPreflights: result.plannerPreflights.length,
     readinessReports: result.readinessReports.length,
     benchmarkSummaries: result.benchmarkSummaries.length,
@@ -27,6 +28,11 @@ export function buildProductionTextEvidenceIndex(args = {}) {
   const scanMode = includeUntracked ? "filesystem" : "git-tracked";
   const files = collectCandidateFiles(evidenceRoot, { includeUntracked });
 
+  const rerunPlans = files
+    .filter((file) => basename(file) === "production-text-rerun-plan.json")
+    .map(rerunPlanEntry)
+    .filter(Boolean)
+    .sort(newestFirst);
   const plannerPreflights = files
     .filter((file) => basename(file) === "production-text-planner-preflight.json")
     .map(plannerPreflightEntry)
@@ -56,6 +62,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     .filter((entry) => entry.phase === "local-production-text")
     .sort(newestFirst);
 
+  const latestRerunPlan = rerunPlans[0];
   const latestPlannerPreflight = plannerPreflights[0];
   const latestReadiness = readinessReports[0];
   const latestAggregate = aggregates.find((entry) => entry.kind === "llm-planned") || aggregates[0];
@@ -80,6 +87,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     scanMode,
     latest: {
       readiness: latestReadiness?.path || "",
+      rerunPlan: latestRerunPlan?.path || "",
       plannerPreflight: latestPlannerPreflight?.path || "",
       preflight: latestPreflight?.path || "",
       aggregate: latestAggregate?.path || "",
@@ -87,6 +95,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     },
     findings,
     nextSteps,
+    rerunPlans,
     plannerPreflights,
     readinessReports,
     preflights,
@@ -150,11 +159,28 @@ function collectTrackedFiles(root) {
 function isEvidenceCandidate(filePath) {
   const name = basename(filePath);
   const rel = relativePath(filePath);
-  return name === "production-text-readiness.json" ||
+  return name === "production-text-rerun-plan.json" ||
+    name === "production-text-readiness.json" ||
     name === "production-text-planner-preflight.json" ||
     name === "production-text-preflight.json" ||
     (name === "benchmark-aggregate.json" && rel.includes("production-text")) ||
     (name.endsWith("-summary.json") && rel.includes("production-text"));
+}
+
+function rerunPlanEntry(filePath) {
+  const payload = readJson(filePath);
+  if (!payload) return undefined;
+  return {
+    path: relativePath(filePath),
+    createdAtIso: payload.createdAtIso || fileMtime(filePath),
+    status: payload.status || "unknown",
+    promotionReady: Boolean(payload.promotionReady),
+    failedRequirements: (payload.failedRequirements || []).map((item) => item.name || String(item)).filter(Boolean),
+    commandCount: Array.isArray(payload.commands) ? payload.commands.length : 0,
+    plannerModel: payload.currentEvidence?.plannerModel || "",
+    plannerClassification: payload.currentEvidence?.plannerClassification || "",
+    nextBenchmarkOutput: payload.rerunPaths?.benchmarkOutput || ""
+  };
 }
 
 function plannerPreflightEntry(filePath) {
@@ -365,6 +391,7 @@ function buildMarkdown(result) {
   lines.push("");
   lines.push("| Type | Path | Status | Key result |");
   lines.push("| --- | --- | --- | --- |");
+  lines.push(latestRow("Rerun Plan", result.rerunPlans[0], rerunPlanSummary));
   lines.push(latestRow("Planner", result.plannerPreflights[0], plannerSummary));
   lines.push(latestRow("Readiness", result.readinessReports[0], readinessSummary));
   lines.push(latestRow("Preflight", result.preflights[0], preflightSummary));
@@ -387,6 +414,10 @@ function buildMarkdown(result) {
     lines.push(`| ${entry.createdAtIso} | ${entry.totalRuns} | ${entry.completedRuns} | ${entry.failedRuns} | ${markdownCell(entry.fixtures.join(", ") || "n/a")} | ${markdownCell(entry.textModels.join(", ") || "n/a")} | ${link(entry.path)} |`);
   }
   return `${lines.join("\n")}\n`;
+}
+
+function rerunPlanSummary(entry) {
+  return `${entry.failedRequirements.length} failed requirement(s); commands=${entry.commandCount}`;
 }
 
 function plannerSummary(entry) {

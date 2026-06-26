@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-26T22:42:03.544Z",
+  "createdAtIso": "2026-06-26T22:48:47.124Z",
   "status": "blocked",
   "promotionReady": false,
   "evidenceRoot": "docs/evidence/generated-card-comparisons",
@@ -7,6 +7,7 @@
   "scanMode": "git-tracked",
   "latest": {
     "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
+    "rerunPlan": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current/production-text-rerun-plan.json",
     "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current/production-text-planner-preflight.json",
     "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626T042126Z/production-text-preflight.json",
     "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
@@ -27,6 +28,27 @@
     "Keep Qwen3-4B/small planner runs as smoke or failure evidence only.",
     "Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.",
     "Manually grade every production-text run and aggregate only after all candidates pass."
+  ],
+  "rerunPlans": [
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current/production-text-rerun-plan.json",
+      "createdAtIso": "2026-06-26T22:48:25.114Z",
+      "status": "rerun-required",
+      "promotionReady": false,
+      "failedRequirements": [
+        "planner preflight is production-ready",
+        "readiness doctor is promotion-ready",
+        "production-suitable planner endpoint is reachable",
+        "no small smoke planner is active or used",
+        "LLM-planned customer request matrix completed",
+        "planner preserved required terms and avoided forbidden terms",
+        "manual aggregate is promotion-ready"
+      ],
+      "commandCount": 8,
+      "plannerModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+      "plannerClassification": "smoke-only",
+      "nextBenchmarkOutput": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner"
+    }
   ],
   "plannerPreflights": [
     {

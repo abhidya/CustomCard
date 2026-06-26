@@ -1,0 +1,88 @@
+import { existsSync, mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { describe, expect, it } from "vitest";
+import { buildProductionTextRerunPlan } from "../scripts/production-text-rerun-plan.mjs";
+
+function writeJson(path: string, value: unknown) {
+  writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+describe("production text rerun plan", () => {
+  it("turns blocked gate evidence into a production-planner command chain", () => {
+    const root = mkdtempSync(join(tmpdir(), "production-text-rerun-plan-"));
+    const gatePath = join(root, "production-text-promotion-gate.json");
+    const indexPath = join(root, "production-text-evidence-index.json");
+    const outputDir = join(root, "rerun-plan");
+
+    writeJson(gatePath, {
+      createdAtIso: "2026-06-26T22:42:03.546Z",
+      status: "blocked",
+      promotionReady: false,
+      latest: {
+        plannerPreflight: "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current/production-text-planner-preflight.json",
+        benchmark: "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
+        aggregate: "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json"
+      },
+      requirements: [
+        { name: "live ComfyUI preflight passed", ok: true },
+        { name: "planner preflight is production-ready", ok: false, details: { classification: "smoke-only" } },
+        { name: "LLM-planned customer request matrix completed", ok: false },
+        { name: "manual aggregate is promotion-ready", ok: false }
+      ]
+    });
+    writeJson(indexPath, {
+      plannerPreflights: [
+        {
+          path: "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current/production-text-planner-preflight.json",
+          classification: "smoke-only",
+          activeModel: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+          reportedContextTokens: 4096
+        }
+      ],
+      benchmarkSummaries: [
+        {
+          path: "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json"
+        }
+      ],
+      aggregates: [
+        {
+          kind: "llm-planned",
+          path: "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
+          bestScore: 38
+        }
+      ]
+    });
+
+    const plan = buildProductionTextRerunPlan({
+      gate: gatePath,
+      index: indexPath,
+      "output-dir": outputDir,
+      date: "20260626"
+    });
+
+    expect(plan.status).toBe("rerun-required");
+    expect(plan.failedRequirements.map((item) => item.name)).toEqual([
+      "planner preflight is production-ready",
+      "LLM-planned customer request matrix completed",
+      "manual aggregate is promotion-ready"
+    ]);
+    expect(plan.productionPlannerContract.minContextTokens).toBe(8192);
+    expect(plan.productionPlannerContract.disallowedForPromotion.join("\n")).toContain("Qwen3-4B");
+    expect(plan.commands.map((item) => item.title)).toEqual([
+      "Start or configure production planner",
+      "Write planner preflight evidence",
+      "Refresh readiness",
+      "Run full production-text matrix",
+      "Manually grade every run",
+      "Aggregate production-text results",
+      "Refresh tracked evidence index",
+      "Run final promotion gate"
+    ]);
+    expect(plan.commands[3].command).toContain("-PlannerMaxTokens 3200");
+    expect(plan.commands[3].command).not.toContain("-AllowSmallPlanner");
+    expect(plan.acceptanceChecks).toContain("planner preflight is production-ready");
+    expect(existsSync(join(outputDir, "production-text-rerun-plan.json"))).toBe(true);
+    expect(existsSync(join(outputDir, "production-text-rerun-plan.md"))).toBe(true);
+  });
+});

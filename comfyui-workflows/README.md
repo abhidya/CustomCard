@@ -160,6 +160,16 @@ Production evidence keeps the full creative contract and requires a
 production-suitable planner. Qwen3-4B/4096-context runs are smoke/failure
 evidence only.
 
+Generate the blocked-evidence rerun plan:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-rerun-plan.mjs --output-dir docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current
+```
+
+The rerun plan reads the current promotion gate and evidence index, then writes
+the exact planner preflight, readiness, benchmark, manual grading, aggregate,
+index, and gate commands needed for the next production-suitable evidence pass.
+
 Evidence index before deciding the next run:
 
 ```powershell
@@ -257,11 +267,15 @@ Latest live evidence:
   `docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current`
   - Blocks promotion because the 5001 `/models` probe is not currently
     reachable and the explicit Qwen3-4B/4096-context planner is smoke-only.
+- Current rerun plan:
+  `docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current`
+  - Converts the 7 failed gate requirements into 8 ordered commands for the
+    next production-suitable planner pass.
 - Current evidence index:
   `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current`
   - Tracks the current production-text evidence set, including planner
-    preflight, and keeps promotion blocked until the planner endpoint and
-    aggregate evidence pass.
+    preflight and rerun plan, and keeps promotion blocked until the planner
+    endpoint and aggregate evidence pass.
 - Current promotion gate:
   `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current`
   - Passes live Comfy/text-composer proof and final-Comfy-image evidence.

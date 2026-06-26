@@ -34,6 +34,9 @@ Current production-text evidence index:
 Current production-text planner preflight:
 `production-text-planner-preflight-20260626-current/production-text-planner-preflight.md`.
 
+Current production-text rerun plan:
+`production-text-rerun-plan-20260626-current/production-text-rerun-plan.md`.
+
 Current production-text promotion gate:
 `production-text-promotion-gate-20260626-current/production-text-promotion-gate.md`.
 

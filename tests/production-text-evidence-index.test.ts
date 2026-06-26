@@ -49,6 +49,23 @@ describe("production text evidence index", () => {
       },
       blockers: ["Planner model is smoke-only.", "Planner context 4096 is below the production minimum 8192."]
     });
+    writeJson(join(root, "production-text-rerun-plan.json"), {
+      createdAtIso: "2026-06-26T05:10:00.000Z",
+      status: "rerun-required",
+      promotionReady: false,
+      currentEvidence: {
+        plannerModel: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+        plannerClassification: "smoke-only"
+      },
+      failedRequirements: [
+        { name: "planner preflight is production-ready" },
+        { name: "manual aggregate is promotion-ready" }
+      ],
+      rerunPaths: {
+        benchmarkOutput: "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner"
+      },
+      commands: [{ step: 1 }, { step: 2 }]
+    });
     writeJson(join(root, "production-text-preflight.json"), {
       createdAtIso: "2026-06-26T04:00:00.000Z",
       status: "promotion-ready",
@@ -127,6 +144,7 @@ describe("production text evidence index", () => {
 
     expect(report.status).toBe("blocked");
     expect(report.promotionReady).toBe(false);
+    expect(report.rerunPlans).toHaveLength(1);
     expect(report.plannerPreflights).toHaveLength(1);
     expect(report.readinessReports).toHaveLength(1);
     expect(report.plannerPreflights[0]).toMatchObject({
@@ -134,6 +152,11 @@ describe("production text evidence index", () => {
       classification: "smoke-only",
       promotionReady: false,
       reportedContextTokens: 4096
+    });
+    expect(report.rerunPlans[0]).toMatchObject({
+      status: "rerun-required",
+      failedRequirements: ["planner preflight is production-ready", "manual aggregate is promotion-ready"],
+      commandCount: 2
     });
     expect(report.aggregates[0]).toMatchObject({
       totalRuns: 2,
