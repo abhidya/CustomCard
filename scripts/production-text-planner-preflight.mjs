@@ -1,4 +1,9 @@
+import { mkdirSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { classifyProductionTextPlanner } from "./production-text-planner-policy.mjs";
+
+const repoRoot = resolve(import.meta.dirname, "..");
+const defaultOutputRoot = resolve(repoRoot, "docs/evidence/generated-card-comparisons");
 
 if (isMainModule()) {
   const result = await runProductionTextPlannerPreflight(parseArgs(process.argv.slice(2)));
@@ -18,6 +23,8 @@ if (isMainModule()) {
 export async function runProductionTextPlannerPreflight(args = {}, options = {}) {
   const advisory = Boolean(args.advisory);
   const fetchImpl = options.fetchImpl || globalThis.fetch;
+  const outputRoot = resolve(String(args["output-root"] || defaultOutputRoot));
+  const reportDir = resolve(String(args["output-dir"] || `${outputRoot}/production-text-planner-preflight-${timestamp()}`));
   const timeoutMs = boundedInteger(args["timeout-ms"], 500, 60_000, 5_000);
   const explicitModel = firstUsableValue(
     args.model,
@@ -58,7 +65,7 @@ export async function runProductionTextPlannerPreflight(args = {}, options = {})
   ];
   const runAllowed = blockers.length === 0 && (classification.productionSuitable || Boolean(args["allow-small"]));
   const promotionReady = blockers.length === 0 && classification.productionSuitable;
-  return {
+  const result = {
     createdAtIso: new Date().toISOString(),
     status: promotionReady ? "promotion-ready" : "blocked",
     promotionReady,
@@ -74,6 +81,11 @@ export async function runProductionTextPlannerPreflight(args = {}, options = {})
     warnings: classification.warnings,
     nextSteps: buildNextSteps({ blockers, classification })
   };
+  mkdirSync(reportDir, { recursive: true });
+  result.reportDir = relativePath(reportDir);
+  writeJson(resolve(reportDir, "production-text-planner-preflight.json"), result);
+  writeMarkdown(resolve(reportDir, "production-text-planner-preflight.md"), buildMarkdown(result));
+  return result;
 }
 
 function plannerEndpoint(value) {
@@ -169,6 +181,66 @@ function unique(values) {
   return Array.from(new Set(values.filter(Boolean)));
 }
 
+function buildMarkdown(result) {
+  const lines = [
+    "# Production Text Planner Preflight",
+    "",
+    `Created: ${result.createdAtIso}`,
+    `Status: ${result.status}`,
+    `Promotion ready: ${result.promotionReady ? "yes" : "no"}`,
+    `Run allowed: ${result.runAllowed ? "yes" : "no"}`,
+    `Base URL: ${result.baseUrl || "n/a"}`,
+    `Active model: ${result.activeModel || "n/a"}`,
+    `Classification: ${result.classification.classification}`,
+    "",
+    "## Runtime Contract",
+    "",
+    `- Minimum context tokens: ${result.classification.minContextTokens}`,
+    `- Reported context tokens: ${result.classification.reportedContextTokens ?? "n/a"}`,
+    `- Minimum output tokens: ${result.classification.minOutputTokens}`,
+    `- Max output tokens: ${result.classification.maxOutputTokens ?? "n/a"}`,
+    "",
+    "## Blockers",
+    ""
+  ];
+  if (result.blockers.length) {
+    for (const blocker of result.blockers) lines.push(`- ${blocker}`);
+  } else {
+    lines.push("- none");
+  }
+  lines.push("");
+  lines.push("## Warnings");
+  lines.push("");
+  if (result.warnings.length) {
+    for (const warning of result.warnings) lines.push(`- ${warning}`);
+  } else {
+    lines.push("- none");
+  }
+  lines.push("");
+  lines.push("## Next Steps");
+  lines.push("");
+  if (result.nextSteps.length) {
+    for (const step of result.nextSteps) lines.push(`- ${step}`);
+  } else {
+    lines.push("- none");
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+function writeJson(filePath, value) {
+  mkdirSync(dirname(filePath), { recursive: true });
+  writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function writeMarkdown(filePath, value) {
+  mkdirSync(dirname(filePath), { recursive: true });
+  writeFileSync(filePath, value);
+}
+
+function relativePath(filePath) {
+  return resolve(filePath).replace(`${repoRoot}\\`, "").replaceAll("\\", "/");
+}
+
 function parseArgs(values) {
   const parsed = {};
   for (let index = 0; index < values.length; index += 1) {
@@ -189,6 +261,10 @@ function parseArgs(values) {
 
 function errorMessage(error) {
   return error instanceof Error ? error.message : String(error ?? "unknown error");
+}
+
+function timestamp() {
+  return new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
 }
 
 function isMainModule() {

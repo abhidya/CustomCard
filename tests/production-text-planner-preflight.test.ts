@@ -1,3 +1,6 @@
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { classifyProductionTextPlanner } from "../scripts/production-text-planner-policy.mjs";
 import { runProductionTextPlannerPreflight } from "../scripts/production-text-planner-preflight.mjs";
@@ -12,16 +15,19 @@ function modelsResponse(model: string) {
 describe("production text planner preflight", () => {
   it("classifies 4096-context Qwen as smoke-only rather than production", async () => {
     const fetchImpl = async () => modelsResponse("koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S");
+    const root = mkdtempSync(join(tmpdir(), "production-text-planner-preflight-qwen-"));
 
     const report = await runProductionTextPlannerPreflight(
       {
         "base-url": "http://127.0.0.1:5001/v1",
         "reported-context-tokens": "4096",
-        "max-output-tokens": "3200"
+        "max-output-tokens": "3200",
+        "output-dir": root
       },
       { fetchImpl }
     );
 
+    expect(report.reportDir).toContain("production-text-planner-preflight-qwen-");
     expect(report.runAllowed).toBe(false);
     expect(report.promotionReady).toBe(false);
     expect(report.classification.classification).toBe("smoke-only");
@@ -31,13 +37,15 @@ describe("production text planner preflight", () => {
 
   it("allows small planners only as explicit smoke evidence", async () => {
     const fetchImpl = async () => modelsResponse("koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S");
+    const root = mkdtempSync(join(tmpdir(), "production-text-planner-preflight-smoke-"));
 
     const report = await runProductionTextPlannerPreflight(
       {
         "base-url": "http://127.0.0.1:5001/v1",
         "reported-context-tokens": "4096",
         "max-output-tokens": "1800",
-        "allow-small": true
+        "allow-small": true,
+        "output-dir": root
       },
       { fetchImpl }
     );
@@ -50,12 +58,14 @@ describe("production text planner preflight", () => {
 
   it("accepts a production planner with enough context and output budget", async () => {
     const fetchImpl = async () => modelsResponse("koboldcpp/gemma-4-31B-it-Q4_K_M");
+    const root = mkdtempSync(join(tmpdir(), "production-text-planner-preflight-ready-"));
 
     const report = await runProductionTextPlannerPreflight(
       {
         "base-url": "http://127.0.0.1:5003/v1",
         "reported-context-tokens": "8192",
-        "max-output-tokens": "3200"
+        "max-output-tokens": "3200",
+        "output-dir": root
       },
       { fetchImpl }
     );

@@ -29,6 +29,26 @@ describe("production text evidence index", () => {
       ],
       blockers: [{ name: "configured production planner endpoint is production-suitable" }]
     });
+    writeJson(join(root, "production-text-planner-preflight.json"), {
+      createdAtIso: "2026-06-26T05:05:00.000Z",
+      status: "blocked",
+      promotionReady: false,
+      runAllowed: false,
+      reachable: true,
+      baseUrl: "http://127.0.0.1:5001/v1",
+      activeModel: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+      classification: {
+        classification: "smoke-only",
+        smallPlanner: true,
+        qualityPlanner: false,
+        productionSuitable: false,
+        minContextTokens: 8192,
+        reportedContextTokens: 4096,
+        minOutputTokens: 2200,
+        maxOutputTokens: 3200
+      },
+      blockers: ["Planner model is smoke-only.", "Planner context 4096 is below the production minimum 8192."]
+    });
     writeJson(join(root, "production-text-preflight.json"), {
       createdAtIso: "2026-06-26T04:00:00.000Z",
       status: "promotion-ready",
@@ -107,7 +127,14 @@ describe("production text evidence index", () => {
 
     expect(report.status).toBe("blocked");
     expect(report.promotionReady).toBe(false);
+    expect(report.plannerPreflights).toHaveLength(1);
     expect(report.readinessReports).toHaveLength(1);
+    expect(report.plannerPreflights[0]).toMatchObject({
+      activeModel: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+      classification: "smoke-only",
+      promotionReady: false,
+      reportedContextTokens: 4096
+    });
     expect(report.aggregates[0]).toMatchObject({
       totalRuns: 2,
       bestScore: 38,
@@ -121,6 +148,8 @@ describe("production text evidence index", () => {
       missingMustInclude: ["Nina", "aquarium"]
     });
     expect(report.findings.join("\n")).toContain("known-small smoke model");
+    expect(report.findings.join("\n")).toContain("Latest planner preflight is blocked");
     expect(report.nextSteps.join("\n")).toContain("production-suitable planner endpoint");
+    expect(report.nextSteps.join("\n")).toContain("planner preflight");
   });
 });

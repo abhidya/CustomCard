@@ -1,0 +1,47 @@
+{
+  "createdAtIso": "2026-06-26T22:41:32.513Z",
+  "status": "blocked",
+  "promotionReady": false,
+  "runAllowed": false,
+  "advisory": true,
+  "baseUrl": "http://127.0.0.1:5001/v1",
+  "modelsUrl": "http://127.0.0.1:5001/v1/models",
+  "reachable": false,
+  "activeModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+  "models": [],
+  "classification": {
+    "model": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+    "smallPlanner": true,
+    "qualityPlanner": false,
+    "productionSuitable": false,
+    "classification": "smoke-only",
+    "reportedContextTokens": 4096,
+    "maxOutputTokens": 3200,
+    "minContextTokens": 8192,
+    "minOutputTokens": 2200,
+    "recommendedOutputTokens": 3200,
+    "recommendedModels": [
+      "koboldcpp/gemma-4-31B-it-Q4_K_M",
+      "koboldcpp/Magistral-Small-2509-Q4_K_M",
+      "koboldcpp/Qwen3-8B-Q4_K_M",
+      "hosted/self-hosted GPT, Claude, Gemini, DeepSeek, Mistral, or Qwen 14B+ endpoint"
+    ],
+    "blockers": [
+      "Planner model 'koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S' is smoke-only for production text; use a production-suitable planner instead.",
+      "Planner context 4096 is below the production minimum 8192; 4096-token local runs are smoke-only."
+    ],
+    "warnings": []
+  },
+  "blockers": [
+    "Planner /models preflight failed: fetch failed",
+    "Planner model 'koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S' is smoke-only for production text; use a production-suitable planner instead.",
+    "Planner context 4096 is below the production minimum 8192; 4096-token local runs are smoke-only."
+  ],
+  "warnings": [],
+  "nextSteps": [
+    "Start or point to an OpenAI-compatible planner endpoint before collecting production evidence.",
+    "Use a production planner such as koboldcpp/gemma-4-31B-it-Q4_K_M, koboldcpp/Magistral-Small-2509-Q4_K_M, koboldcpp/Qwen3-8B-Q4_K_M with 8192+ context tokens.",
+    "Keep the full creative planner contract; use -AllowSmallPlanner only for smoke/failure evidence."
+  ],
+  "reportDir": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current"
+}

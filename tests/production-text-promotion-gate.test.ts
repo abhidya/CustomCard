@@ -38,6 +38,26 @@ function writeBaseEvidence(root: string, options: { ready: boolean }) {
     ],
     blockers: options.ready ? [] : [{ name: "configured production planner endpoint is production-suitable" }]
   });
+  writeJson(join(root, "production-text-planner-preflight.json"), {
+    createdAtIso: "2026-06-26T05:05:00.000Z",
+    status: options.ready ? "promotion-ready" : "blocked",
+    promotionReady: options.ready,
+    runAllowed: options.ready,
+    reachable: true,
+    baseUrl: options.ready ? "http://127.0.0.1:5003/v1" : "http://127.0.0.1:5001/v1",
+    activeModel: textModel,
+    classification: {
+      classification: options.ready ? "production-suitable" : "smoke-only",
+      smallPlanner: !options.ready,
+      qualityPlanner: options.ready,
+      productionSuitable: options.ready,
+      minContextTokens: 8192,
+      reportedContextTokens: options.ready ? 8192 : 4096,
+      minOutputTokens: 2200,
+      maxOutputTokens: 3200
+    },
+    blockers: options.ready ? [] : ["Planner model is smoke-only."]
+  });
   writeJson(join(root, "benchmark-aggregate.json"), {
     createdAtIso: "2026-06-26T04:30:00.000Z",
     totalRuns: fixtures.length,
@@ -91,6 +111,7 @@ describe("production text promotion gate", () => {
     expect(report.status).toBe("blocked");
     expect(report.promotionReady).toBe(false);
     expect(report.requirements.filter((item) => !item.ok).map((item) => item.name)).toEqual([
+      "planner preflight is production-ready",
       "readiness doctor is promotion-ready",
       "production-suitable planner endpoint is reachable",
       "no small smoke planner is active or used",

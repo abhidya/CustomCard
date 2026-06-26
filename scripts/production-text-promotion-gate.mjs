@@ -28,6 +28,7 @@ export function runProductionTextPromotionGate(args = {}) {
     "output-dir": args["index-output-dir"] || indexReportDir,
     "include-untracked": args["include-untracked"]
   });
+  const latestPlannerPreflight = index.plannerPreflights[0];
   const latestReadiness = index.readinessReports[0];
   const latestPreflight = index.preflights[0];
   const latestAggregate = index.aggregates.find((entry) => entry.kind === "llm-planned") || index.aggregates[0];
@@ -38,6 +39,14 @@ export function runProductionTextPromotionGate(args = {}) {
       preflight: latestPreflight?.path || "",
       liveComfyReachable: latestPreflight?.liveComfyReachable,
       liveNodeAvailable: latestPreflight?.liveNodeAvailable
+    }),
+    requirement("planner preflight is production-ready", latestPlannerPreflight?.promotionReady, {
+      plannerPreflight: latestPlannerPreflight?.path || "",
+      activeModel: latestPlannerPreflight?.activeModel || "",
+      classification: latestPlannerPreflight?.classification || "",
+      reportedContextTokens: latestPlannerPreflight?.reportedContextTokens,
+      maxOutputTokens: latestPlannerPreflight?.maxOutputTokens,
+      blockers: latestPlannerPreflight?.blockers || []
     }),
     requirement("readiness doctor is promotion-ready", latestReadiness?.promotionReady, {
       readiness: latestReadiness?.path || "",
@@ -112,6 +121,9 @@ function buildNextSteps(requirements, indexedNextSteps) {
   const failed = new Set(requirements.filter((item) => !item.ok).map((item) => item.name));
   if (failed.has("live ComfyUI preflight passed")) {
     steps.push("Run production-text live preflight with ComfyUI and CustomCardTextComposer loaded.");
+  }
+  if (failed.has("planner preflight is production-ready")) {
+    steps.push("Run production-text planner preflight with a production-suitable model, 8192+ context, and the full output budget.");
   }
   if (failed.has("readiness doctor is promotion-ready") || failed.has("production-suitable planner endpoint is reachable")) {
     steps.push("Run the planner preflight and readiness doctor after starting a production-suitable planner endpoint with 8192+ context.");

@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-26T22:21:46.667Z",
+  "createdAtIso": "2026-06-26T22:42:03.544Z",
   "status": "blocked",
   "promotionReady": false,
   "evidenceRoot": "docs/evidence/generated-card-comparisons",
@@ -7,12 +7,14 @@
   "scanMode": "git-tracked",
   "latest": {
     "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
+    "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current/production-text-planner-preflight.json",
     "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626T042126Z/production-text-preflight.json",
     "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
     "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json"
   },
   "findings": [
     "Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.",
+    "Latest planner preflight is blocked: smoke-only model koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S.",
     "The currently reachable planner is a known-small smoke model, so current evidence must not be promoted.",
     "No production-suitable planner endpoint is reachable/configured in the latest readiness report.",
     "The latest LLM-planned benchmark covers 3 customer request runs.",
@@ -20,10 +22,43 @@
     "Latest aggregate is blocked: best score 38 across 3 run(s)."
   ],
   "nextSteps": [
-    "Start or configure a production-suitable planner endpoint before collecting promotion evidence.",
+    "Run production-text planner preflight with a production-suitable model, 8192+ context, and the full output budget.",
+    "Run the planner preflight, then start or configure a production-suitable planner endpoint with 8192+ context before collecting promotion evidence.",
     "Keep Qwen3-4B/small planner runs as smoke or failure evidence only.",
-    "Run the full aquarium/koi/dog LLM-planned production-text matrix with the stronger planner.",
+    "Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.",
     "Manually grade every production-text run and aggregate only after all candidates pass."
+  ],
+  "plannerPreflights": [
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current/production-text-planner-preflight.json",
+      "createdAtIso": "2026-06-26T22:41:32.513Z",
+      "status": "blocked",
+      "promotionReady": false,
+      "runAllowed": false,
+      "reachable": false,
+      "baseUrl": "http://127.0.0.1:5001/v1",
+      "activeModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+      "classification": "smoke-only",
+      "smallPlanner": true,
+      "qualityPlanner": false,
+      "productionSuitable": false,
+      "minContextTokens": 8192,
+      "reportedContextTokens": 4096,
+      "minOutputTokens": 2200,
+      "maxOutputTokens": 3200,
+      "blockerCount": 3,
+      "blockers": [
+        "Planner /models preflight failed: fetch failed",
+        "Planner model 'koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S' is smoke-only for production text; use a production-suitable planner instead.",
+        "Planner context 4096 is below the production minimum 8192; 4096-token local runs are smoke-only."
+      ],
+      "warnings": [],
+      "nextSteps": [
+        "Start or point to an OpenAI-compatible planner endpoint before collecting production evidence.",
+        "Use a production planner such as koboldcpp/gemma-4-31B-it-Q4_K_M, koboldcpp/Magistral-Small-2509-Q4_K_M, koboldcpp/Qwen3-8B-Q4_K_M with 8192+ context tokens.",
+        "Keep the full creative planner contract; use -AllowSmallPlanner only for smoke/failure evidence."
+      ]
+    }
   ],
   "readinessReports": [
     {

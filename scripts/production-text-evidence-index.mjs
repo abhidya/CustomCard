@@ -12,6 +12,7 @@ if (isMainModule()) {
     status: result.status,
     promotionReady: result.promotionReady,
     reportDir: result.reportDir,
+    plannerPreflights: result.plannerPreflights.length,
     readinessReports: result.readinessReports.length,
     benchmarkSummaries: result.benchmarkSummaries.length,
     aggregates: result.aggregates.length
@@ -26,6 +27,11 @@ export function buildProductionTextEvidenceIndex(args = {}) {
   const scanMode = includeUntracked ? "filesystem" : "git-tracked";
   const files = collectCandidateFiles(evidenceRoot, { includeUntracked });
 
+  const plannerPreflights = files
+    .filter((file) => basename(file) === "production-text-planner-preflight.json")
+    .map(plannerPreflightEntry)
+    .filter(Boolean)
+    .sort(newestFirst);
   const readinessReports = files
     .filter((file) => basename(file) === "production-text-readiness.json")
     .map(readinessEntry)
@@ -50,19 +56,21 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     .filter((entry) => entry.phase === "local-production-text")
     .sort(newestFirst);
 
+  const latestPlannerPreflight = plannerPreflights[0];
   const latestReadiness = readinessReports[0];
   const latestAggregate = aggregates.find((entry) => entry.kind === "llm-planned") || aggregates[0];
   const latestBenchmark = benchmarkSummaries.find((entry) => entry.llmGeneratedRuns > 0) || benchmarkSummaries[0];
   const latestPreflight = preflights[0];
   const promotionReady = Boolean(
     latestReadiness?.promotionReady &&
+    latestPlannerPreflight?.promotionReady &&
     latestAggregate?.promotionReady &&
     latestBenchmark?.failedRuns === 0 &&
     latestBenchmark?.completedRuns >= 3
   );
   const status = promotionReady ? "promotion-ready" : "blocked";
-  const findings = buildFindings({ latestReadiness, latestAggregate, latestBenchmark, latestPreflight });
-  const nextSteps = buildNextSteps({ latestReadiness, latestAggregate, latestBenchmark, latestPreflight });
+  const findings = buildFindings({ latestPlannerPreflight, latestReadiness, latestAggregate, latestBenchmark, latestPreflight });
+  const nextSteps = buildNextSteps({ latestPlannerPreflight, latestReadiness, latestAggregate, latestBenchmark, latestPreflight });
   const result = {
     createdAtIso: new Date().toISOString(),
     status,
@@ -72,12 +80,14 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     scanMode,
     latest: {
       readiness: latestReadiness?.path || "",
+      plannerPreflight: latestPlannerPreflight?.path || "",
       preflight: latestPreflight?.path || "",
       aggregate: latestAggregate?.path || "",
       benchmark: latestBenchmark?.path || ""
     },
     findings,
     nextSteps,
+    plannerPreflights,
     readinessReports,
     preflights,
     aggregates,
@@ -141,9 +151,37 @@ function isEvidenceCandidate(filePath) {
   const name = basename(filePath);
   const rel = relativePath(filePath);
   return name === "production-text-readiness.json" ||
+    name === "production-text-planner-preflight.json" ||
     name === "production-text-preflight.json" ||
     (name === "benchmark-aggregate.json" && rel.includes("production-text")) ||
     (name.endsWith("-summary.json") && rel.includes("production-text"));
+}
+
+function plannerPreflightEntry(filePath) {
+  const payload = readJson(filePath);
+  if (!payload) return undefined;
+  return {
+    path: relativePath(filePath),
+    createdAtIso: payload.createdAtIso || fileMtime(filePath),
+    status: payload.status || "unknown",
+    promotionReady: Boolean(payload.promotionReady),
+    runAllowed: Boolean(payload.runAllowed),
+    reachable: Boolean(payload.reachable),
+    baseUrl: payload.baseUrl || "",
+    activeModel: payload.activeModel || "",
+    classification: payload.classification?.classification || "unknown",
+    smallPlanner: Boolean(payload.classification?.smallPlanner),
+    qualityPlanner: Boolean(payload.classification?.qualityPlanner),
+    productionSuitable: Boolean(payload.classification?.productionSuitable),
+    minContextTokens: payload.classification?.minContextTokens,
+    reportedContextTokens: payload.classification?.reportedContextTokens,
+    minOutputTokens: payload.classification?.minOutputTokens,
+    maxOutputTokens: payload.classification?.maxOutputTokens,
+    blockerCount: Array.isArray(payload.blockers) ? payload.blockers.length : 0,
+    blockers: payload.blockers || [],
+    warnings: payload.warnings || [],
+    nextSteps: payload.nextSteps || []
+  };
 }
 
 function readinessEntry(filePath) {
@@ -253,10 +291,16 @@ function benchmarkSummaryEntry(filePath) {
   };
 }
 
-function buildFindings({ latestReadiness, latestAggregate, latestBenchmark, latestPreflight }) {
+function buildFindings({ latestPlannerPreflight, latestReadiness, latestAggregate, latestBenchmark, latestPreflight }) {
   const findings = [];
   if (latestPreflight?.liveComfyReachable && latestPreflight?.liveNodeAvailable) {
     findings.push("Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.");
+  }
+  if (latestPlannerPreflight?.promotionReady) {
+    findings.push(`Latest planner preflight passed with ${latestPlannerPreflight.activeModel}.`);
+  }
+  if (latestPlannerPreflight && !latestPlannerPreflight.promotionReady) {
+    findings.push(`Latest planner preflight is blocked: ${latestPlannerPreflight.classification} model ${latestPlannerPreflight.activeModel || "n/a"}.`);
   }
   if (latestReadiness?.smallPlannerActive) {
     findings.push("The currently reachable planner is a known-small smoke model, so current evidence must not be promoted.");
@@ -277,10 +321,13 @@ function buildFindings({ latestReadiness, latestAggregate, latestBenchmark, late
   return findings;
 }
 
-function buildNextSteps({ latestReadiness, latestAggregate, latestBenchmark, latestPreflight }) {
+function buildNextSteps({ latestPlannerPreflight, latestReadiness, latestAggregate, latestBenchmark, latestPreflight }) {
   const steps = [];
   if (!latestPreflight?.liveComfyReachable || !latestPreflight?.liveNodeAvailable) {
     steps.push("Run production-text preflight with live Comfy and CustomCardTextComposer loaded.");
+  }
+  if (!latestPlannerPreflight?.promotionReady) {
+    steps.push("Run production-text planner preflight with a production-suitable model, 8192+ context, and the full output budget.");
   }
   if (!latestReadiness?.productionSuitablePlannerReachable) {
     steps.push("Run the planner preflight, then start or configure a production-suitable planner endpoint with 8192+ context before collecting promotion evidence.");
@@ -318,6 +365,7 @@ function buildMarkdown(result) {
   lines.push("");
   lines.push("| Type | Path | Status | Key result |");
   lines.push("| --- | --- | --- | --- |");
+  lines.push(latestRow("Planner", result.plannerPreflights[0], plannerSummary));
   lines.push(latestRow("Readiness", result.readinessReports[0], readinessSummary));
   lines.push(latestRow("Preflight", result.preflights[0], preflightSummary));
   lines.push(latestRow("Aggregate", result.aggregates[0], aggregateSummary));
@@ -339,6 +387,10 @@ function buildMarkdown(result) {
     lines.push(`| ${entry.createdAtIso} | ${entry.totalRuns} | ${entry.completedRuns} | ${entry.failedRuns} | ${markdownCell(entry.fixtures.join(", ") || "n/a")} | ${markdownCell(entry.textModels.join(", ") || "n/a")} | ${link(entry.path)} |`);
   }
   return `${lines.join("\n")}\n`;
+}
+
+function plannerSummary(entry) {
+  return `${entry.classification}; model=${entry.activeModel || "none"}; context=${entry.reportedContextTokens ?? "n/a"}`;
 }
 
 function latestRow(label, entry, summarize) {

@@ -1,6 +1,6 @@
 # Production Text Promotion Gate
 
-Created: 2026-06-26T22:21:46.669Z
+Created: 2026-06-26T22:42:03.546Z
 Status: blocked
 Promotion ready: no
 Evidence index: docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current
@@ -10,6 +10,7 @@ Evidence index: docs/evidence/generated-card-comparisons/production-text-evidenc
 | Requirement | Status | Details |
 | --- | --- | --- |
 | live ComfyUI preflight passed | ok | {"preflight":"docs/evidence/generated-card-comparisons/production-text-preflight-20260626T042126Z/production-text-preflight.json","liveComfyReachable":true,"liveNodeAvailable":true} |
+| planner preflight is production-ready | fail | {"plannerPreflight":"docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current/production-text-planner-preflight.json","activeModel":"koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S","classification":"smoke-only","reportedContextTokens":4096,"maxOutputTokens":3200,"blockers":["Planner /models preflight failed: fetch failed","Planner model 'koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S' is smoke-only for production text; use a production-suitable planner instead.","Planner context 4096 is below the production minimum 8192; 4096-token local runs are smoke-only."]} |
 | readiness doctor is promotion-ready | fail | {"readiness":"docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json","blockers":["latest LLM-planned aggregate is passing","configured production planner endpoint is production-suitable","configured production planner is not a small smoke model"]} |
 | production-suitable planner endpoint is reachable | fail | {"readiness":"docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json","activePlannerModels":["koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"]} |
 | no small smoke planner is active or used | fail | {"readinessSmallPlannerActive":true,"benchmarkSmallPlannerUsed":true,"textModels":["koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"]} |
@@ -20,8 +21,9 @@ Evidence index: docs/evidence/generated-card-comparisons/production-text-evidenc
 
 ## Next Steps
 
-- Run the readiness doctor after starting a production-suitable planner endpoint.
-- Use Qwen3-4B only for smoke/failure evidence; run promotion evidence with the larger planner endpoint.
+- Run production-text planner preflight with a production-suitable model, 8192+ context, and the full output budget.
+- Run the planner preflight and readiness doctor after starting a production-suitable planner endpoint with 8192+ context.
+- Use Qwen3-4B only for smoke/failure evidence; run promotion evidence with Gemma 31B, Magistral Small, Qwen3-8B-or-better, or a hosted/self-hosted production planner.
 - Run the full aquarium/koi/dog production-text matrix to completion.
-- Keep the full prompt and retry/repair planner output until must_include and must_avoid checks pass before Comfy work.
+- Keep the full prompt and correct planner runtime; retry/repair planner output until must_include and must_avoid checks pass before Comfy work.
 - Manually grade every run and regenerate the aggregate only after all candidates pass.
