@@ -1,6 +1,6 @@
 # Production Text Workflow Preflight
 
-Created: 2026-06-26T01:43:40.344Z
+Created: 2026-06-26T01:43:58.874Z
 
 - Workflow: `comfyui-workflows/customcard-production-text-overlay.json`
 - Custom node source: `comfyui-custom-nodes/CustomCardTextComposer`

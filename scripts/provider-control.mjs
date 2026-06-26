@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { createHash, randomBytes } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";

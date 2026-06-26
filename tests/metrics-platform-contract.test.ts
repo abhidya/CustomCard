@@ -1,16 +1,23 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, type ExecFileSyncOptionsWithStringEncoding } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 function read(path: string): string {
-  return readFileSync(path, "utf8");
+  return readFileSync(path, "utf8").replace(/\r\n/g, "\n");
 }
 
 const shellDoctorTimeoutMs = 15_000;
+const nodeBinary = process.execPath;
+const npmExecPath = process.env.npm_execpath;
+
+function execNpm(args: string[], options: ExecFileSyncOptionsWithStringEncoding): string {
+  if (npmExecPath) return execFileSync(nodeBinary, [npmExecPath, ...args], options);
+  return execFileSync(process.platform === "win32" ? "npm.cmd" : "npm", args, options);
+}
 
 describe("metrics platform contract", () => {
   it("emits a metrics platform readiness report", () => {
-    const output = execFileSync("npm", ["run", "metrics:doctor", "--silent"], {
+    const output = execNpm(["run", "metrics:doctor", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });

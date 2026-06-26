@@ -1,14 +1,22 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, type ExecFileSyncOptionsWithStringEncoding } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { apiRouteContracts } from "../src/apiRouteContractsData.mjs";
 import { capacityProfiles, summarizeCapacityPlan, validateCapacityProfiles } from "../src/capacityPlan";
 
 function read(path: string): string {
-  return readFileSync(path, "utf8");
+  return readFileSync(path, "utf8").replace(/\r\n/g, "\n");
 }
 
 const shellDoctorTimeoutMs = 60_000;
+const nodeBinary = process.execPath;
+const npmExecPath = process.env.npm_execpath;
+
+function execNpm(args: string[], options: ExecFileSyncOptionsWithStringEncoding): string {
+  if (npmExecPath) return execFileSync(nodeBinary, [npmExecPath, ...args], options);
+  return execFileSync(process.platform === "win32" ? "npm.cmd" : "npm", args, options);
+}
+
 const validMobileDoctorEnv = {
   CUSTOMCARD_API_BASE_URL: "https://api.customcard.test",
   CUSTOMCARD_APP_ENV: "qa",
@@ -206,7 +214,7 @@ describe("production infrastructure contract", () => {
   });
 
   it("ships a cloud artifact proof readiness doctor without claiming applied cloud proof", () => {
-    const output = execFileSync("npm", ["run", "cloud:artifact:proof:doctor", "--silent"], {
+    const output = execNpm(["run", "cloud:artifact:proof:doctor", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -558,7 +566,7 @@ describe("production infrastructure contract", () => {
   });
 
   it("ships executable capacity profiles and a CI-gated doctor", () => {
-    const output = execFileSync("npm", ["run", "capacity:doctor", "--silent"], {
+    const output = execNpm(["run", "capacity:doctor", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -631,7 +639,7 @@ describe("production infrastructure contract", () => {
     const nestedRouteHandlers = apiRouteContracts
       .map((route) => route.path)
       .filter((path) => path.split("/").length > 3)
-      .map((path) => `${path.slice(1)}.js`);
+      .map((path) => `${path.slice(1).replace(/:([^/]+)/g, "[$1]")}.js`);
 
     expect(vercel).toMatchObject({
       buildCommand: "npm run build",
@@ -680,7 +688,7 @@ describe("production infrastructure contract", () => {
   });
 
   it("ships a reviewer demo reset contract doctor", () => {
-    const output = execFileSync("npm", ["run", "demo:doctor", "--silent"], {
+    const output = execNpm(["run", "demo:doctor", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -705,7 +713,7 @@ describe("production infrastructure contract", () => {
 
   it("exercises the Postgres API runtime contract without external database credentials", () => {
     const doctor = read("scripts/postgres-runtime-doctor.mjs");
-    const output = execFileSync("npm", ["run", "api:doctor:postgres", "--silent"], {
+    const output = execNpm(["run", "api:doctor:postgres", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -825,7 +833,7 @@ describe("production infrastructure contract", () => {
   });
 
   it("emits a cloud artifact IaC readiness report", () => {
-    const output = execFileSync("npm", ["run", "cloud:doctor", "--silent"], {
+    const output = execNpm(["run", "cloud:doctor", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -860,7 +868,7 @@ describe("production infrastructure contract", () => {
   }, shellDoctorTimeoutMs);
 
   it("emits a security privacy accessibility baseline report", () => {
-    const output = execFileSync("npm", ["run", "security:doctor", "--silent"], {
+    const output = execNpm(["run", "security:doctor", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -895,7 +903,7 @@ describe("production infrastructure contract", () => {
   }, shellDoctorTimeoutMs);
 
   it("emits an end-to-end coverage readiness report", () => {
-    const output = execFileSync("npm", ["run", "e2e:coverage:doctor", "--silent"], {
+    const output = execNpm(["run", "e2e:coverage:doctor", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -936,7 +944,7 @@ describe("production infrastructure contract", () => {
   }, shellDoctorTimeoutMs);
 
   it("emits an AI provider readiness report", () => {
-    const output = execFileSync("npm", ["run", "ai:doctor", "--silent"], {
+    const output = execNpm(["run", "ai:doctor", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -960,8 +968,8 @@ describe("production infrastructure contract", () => {
       service: "customcard-ai-provider-readiness-doctor",
       status: "repo-consistent",
       items: 8,
-      textProviderContracts: 16,
-      imageProviderContracts: 18,
+      textProviderContracts: 17,
+      imageProviderContracts: 19,
       localFallbacks: 0,
       promptAuditRequired: 6,
       humanReviewRequired: 5,
@@ -982,7 +990,7 @@ describe("production infrastructure contract", () => {
   }, shellDoctorTimeoutMs);
 
   it("emits an observability readiness report", () => {
-    const output = execFileSync("npm", ["run", "observability:doctor", "--silent"], {
+    const output = execNpm(["run", "observability:doctor", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -1022,7 +1030,7 @@ describe("production infrastructure contract", () => {
   }, shellDoctorTimeoutMs);
 
   it("emits a retail fulfillment readiness report", () => {
-    const output = execFileSync("npm", ["run", "retail:doctor", "--silent"], {
+    const output = execNpm(["run", "retail:doctor", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -1068,7 +1076,7 @@ describe("production infrastructure contract", () => {
   }, shellDoctorTimeoutMs);
 
   it("emits a payment readiness report", () => {
-    const output = execFileSync("npm", ["run", "payment:doctor", "--silent"], {
+    const output = execNpm(["run", "payment:doctor", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -1118,7 +1126,7 @@ describe("production infrastructure contract", () => {
   }, shellDoctorTimeoutMs);
 
   it("emits a mobile render readiness report", () => {
-    const output = execFileSync("npm", ["run", "mobile:render:doctor", "--silent"], {
+    const output = execNpm(["run", "mobile:render:doctor", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -1175,7 +1183,7 @@ describe("production infrastructure contract", () => {
   }, shellDoctorTimeoutMs);
 
   it("emits a hosted API proof readiness report", () => {
-    const output = execFileSync("npm", ["run", "hosted:api:doctor", "--silent"], {
+    const output = execNpm(["run", "hosted:api:doctor", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -1244,7 +1252,7 @@ describe("production infrastructure contract", () => {
   }, shellDoctorTimeoutMs);
 
   it("emits a reviewer DB seed readiness report", () => {
-    const output = execFileSync("npm", ["run", "reviewer:db:seed:doctor", "--silent"], {
+    const output = execNpm(["run", "reviewer:db:seed:doctor", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -1308,7 +1316,7 @@ describe("production infrastructure contract", () => {
   }, shellDoctorTimeoutMs);
 
   it("emits a business engagement readiness report", () => {
-    const output = execFileSync("npm", ["run", "business:engagement:doctor", "--silent"], {
+    const output = execNpm(["run", "business:engagement:doctor", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -1361,7 +1369,7 @@ describe("production infrastructure contract", () => {
   }, shellDoctorTimeoutMs);
 
   it("emits an external audit evidence readiness report", () => {
-    const output = execFileSync("npm", ["run", "external:audit:doctor", "--silent"], {
+    const output = execNpm(["run", "external:audit:doctor", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -1398,7 +1406,7 @@ describe("production infrastructure contract", () => {
   }, shellDoctorTimeoutMs);
 
   it("emits a provider cost governance readiness report", () => {
-    const output = execFileSync("npm", ["run", "provider:governance:doctor", "--silent"], {
+    const output = execNpm(["run", "provider:governance:doctor", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -1437,7 +1445,7 @@ describe("production infrastructure contract", () => {
   }, shellDoctorTimeoutMs);
 
   it("emits a provider operations failover readiness report", () => {
-    const output = execFileSync("npm", ["run", "provider:operations:doctor", "--silent"], {
+    const output = execNpm(["run", "provider:operations:doctor", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -1474,7 +1482,7 @@ describe("production infrastructure contract", () => {
   }, shellDoctorTimeoutMs);
 
   it("emits a localization readiness report", () => {
-    const output = execFileSync("npm", ["run", "localization:doctor", "--silent"], {
+    const output = execNpm(["run", "localization:doctor", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -1514,7 +1522,7 @@ describe("production infrastructure contract", () => {
   }, shellDoctorTimeoutMs);
 
   it("emits a printer pricing research readiness report", () => {
-    const output = execFileSync("npm", ["run", "printer:pricing:doctor", "--silent"], {
+    const output = execNpm(["run", "printer:pricing:doctor", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -1698,7 +1706,7 @@ describe("production infrastructure contract", () => {
     expect(report.status).toBe("repo-consistent");
     expect(report.registerIssues).toEqual([]);
     expect(report.readiness.tables).toMatchObject({
-      total: 20,
+      total: 21,
       authSessions: true,
       accountIdentities: true,
       accountRecoveryChallenges: true,
@@ -1712,7 +1720,7 @@ describe("production infrastructure contract", () => {
       providerUsageLedger: true,
       queueJobs: true
     });
-    expect(report.readiness.api).toMatchObject({ statefulRoutes: 31, idempotentMutations: 17 });
+    expect(report.readiness.api).toMatchObject({ statefulRoutes: 37, idempotentMutations: 21 });
     expect(report.readiness.localBrowserState).toMatchObject({
       auditItems: 6,
       dbRequiredItems: 0,

@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Deterministic PWA icon generator — renders the CustomCard mark (dark field,
 // card face, heart) to PNG without any image dependencies.
 import { deflateSync } from "node:zlib";

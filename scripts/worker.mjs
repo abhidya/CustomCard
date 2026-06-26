@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { loadLocalAiEnvFiles } from "./ai-card-generator.mjs";
 import { createWorkerRuntime, describeWorkerReadiness } from "./worker-runtime.mjs";
 

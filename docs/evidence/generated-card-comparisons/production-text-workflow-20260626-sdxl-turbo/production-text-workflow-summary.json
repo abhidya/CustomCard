@@ -1,0 +1,3221 @@
+{
+  "phase": "local-production-text",
+  "phaseDir": "production-text-workflow",
+  "createdAtIso": "2026-06-26T01:43:59.340Z",
+  "liveProviderCallsEnabled": true,
+  "localOnlyNetworkGuard": true,
+  "outputDir": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo",
+  "envRouting": {
+    "aiEnvSources": [
+      ".env.local"
+    ],
+    "configuredProviderKeys": [
+      "CUSTOMCARD_COMFYUI_CFG",
+      "CUSTOMCARD_COMFYUI_CHECKPOINT",
+      "CUSTOMCARD_COMFYUI_IMAGE_HEIGHT",
+      "CUSTOMCARD_COMFYUI_IMAGE_WIDTH",
+      "CUSTOMCARD_COMFYUI_SAMPLER",
+      "CUSTOMCARD_COMFYUI_SCHEDULER",
+      "CUSTOMCARD_COMFYUI_SEED",
+      "CUSTOMCARD_COMFYUI_STEPS",
+      "CUSTOMCARD_COMFYUI_TIMEOUT_MS",
+      "CUSTOMCARD_COMFYUI_URL",
+      "CUSTOMCARD_COMFYUI_WORKFLOW_ID",
+      "CUSTOMCARD_COMFYUI_WORKFLOW_PATH"
+    ],
+    "secretsRedacted": true
+  },
+  "plannedRuns": [
+    {
+      "phase": "local-production-text",
+      "focus": "local-comfy-production-text-composer",
+      "storyId": "folded-card-sunburst-typography",
+      "textCandidateId": "text-fixture-panel-copy",
+      "textAdapterId": "fixture",
+      "textModel": "",
+      "imageCandidateId": "image-local-comfyui",
+      "imageAdapterId": "local-comfyui-api-image",
+      "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+      "typographyModeId": "customcard-production-text-composer",
+      "typographyModeLabel": "CustomCard production text composer",
+      "typographyStrategy": "comfy-deterministic-text-composer"
+    }
+  ],
+  "runs": [
+    {
+      "phase": "local-production-text",
+      "focus": "local-comfy-production-text-composer",
+      "storyId": "folded-card-sunburst-typography",
+      "textCandidateId": "text-fixture-panel-copy",
+      "textAdapterId": "fixture",
+      "textModel": "",
+      "imageCandidateId": "image-local-comfyui",
+      "imageAdapterId": "local-comfyui-api-image",
+      "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+      "typographyModeId": "customcard-production-text-composer",
+      "typographyModeLabel": "CustomCard production text composer",
+      "typographyStrategy": "comfy-deterministic-text-composer",
+      "runDir": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui",
+      "startedAt": "2026-06-26T01:43:59.341Z",
+      "finishedAt": "2026-06-26T01:46:17.624Z",
+      "panelCount": 4,
+      "panelFiles": [
+        {
+          "panelId": "front",
+          "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\provider-front.png",
+          "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\preview-front.png",
+          "prompt": "Create one artwork-only 5x7 portrait Front Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: deep charcoal main field with warm gold and ivory accents kept outside the central text field\nMotif: edge-only warm-gold corner rays and thin border accents; no central radial sunburst, no halo, no medallion, no rays behind copy\nMood: Respectful, warm, sophisticated\nPanel Role: primary typography measurement panel\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nPlace a broad opaque plain deep-charcoal text-safe field in the central 60% of the panel. Treat this field as a real solid print area, not transparent negative space. Keep all rays, ornaments, bright marks, fake glyphs, and high-contrast details outside it. Put sunburst detail only as edge-only corner or margin ornaments; do not use a centered radial burst, halo, medallion, or rays crossing behind the field.\n\nPanel-specific composition: deep charcoal field, thin warm-gold border, small edge or corner rays only, and a plain central text-safe field; no central radial burst.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+          "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline",
+          "renderedByComfyTextComposer": true,
+          "headline": "For Moments That Matter",
+          "body": "Wishing you strength and peace on your day.",
+          "sourceKind": "data-url",
+          "contentType": "image/png"
+        },
+        {
+          "panelId": "inside-left",
+          "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\provider-inside-left.png",
+          "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\preview-inside-left.png",
+          "prompt": "Create one artwork-only 5x7 portrait Inside Left panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Left\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: left half of a coordinated interior spread with opening message text\nHeadline length: 3 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this an interior writing panel, not another cover. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-left edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-left edge accent only, quiet plain center, paired with inside-right.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+          "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior",
+          "renderedByComfyTextComposer": true,
+          "headline": "A Quiet Honor",
+          "body": "May this space hold steadiness, light, and the care surrounding you today.",
+          "sourceKind": "data-url",
+          "contentType": "image/png"
+        },
+        {
+          "panelId": "inside-right",
+          "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\provider-inside-right.png",
+          "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\preview-inside-right.png",
+          "prompt": "Create one artwork-only 5x7 portrait Inside Right panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Right\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: right half of a coordinated interior spread with main message text\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this the matching interior message panel. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-right edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-right edge accent only, quiet plain center, paired with inside-left.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+          "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior",
+          "renderedByComfyTextComposer": true,
+          "headline": "With Respect and Warmth",
+          "body": "For the moments that ask for courage, may you feel supported, seen, and held in peace.",
+          "sourceKind": "data-url",
+          "contentType": "image/png"
+        },
+        {
+          "panelId": "back",
+          "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\provider-back.png",
+          "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\preview-back.png",
+          "prompt": "Create one artwork-only 5x7 portrait Back Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Back Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: deep charcoal main field with one tiny warm-gold lower-edge mark only; no ivory panel, no cream wave, no large light area\nMotif: mostly plain deep-charcoal back cover with one tiny lower-edge gold sun mark; no centered or full-panel radial burst\nMood: Respectful, warm, sophisticated\nPanel Role: coordinating no-text back panel\nNo card copy belongs on this panel.\nReserve hierarchy for visual coordination only.\nUse mostly negative space plus one small coordinating back mark.\nBack cover must be at least 85% plain deep charcoal. Use only one tiny warm-gold sun mark near the lower third. Do not create a large radial halo, full-panel burst, centered sunburst, decorative typography, or any text-like marks.\nPanel-specific composition: mostly deep charcoal negative space, thin gold border echo, one small lower-edge sun mark, no card copy.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with only one small lower-edge sun mark on the back cover.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+          "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, large sunburst, full radial halo, full-page radial burst, rays across the whole panel, centered halo, busy back cover, ivory wave, cream lower half, large cream area, white panel",
+          "renderedByComfyTextComposer": true,
+          "headline": "",
+          "body": "",
+          "sourceKind": "data-url",
+          "contentType": "image/png"
+        }
+      ],
+      "contactSheet": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\contact-sheet.png",
+      "effectiveProviderRequests": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\effective-provider-requests.json",
+      "providerCallCount": 102,
+      "autoChecks": {
+        "advisoryOnly": true,
+        "checks": {
+          "fourPanels": true,
+          "panelIds": [
+            "front",
+            "inside-left",
+            "inside-right",
+            "back"
+          ],
+          "providerCalls": 102,
+          "materializedImages": 4,
+          "allPanelsMaterialized": true,
+          "finalImagesRenderedByComfy": true,
+          "appOverlayBypassed": true,
+          "metadataIncludesExactCopy": true,
+          "metadataIncludesSafeBoxes": true
+        },
+        "note": "Production text phase treats Comfy output as the final text-composited panel. Automated checks prove request metadata and image materialization; visual text quality still requires inspection."
+      }
+    }
+  ],
+  "providerHttp": [
+    {
+      "url": "http://127.0.0.1:8188/prompt",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": {
+            "1": {
+              "class_type": "CheckpointLoaderSimple",
+              "inputs": {
+                "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+              }
+            },
+            "2": {
+              "class_type": "CLIPTextEncode",
+              "inputs": {
+                "clip": [
+                  "1",
+                  1
+                ],
+                "text": "Create one artwork-only 5x7 portrait Front Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: deep charcoal main field with warm gold and ivory accents kept outside the central text field\nMotif: edge-only warm-gold corner rays and thin border accents; no central radial sunburst, no halo, no medallion, no rays behind copy\nMood: Respectful, warm, sophisticated\nPanel Role: primary typography measurement panel\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nPlace a broad opaque plain deep-charcoal text-safe field in the central 60% of the panel. Treat this field as a real solid print area, not transparent negative space. Keep all rays, ornaments, bright marks, fake glyphs, and high-contrast details outside it. Put sunburst detail only as edge-only corner or margin ornaments; do not use a centered radial burst, halo, medallion, or rays crossing behind the field.\n\nPanel-specific composition: deep charcoal field, thin warm-gold border, small edge or corner rays only, and a plain central text-safe field; no central radial burst.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+              }
+            },
+            "3": {
+              "class_type": "CLIPTextEncode",
+              "inputs": {
+                "clip": [
+                  "1",
+                  1
+                ],
+                "text": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline"
+              }
+            },
+            "4": {
+              "class_type": "EmptyLatentImage",
+              "inputs": {
+                "batch_size": 1,
+                "height": 1344,
+                "width": 960
+              }
+            },
+            "5": {
+              "class_type": "KSampler",
+              "inputs": {
+                "cfg": 0,
+                "denoise": 1,
+                "latent_image": [
+                  "4",
+                  0
+                ],
+                "model": [
+                  "1",
+                  0
+                ],
+                "negative": [
+                  "3",
+                  0
+                ],
+                "positive": [
+                  "2",
+                  0
+                ],
+                "sampler_name": "euler_ancestral",
+                "scheduler": "sgm_uniform",
+                "seed": 20260626,
+                "steps": 2
+              }
+            },
+            "6": {
+              "class_type": "VAEDecode",
+              "inputs": {
+                "samples": [
+                  "5",
+                  0
+                ],
+                "vae": [
+                  "1",
+                  2
+                ]
+              }
+            },
+            "7": {
+              "class_type": "CustomCardTextComposer",
+              "inputs": {
+                "alignment": "center",
+                "body": "Wishing you strength and peace on your day.",
+                "body_box_height": 403,
+                "body_box_width": 748,
+                "body_box_x": 106,
+                "body_box_y": 780,
+                "body_fill_color": "#f4d77d",
+                "body_font": "arial.ttf",
+                "body_font_size": 31,
+                "body_line_spacing": 6,
+                "body_stroke_color": "#111715",
+                "body_stroke_width": 2,
+                "body_vertical_alignment": "middle",
+                "debug_boxes": false,
+                "headline": "For Moments That Matter",
+                "headline_box_height": 296,
+                "headline_box_width": 788,
+                "headline_box_x": 86,
+                "headline_box_y": 376,
+                "headline_fill_color": "#fff7df",
+                "headline_font": "arialbd.ttf",
+                "headline_font_size": 79,
+                "headline_line_spacing": 8,
+                "headline_stroke_color": "#111715",
+                "headline_stroke_width": 2,
+                "headline_vertical_alignment": "middle",
+                "image": [
+                  "6",
+                  0
+                ],
+                "min_font_size": 16
+              }
+            },
+            "9": {
+              "class_type": "SaveImage",
+              "inputs": {
+                "filename_prefix": "customcard/customcard-production-text-overlay/front",
+                "images": [
+                  "7",
+                  0
+                ]
+              }
+            }
+          },
+          "client_id": "customcard-local-typography-benchmark",
+          "extra_data": {
+            "customcard": {
+              "workflow_id": "customcard-production-text-overlay",
+              "panel_id": "front",
+              "seed": 20260626,
+              "inputs": {
+                "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+                "width": 960,
+                "height": 1344,
+                "steps": 2,
+                "cfg": 0,
+                "sampler": "euler_ancestral",
+                "scheduler": "sgm_uniform",
+                "seed": 20260626,
+                "prompt": "Create one artwork-only 5x7 portrait Front Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: deep charcoal main field with warm gold and ivory accents kept outside the central text field\nMotif: edge-only warm-gold corner rays and thin border accents; no central radial sunburst, no halo, no medallion, no rays behind copy\nMood: Respectful, warm, sophisticated\nPanel Role: primary typography measurement panel\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nPlace a broad opaque plain deep-charcoal text-safe field in the central 60% of the panel. Treat this field as a real solid print area, not transparent negative space. Keep all rays, ornaments, bright marks, fake glyphs, and high-contrast details outside it. Put sunburst detail only as edge-only corner or margin ornaments; do not use a centered radial burst, halo, medallion, or rays crossing behind the field.\n\nPanel-specific composition: deep charcoal field, thin warm-gold border, small edge or corner rays only, and a plain central text-safe field; no central radial burst.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+                "negative_prompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline",
+                "headline_text": "For Moments That Matter",
+                "body_text": "Wishing you strength and peace on your day.",
+                "headline_font_size": 79,
+                "body_font_size": 31,
+                "headline_box": {
+                  "x": 86,
+                  "y": 376,
+                  "width": 788,
+                  "height": 296
+                },
+                "body_box": {
+                  "x": 106,
+                  "y": 780,
+                  "width": 748,
+                  "height": 403
+                },
+                "text_alignment": "center",
+                "min_font_size": 16
+              }
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 85,
+        "body": {
+          "prompt_id": "b5894ee6-c003-4e91-b44b-53e15c5eea79",
+          "number": 4,
+          "node_errors": {}
+        }
+      },
+      "durationMs": 38
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 7
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 19
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 18
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 13
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 13
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 13
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 13
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 20
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 13
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 23
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 18
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 28
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 13
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 12
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 13
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 12
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 14
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 13
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 13
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 15
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 13
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 23
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 4
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 23
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 19
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 21
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b5894ee6-c003-4e91-b44b-53e15c5eea79",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 9801,
+        "body": {
+          "b5894ee6-c003-4e91-b44b-53e15c5eea79": {
+            "prompt": [
+              4,
+              "b5894ee6-c003-4e91-b44b-53e15c5eea79",
+              {
+                "1": {
+                  "class_type": "CheckpointLoaderSimple",
+                  "inputs": {
+                    "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+                  }
+                },
+                "2": {
+                  "class_type": "CLIPTextEncode",
+                  "inputs": {
+                    "clip": [
+                      "1",
+                      1
+                    ],
+                    "text": "Create one artwork-only 5x7 portrait Front Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: deep charcoal main field with warm gold and ivory accents kept outside the central text field\nMotif: edge-only warm-gold corner rays and thin border accents; no central radial sunburst, no halo, no medallion, no rays behind copy\nMood: Respectful, warm, sophisticated\nPanel Role: primary typography measurement panel\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nPlace a broad opaque plain deep-charcoal text-safe field in the central 60% of the panel. Treat this field as a real solid print area, not transparent negative space. Keep all rays, ornaments, bright marks, fake glyphs, and high-contrast details outside it. Put sunburst detail only as edge-only corner or margin ornaments; do not use a centered radial burst, halo, medallion, or rays crossing behind the field.\n\nPanel-specific composition: deep charcoal field, thin warm-gold border, small edge or corner rays only, and a plain central text-safe field; no central radial burst.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+                  }
+                },
+                "3": {
+                  "class_type": "CLIPTextEncode",
+                  "inputs": {
+                    "clip": [
+                      "1",
+                      1
+                    ],
+                    "text": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline"
+                  }
+                },
+                "4": {
+                  "class_type": "EmptyLatentImage",
+                  "inputs": {
+                    "batch_size": 1,
+                    "height": 1344,
+                    "width": 960
+                  }
+                },
+                "5": {
+                  "class_type": "KSampler",
+                  "inputs": {
+                    "cfg": 0,
+                    "denoise": 1,
+                    "latent_image": [
+                      "4",
+                      0
+                    ],
+                    "model": [
+                      "1",
+                      0
+                    ],
+                    "negative": [
+                      "3",
+                      0
+                    ],
+                    "positive": [
+                      "2",
+                      0
+                    ],
+                    "sampler_name": "euler_ancestral",
+                    "scheduler": "sgm_uniform",
+                    "seed": 20260626,
+                    "steps": 2
+                  }
+                },
+                "6": {
+                  "class_type": "VAEDecode",
+                  "inputs": {
+                    "samples": [
+                      "5",
+                      0
+                    ],
+                    "vae": [
+                      "1",
+                      2
+                    ]
+                  }
+                },
+                "7": {
+                  "class_type": "CustomCardTextComposer",
+                  "inputs": {
+                    "alignment": "center",
+                    "body": "Wishing you strength and peace on your day.",
+                    "body_box_height": 403,
+                    "body_box_width": 748,
+                    "body_box_x": 106,
+                    "body_box_y": 780,
+                    "body_fill_color": "#f4d77d",
+                    "body_font": "arial.ttf",
+                    "body_font_size": 31,
+                    "body_line_spacing": 6,
+                    "body_stroke_color": "#111715",
+                    "body_stroke_width": 2,
+                    "body_vertical_alignment": "middle",
+                    "debug_boxes": false,
+                    "headline": "For Moments That Matter",
+                    "headline_box_height": 296,
+                    "headline_box_width": 788,
+                    "headline_box_x": 86,
+                    "headline_box_y": 376,
+                    "headline_fill_color": "#fff7df",
+                    "headline_font": "arialbd.ttf",
+                    "headline_font_size": 79,
+                    "headline_line_spacing": 8,
+                    "headline_stroke_color": "#111715",
+                    "headline_stroke_width": 2,
+                    "headline_vertical_alignment": "middle",
+                    "image": [
+                      "6",
+                      0
+                    ],
+                    "min_font_size": 16
+                  }
+                },
+                "9": {
+                  "class_type": "SaveImage",
+                  "inputs": {
+                    "filename_prefix": "customcard/customcard-production-text-overlay/front",
+                    "images": [
+                      "7",
+                      0
+                    ]
+                  }
+                }
+              },
+              {
+                "customcard": {
+                  "workflow_id": "customcard-production-text-overlay",
+                  "panel_id": "front",
+                  "seed": 20260626,
+                  "inputs": {
+                    "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+                    "width": 960,
+                    "height": 1344,
+                    "steps": 2,
+                    "cfg": 0,
+                    "sampler": "euler_ancestral",
+                    "scheduler": "sgm_uniform",
+                    "seed": 20260626,
+                    "prompt": "Create one artwork-only 5x7 portrait Front Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: deep charcoal main field with warm gold and ivory accents kept outside the central text field\nMotif: edge-only warm-gold corner rays and thin border accents; no central radial sunburst, no halo, no medallion, no rays behind copy\nMood: Respectful, warm, sophisticated\nPanel Role: primary typography measurement panel\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nPlace a broad opaque plain deep-charcoal text-safe field in the central 60% of the panel. Treat this field as a real solid print area, not transparent negative space. Keep all rays, ornaments, bright marks, fake glyphs, and high-contrast details outside it. Put sunburst detail only as edge-only corner or margin ornaments; do not use a centered radial burst, halo, medallion, or rays crossing behind the field.\n\nPanel-specific composition: deep charcoal field, thin warm-gold border, small edge or corner rays only, and a plain central text-safe field; no central radial burst.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+                    "negative_prompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline",
+                    "headline_text": "For Moments That Matter",
+                    "body_text": "Wishing you strength and peace on your day.",
+                    "headline_font_size": 79,
+                    "body_font_size": 31,
+                    "headline_box": {
+                      "x": 86,
+                      "y": 376,
+                      "width": 788,
+                      "height": 296
+                    },
+                    "body_box": {
+                      "x": 106,
+                      "y": 780,
+                      "width": 748,
+                      "height": 403
+                    },
+                    "text_alignment": "center",
+                    "min_font_size": 16
+                  }
+                },
+                "client_id": "customcard-local-typography-benchmark",
+                "create_time": 1782438239371
+              },
+              [
+                "9"
+              ]
+            ],
+            "outputs": {
+              "9": {
+                "images": [
+                  {
+                    "filename": "front_00002_.png",
+                    "subfolder": "customcard\\customcard-production-text-overlay",
+                    "type": "output"
+                  }
+                ]
+              }
+            },
+            "status": {
+              "status_str": "success",
+              "completed": true,
+              "messages": [
+                [
+                  "execution_start",
+                  {
+                    "prompt_id": "b5894ee6-c003-4e91-b44b-53e15c5eea79",
+                    "timestamp": 1782438239371
+                  }
+                ],
+                [
+                  "execution_cached",
+                  {
+                    "nodes": [
+                      "4"
+                    ],
+                    "prompt_id": "b5894ee6-c003-4e91-b44b-53e15c5eea79",
+                    "timestamp": 1782438239371
+                  }
+                ],
+                [
+                  "execution_success",
+                  {
+                    "prompt_id": "b5894ee6-c003-4e91-b44b-53e15c5eea79",
+                    "timestamp": 1782438332233
+                  }
+                ]
+              ]
+            },
+            "meta": {
+              "9": {
+                "node_id": "9",
+                "display_node": "9",
+                "parent_node": null,
+                "real_node_id": "9"
+              }
+            }
+          }
+        }
+      },
+      "durationMs": 257
+    },
+    {
+      "url": "http://127.0.0.1:8188/view?filename=front_00002_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "byteLength": 2566629
+      },
+      "durationMs": 11
+    },
+    {
+      "url": "http://127.0.0.1:8188/prompt",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": {
+            "1": {
+              "class_type": "CheckpointLoaderSimple",
+              "inputs": {
+                "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+              }
+            },
+            "2": {
+              "class_type": "CLIPTextEncode",
+              "inputs": {
+                "clip": [
+                  "1",
+                  1
+                ],
+                "text": "Create one artwork-only 5x7 portrait Inside Left panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Left\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: left half of a coordinated interior spread with opening message text\nHeadline length: 3 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this an interior writing panel, not another cover. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-left edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-left edge accent only, quiet plain center, paired with inside-right.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+              }
+            },
+            "3": {
+              "class_type": "CLIPTextEncode",
+              "inputs": {
+                "clip": [
+                  "1",
+                  1
+                ],
+                "text": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior"
+              }
+            },
+            "4": {
+              "class_type": "EmptyLatentImage",
+              "inputs": {
+                "batch_size": 1,
+                "height": 1344,
+                "width": 960
+              }
+            },
+            "5": {
+              "class_type": "KSampler",
+              "inputs": {
+                "cfg": 0,
+                "denoise": 1,
+                "latent_image": [
+                  "4",
+                  0
+                ],
+                "model": [
+                  "1",
+                  0
+                ],
+                "negative": [
+                  "3",
+                  0
+                ],
+                "positive": [
+                  "2",
+                  0
+                ],
+                "sampler_name": "euler_ancestral",
+                "scheduler": "sgm_uniform",
+                "seed": 20260626,
+                "steps": 2
+              }
+            },
+            "6": {
+              "class_type": "VAEDecode",
+              "inputs": {
+                "samples": [
+                  "5",
+                  0
+                ],
+                "vae": [
+                  "1",
+                  2
+                ]
+              }
+            },
+            "7": {
+              "class_type": "CustomCardTextComposer",
+              "inputs": {
+                "alignment": "center",
+                "body": "May this space hold steadiness, light, and the care surrounding you today.",
+                "body_box_height": 484,
+                "body_box_width": 748,
+                "body_box_x": 106,
+                "body_box_y": 497,
+                "body_fill_color": "#4f432a",
+                "body_font": "georgia.ttf",
+                "body_font_size": 26,
+                "body_line_spacing": 6,
+                "body_stroke_color": "#fff6df",
+                "body_stroke_width": 1,
+                "body_vertical_alignment": "middle",
+                "debug_boxes": false,
+                "headline": "A Quiet Honor",
+                "headline_box_height": 269,
+                "headline_box_width": 788,
+                "headline_box_x": 86,
+                "headline_box_y": 134,
+                "headline_fill_color": "#282923",
+                "headline_font": "georgia.ttf",
+                "headline_font_size": 54,
+                "headline_line_spacing": 8,
+                "headline_stroke_color": "#fff6df",
+                "headline_stroke_width": 1,
+                "headline_vertical_alignment": "middle",
+                "image": [
+                  "6",
+                  0
+                ],
+                "min_font_size": 16
+              }
+            },
+            "9": {
+              "class_type": "SaveImage",
+              "inputs": {
+                "filename_prefix": "customcard/customcard-production-text-overlay/inside-left",
+                "images": [
+                  "7",
+                  0
+                ]
+              }
+            }
+          },
+          "client_id": "customcard-local-typography-benchmark",
+          "extra_data": {
+            "customcard": {
+              "workflow_id": "customcard-production-text-overlay",
+              "panel_id": "inside-left",
+              "seed": 20260626,
+              "inputs": {
+                "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+                "width": 960,
+                "height": 1344,
+                "steps": 2,
+                "cfg": 0,
+                "sampler": "euler_ancestral",
+                "scheduler": "sgm_uniform",
+                "seed": 20260626,
+                "prompt": "Create one artwork-only 5x7 portrait Inside Left panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Left\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: left half of a coordinated interior spread with opening message text\nHeadline length: 3 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this an interior writing panel, not another cover. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-left edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-left edge accent only, quiet plain center, paired with inside-right.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+                "negative_prompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior",
+                "headline_text": "A Quiet Honor",
+                "body_text": "May this space hold steadiness, light, and the care surrounding you today.",
+                "headline_font_size": 54,
+                "body_font_size": 26,
+                "headline_box": {
+                  "x": 86,
+                  "y": 134,
+                  "width": 788,
+                  "height": 269
+                },
+                "body_box": {
+                  "x": 106,
+                  "y": 497,
+                  "width": 748,
+                  "height": 484
+                },
+                "text_alignment": "center",
+                "min_font_size": 16
+              }
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 85,
+        "body": {
+          "prompt_id": "cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+          "number": 5,
+          "node_errors": {}
+        }
+      },
+      "durationMs": 2
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 21
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 23
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 22
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 21
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 3
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 23
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 32
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 21
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 1
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 10136,
+        "body": {
+          "cad05ed5-8cda-4383-ba9b-6b46b73559e7": {
+            "prompt": [
+              5,
+              "cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+              {
+                "1": {
+                  "class_type": "CheckpointLoaderSimple",
+                  "inputs": {
+                    "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+                  }
+                },
+                "2": {
+                  "class_type": "CLIPTextEncode",
+                  "inputs": {
+                    "clip": [
+                      "1",
+                      1
+                    ],
+                    "text": "Create one artwork-only 5x7 portrait Inside Left panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Left\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: left half of a coordinated interior spread with opening message text\nHeadline length: 3 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this an interior writing panel, not another cover. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-left edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-left edge accent only, quiet plain center, paired with inside-right.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+                  }
+                },
+                "3": {
+                  "class_type": "CLIPTextEncode",
+                  "inputs": {
+                    "clip": [
+                      "1",
+                      1
+                    ],
+                    "text": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior"
+                  }
+                },
+                "4": {
+                  "class_type": "EmptyLatentImage",
+                  "inputs": {
+                    "batch_size": 1,
+                    "height": 1344,
+                    "width": 960
+                  }
+                },
+                "5": {
+                  "class_type": "KSampler",
+                  "inputs": {
+                    "cfg": 0,
+                    "denoise": 1,
+                    "latent_image": [
+                      "4",
+                      0
+                    ],
+                    "model": [
+                      "1",
+                      0
+                    ],
+                    "negative": [
+                      "3",
+                      0
+                    ],
+                    "positive": [
+                      "2",
+                      0
+                    ],
+                    "sampler_name": "euler_ancestral",
+                    "scheduler": "sgm_uniform",
+                    "seed": 20260626,
+                    "steps": 2
+                  }
+                },
+                "6": {
+                  "class_type": "VAEDecode",
+                  "inputs": {
+                    "samples": [
+                      "5",
+                      0
+                    ],
+                    "vae": [
+                      "1",
+                      2
+                    ]
+                  }
+                },
+                "7": {
+                  "class_type": "CustomCardTextComposer",
+                  "inputs": {
+                    "alignment": "center",
+                    "body": "May this space hold steadiness, light, and the care surrounding you today.",
+                    "body_box_height": 484,
+                    "body_box_width": 748,
+                    "body_box_x": 106,
+                    "body_box_y": 497,
+                    "body_fill_color": "#4f432a",
+                    "body_font": "georgia.ttf",
+                    "body_font_size": 26,
+                    "body_line_spacing": 6,
+                    "body_stroke_color": "#fff6df",
+                    "body_stroke_width": 1,
+                    "body_vertical_alignment": "middle",
+                    "debug_boxes": false,
+                    "headline": "A Quiet Honor",
+                    "headline_box_height": 269,
+                    "headline_box_width": 788,
+                    "headline_box_x": 86,
+                    "headline_box_y": 134,
+                    "headline_fill_color": "#282923",
+                    "headline_font": "georgia.ttf",
+                    "headline_font_size": 54,
+                    "headline_line_spacing": 8,
+                    "headline_stroke_color": "#fff6df",
+                    "headline_stroke_width": 1,
+                    "headline_vertical_alignment": "middle",
+                    "image": [
+                      "6",
+                      0
+                    ],
+                    "min_font_size": 16
+                  }
+                },
+                "9": {
+                  "class_type": "SaveImage",
+                  "inputs": {
+                    "filename_prefix": "customcard/customcard-production-text-overlay/inside-left",
+                    "images": [
+                      "7",
+                      0
+                    ]
+                  }
+                }
+              },
+              {
+                "customcard": {
+                  "workflow_id": "customcard-production-text-overlay",
+                  "panel_id": "inside-left",
+                  "seed": 20260626,
+                  "inputs": {
+                    "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+                    "width": 960,
+                    "height": 1344,
+                    "steps": 2,
+                    "cfg": 0,
+                    "sampler": "euler_ancestral",
+                    "scheduler": "sgm_uniform",
+                    "seed": 20260626,
+                    "prompt": "Create one artwork-only 5x7 portrait Inside Left panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Left\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: left half of a coordinated interior spread with opening message text\nHeadline length: 3 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this an interior writing panel, not another cover. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-left edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-left edge accent only, quiet plain center, paired with inside-right.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+                    "negative_prompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior",
+                    "headline_text": "A Quiet Honor",
+                    "body_text": "May this space hold steadiness, light, and the care surrounding you today.",
+                    "headline_font_size": 54,
+                    "body_font_size": 26,
+                    "headline_box": {
+                      "x": 86,
+                      "y": 134,
+                      "width": 788,
+                      "height": 269
+                    },
+                    "body_box": {
+                      "x": 106,
+                      "y": 497,
+                      "width": 748,
+                      "height": 484
+                    },
+                    "text_alignment": "center",
+                    "min_font_size": 16
+                  }
+                },
+                "client_id": "customcard-local-typography-benchmark",
+                "create_time": 1782438332677
+              },
+              [
+                "9"
+              ]
+            ],
+            "outputs": {
+              "9": {
+                "images": [
+                  {
+                    "filename": "inside-left_00002_.png",
+                    "subfolder": "customcard\\customcard-production-text-overlay",
+                    "type": "output"
+                  }
+                ]
+              }
+            },
+            "status": {
+              "status_str": "success",
+              "completed": true,
+              "messages": [
+                [
+                  "execution_start",
+                  {
+                    "prompt_id": "cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+                    "timestamp": 1782438332680
+                  }
+                ],
+                [
+                  "execution_cached",
+                  {
+                    "nodes": [
+                      "1",
+                      "4"
+                    ],
+                    "prompt_id": "cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+                    "timestamp": 1782438332680
+                  }
+                ],
+                [
+                  "execution_success",
+                  {
+                    "prompt_id": "cad05ed5-8cda-4383-ba9b-6b46b73559e7",
+                    "timestamp": 1782438358074
+                  }
+                ]
+              ]
+            },
+            "meta": {
+              "9": {
+                "node_id": "9",
+                "display_node": "9",
+                "parent_node": null,
+                "real_node_id": "9"
+              }
+            }
+          }
+        }
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/view?filename=inside-left_00002_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "byteLength": 2657229
+      },
+      "durationMs": 18
+    },
+    {
+      "url": "http://127.0.0.1:8188/prompt",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": {
+            "1": {
+              "class_type": "CheckpointLoaderSimple",
+              "inputs": {
+                "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+              }
+            },
+            "2": {
+              "class_type": "CLIPTextEncode",
+              "inputs": {
+                "clip": [
+                  "1",
+                  1
+                ],
+                "text": "Create one artwork-only 5x7 portrait Inside Right panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Right\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: right half of a coordinated interior spread with main message text\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this the matching interior message panel. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-right edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-right edge accent only, quiet plain center, paired with inside-left.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+              }
+            },
+            "3": {
+              "class_type": "CLIPTextEncode",
+              "inputs": {
+                "clip": [
+                  "1",
+                  1
+                ],
+                "text": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior"
+              }
+            },
+            "4": {
+              "class_type": "EmptyLatentImage",
+              "inputs": {
+                "batch_size": 1,
+                "height": 1344,
+                "width": 960
+              }
+            },
+            "5": {
+              "class_type": "KSampler",
+              "inputs": {
+                "cfg": 0,
+                "denoise": 1,
+                "latent_image": [
+                  "4",
+                  0
+                ],
+                "model": [
+                  "1",
+                  0
+                ],
+                "negative": [
+                  "3",
+                  0
+                ],
+                "positive": [
+                  "2",
+                  0
+                ],
+                "sampler_name": "euler_ancestral",
+                "scheduler": "sgm_uniform",
+                "seed": 20260626,
+                "steps": 2
+              }
+            },
+            "6": {
+              "class_type": "VAEDecode",
+              "inputs": {
+                "samples": [
+                  "5",
+                  0
+                ],
+                "vae": [
+                  "1",
+                  2
+                ]
+              }
+            },
+            "7": {
+              "class_type": "CustomCardTextComposer",
+              "inputs": {
+                "alignment": "center",
+                "body": "For the moments that ask for courage, may you feel supported, seen, and held in peace.",
+                "body_box_height": 484,
+                "body_box_width": 748,
+                "body_box_x": 106,
+                "body_box_y": 497,
+                "body_fill_color": "#4f432a",
+                "body_font": "georgia.ttf",
+                "body_font_size": 26,
+                "body_line_spacing": 6,
+                "body_stroke_color": "#fff6df",
+                "body_stroke_width": 1,
+                "body_vertical_alignment": "middle",
+                "debug_boxes": false,
+                "headline": "With Respect and Warmth",
+                "headline_box_height": 269,
+                "headline_box_width": 788,
+                "headline_box_x": 86,
+                "headline_box_y": 134,
+                "headline_fill_color": "#282923",
+                "headline_font": "georgia.ttf",
+                "headline_font_size": 54,
+                "headline_line_spacing": 8,
+                "headline_stroke_color": "#fff6df",
+                "headline_stroke_width": 1,
+                "headline_vertical_alignment": "middle",
+                "image": [
+                  "6",
+                  0
+                ],
+                "min_font_size": 16
+              }
+            },
+            "9": {
+              "class_type": "SaveImage",
+              "inputs": {
+                "filename_prefix": "customcard/customcard-production-text-overlay/inside-right",
+                "images": [
+                  "7",
+                  0
+                ]
+              }
+            }
+          },
+          "client_id": "customcard-local-typography-benchmark",
+          "extra_data": {
+            "customcard": {
+              "workflow_id": "customcard-production-text-overlay",
+              "panel_id": "inside-right",
+              "seed": 20260626,
+              "inputs": {
+                "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+                "width": 960,
+                "height": 1344,
+                "steps": 2,
+                "cfg": 0,
+                "sampler": "euler_ancestral",
+                "scheduler": "sgm_uniform",
+                "seed": 20260626,
+                "prompt": "Create one artwork-only 5x7 portrait Inside Right panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Right\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: right half of a coordinated interior spread with main message text\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this the matching interior message panel. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-right edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-right edge accent only, quiet plain center, paired with inside-left.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+                "negative_prompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior",
+                "headline_text": "With Respect and Warmth",
+                "body_text": "For the moments that ask for courage, may you feel supported, seen, and held in peace.",
+                "headline_font_size": 54,
+                "body_font_size": 26,
+                "headline_box": {
+                  "x": 86,
+                  "y": 134,
+                  "width": 788,
+                  "height": 269
+                },
+                "body_box": {
+                  "x": 106,
+                  "y": 497,
+                  "width": 748,
+                  "height": 484
+                },
+                "text_alignment": "center",
+                "min_font_size": 16
+              }
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 85,
+        "body": {
+          "prompt_id": "118de9b9-c0b1-4597-b8fc-fa1ed4bc318f",
+          "number": 6,
+          "node_errors": {}
+        }
+      },
+      "durationMs": 6
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/118de9b9-c0b1-4597-b8fc-fa1ed4bc318f",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/118de9b9-c0b1-4597-b8fc-fa1ed4bc318f",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/118de9b9-c0b1-4597-b8fc-fa1ed4bc318f",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/118de9b9-c0b1-4597-b8fc-fa1ed4bc318f",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/118de9b9-c0b1-4597-b8fc-fa1ed4bc318f",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 23
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/118de9b9-c0b1-4597-b8fc-fa1ed4bc318f",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 21
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/118de9b9-c0b1-4597-b8fc-fa1ed4bc318f",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 10172,
+        "body": {
+          "118de9b9-c0b1-4597-b8fc-fa1ed4bc318f": {
+            "prompt": [
+              6,
+              "118de9b9-c0b1-4597-b8fc-fa1ed4bc318f",
+              {
+                "1": {
+                  "class_type": "CheckpointLoaderSimple",
+                  "inputs": {
+                    "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+                  }
+                },
+                "2": {
+                  "class_type": "CLIPTextEncode",
+                  "inputs": {
+                    "clip": [
+                      "1",
+                      1
+                    ],
+                    "text": "Create one artwork-only 5x7 portrait Inside Right panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Right\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: right half of a coordinated interior spread with main message text\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this the matching interior message panel. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-right edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-right edge accent only, quiet plain center, paired with inside-left.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+                  }
+                },
+                "3": {
+                  "class_type": "CLIPTextEncode",
+                  "inputs": {
+                    "clip": [
+                      "1",
+                      1
+                    ],
+                    "text": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior"
+                  }
+                },
+                "4": {
+                  "class_type": "EmptyLatentImage",
+                  "inputs": {
+                    "batch_size": 1,
+                    "height": 1344,
+                    "width": 960
+                  }
+                },
+                "5": {
+                  "class_type": "KSampler",
+                  "inputs": {
+                    "cfg": 0,
+                    "denoise": 1,
+                    "latent_image": [
+                      "4",
+                      0
+                    ],
+                    "model": [
+                      "1",
+                      0
+                    ],
+                    "negative": [
+                      "3",
+                      0
+                    ],
+                    "positive": [
+                      "2",
+                      0
+                    ],
+                    "sampler_name": "euler_ancestral",
+                    "scheduler": "sgm_uniform",
+                    "seed": 20260626,
+                    "steps": 2
+                  }
+                },
+                "6": {
+                  "class_type": "VAEDecode",
+                  "inputs": {
+                    "samples": [
+                      "5",
+                      0
+                    ],
+                    "vae": [
+                      "1",
+                      2
+                    ]
+                  }
+                },
+                "7": {
+                  "class_type": "CustomCardTextComposer",
+                  "inputs": {
+                    "alignment": "center",
+                    "body": "For the moments that ask for courage, may you feel supported, seen, and held in peace.",
+                    "body_box_height": 484,
+                    "body_box_width": 748,
+                    "body_box_x": 106,
+                    "body_box_y": 497,
+                    "body_fill_color": "#4f432a",
+                    "body_font": "georgia.ttf",
+                    "body_font_size": 26,
+                    "body_line_spacing": 6,
+                    "body_stroke_color": "#fff6df",
+                    "body_stroke_width": 1,
+                    "body_vertical_alignment": "middle",
+                    "debug_boxes": false,
+                    "headline": "With Respect and Warmth",
+                    "headline_box_height": 269,
+                    "headline_box_width": 788,
+                    "headline_box_x": 86,
+                    "headline_box_y": 134,
+                    "headline_fill_color": "#282923",
+                    "headline_font": "georgia.ttf",
+                    "headline_font_size": 54,
+                    "headline_line_spacing": 8,
+                    "headline_stroke_color": "#fff6df",
+                    "headline_stroke_width": 1,
+                    "headline_vertical_alignment": "middle",
+                    "image": [
+                      "6",
+                      0
+                    ],
+                    "min_font_size": 16
+                  }
+                },
+                "9": {
+                  "class_type": "SaveImage",
+                  "inputs": {
+                    "filename_prefix": "customcard/customcard-production-text-overlay/inside-right",
+                    "images": [
+                      "7",
+                      0
+                    ]
+                  }
+                }
+              },
+              {
+                "customcard": {
+                  "workflow_id": "customcard-production-text-overlay",
+                  "panel_id": "inside-right",
+                  "seed": 20260626,
+                  "inputs": {
+                    "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+                    "width": 960,
+                    "height": 1344,
+                    "steps": 2,
+                    "cfg": 0,
+                    "sampler": "euler_ancestral",
+                    "scheduler": "sgm_uniform",
+                    "seed": 20260626,
+                    "prompt": "Create one artwork-only 5x7 portrait Inside Right panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Right\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: right half of a coordinated interior spread with main message text\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this the matching interior message panel. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-right edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-right edge accent only, quiet plain center, paired with inside-left.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+                    "negative_prompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior",
+                    "headline_text": "With Respect and Warmth",
+                    "body_text": "For the moments that ask for courage, may you feel supported, seen, and held in peace.",
+                    "headline_font_size": 54,
+                    "body_font_size": 26,
+                    "headline_box": {
+                      "x": 86,
+                      "y": 134,
+                      "width": 788,
+                      "height": 269
+                    },
+                    "body_box": {
+                      "x": 106,
+                      "y": 497,
+                      "width": 748,
+                      "height": 484
+                    },
+                    "text_alignment": "center",
+                    "min_font_size": 16
+                  }
+                },
+                "client_id": "customcard-local-typography-benchmark",
+                "create_time": 1782438358765
+              },
+              [
+                "9"
+              ]
+            ],
+            "outputs": {
+              "9": {
+                "images": [
+                  {
+                    "filename": "inside-right_00002_.png",
+                    "subfolder": "customcard\\customcard-production-text-overlay",
+                    "type": "output"
+                  }
+                ]
+              }
+            },
+            "status": {
+              "status_str": "success",
+              "completed": true,
+              "messages": [
+                [
+                  "execution_start",
+                  {
+                    "prompt_id": "118de9b9-c0b1-4597-b8fc-fa1ed4bc318f",
+                    "timestamp": 1782438358765
+                  }
+                ],
+                [
+                  "execution_cached",
+                  {
+                    "nodes": [
+                      "1",
+                      "3",
+                      "4"
+                    ],
+                    "prompt_id": "118de9b9-c0b1-4597-b8fc-fa1ed4bc318f",
+                    "timestamp": 1782438358765
+                  }
+                ],
+                [
+                  "execution_success",
+                  {
+                    "prompt_id": "118de9b9-c0b1-4597-b8fc-fa1ed4bc318f",
+                    "timestamp": 1782438366664
+                  }
+                ]
+              ]
+            },
+            "meta": {
+              "9": {
+                "node_id": "9",
+                "display_node": "9",
+                "parent_node": null,
+                "real_node_id": "9"
+              }
+            }
+          }
+        }
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/view?filename=inside-right_00002_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "byteLength": 2656523
+      },
+      "durationMs": 19
+    },
+    {
+      "url": "http://127.0.0.1:8188/prompt",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": {
+            "1": {
+              "class_type": "CheckpointLoaderSimple",
+              "inputs": {
+                "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+              }
+            },
+            "2": {
+              "class_type": "CLIPTextEncode",
+              "inputs": {
+                "clip": [
+                  "1",
+                  1
+                ],
+                "text": "Create one artwork-only 5x7 portrait Back Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Back Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: deep charcoal main field with one tiny warm-gold lower-edge mark only; no ivory panel, no cream wave, no large light area\nMotif: mostly plain deep-charcoal back cover with one tiny lower-edge gold sun mark; no centered or full-panel radial burst\nMood: Respectful, warm, sophisticated\nPanel Role: coordinating no-text back panel\nNo card copy belongs on this panel.\nReserve hierarchy for visual coordination only.\nUse mostly negative space plus one small coordinating back mark.\nBack cover must be at least 85% plain deep charcoal. Use only one tiny warm-gold sun mark near the lower third. Do not create a large radial halo, full-panel burst, centered sunburst, decorative typography, or any text-like marks.\nPanel-specific composition: mostly deep charcoal negative space, thin gold border echo, one small lower-edge sun mark, no card copy.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with only one small lower-edge sun mark on the back cover.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+              }
+            },
+            "3": {
+              "class_type": "CLIPTextEncode",
+              "inputs": {
+                "clip": [
+                  "1",
+                  1
+                ],
+                "text": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, large sunburst, full radial halo, full-page radial burst, rays across the whole panel, centered halo, busy back cover, ivory wave, cream lower half, large cream area, white panel"
+              }
+            },
+            "4": {
+              "class_type": "EmptyLatentImage",
+              "inputs": {
+                "batch_size": 1,
+                "height": 1344,
+                "width": 960
+              }
+            },
+            "5": {
+              "class_type": "KSampler",
+              "inputs": {
+                "cfg": 0,
+                "denoise": 1,
+                "latent_image": [
+                  "4",
+                  0
+                ],
+                "model": [
+                  "1",
+                  0
+                ],
+                "negative": [
+                  "3",
+                  0
+                ],
+                "positive": [
+                  "2",
+                  0
+                ],
+                "sampler_name": "euler_ancestral",
+                "scheduler": "sgm_uniform",
+                "seed": 20260626,
+                "steps": 2
+              }
+            },
+            "6": {
+              "class_type": "VAEDecode",
+              "inputs": {
+                "samples": [
+                  "5",
+                  0
+                ],
+                "vae": [
+                  "1",
+                  2
+                ]
+              }
+            },
+            "7": {
+              "class_type": "CustomCardTextComposer",
+              "inputs": {
+                "alignment": "center",
+                "body": "",
+                "body_box_height": 296,
+                "body_box_width": 748,
+                "body_box_x": 106,
+                "body_box_y": 914,
+                "body_fill_color": "#f4d77d",
+                "body_font": "arial.ttf",
+                "body_font_size": 20,
+                "body_line_spacing": 6,
+                "body_stroke_color": "#111715",
+                "body_stroke_width": 2,
+                "body_vertical_alignment": "bottom",
+                "debug_boxes": false,
+                "headline": "",
+                "headline_box_height": 269,
+                "headline_box_width": 788,
+                "headline_box_x": 86,
+                "headline_box_y": 806,
+                "headline_fill_color": "#fff7df",
+                "headline_font": "arial.ttf",
+                "headline_font_size": 38,
+                "headline_line_spacing": 8,
+                "headline_stroke_color": "#111715",
+                "headline_stroke_width": 2,
+                "headline_vertical_alignment": "middle",
+                "image": [
+                  "6",
+                  0
+                ],
+                "min_font_size": 14
+              }
+            },
+            "9": {
+              "class_type": "SaveImage",
+              "inputs": {
+                "filename_prefix": "customcard/customcard-production-text-overlay/back",
+                "images": [
+                  "7",
+                  0
+                ]
+              }
+            }
+          },
+          "client_id": "customcard-local-typography-benchmark",
+          "extra_data": {
+            "customcard": {
+              "workflow_id": "customcard-production-text-overlay",
+              "panel_id": "back",
+              "seed": 20260626,
+              "inputs": {
+                "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+                "width": 960,
+                "height": 1344,
+                "steps": 2,
+                "cfg": 0,
+                "sampler": "euler_ancestral",
+                "scheduler": "sgm_uniform",
+                "seed": 20260626,
+                "prompt": "Create one artwork-only 5x7 portrait Back Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Back Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: deep charcoal main field with one tiny warm-gold lower-edge mark only; no ivory panel, no cream wave, no large light area\nMotif: mostly plain deep-charcoal back cover with one tiny lower-edge gold sun mark; no centered or full-panel radial burst\nMood: Respectful, warm, sophisticated\nPanel Role: coordinating no-text back panel\nNo card copy belongs on this panel.\nReserve hierarchy for visual coordination only.\nUse mostly negative space plus one small coordinating back mark.\nBack cover must be at least 85% plain deep charcoal. Use only one tiny warm-gold sun mark near the lower third. Do not create a large radial halo, full-panel burst, centered sunburst, decorative typography, or any text-like marks.\nPanel-specific composition: mostly deep charcoal negative space, thin gold border echo, one small lower-edge sun mark, no card copy.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with only one small lower-edge sun mark on the back cover.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+                "negative_prompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, large sunburst, full radial halo, full-page radial burst, rays across the whole panel, centered halo, busy back cover, ivory wave, cream lower half, large cream area, white panel",
+                "headline_text": "",
+                "body_text": "",
+                "headline_font_size": 38,
+                "body_font_size": 20,
+                "headline_box": {
+                  "x": 86,
+                  "y": 806,
+                  "width": 788,
+                  "height": 269
+                },
+                "body_box": {
+                  "x": 106,
+                  "y": 914,
+                  "width": 748,
+                  "height": 296
+                },
+                "text_alignment": "center",
+                "min_font_size": 14
+              }
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 85,
+        "body": {
+          "prompt_id": "e7460f57-a860-41eb-b834-5eb51661e914",
+          "number": 7,
+          "node_errors": {}
+        }
+      },
+      "durationMs": 10
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/e7460f57-a860-41eb-b834-5eb51661e914",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/e7460f57-a860-41eb-b834-5eb51661e914",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/e7460f57-a860-41eb-b834-5eb51661e914",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/e7460f57-a860-41eb-b834-5eb51661e914",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/e7460f57-a860-41eb-b834-5eb51661e914",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 21
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/e7460f57-a860-41eb-b834-5eb51661e914",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 19
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/e7460f57-a860-41eb-b834-5eb51661e914",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 7781,
+        "body": {
+          "e7460f57-a860-41eb-b834-5eb51661e914": {
+            "prompt": [
+              7,
+              "e7460f57-a860-41eb-b834-5eb51661e914",
+              {
+                "1": {
+                  "class_type": "CheckpointLoaderSimple",
+                  "inputs": {
+                    "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+                  }
+                },
+                "2": {
+                  "class_type": "CLIPTextEncode",
+                  "inputs": {
+                    "clip": [
+                      "1",
+                      1
+                    ],
+                    "text": "Create one artwork-only 5x7 portrait Back Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Back Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: deep charcoal main field with one tiny warm-gold lower-edge mark only; no ivory panel, no cream wave, no large light area\nMotif: mostly plain deep-charcoal back cover with one tiny lower-edge gold sun mark; no centered or full-panel radial burst\nMood: Respectful, warm, sophisticated\nPanel Role: coordinating no-text back panel\nNo card copy belongs on this panel.\nReserve hierarchy for visual coordination only.\nUse mostly negative space plus one small coordinating back mark.\nBack cover must be at least 85% plain deep charcoal. Use only one tiny warm-gold sun mark near the lower third. Do not create a large radial halo, full-panel burst, centered sunburst, decorative typography, or any text-like marks.\nPanel-specific composition: mostly deep charcoal negative space, thin gold border echo, one small lower-edge sun mark, no card copy.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with only one small lower-edge sun mark on the back cover.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+                  }
+                },
+                "3": {
+                  "class_type": "CLIPTextEncode",
+                  "inputs": {
+                    "clip": [
+                      "1",
+                      1
+                    ],
+                    "text": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, large sunburst, full radial halo, full-page radial burst, rays across the whole panel, centered halo, busy back cover, ivory wave, cream lower half, large cream area, white panel"
+                  }
+                },
+                "4": {
+                  "class_type": "EmptyLatentImage",
+                  "inputs": {
+                    "batch_size": 1,
+                    "height": 1344,
+                    "width": 960
+                  }
+                },
+                "5": {
+                  "class_type": "KSampler",
+                  "inputs": {
+                    "cfg": 0,
+                    "denoise": 1,
+                    "latent_image": [
+                      "4",
+                      0
+                    ],
+                    "model": [
+                      "1",
+                      0
+                    ],
+                    "negative": [
+                      "3",
+                      0
+                    ],
+                    "positive": [
+                      "2",
+                      0
+                    ],
+                    "sampler_name": "euler_ancestral",
+                    "scheduler": "sgm_uniform",
+                    "seed": 20260626,
+                    "steps": 2
+                  }
+                },
+                "6": {
+                  "class_type": "VAEDecode",
+                  "inputs": {
+                    "samples": [
+                      "5",
+                      0
+                    ],
+                    "vae": [
+                      "1",
+                      2
+                    ]
+                  }
+                },
+                "7": {
+                  "class_type": "CustomCardTextComposer",
+                  "inputs": {
+                    "alignment": "center",
+                    "body": "",
+                    "body_box_height": 296,
+                    "body_box_width": 748,
+                    "body_box_x": 106,
+                    "body_box_y": 914,
+                    "body_fill_color": "#f4d77d",
+                    "body_font": "arial.ttf",
+                    "body_font_size": 20,
+                    "body_line_spacing": 6,
+                    "body_stroke_color": "#111715",
+                    "body_stroke_width": 2,
+                    "body_vertical_alignment": "bottom",
+                    "debug_boxes": false,
+                    "headline": "",
+                    "headline_box_height": 269,
+                    "headline_box_width": 788,
+                    "headline_box_x": 86,
+                    "headline_box_y": 806,
+                    "headline_fill_color": "#fff7df",
+                    "headline_font": "arial.ttf",
+                    "headline_font_size": 38,
+                    "headline_line_spacing": 8,
+                    "headline_stroke_color": "#111715",
+                    "headline_stroke_width": 2,
+                    "headline_vertical_alignment": "middle",
+                    "image": [
+                      "6",
+                      0
+                    ],
+                    "min_font_size": 14
+                  }
+                },
+                "9": {
+                  "class_type": "SaveImage",
+                  "inputs": {
+                    "filename_prefix": "customcard/customcard-production-text-overlay/back",
+                    "images": [
+                      "7",
+                      0
+                    ]
+                  }
+                }
+              },
+              {
+                "customcard": {
+                  "workflow_id": "customcard-production-text-overlay",
+                  "panel_id": "back",
+                  "seed": 20260626,
+                  "inputs": {
+                    "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+                    "width": 960,
+                    "height": 1344,
+                    "steps": 2,
+                    "cfg": 0,
+                    "sampler": "euler_ancestral",
+                    "scheduler": "sgm_uniform",
+                    "seed": 20260626,
+                    "prompt": "Create one artwork-only 5x7 portrait Back Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Back Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: deep charcoal main field with one tiny warm-gold lower-edge mark only; no ivory panel, no cream wave, no large light area\nMotif: mostly plain deep-charcoal back cover with one tiny lower-edge gold sun mark; no centered or full-panel radial burst\nMood: Respectful, warm, sophisticated\nPanel Role: coordinating no-text back panel\nNo card copy belongs on this panel.\nReserve hierarchy for visual coordination only.\nUse mostly negative space plus one small coordinating back mark.\nBack cover must be at least 85% plain deep charcoal. Use only one tiny warm-gold sun mark near the lower third. Do not create a large radial halo, full-panel burst, centered sunburst, decorative typography, or any text-like marks.\nPanel-specific composition: mostly deep charcoal negative space, thin gold border echo, one small lower-edge sun mark, no card copy.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with only one small lower-edge sun mark on the back cover.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+                    "negative_prompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, large sunburst, full radial halo, full-page radial burst, rays across the whole panel, centered halo, busy back cover, ivory wave, cream lower half, large cream area, white panel",
+                    "headline_text": "",
+                    "body_text": "",
+                    "headline_font_size": 38,
+                    "body_font_size": 20,
+                    "headline_box": {
+                      "x": 86,
+                      "y": 806,
+                      "width": 788,
+                      "height": 269
+                    },
+                    "body_box": {
+                      "x": 106,
+                      "y": 914,
+                      "width": 748,
+                      "height": 296
+                    },
+                    "text_alignment": "center",
+                    "min_font_size": 14
+                  }
+                },
+                "client_id": "customcard-local-typography-benchmark",
+                "create_time": 1782438368050
+              },
+              [
+                "9"
+              ]
+            ],
+            "outputs": {
+              "9": {
+                "images": [
+                  {
+                    "filename": "back_00002_.png",
+                    "subfolder": "customcard\\customcard-production-text-overlay",
+                    "type": "output"
+                  }
+                ]
+              }
+            },
+            "status": {
+              "status_str": "success",
+              "completed": true,
+              "messages": [
+                [
+                  "execution_start",
+                  {
+                    "prompt_id": "e7460f57-a860-41eb-b834-5eb51661e914",
+                    "timestamp": 1782438368050
+                  }
+                ],
+                [
+                  "execution_cached",
+                  {
+                    "nodes": [
+                      "1",
+                      "4"
+                    ],
+                    "prompt_id": "e7460f57-a860-41eb-b834-5eb51661e914",
+                    "timestamp": 1782438368050
+                  }
+                ],
+                [
+                  "execution_success",
+                  {
+                    "prompt_id": "e7460f57-a860-41eb-b834-5eb51661e914",
+                    "timestamp": 1782438376580
+                  }
+                ]
+              ]
+            },
+            "meta": {
+              "9": {
+                "node_id": "9",
+                "display_node": "9",
+                "parent_node": null,
+                "real_node_id": "9"
+              }
+            }
+          }
+        }
+      },
+      "durationMs": 20
+    },
+    {
+      "url": "http://127.0.0.1:8188/view?filename=back_00002_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "byteLength": 1756820
+      },
+      "durationMs": 8
+    }
+  ]
+}

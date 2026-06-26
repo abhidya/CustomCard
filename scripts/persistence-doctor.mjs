@@ -351,9 +351,12 @@ const accountStorageSignals = migrationSignals.slice(7, 16);
 const idempotencySignals = migrationSignals.slice(16, 21);
 const queueJobSignals = migrationSignals.slice(21, 25);
 const safetySignals = migrationSignals.slice(25);
+const requiredTableSignals = requiredTables.map((table) =>
+  table === "admin_runtime_configs" ? "CREATE TABLE IF NOT EXISTS admin_runtime_configs" : `CREATE TABLE ${table}`
+);
 
 const checks = [
-  checkIncludes("schema", "required-tables", contents.migration, requiredTables.map((table) => `CREATE TABLE ${table}`)),
+  checkIncludes("schema", "required-tables", contents.migration, requiredTableSignals),
   checkIncludes("schema", "auth-session-signals", contents.migration, authSessionSignals),
   checkIncludes("schema", "account-auth-storage-signals", contents.migration, accountStorageSignals),
   checkIncludes("schema", "idempotency-signals", contents.migration, idempotencySignals),
