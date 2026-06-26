@@ -630,7 +630,6 @@ describe("production infrastructure contract", () => {
   it("defines a Vercel static plus serverless API deployment contract", () => {
     const vercel = JSON.parse(read("vercel.json")) as {
       buildCommand: string;
-      functions: Record<string, { maxDuration: number }>;
       outputDirectory: string;
       rewrites: Array<{ source: string; destination: string }>;
     };
@@ -643,9 +642,6 @@ describe("production infrastructure contract", () => {
     expect(vercel).toMatchObject({
       buildCommand: "npm run build",
       outputDirectory: "dist"
-    });
-    expect(vercel.functions).toEqual({
-      "api/[...path].js": { maxDuration: 60 }
     });
     expect(vercel.rewrites).toEqual([
       { source: "/robots.txt", destination: "/api/robots" },

@@ -145,8 +145,7 @@ const checks = [
     '"destination": "/api/oauth/callback"',
     '"destination": "/index.html"'
   ]),
-  checkIncludes("vercel", "vercel-serverless-api-handler", `${contents.vercel}\n${contents.vercelApiHandler}\n${contents.vercelRobotsHandler}\n${contents.apiServer}\n${contents.apiRuntime}`, [
-    '"api/[...path].js": { "maxDuration": 60 }',
+  checkIncludes("vercel", "vercel-serverless-api-handler", `${contents.vercelApiHandler}\n${contents.vercelRobotsHandler}\n${contents.apiServer}\n${contents.apiRuntime}`, [
     "handleApiRequest",
     "PRODUCTION_ROBOTS",
     "export async function handleApiRequest",

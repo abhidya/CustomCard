@@ -87,7 +87,7 @@ export const hostedApiReadinessItems = [
     routeIds: requiredHostedRouteIds,
     envVarNames: [],
     evidenceArtifactRefs: [],
-    requiredSourceSignals: ["api/[...path].js", "api/robots.js", '"api/[...path].js": { "maxDuration": 60 }', "handleApiRequest", "vercel.json", "CUSTOMCARD_API_RUNTIME"],
+    requiredSourceSignals: ["api/[...path].js", "api/robots.js", "handleApiRequest", "vercel.json", '"source": "/api/(.*)"', "CUSTOMCARD_API_RUNTIME"],
     requiresHostedDb: false,
     requiresPublicRouteProof: false,
     requiresHostedTokenVerification: false,

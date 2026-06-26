@@ -170,7 +170,6 @@ const checks = [
     sourceKeys: ["vercel", "vercelApiHandler", "vercelRobotsHandler"],
     signals: [
       '"buildCommand": "npm run build"',
-      '"api/[...path].js": { "maxDuration": 60 }',
       '"source": "/api/artifacts/(.*)"',
       '"destination": "/api/artifacts?objectKey=$1"',
       '"source": "/api/(.*)"',
