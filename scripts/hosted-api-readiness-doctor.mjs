@@ -43,6 +43,7 @@ const doctorManifest = defineDoctorManifest({
     hostedReadinessData: "src/hostedApiReadinessData.mjs",
     apiContracts: "src/apiContracts.ts",
     apiServer: "scripts/api-server.mjs",
+    postgresRuntime: "scripts/postgres-runtime.mjs",
     adminApp: "src/App.tsx",
     readinessSummaryData: "src/readinessSummaryData.mjs",
     postgresHttpDoctor: "scripts/postgres-api-http-doctor.mjs",
@@ -170,7 +171,7 @@ const checks = [
   checkDoctorSourceSignals(doctorManifest, contents, {
     lane: "vercel-source",
     id: "vercel-serverless-source-signals",
-    sourceKeys: ["vercel", "vercelApiHandler", "vercelRobotsHandler", "vercelApiDelegate", "vercelProviderJobsStatusHandler", "vercelAdminLocalAiLoopHandler"],
+    sourceKeys: ["vercel", "vercelApiHandler", "vercelRobotsHandler", "vercelApiDelegate", "vercelProviderJobsStatusHandler", "vercelAdminLocalAiLoopHandler", "postgresRuntime"],
     signals: [
       '"buildCommand": "npm run build"',
       '"source": "/oauth/callback"',
@@ -179,7 +180,8 @@ const checks = [
       "__customcard_path",
       "delegateApiRequest",
       "/api/_route",
-      "PRODUCTION_ROBOTS"
+      "PRODUCTION_ROBOTS",
+      "import pg from \"pg\""
     ]
   }),
   checkDoctorSourceSignals(doctorManifest, contents, {

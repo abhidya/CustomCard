@@ -639,6 +639,7 @@ describe("production infrastructure contract", () => {
     const delegateHelper = read("scripts/vercel-api-delegate.mjs");
     const apiServer = read("scripts/api-server.mjs");
     const apiRuntime = read("scripts/api-runtime.mjs");
+    const postgresRuntime = read("scripts/postgres-runtime.mjs");
     const vercelApiFiles = listFiles("api").map((path) => `api/${path}`).sort();
     const nestedRouteHandlers = apiRouteContracts
       .map((route) => route.path)
@@ -667,6 +668,8 @@ describe("production infrastructure contract", () => {
     expect(apiServer).toContain("export async function handleApiRequest");
     expect(apiRuntime).toContain("CUSTOMCARD_API_RUNTIME");
     expect(apiRuntime).toContain("DATABASE_URL");
+    expect(postgresRuntime).toContain('import pg from "pg"');
+    expect(postgresRuntime).not.toContain('import("pg")');
   });
 
   it("keeps retail operation starts on the shared server-safe Module", () => {

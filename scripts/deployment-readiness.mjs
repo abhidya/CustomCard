@@ -14,6 +14,7 @@ const files = {
   vercelAdminLocalAiLoopHandler: "api/admin/local-ai-loop/run.js",
   apiServer: "scripts/api-server.mjs",
   apiRuntime: "scripts/api-runtime.mjs",
+  postgresRuntime: "scripts/postgres-runtime.mjs",
   cloudArtifactMain: "infra/aws/artifact-store/main.tf",
   cloudArtifactVariables: "infra/aws/artifact-store/variables.tf",
   cloudArtifactOutputs: "infra/aws/artifact-store/outputs.tf",
@@ -144,7 +145,7 @@ const checks = [
     '"destination": "/api/oauth/callback"',
     '"destination": "/index.html"'
   ]),
-  checkIncludes("vercel", "vercel-serverless-api-handler", `${contents.vercelApiHandler}\n${contents.vercelRobotsHandler}\n${contents.vercelApiDelegate}\n${contents.vercelProviderJobsStatusHandler}\n${contents.vercelAdminLocalAiLoopHandler}\n${contents.apiServer}\n${contents.apiRuntime}`, [
+  checkIncludes("vercel", "vercel-serverless-api-handler", `${contents.vercelApiHandler}\n${contents.vercelRobotsHandler}\n${contents.vercelApiDelegate}\n${contents.vercelProviderJobsStatusHandler}\n${contents.vercelAdminLocalAiLoopHandler}\n${contents.apiServer}\n${contents.apiRuntime}\n${contents.postgresRuntime}`, [
     "handleApiRequest",
     "__customcard_path",
     "delegateApiRequest",
@@ -152,7 +153,8 @@ const checks = [
     "PRODUCTION_ROBOTS",
     "export async function handleApiRequest",
     "CUSTOMCARD_API_RUNTIME",
-    "DATABASE_URL"
+    "DATABASE_URL",
+    "import pg from \"pg\""
   ]),
   checkIncludes("cloud-storage", "aws-artifact-bucket-policy", contents.cloudArtifactMain, [
     'resource "aws_s3_bucket" "artifacts"',

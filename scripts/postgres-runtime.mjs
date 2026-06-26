@@ -1,3 +1,5 @@
+import pg from "pg";
+
 const productionEnvNames = new Set(["prod", "production"]);
 
 export function postgresPoolConfig(env = process.env) {
@@ -91,8 +93,7 @@ export async function attachPostgresPoolLifecycle({ pool, env = process.env, att
 }
 
 async function createDefaultPostgresPool(poolConfig) {
-  const { Pool } = await import("pg");
-  return new Pool(poolConfig);
+  return new pg.Pool(poolConfig);
 }
 
 async function loadVercelAttachDatabasePool() {
