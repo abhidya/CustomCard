@@ -207,6 +207,8 @@ Comfy template variables exposed by the local adapter include:
   - Full-card benchmark wrapper for the production workflow.
   - Uses benchmark phase `local-production-text`, not `local-typography`, so `panel_copy`
     reaches the Comfy adapter.
+  - Defaults to a timestamped evidence directory and accepts checkpoint/sampler
+    overrides for quick candidate comparisons.
 
 ## Gates Before Production Default
 
@@ -238,7 +240,6 @@ aggregate ranks the candidate as blocked after applying the manual visual grade.
   artwork layer stays a flat 2D greeting-card panel instead of drifting into
   object/mockup scenes.
 - Add per-panel seed offsets when `CUSTOMCARD_COMFYUI_SEED` is set.
-- Make benchmark output directories timestamped by default.
 - Add OCR or local vision-review evidence to catch pseudo-text and object-scene
   failures automatically.
 - Promote only after a benchmark aggregate includes a passing manual or local

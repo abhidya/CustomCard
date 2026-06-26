@@ -142,8 +142,18 @@ Run a full-card benchmark through the production workflow:
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1
 ```
 
-This uses the benchmark `local` phase rather than `local-typography`, because
-This uses the benchmark `local-production-text` phase rather than
+By default the helper writes to a timestamped
+`docs/evidence/generated-card-comparisons/production-text-workflow-YYYYMMDD-HHMMSS`
+directory. Pass `-OutputDir` only when you intentionally want a stable evidence
+path.
+
+Checkpoint comparison example:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 0 -Sampler euler_ancestral -Scheduler sgm_uniform
+```
+
+This helper uses the benchmark `local-production-text` phase rather than
 `local-typography`, because the full card-generation path is what passes
 `panel_copy` and text safe-box variables into `scripts/ai-card-generator.mjs`.
 
