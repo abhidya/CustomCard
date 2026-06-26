@@ -76,6 +76,14 @@ quality.
   - Auto-checks prove exact copy, safe boxes, safe-field backgrounds,
     soft-field metadata, and artwork-guard metadata reached live Comfy.
   - Manual visual grade: 72/100, blocked, `do-not-promote-yet`.
+- LLM-planner research ledger:
+  `docs/evidence/generated-card-comparisons/production-text-research-findings-2026-06-26.md`
+  - Current code now treats aquarium/koi/dog as fixed customer requests, not
+    hardcoded finished themes.
+  - Dry-run with local Comfy + local LLM env plans the three
+    `llm-generated-copy` runs.
+  - Current live gate is blocked by missing local LLM runtime in the ambient
+    shell, not by the benchmark contract.
 - Soft safe-field proof:
   `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-soft-fields`
   - `CustomCardTextComposer` rendered exact copy plus text-hug rounded

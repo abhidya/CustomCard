@@ -24,3 +24,6 @@ persistence from provider-image behavior.
 Do not copy competitor images into generated outputs. Keep competitor references
 in `../competitor-card-examples/` and generate all CustomCard art, copy, layout,
 and screenshots from our own prompts and product flows.
+
+Current production-text research status:
+`production-text-research-findings-2026-06-26.md`.
