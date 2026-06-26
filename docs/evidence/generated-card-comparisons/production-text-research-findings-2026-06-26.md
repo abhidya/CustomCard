@@ -33,6 +33,7 @@ Production text should be planned by the card-copy LLM and rendered by ComfyUI:
 | `docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current` | Blocked | Previous live preflight proves `CustomCardTextComposer` worked, but the latest readiness probe finds local Comfy and planner endpoints offline. Higher-quality planner files are installed, but no production-suitable endpoint is currently reachable/configured. |
 | `docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current` | Blocked | Manual grade checklist records 3 valid manual grades, 2 generated gradable runs, and 1 koi run that failed before image generation. All grades remain blocked or failed; aquarium/dog still miss required customer terms. |
 | `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current` | Blocked | Evidence index aggregates the tracked rerun plan, planner preflight, readiness, Comfy preflight, benchmark, aggregate, and manual-grade reports. It excludes untracked scratch by default and keeps promotion blocked by the planner preflight, small planner endpoint, and failed LLM-planned aggregate. |
+| `docs/evidence/generated-card-comparisons/production-text-research-rollup-20260626-current` | Blocked | Generated rollup derives the current research findings, failed gate requirements, evidence summary, and 9 rerun commands from the tracked evidence index, promotion gate, and rerun plan. |
 | `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current` | Blocked | Promotion gate passes live Comfy/text-composer and final-Comfy-image requirements, but now fails 8 requirements: planner preflight, readiness, production-suitable planner, no-small-planner, full matrix completion, must-include adherence, manual grade checklist, and manual aggregate. |
 | `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-artwork-guard-v2` | 72/100, blocked | Deterministic Comfy text, soft text fields, and artwork guards work structurally, but artwork remains too dense for production. |
 | `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-candidates` | Blocked | Aggregate evidence still says do not promote production Comfy text as the default path. |
@@ -112,6 +113,11 @@ before any live production benchmark. This is the fast check that prevents a
 Run `npm run comfy:production-text:gate -- --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current --index-output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current`
 as the final promotion contract. Remove `--advisory` only when the current
 planner/runtime and aggregate evidence are expected to pass.
+
+Run `npm run comfy:production-text:research -- --output-dir docs/evidence/generated-card-comparisons/production-text-research-rollup-YYYYMMDD-current`
+after refreshing the index, gate, and rerun plan. This regenerates the
+findings, failed requirements, evidence summary, and next command list from the
+tracked artifacts.
 
 Use `-AllowCompositorFixtureFallback` only when intentionally collecting a
 single-run structural compositor smoke test.

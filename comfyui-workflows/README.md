@@ -200,6 +200,17 @@ The gate is the final pass/fail contract for production-text promotion. It is
 expected to stay blocked until planner preflight, planner endpoint readiness,
 LLM-planned matrix, term adherence, and manual aggregate requirements all pass.
 
+Research rollup after the index/gate/rerun refresh:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-research-rollup.mjs --output-dir docs/evidence/generated-card-comparisons/production-text-research-rollup-20260626-current
+```
+
+The rollup aggregates the current evidence index, promotion gate, and rerun plan
+into JSON/Markdown. It keeps the production planner contract visible: use a
+production-suitable planner with 8192+ context and the full output budget, not a
+reduced creative prompt for a smaller model.
+
 Run a full-card benchmark through the production workflow:
 
 ```powershell
@@ -296,6 +307,13 @@ Latest live evidence:
   - Passes live Comfy/text-composer proof and final-Comfy-image evidence.
   - Fails planner preflight/readiness, matrix completion, must-include, and
     manual aggregate requirements, so production promotion remains blocked.
+- Current research rollup:
+  `docs/evidence/generated-card-comparisons/production-text-research-rollup-20260626-current`
+  - Derives current findings, failed gate requirements, evidence summary, and 9
+    next commands from tracked index/gate/rerun artifacts.
+  - Records that reduced planner prompts are not promotion evidence; rerun with
+    Gemma 31B, Magistral Small, Qwen3 14B+, or a stronger hosted/self-hosted
+    planner when the full contract does not fit.
 
 ## Local Visual Quality Gate
 

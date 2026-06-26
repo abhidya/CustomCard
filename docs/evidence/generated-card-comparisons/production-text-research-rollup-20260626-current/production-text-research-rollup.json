@@ -1,0 +1,394 @@
+{
+  "createdAtIso": "2026-06-26T23:32:32.294Z",
+  "status": "blocked",
+  "promotionReady": false,
+  "reportDir": "docs/evidence/generated-card-comparisons/production-text-research-rollup-20260626-current",
+  "sourceReports": {
+    "evidenceIndex": "docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current/production-text-evidence-index.json",
+    "promotionGate": "docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current/production-text-promotion-gate.json",
+    "rerunPlan": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current/production-text-rerun-plan.json"
+  },
+  "latest": {
+    "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
+    "rerunPlan": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current/production-text-rerun-plan.json",
+    "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current/production-text-planner-preflight.json",
+    "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626T042126Z/production-text-preflight.json",
+    "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current/production-text-manual-grade-checklist.json",
+    "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
+    "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json"
+  },
+  "evidenceSummary": {
+    "liveComfyTextComposerProof": {
+      "path": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626T042126Z/production-text-preflight.json",
+      "promotionReady": true,
+      "liveComfyReachable": true,
+      "liveNodeAvailable": true
+    },
+    "planner": {
+      "path": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current/production-text-planner-preflight.json",
+      "status": "blocked",
+      "activeModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+      "classification": "smoke-only",
+      "promotionReady": false,
+      "reachable": false,
+      "reportedContextTokens": 4096,
+      "maxOutputTokens": 3200,
+      "blockers": [
+        "Planner /models preflight failed: fetch failed",
+        "Planner model 'koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S' is below the production model floor for production text and is smoke-only; use Gemma 31B, Magistral Small, Qwen3 14B+, or a stronger hosted planner.",
+        "Planner context 4096 is below the production minimum 8192; 4096-token local runs are smoke-only."
+      ]
+    },
+    "readiness": {
+      "path": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
+      "status": "blocked",
+      "promotionReady": false,
+      "productionSuitablePlannerReachable": false,
+      "comfyReachable": false,
+      "hasTextComposer": false,
+      "blockers": [
+        "live ComfyUI reachable",
+        "live ComfyUI exposes CustomCardTextComposer",
+        "latest LLM-planned aggregate is passing",
+        "configured production planner endpoint is reachable",
+        "configured production planner endpoint is production-suitable"
+      ]
+    },
+    "benchmark": {
+      "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
+      "totalRuns": 3,
+      "completedRuns": 2,
+      "failedRuns": 1,
+      "fixtures": [
+        "aquarium-lover-birthday",
+        "koi-fish-lover-encouragement",
+        "dog-lover-thank-you"
+      ],
+      "smallPlannerUsed": true,
+      "missingMustInclude": [
+        "Nina",
+        "aquarium",
+        "Morgan",
+        "dog"
+      ],
+      "mustAvoidFailures": [
+        "mockup"
+      ],
+      "finalImagesRenderedByComfy": true,
+      "deterministicTextComposerUsed": true
+    },
+    "manualGrades": {
+      "path": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current/production-text-manual-grade-checklist.json",
+      "status": "blocked",
+      "promotionReady": false,
+      "gradedGeneratedRuns": 2,
+      "gradableRuns": 2,
+      "failedBeforeImageGeneration": 1,
+      "blockedGrades": 3,
+      "blockers": [
+        "3 manual grade(s) are blocked or failed.",
+        "1 run(s) failed before image generation.",
+        "Automated must_include checks failed for: Nina, aquarium, Morgan, dog.",
+        "Automated must_avoid checks failed for: mockup."
+      ]
+    },
+    "aggregate": {
+      "path": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
+      "kind": "llm-planned",
+      "promotionReady": false,
+      "totalRuns": 3,
+      "bestScore": 38,
+      "bestRun": "aquarium-lover-birthday",
+      "statuses": {
+        "blocked": 2,
+        "failed": 1
+      },
+      "textModels": [
+        "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
+      ],
+      "blockingFailures": [
+        "Planner missed required recipient/name/theme terms: Nina and aquarium are absent.",
+        "Artwork and copy drifted into botanical birthday stationery instead of aquarium-lover stationery.",
+        "Back panel is too dark, contains visible text, and does not behave as a sparse no-copy back cover.",
+        "Planner missed required recipient/name/theme terms: Morgan and dog are absent.",
+        "Copy invents plant-watering context and says the plants are grateful, which contradicts the dog-lover thank-you request.",
+        "Local Qwen3-4B planner returned invalid JSON.",
+        "The LLM response hit the 2200-token completion cap with finish_reason length.",
+        "No image panels were generated for the koi encouragement request."
+      ]
+    }
+  },
+  "promotionGate": {
+    "path": "docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current/production-text-promotion-gate.json",
+    "status": "blocked",
+    "promotionReady": false,
+    "failedRequirements": [
+      {
+        "name": "planner preflight is production-ready",
+        "details": {
+          "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current/production-text-planner-preflight.json",
+          "activeModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+          "classification": "smoke-only",
+          "reportedContextTokens": 4096,
+          "maxOutputTokens": 3200,
+          "blockers": [
+            "Planner /models preflight failed: fetch failed",
+            "Planner model 'koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S' is below the production model floor for production text and is smoke-only; use Gemma 31B, Magistral Small, Qwen3 14B+, or a stronger hosted planner.",
+            "Planner context 4096 is below the production minimum 8192; 4096-token local runs are smoke-only."
+          ]
+        }
+      },
+      {
+        "name": "readiness doctor is promotion-ready",
+        "details": {
+          "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
+          "blockers": [
+            "live ComfyUI reachable",
+            "live ComfyUI exposes CustomCardTextComposer",
+            "latest LLM-planned aggregate is passing",
+            "configured production planner endpoint is reachable",
+            "configured production planner endpoint is production-suitable"
+          ]
+        }
+      },
+      {
+        "name": "production-suitable planner endpoint is reachable",
+        "details": {
+          "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
+          "activePlannerModels": []
+        }
+      },
+      {
+        "name": "no small smoke planner is active or used",
+        "details": {
+          "readinessSmallPlannerActive": false,
+          "benchmarkSmallPlannerUsed": true,
+          "textModels": [
+            "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
+          ]
+        }
+      },
+      {
+        "name": "LLM-planned customer request matrix completed",
+        "details": {
+          "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
+          "requiredFixtures": [
+            "aquarium-lover-birthday",
+            "koi-fish-lover-encouragement",
+            "dog-lover-thank-you"
+          ],
+          "fixtures": [
+            "aquarium-lover-birthday",
+            "koi-fish-lover-encouragement",
+            "dog-lover-thank-you"
+          ],
+          "completedRuns": 2,
+          "failedRuns": 1
+        }
+      },
+      {
+        "name": "planner preserved required terms and avoided forbidden terms",
+        "details": {
+          "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
+          "missingMustInclude": [
+            "Nina",
+            "aquarium",
+            "Morgan",
+            "dog"
+          ],
+          "mustAvoidFailures": [
+            "mockup"
+          ]
+        }
+      },
+      {
+        "name": "manual grade checklist is promotion-ready",
+        "details": {
+          "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current/production-text-manual-grade-checklist.json",
+          "totalRuns": 3,
+          "gradableRuns": 2,
+          "gradedGeneratedRuns": 2,
+          "missingGrades": 0,
+          "invalidGrades": 0,
+          "failedBeforeImageGeneration": 1,
+          "blockers": [
+            "3 manual grade(s) are blocked or failed.",
+            "1 run(s) failed before image generation.",
+            "Automated must_include checks failed for: Nina, aquarium, Morgan, dog.",
+            "Automated must_avoid checks failed for: mockup."
+          ]
+        }
+      },
+      {
+        "name": "manual aggregate is promotion-ready",
+        "details": {
+          "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
+          "totalRuns": 3,
+          "statuses": {
+            "blocked": 2,
+            "failed": 1
+          },
+          "bestScore": 38,
+          "blockingFailures": [
+            "Planner missed required recipient/name/theme terms: Nina and aquarium are absent.",
+            "Artwork and copy drifted into botanical birthday stationery instead of aquarium-lover stationery.",
+            "Back panel is too dark, contains visible text, and does not behave as a sparse no-copy back cover.",
+            "Planner missed required recipient/name/theme terms: Morgan and dog are absent.",
+            "Copy invents plant-watering context and says the plants are grateful, which contradicts the dog-lover thank-you request.",
+            "Local Qwen3-4B planner returned invalid JSON.",
+            "The LLM response hit the 2200-token completion cap with finish_reason length.",
+            "No image panels were generated for the koi encouragement request."
+          ]
+        }
+      }
+    ],
+    "passedRequirements": [
+      {
+        "name": "live ComfyUI preflight passed",
+        "details": {
+          "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626T042126Z/production-text-preflight.json",
+          "liveComfyReachable": true,
+          "liveNodeAvailable": true
+        }
+      },
+      {
+        "name": "final images came from Comfy text composer",
+        "details": {
+          "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
+          "finalImagesRenderedByComfy": true,
+          "deterministicTextComposerUsed": true
+        }
+      }
+    ]
+  },
+  "rerunPlan": {
+    "path": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current/production-text-rerun-plan.json",
+    "status": "rerun-required",
+    "commandCount": 9,
+    "productionPlannerContract": {
+      "summary": "Keep the full creative planner prompt and switch the runtime, not the prompt quality.",
+      "minimumOpenWeightPlannerClass": "14B+ dense/open-weight planner or stronger hosted model",
+      "minContextTokens": 8192,
+      "minOutputTokens": 2200,
+      "recommendedOutputTokens": 3200,
+      "recommendedModels": [
+        "koboldcpp/gemma-4-31B-it-Q4_K_M",
+        "koboldcpp/Magistral-Small-2509-Q4_K_M",
+        "koboldcpp/Qwen3-14B-Q4_K_M",
+        "hosted/self-hosted GPT, Claude, Gemini, DeepSeek, Mistral, or Qwen 14B+ endpoint"
+      ],
+      "disallowedForPromotion": [
+        "Qwen3-4B/8B and other 1.5B/3B/4B/7B/8B local planners",
+        "4096-context planner runs",
+        "Reduced creative prompt contracts used only to fit small local models",
+        "-AllowSmallPlanner except when collecting explicit smoke/failure evidence"
+      ]
+    },
+    "currentEvidence": {
+      "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current/production-text-planner-preflight.json",
+      "plannerClassification": "smoke-only",
+      "plannerModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+      "plannerContextTokens": 4096,
+      "latestBenchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
+      "latestAggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
+      "bestScore": 38
+    },
+    "rerunPaths": {
+      "plannerPreflightOutput": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-production-planner",
+      "readinessOutput": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-production-planner",
+      "benchmarkOutput": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner",
+      "manualGradeChecklistOutput": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-production-planner",
+      "aggregateOutput": "docs/evidence/generated-card-comparisons/benchmark-aggregate-20260626-production-text-production-planner",
+      "evidenceIndexOutput": "docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-production-planner",
+      "promotionGateOutput": "docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-production-planner"
+    }
+  },
+  "findings": [
+    "Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.",
+    "Latest planner preflight is blocked: smoke-only model koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S.",
+    "No production-suitable planner endpoint is reachable/configured in the latest readiness report.",
+    "The latest LLM-planned benchmark covers 3 customer request runs.",
+    "Planner/theme adherence is still failing required terms: Nina, aquarium, Morgan, dog.",
+    "Latest aggregate is blocked: best score 38 across 3 run(s).",
+    "Latest manual grade checklist is blocked: 2/2 generated run(s) graded, 1 failed before image generation.",
+    "Production planner contract: Keep the full creative planner prompt and switch the runtime, not the prompt quality.",
+    "Reduced creative prompt contracts are disallowed for promotion evidence; fix finish_reason=length by using the correct planner runtime.",
+    "Planner evidence is not promotable: koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S is smoke-only.",
+    "A production-suitable planner endpoint is not currently reachable.",
+    "The latest LLM-planned matrix is smoke/failure evidence because it used a known-small planner.",
+    "Required customer terms still missing: Nina, aquarium, Morgan, dog.",
+    "Manual grade readiness is blocked: 3 blocked grade(s), 1 run(s) failed before image generation.",
+    "Best current LLM-planned score is 38/100 and remains blocked.",
+    "Promotion gate currently fails 8 requirement(s): planner preflight is production-ready, readiness doctor is promotion-ready, production-suitable planner endpoint is reachable, no small smoke planner is active or used, LLM-planned customer request matrix completed, planner preserved required terms and avoided forbidden terms, manual grade checklist is promotion-ready, manual aggregate is promotion-ready."
+  ],
+  "nextSteps": [
+    "Run production-text planner preflight with a production-suitable model, 8192+ context, and the full output budget.",
+    "Run the planner preflight, then start or configure a production-suitable planner endpoint with 8192+ context before collecting promotion evidence.",
+    "Keep Qwen3-4B/8B and other small planner runs as smoke or failure evidence only.",
+    "Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.",
+    "Manually grade every production-text run and aggregate only after all candidates pass.",
+    "Resolve the latest manual grade checklist blockers before treating the aggregate as promotion evidence.",
+    "Run the planner preflight and readiness doctor after starting a production-suitable planner endpoint with 8192+ context.",
+    "Use Qwen3-4B/8B only for smoke/failure evidence; run promotion evidence with Gemma 31B, Magistral Small, Qwen3-14B+, or a hosted/self-hosted production planner.",
+    "Run the full aquarium/koi/dog production-text matrix to completion.",
+    "Keep the full prompt and correct planner runtime; retry/repair planner output until must_include and must_avoid checks pass before Comfy work.",
+    "Run the manual grade checklist after grading every generated run, then resolve missing/invalid/blocked grades before aggregation.",
+    "Manually grade every run and regenerate the aggregate only after all candidates pass."
+  ],
+  "nextCommands": [
+    {
+      "step": 1,
+      "title": "Start or configure production planner",
+      "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/start-local-card-planner.ps1 -ModelPath D:\\models\\gemma-4-31B-it-Q4_K_M.gguf -Port 5003 -ContextSize 8192",
+      "why": "Starts a production-suitable local planner when GPU/offload resources are available. Use an equivalent hosted/self-hosted HTTPS OpenAI-compatible endpoint if local CPU decoding is too slow."
+    },
+    {
+      "step": 2,
+      "title": "Write planner preflight evidence",
+      "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-preflight.mjs --base-url http://127.0.0.1:5003/v1 --model koboldcpp/gemma-4-31B-it-Q4_K_M --reported-context-tokens 8192 --max-output-tokens 3200 --output-dir docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-production-planner",
+      "why": "Proves the planner model, context budget, and output cap before image work starts."
+    },
+    {
+      "step": 3,
+      "title": "Refresh readiness",
+      "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-readiness-doctor.mjs --advisory --local-llm-base-url http://127.0.0.1:5003/v1 --output-dir docs/evidence/generated-card-comparisons/production-text-readiness-20260626-production-planner",
+      "why": "Confirms Comfy, the custom text node, aggregate state, model inventory, and configured planner endpoint."
+    },
+    {
+      "step": 4,
+      "title": "Run full production-text matrix",
+      "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5003/v1 -LocalLlmModel koboldcpp/gemma-4-31B-it-Q4_K_M -OutputDir docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 3200 -PlannerContextSize 8192",
+      "why": "Runs aquarium/koi/dog customer requests through the production Comfy text workflow with LLM-owned theme/copy/layout."
+    },
+    {
+      "step": 5,
+      "title": "Manually grade every run",
+      "command": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner/production-text-workflow/*/manual-grade-template.md",
+      "why": "Fill each template and save manual-visual-grade.json before aggregating promotion evidence."
+    },
+    {
+      "step": 6,
+      "title": "Write manual grade checklist",
+      "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-manual-grade-checklist.mjs --advisory --input docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner --output-dir docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-production-planner",
+      "why": "Summarizes generated runs, missing/invalid manual grades, blocked grades, and failed-before-image stories before aggregation."
+    },
+    {
+      "step": 7,
+      "title": "Aggregate production-text results",
+      "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/model-benchmark-aggregate.mjs --input docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner --output-dir docs/evidence/generated-card-comparisons/benchmark-aggregate-20260626-production-text-production-planner --phase local-production-text",
+      "why": "Builds the ranked aggregate used by the promotion gate."
+    },
+    {
+      "step": 8,
+      "title": "Refresh tracked evidence index",
+      "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-evidence-index.mjs --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-production-planner",
+      "why": "Aggregates tracked planner/readiness/preflight/benchmark/aggregate evidence after the rerun artifacts are committed."
+    },
+    {
+      "step": 9,
+      "title": "Run final promotion gate",
+      "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-promotion-gate.mjs --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-production-planner --index-output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-production-planner",
+      "why": "Shows whether every production-text requirement now passes. Remove --advisory only when a pass is expected."
+    }
+  ]
+}

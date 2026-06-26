@@ -311,6 +311,12 @@ Comfy template variables exposed by the local adapter include:
     JSON/Markdown summary.
   - Use `--include-untracked` only when intentionally reviewing local scratch
     evidence that should not be cited as committed promotion proof.
+- `scripts/production-text-research-rollup.mjs`
+  - Reads the current evidence index, promotion gate, and rerun plan, then
+    writes one reproducible JSON/Markdown research rollup.
+  - Use it after refreshing gate/evidence so findings, failed requirements,
+    current model state, manual grade readiness, and next commands are tracked
+    without hand-reconciling multiple artifacts.
 - `scripts/production-text-manual-grade-checklist.mjs`
   - Writes JSON/Markdown after a benchmark to show which generated runs have
     valid `manual-visual-grade.json`, which generated runs still need grades,
@@ -430,8 +436,11 @@ production-suitable planner evidence pass. The current evidence index is
 `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current`;
 it aggregates the tracked rerun plan, planner preflight, readiness, Comfy
 preflight, benchmark, and manual-grade evidence and keeps promotion blocked for
-the same planner/model reasons. The
-current manual grade checklist is
+the same planner/model reasons. The current research rollup is
+`docs/evidence/generated-card-comparisons/production-text-research-rollup-20260626-current`;
+it derives findings, failed gate requirements, evidence summary, and the next
+9 commands from the tracked index/gate/rerun artifacts. The current manual grade
+checklist is
 `docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current`;
 it records 3 blocked manual grades, 2 generated gradable runs, and 1 koi run
 that failed before image generation. The

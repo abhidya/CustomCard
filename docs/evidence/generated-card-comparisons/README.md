@@ -28,6 +28,9 @@ and screenshots from our own prompts and product flows.
 Current production-text research status:
 `production-text-research-findings-2026-06-26.md`.
 
+Current generated production-text research rollup:
+`production-text-research-rollup-20260626-current/production-text-research-rollup.md`.
+
 Current production-text evidence index:
 `production-text-evidence-index-20260626-current/production-text-evidence-index.md`.
 
