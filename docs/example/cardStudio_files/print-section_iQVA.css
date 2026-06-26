@@ -1,0 +1,90 @@
+#section-to-print {
+  position: absolute;
+  top:0;
+  left:0;
+  display: none;
+  width:100%;
+}
+
+@media print and (color) {
+  * {
+    -webkit-print-color-adjust: exact;
+    /* stylelint-disable property-no-unknown */
+    print-color-adjust: exact;
+  }
+}
+
+@media print {
+  body {
+    min-width: inherit;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  @page {
+    margin: 0;
+  }
+
+  #section-to-print .page {
+    position: relative;
+    top: -1px;
+    width: 21cm;
+    max-width: none;
+    min-height: 24cm;
+    padding: 0;
+    margin: 0;
+    margin-top: 1px;
+    overflow: inherit;
+    background: red;
+    border: 1px solid white;
+    page-break-inside: avoid;
+  }
+
+  #section-to-print .page img {
+    position: absolute;
+    max-width: none;
+  }
+
+  #section-to-print .page:nth-child(2) {
+    page-break-before: always;
+    background: blue;
+  }
+
+  /* ======== FULL PAGE LAYOUT ======== */
+  #print-contents .rendered-canvas {
+    position: absolute;
+  }
+
+  .invitations_layout .rendered_canvas {
+    position: absolute;
+    outline: 0.2pt solid #aaa;
+    z-index: 2;
+  }
+
+  .editor-container {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* fix for Web Component */
+
+  /* DZ 17jul22 - vwc-editor rule probably can be removed, due to moving CSS to host doc (however not tested) */
+
+  /* stylelint-disable selector-type-no-unknown */
+  vwc-editor {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  #section-to-print,
+  #section-to-print * {
+    display: block;
+    visibility: visible;
+  }
+
+  .page {
+    background: white !important;
+  }
+}

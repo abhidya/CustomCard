@@ -8,6 +8,8 @@ import type { AppSession } from "../../lib/auth/AuthProvider";
 import type { CardGenerateResponse, DraftStateCurrentResponse } from "../../lib/api/types";
 import { StudioScreen } from "../create/StudioScreen";
 
+jest.setTimeout(15_000);
+
 const emptyDraft: DraftStateCurrentResponse = {
   service: "customcard-api",
   status: "ok",
@@ -96,6 +98,14 @@ describe("StudioScreen", () => {
       updatedAtIso: new Date().toISOString()
     }));
     mockApi.generateCard = jest.fn(async () => generated);
+    mockApi.getAiJobStatus = jest.fn(async () => ({
+      service: "customcard-api",
+      status: "job-result-ready",
+      job_id: "job-card-1",
+      queue_status: "succeeded",
+      result_available: true,
+      result: { payload: generated }
+    }));
   });
 
   it("blocks generation until required fields are filled", async () => {
@@ -129,6 +139,48 @@ describe("StudioScreen", () => {
     expect(mockApi.saveDraftState).toHaveBeenCalled();
   });
 
+  it("waits for queued card generation before showing the preview", async () => {
+    const user = userEvent.setup();
+    mockApi.generateCard = jest.fn(async () => ({
+      service: "customcard-api",
+      status: "queued",
+      route: "ai-card-generate",
+      queue_status: "queued",
+      job_id: "job-card-1",
+      job_status_url: "/api/ai/jobs/status?job_id=job-card-1",
+      retry_after_seconds: 1,
+      result_available: false
+    }));
+    await renderStudio();
+
+    await user.type(await screen.findByTestId("studio-sender"), "Sam");
+    await user.type(screen.getByTestId("studio-recipient"), "Maya");
+    await user.type(screen.getByTestId("studio-relationship"), "Best friend");
+    await user.press(screen.getByLabelText("Draft my card"));
+
+    expect(await screen.findByText("Happy birthday, Maya")).toBeTruthy();
+    expect(mockApi.getAiJobStatus).toHaveBeenCalledWith("job-card-1");
+  });
+
+  it("autosaves meaningful edits before generation", async () => {
+    const user = userEvent.setup();
+    await renderStudio();
+
+    await user.type(await screen.findByTestId("studio-sender"), "Sam");
+
+    await waitFor(
+      () =>
+        expect(mockApi.saveDraftState).toHaveBeenCalledWith(
+          expect.objectContaining({
+            draftInput: expect.objectContaining({ sender: "Sam", language: "English" }),
+            localeCode: "en-US"
+          })
+        ),
+      { timeout: 1500 }
+    );
+    expect(mockApi.generateCard).not.toHaveBeenCalled();
+  });
+
   it("resumes a saved draft from the server", async () => {
     mockApi.getCurrentDraftState = jest.fn(async () => ({
       ...emptyDraft,
@@ -143,5 +195,38 @@ describe("StudioScreen", () => {
 
     await waitFor(() => expect(screen.getByTestId("studio-sender").props.value).toBe("Sam"));
     expect(screen.getByTestId("studio-recipient").props.value).toBe("Maya");
+  });
+
+  it("round-trips saved locale codes as backend card languages", async () => {
+    const user = userEvent.setup();
+    mockApi.getCurrentDraftState = jest.fn(async () => ({
+      ...emptyDraft,
+      draftState: {
+        draftStateId: "draft-state-ur",
+        status: "in-progress",
+        localeCode: "ur-PK",
+        draftInput: {
+          sender: "Sam",
+          recipient: "Maya",
+          relationship: "Sister",
+          language: "Urdu"
+        }
+      },
+      updatedAtIso: new Date().toISOString()
+    }));
+    await renderStudio();
+
+    await waitFor(() => expect(screen.getByTestId("studio-sender").props.value).toBe("Sam"));
+    await user.press(screen.getByLabelText("Draft my card"));
+
+    expect(mockApi.generateCard).toHaveBeenCalledWith(
+      expect.objectContaining({ language: "Urdu" })
+    );
+    expect(mockApi.saveDraftState).toHaveBeenCalledWith(
+      expect.objectContaining({
+        draftInput: expect.objectContaining({ language: "Urdu" }),
+        localeCode: "ur-PK"
+      })
+    );
   });
 });

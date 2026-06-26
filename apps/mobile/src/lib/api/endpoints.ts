@@ -2,7 +2,7 @@ import type { HttpClient, RequestOptions } from "./httpClient";
 import type {
   CalendarConnectionStartResponse,
   CardGenerateRequest,
-  CardGenerateResponse,
+  CardGenerateResult,
   ChatRespondRequest,
   ChatRespondResponse,
   ConnectionsResponse,
@@ -23,6 +23,7 @@ import type {
   RetailOperationStartResponse,
   SaveDraftStateRequest,
   SaveDraftStateResponse,
+  AiJobStatusResponse,
   VendorHandoffRequest,
   VendorHandoffResponse,
   WalgreensSessionRequest,
@@ -54,7 +55,8 @@ export interface CustomCardApi {
   ): Promise<CalendarConnectionStartResponse>;
   reviewMemory(body: MemoryReviewRequest, options?: RequestOptions): Promise<MemoryReviewResponse>;
   chatRespond(body: ChatRespondRequest, options?: RequestOptions): Promise<ChatRespondResponse>;
-  generateCard(body: CardGenerateRequest, options?: RequestOptions): Promise<CardGenerateResponse>;
+  generateCard(body: CardGenerateRequest, options?: RequestOptions): Promise<CardGenerateResult>;
+  getAiJobStatus(jobId: string, options?: RequestOptions): Promise<AiJobStatusResponse>;
   createCardProject(
     body: CreateCardProjectRequest,
     options?: RequestOptions
@@ -98,6 +100,8 @@ export function createCustomCardApi(http: HttpClient): CustomCardApi {
     reviewMemory: (body, options) => http.post("/api/memories/review", body, options),
     chatRespond: (body, options) => http.post("/api/ai/chat/respond", body, options),
     generateCard: (body, options) => http.post("/api/ai/card/generate", body, options),
+    getAiJobStatus: (jobId, options) =>
+      http.get(`/api/ai/jobs/status?job_id=${encodeURIComponent(jobId)}`, options),
     createCardProject: (body, options) => http.post("/api/card-projects", body, options),
     createRenderPacket: (projectId, options) =>
       http.post("/api/render-packets", { projectId, panels: [] }, options),

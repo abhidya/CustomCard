@@ -270,7 +270,7 @@ export interface DraftStateCurrentResponse {
 
 export interface SaveDraftStateRequest {
   draftInput: DraftInput;
-  status: "in-progress" | "approved" | "abandoned";
+  status: "draft" | "in-progress" | "ready-for-review";
   opportunityId?: string;
   localeCode?: string;
   vendorId?: string;
@@ -423,6 +423,36 @@ export interface CardGenerateResponse {
   ai_flow: Record<string, AiFlowState>;
   fallback_queued: boolean;
 }
+
+export interface QueuedAiJobResponse {
+  service: string;
+  status: "queued" | string;
+  route?: string;
+  route_id?: string;
+  queue_status?: string;
+  job_id?: string;
+  job_status_url?: string;
+  retry_after_seconds?: number;
+  result_available?: boolean;
+  fallback_queued?: boolean;
+}
+
+export interface AiJobStatusResponse {
+  service: string;
+  status: string;
+  job_id?: string;
+  route_id?: string;
+  queue_status?: string;
+  result_available?: boolean;
+  retry_after_seconds?: number;
+  last_error?: string;
+  result?: {
+    payload?: CardGenerateResponse;
+  } & Partial<CardGenerateResponse> &
+    Record<string, unknown>;
+}
+
+export type CardGenerateResult = CardGenerateResponse | QueuedAiJobResponse;
 
 // ---------------------------------------------------------------------------
 // POST /api/card-projects

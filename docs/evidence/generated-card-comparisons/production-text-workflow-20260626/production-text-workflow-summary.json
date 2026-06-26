@@ -1,0 +1,25 @@
+{
+  "phase": "local",
+  "phaseDir": "production-text-workflow",
+  "createdAtIso": "2026-06-26T01:21:58.716Z",
+  "liveProviderCallsEnabled": true,
+  "localOnlyNetworkGuard": true,
+  "outputDir": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626",
+  "envRouting": {
+    "aiEnvSources": [
+      ".env.local"
+    ],
+    "configuredProviderKeys": [
+      "CUSTOMCARD_COMFYUI_IMAGE_HEIGHT",
+      "CUSTOMCARD_COMFYUI_IMAGE_WIDTH",
+      "CUSTOMCARD_COMFYUI_TIMEOUT_MS",
+      "CUSTOMCARD_COMFYUI_URL",
+      "CUSTOMCARD_COMFYUI_WORKFLOW_ID",
+      "CUSTOMCARD_COMFYUI_WORKFLOW_PATH"
+    ],
+    "secretsRedacted": true
+  },
+  "plannedRuns": [],
+  "runs": [],
+  "providerHttp": []
+}

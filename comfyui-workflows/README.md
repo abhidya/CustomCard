@@ -169,6 +169,8 @@ This starts a dedicated KoboldCPP vision reviewer on port `5002` when needed,
 waits until `/v1/models` reports the Qwen3VL model loaded, then runs
 `card:quality:local`. It intentionally avoids port `5001` because that port is
 often used by the local text-model KoboldCPP server.
+Add `--preflight-only --stop-after` for a load/unload smoke test without scoring
+images.
 
 ```powershell
 $env:CUSTOMCARD_LOCAL_QUALITY_BACKEND = "comfy"

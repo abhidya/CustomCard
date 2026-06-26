@@ -4,6 +4,11 @@
       "type": "stdio",
       "command": "node",
       "args": ["--disable-warning=ExperimentalWarning", "mcp/server.mjs"]
+    },
+    "comfyui": {
+      "type": "stdio",
+      "command": "D:\\manny\\Documents\\CustomCard\\.codex\\comfyui\\run-comfyui-mcp.cmd",
+      "args": []
     }
   }
 }

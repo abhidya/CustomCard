@@ -702,7 +702,7 @@ async function main() {
 export function buildModelBenchmarkAdminCatalog(env = process.env) {
   const candidates = buildCandidateCatalog(env);
   return {
-    phases: ["smoke", "full", "pipeline-quality", "typography", "local", "local-typography"],
+    phases: ["smoke", "full", "pipeline-quality", "typography", "local", "local-typography", "local-production-text"],
     stories: Object.values(stories).map((story) => ({
       id: story.id,
       customerType: story.request?.relationship ?? "customer",
@@ -729,7 +729,8 @@ export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false } =
     args["local-only"] === "true" ||
     phase === "local" ||
     phase === "local-only" ||
-    phase === "local-typography";
+    phase === "local-typography" ||
+    phase === "local-production-text";
   mkdirSync(outputDir, { recursive: true });
 
   const candidates = buildCandidateCatalog(env);
@@ -777,9 +778,11 @@ export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false } =
 
   for (const run of plannedRuns) {
     summary.runs.push(
-      run.phase === "typography" || run.phase === "local-typography"
-        ? await runTypographyExperimentPanel({ run, phaseDir, providerHttp, env, fetchImpl })
-        : await runBenchmarkCard({ run, phaseDir, service, providerHttp, env, fetchImpl })
+      run.phase === "local-production-text"
+        ? await runProductionTextWorkflowPanel({ run, phaseDir, providerHttp, env, fetchImpl })
+        : run.phase === "typography" || run.phase === "local-typography"
+          ? await runTypographyExperimentPanel({ run, phaseDir, providerHttp, env, fetchImpl })
+          : await runBenchmarkCard({ run, phaseDir, service, providerHttp, env, fetchImpl })
     );
     writeJson(resolve(outputDir, `${phaseDirName}-summary.json`), sanitize(summary, env));
   }
@@ -839,6 +842,7 @@ function hasUsableEnvValue(value) {
 function plannedRunsForPhase(phase, candidates) {
   if (phase === "local" || phase === "local-only") return localOnlyRuns(candidates);
   if (phase === "local-typography") return localTypographyRuns(candidates);
+  if (phase === "local-production-text") return localProductionTextRuns(candidates);
   if (phase === "smoke") return smokeRuns(candidates);
   if (phase === "full") return fullRuns(candidates);
   if (phase === "typography") return typographyExperimentRuns(candidates);
@@ -980,6 +984,35 @@ export function localTypographyRuns(candidates) {
       },
       image,
       typographyMode: typographyModes.find((mode) => mode.id === "mode-c-hybrid-reserved-layout")
+    }
+  ];
+}
+
+export function localProductionTextRuns(candidates) {
+  const image = firstConfigured(candidates.image, "image-local-comfyui");
+  if (!image || image.id !== "image-local-comfyui") return [];
+  return [
+    {
+      phase: "local-production-text",
+      focus: "local-comfy-production-text-composer",
+      storyId: typographyExperimentSpec.id,
+      story: {
+        id: typographyExperimentSpec.id,
+        must_include: [typographyExperimentSpec.headline, typographyExperimentSpec.body],
+        must_avoid: ["lorem ipsum", "placeholder", "extra words", "fake lettering", "mockup"]
+      },
+      text: {
+        id: "text-fixture-panel-copy",
+        label: "Fixture panel copy",
+        adapterId: "fixture",
+        model: ""
+      },
+      image,
+      typographyMode: {
+        id: "customcard-production-text-composer",
+        label: "CustomCard production text composer",
+        strategy: "comfy-deterministic-text-composer"
+      }
     }
   ];
 }
@@ -1278,6 +1311,109 @@ function isLocalComfyPromptUrl(value) {
     return parsed.protocol === "http:" && localHosts.has(host) && parsed.pathname.replace(/\/+$/, "") === "/prompt";
   } catch {
     return false;
+  }
+}
+
+async function runProductionTextWorkflowPanel({ run, phaseDir, providerHttp, env, fetchImpl }) {
+  const runId = `${run.storyId}__${run.typographyMode.id}__${run.image.id}`;
+  const runDir = resolve(phaseDir, runId);
+  mkdirSync(runDir, { recursive: true });
+  const startedAt = new Date().toISOString();
+  const providerStartIndex = providerHttp.length;
+  const promptPlans = typographyPanelOrder.map((panelId) =>
+    buildTypographyExperimentPrompt("mode-c-hybrid-reserved-layout", typographyExperimentSpec, panelId)
+  );
+  const panelCopies = Object.fromEntries(typographyPanelOrder.map((panelId) => [panelId, typographyTextPanels[panelId]]));
+  writeJson(resolve(runDir, "run-config.json"), sanitize({ ...plannedRunSummary(run), promptPlans, panelCopies }, env));
+  for (const promptPlan of promptPlans) {
+    writeMarkdown(resolve(runDir, `prompt-${promptPlan.panelId}.md`), promptPlan.prompt);
+  }
+
+  try {
+    const panelFiles = [];
+    const decodedFiles = [];
+    for (const promptPlan of promptPlans) {
+      const panelCopy = panelCopies[promptPlan.panelId] || { id: promptPlan.panelId, headline: "", body: "", text_layout: {} };
+      const imageUrl = await executeTypographyImageProvider({
+        image: run.image,
+        panelId: promptPlan.panelId,
+        prompt: promptPlan.prompt,
+        negativePrompt: promptPlan.negativePrompt,
+        panelCopy,
+        env,
+        fetchImpl
+      });
+      const decoded = await decodeImageUrl(imageUrl, fetchImpl, env);
+      decodedFiles.push(decoded);
+      const providerFile = resolve(runDir, `provider-${promptPlan.panelId}${decoded.ext}`);
+      writeFileSync(providerFile, decoded.buffer);
+      const previewFile = resolve(runDir, `preview-${promptPlan.panelId}.png`);
+      writeFileSync(previewFile, await sharp(decoded.buffer).png().toBuffer());
+      panelFiles.push({
+        panelId: promptPlan.panelId,
+        path: providerFile,
+        previewPath: previewFile,
+        prompt: promptPlan.prompt,
+        negativePrompt: promptPlan.negativePrompt,
+        renderedByComfyTextComposer: true,
+        headline: panelCopy.headline || "",
+        body: panelCopy.body || "",
+        sourceKind: decoded.sourceKind,
+        contentType: decoded.contentType
+      });
+    }
+    const providerCalls = providerHttp.slice(providerStartIndex);
+    const effectiveProviderRequests = writeEffectiveProviderRequests({
+      runDir,
+      run,
+      providerCalls,
+      requestPanelIds: promptPlans.map((promptPlan) => promptPlan.panelId),
+      env
+    });
+    const contactSheet = await renderContactSheet({ runDir, run, panelFiles });
+    const autoChecks = productionTextAutoChecks({ promptPlans, panelCopies, providerCalls, decodedFiles });
+    const runResult = {
+      ...plannedRunSummary(run),
+      runDir: relativePath(runDir),
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      panelCount: panelFiles.length,
+      panelFiles: panelFiles.map((file) => ({
+        ...file,
+        path: relativePath(file.path),
+        previewPath: relativePath(file.previewPath)
+      })),
+      contactSheet: contactSheet ? relativePath(contactSheet) : undefined,
+      effectiveProviderRequests,
+      providerCallCount: providerCalls.length,
+      autoChecks
+    };
+    writeJson(resolve(runDir, "auto-checks.json"), autoChecks);
+    writeJson(resolve(runDir, "provider-http.json"), sanitize(providerCalls, env));
+    writeJson(resolve(runDir, "run-result.json"), sanitize(runResult, env));
+    writeMarkdown(resolve(runDir, "manual-grade-template.md"), buildTypographyManualGradeTemplate(runResult, run, promptPlans));
+    return sanitize(runResult, env);
+  } catch (error) {
+    const providerCalls = providerHttp.slice(providerStartIndex);
+    const failure = {
+      ...plannedRunSummary(run),
+      runDir: relativePath(runDir),
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      status: "failed",
+      error: error instanceof Error ? error.message : String(error),
+      providerCallCount: providerCalls.length
+    };
+    writeJson(resolve(runDir, "provider-http.json"), sanitize(providerCalls, env));
+    failure.effectiveProviderRequests = writeEffectiveProviderRequests({
+      runDir,
+      run,
+      providerCalls,
+      requestPanelIds: promptPlans.map((promptPlan) => promptPlan.panelId),
+      env
+    });
+    writeJson(resolve(runDir, "error.json"), sanitize(failure, env));
+    return sanitize(failure, env);
   }
 }
 
@@ -1615,9 +1751,9 @@ function countSentences(value) {
   return Math.max(1, String(value || "").split(/[.!?]+/).filter((part) => part.trim()).length);
 }
 
-async function executeTypographyImageProvider({ image, panelId, prompt, negativePrompt, env, fetchImpl }) {
+async function executeTypographyImageProvider({ image, panelId, prompt, negativePrompt, panelCopy = {}, env, fetchImpl }) {
   if (image.adapterId === "local-comfyui-api-image") {
-    return executeLocalComfyTypographyImage({ image, panelId, prompt, negativePrompt, env, fetchImpl });
+    return executeLocalComfyTypographyImage({ image, panelId, prompt, negativePrompt, panelCopy, env, fetchImpl });
   }
 
   if (image.adapterId === "deepai-text2img-image") {
@@ -1720,7 +1856,7 @@ async function executeTypographyImageProvider({ image, panelId, prompt, negative
   throw new Error(`Image adapter ${image.adapterId} is configured but not executable in typography experiment yet.`);
 }
 
-async function executeLocalComfyTypographyImage({ image, panelId, prompt, negativePrompt, env, fetchImpl }) {
+async function executeLocalComfyTypographyImage({ image, panelId, prompt, negativePrompt, panelCopy = {}, env, fetchImpl }) {
   const comfyUrl = localComfyUiBaseUrl(env);
   const width = boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_IMAGE_WIDTH || env.COMFYUI_IMAGE_WIDTH, 256, 2048, 960);
   const height = boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_IMAGE_HEIGHT || env.COMFYUI_IMAGE_HEIGHT, 256, 2048, 1344);
@@ -1751,7 +1887,8 @@ async function executeLocalComfyTypographyImage({ image, panelId, prompt, negati
     seed,
     steps,
     width,
-    workflowId: localComfyWorkflowId(env)
+    workflowId: localComfyWorkflowId(env),
+    ...localComfyTypographyVariables({ panelId, panelCopy, width, height })
   };
   const workflow = buildLocalComfyWorkflow({ env, variables });
   const promptResponse = await postJson(fetchImpl, localComfyUiApiUrl(comfyUrl, "/prompt"), {
