@@ -37,7 +37,7 @@ $env:CUSTOMCARD_COMFYUI_TIMEOUT_MS = [string]$TimeoutMs
 
 & powershell -NoProfile -ExecutionPolicy Bypass -File $NodeWrapper `
   $BenchmarkScript `
-  --phase local `
+  --phase local-production-text `
   --live true `
   --local-only true `
   --phase-dir $PhaseDir `

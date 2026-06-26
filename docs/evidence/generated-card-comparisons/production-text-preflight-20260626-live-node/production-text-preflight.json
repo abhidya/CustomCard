@@ -2,7 +2,7 @@
   "ok": true,
   "promotionReady": true,
   "status": "promotion-ready",
-  "createdAtIso": "2026-06-26T01:21:20.178Z",
+  "createdAtIso": "2026-06-26T01:25:29.188Z",
   "comfyUrl": "http://127.0.0.1:8188",
   "workflowPath": "comfyui-workflows/customcard-production-text-overlay.json",
   "nodeSource": "comfyui-custom-nodes/CustomCardTextComposer",
