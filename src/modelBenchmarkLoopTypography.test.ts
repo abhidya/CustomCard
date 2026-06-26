@@ -3,9 +3,11 @@ import {
   buildEffectiveProviderRequests,
   buildPhaseReadme,
   buildTypographyExperimentPrompt,
+  localProductionTextRuns,
   localTypographyRuns,
   parseBenchmarkRequestBody,
   pipelineQualityRuns,
+  productionTextBenchmarkSpecs,
   productionTextAutoChecks,
   sanitizeBenchmarkValue,
   stories as benchmarkStories,
@@ -78,6 +80,52 @@ describe("model benchmark typography experiment", () => {
     }
     expect(prompts[2].prompt).toContain("Palette: deep charcoal main field");
     expect(prompts[2].negativePrompt).toContain("ivory wave");
+  });
+
+  it("plans production text runs for specific customer-interest benchmark inputs", () => {
+    const runs = localProductionTextRuns({
+      text: [],
+      image: [
+        {
+          id: "image-local-comfyui",
+          label: "Local ComfyUI",
+          adapterId: "local-comfyui-api-image",
+          model: "sd_xl_turbo_1.0_fp16.safetensors",
+          configured: true
+        }
+      ]
+    });
+    const storyIds = runs.map((run) => run.storyId);
+
+    expect(productionTextBenchmarkSpecs.map((spec) => spec.id)).toEqual([
+      "folded-card-sunburst-typography",
+      "aquarium-lover-birthday",
+      "koi-fish-lover-encouragement",
+      "dog-lover-thank-you"
+    ]);
+    expect(storyIds).toEqual(productionTextBenchmarkSpecs.map((spec) => spec.id));
+    expect(runs.find((run) => run.storyId === "aquarium-lover-birthday")?.story.must_include).toContain(
+      "Your Little Underwater World"
+    );
+    expect(runs.find((run) => run.storyId === "koi-fish-lover-encouragement")?.story.request.style).toContain("koi");
+    expect(runs.find((run) => run.storyId === "dog-lover-thank-you")?.story.must_include).toContain(
+      "Thank you for being the kind of person tails would wag for."
+    );
+  });
+
+  it("builds themed production artwork prompts without leaking exact card copy", () => {
+    const aquarium = productionTextBenchmarkSpecs.find((spec) => spec.id === "aquarium-lover-birthday")!;
+    const front = buildTypographyExperimentPrompt("mode-c-hybrid-reserved-layout", aquarium, "front");
+    const back = buildTypographyExperimentPrompt("mode-c-hybrid-reserved-layout", aquarium, "back");
+
+    expect(front.prompt).toContain("aquarium");
+    expect(front.prompt).toContain("Text-safe field requirement");
+    expect(front.prompt).toContain("Do not create an all-over aquarium scene");
+    expect(front.prompt).not.toContain(aquarium.panels.front.headline);
+    expect(front.prompt).not.toContain(aquarium.panels.front.body);
+    expect(back.renderTextInApp).toBe(false);
+    expect(back.prompt).toContain("one tiny simple aqua fish or bubble mark");
+    expect(back.prompt).not.toContain(aquarium.panels.front.headline);
   });
 
   it("prompts inside-left and inside-right as text-bearing cohesive spread panels", () => {

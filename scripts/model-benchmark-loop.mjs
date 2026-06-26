@@ -85,6 +85,178 @@ export const typographyExperimentSpec = {
   }
 };
 
+export const productionTextBenchmarkSpecs = [
+  typographyExperimentSpec,
+  {
+    id: "aquarium-lover-birthday",
+    panelType: "Front Cover",
+    size: "5x7 portrait",
+    output: "Flat 2D print artwork",
+    style: "Premium greeting card",
+    palette: "deep teal, clear aqua, warm ivory, tiny coral accents",
+    motif: "minimal freshwater aquarium plants, soft bubbles, tiny fish silhouettes kept to the border",
+    mood: "warm, observant, quietly joyful",
+    headline: "Your Little Underwater World",
+    body: "Hope your day feels calm, bright, and beautifully alive.",
+    panels: {
+      front: {
+        id: "front",
+        panelType: "Front Cover",
+        role: "aquarium-lover cover with exact deterministic headline and short body",
+        headline: "Your Little Underwater World",
+        body: "Hope your day feels calm, bright, and beautifully alive.",
+        composition:
+          "deep teal stationery field, thin aqua border, sparse aquarium plant silhouettes at corners, tiny bubbles only at outer edges",
+        modeCHint:
+          "Leave a broad plain deep-teal central text-safe field. Keep fish, bubbles, plants, gravel, coral shapes, shimmer marks, and high-contrast details outside the field. Do not create an all-over aquarium scene; this is stationery, not a tank illustration."
+      },
+      "inside-left": {
+        id: "inside-left",
+        panelType: "Inside Left",
+        role: "left half of aquarium-themed interior spread",
+        headline: "A Calm Current",
+        body: "May the small things you care for bring you a little extra peace today.",
+        composition:
+          "warm ivory interior, thin aqua rule, one sparse aquatic plant accent along the outer-left edge, quiet writing area",
+        modeCHint:
+          "Make the center and upper-middle plain warm ivory for typography. Put aquarium plant detail only along the far outer-left edge. No fish, bubbles, gravel, or water texture behind the text-safe field."
+      },
+      "inside-right": {
+        id: "inside-right",
+        panelType: "Inside Right",
+        role: "right half of aquarium-themed interior spread",
+        headline: "Bright as Bubbles",
+        body: "Here is to another year of tiny wonders, steady care, and happy surprises.",
+        composition:
+          "matching warm ivory interior, thin aqua rule, tiny bubble accent along the outer-right edge, quiet writing area",
+        modeCHint:
+          "Keep the center and upper-middle plain warm ivory. Place only a few tiny bubbles or plant sprigs on the far outer-right edge, outside the text-safe field."
+      },
+      back: {
+        id: "back",
+        panelType: "Back Cover",
+        role: "coordinating no-text aquarium back panel",
+        composition:
+          "mostly plain deep teal negative space, one tiny aqua fish mark near lower edge, no copy",
+        modeCHint:
+          "Back cover must be at least 90% plain deep teal. Use one tiny simple aqua fish or bubble mark near the lower third only. No full aquarium scene, no water texture, no coral field, no text-like marks."
+      }
+    }
+  },
+  {
+    id: "koi-fish-lover-encouragement",
+    panelType: "Front Cover",
+    size: "5x7 portrait",
+    output: "Flat 2D print artwork",
+    style: "Premium greeting card",
+    palette: "warm ivory, ink wash charcoal, soft persimmon, muted pond green",
+    motif: "one or two abstract koi arcs and sparse ripples kept away from copy",
+    mood: "serene, resilient, encouraging",
+    headline: "Steady Through the Water",
+    body: "Wishing you patience, strength, and a little beauty along the way.",
+    panels: {
+      front: {
+        id: "front",
+        panelType: "Front Cover",
+        role: "koi-lover encouragement cover with exact deterministic copy",
+        headline: "Steady Through the Water",
+        body: "Wishing you patience, strength, and a little beauty along the way.",
+        composition:
+          "warm ivory stationery, charcoal ink-wash border, two small persimmon koi arcs near corners, broad plain center",
+        modeCHint:
+          "Leave a broad plain warm-ivory central text-safe field. Koi arcs, ripples, lotus leaves, brush texture, and contrast marks must stay outside the field. Do not draw a pond scene behind the copy."
+      },
+      "inside-left": {
+        id: "inside-left",
+        panelType: "Inside Left",
+        role: "left half of koi-themed encouragement spread",
+        headline: "One Gentle Ripple",
+        body: "Even small steps can carry real courage.",
+        composition:
+          "quiet ivory interior, one muted pond-green ripple accent near outer-left edge, generous plain center",
+        modeCHint:
+          "Keep the typography area plain ivory. Use only one or two pale ripple lines along the far outer-left edge, outside the text-safe field."
+      },
+      "inside-right": {
+        id: "inside-right",
+        panelType: "Inside Right",
+        role: "right half of koi-themed encouragement spread",
+        headline: "You Keep Moving",
+        body: "May today meet you with steadiness, room to breathe, and quiet hope.",
+        composition:
+          "matching quiet ivory interior, small persimmon koi tail accent near outer-right edge, generous plain center",
+        modeCHint:
+          "Keep the typography area plain ivory. Put only a tiny koi-tail or ripple accent near the far outer-right edge, outside the text-safe field."
+      },
+      back: {
+        id: "back",
+        panelType: "Back Cover",
+        role: "coordinating no-text koi back panel",
+        composition:
+          "mostly plain ink-wash charcoal negative space, one tiny persimmon koi mark near lower edge, no copy",
+        modeCHint:
+          "Back cover must be at least 90% plain charcoal. Use one tiny persimmon koi mark near the lower third only. No full pond scene, no repeated fish pattern, no brush lettering, no text-like marks."
+      }
+    }
+  },
+  {
+    id: "dog-lover-thank-you",
+    panelType: "Front Cover",
+    size: "5x7 portrait",
+    output: "Flat 2D print artwork",
+    style: "Premium greeting card",
+    palette: "warm cream, soft sky blue, leash red, graphite ink",
+    motif: "minimal paw mark, simple collar tag, gentle park-path curve kept to borders",
+    mood: "grateful, loyal, lightly playful",
+    headline: "You Showed Up Big",
+    body: "Thank you for being the kind of person tails would wag for.",
+    panels: {
+      front: {
+        id: "front",
+        panelType: "Front Cover",
+        role: "dog-lover thank-you cover with exact deterministic copy",
+        headline: "You Showed Up Big",
+        body: "Thank you for being the kind of person tails would wag for.",
+        composition:
+          "warm cream stationery, thin sky-blue border, tiny leash-red collar tag and two small paw marks near corners",
+        modeCHint:
+          "Leave a broad plain warm-cream central text-safe field. Keep paw marks, collar tags, leash curves, dog silhouettes, park paths, and high-contrast details outside the field. Do not draw a dog portrait or full scene behind copy."
+      },
+      "inside-left": {
+        id: "inside-left",
+        panelType: "Inside Left",
+        role: "left half of dog-lover thank-you spread",
+        headline: "The Good Kind",
+        body: "You made the day easier in a way that really mattered.",
+        composition:
+          "warm cream interior, tiny graphite paw mark along outer-left edge, quiet writing area",
+        modeCHint:
+          "Keep the center plain warm cream. Use only one tiny paw mark or collar-tag accent along the far outer-left edge, outside the text-safe field."
+      },
+      "inside-right": {
+        id: "inside-right",
+        panelType: "Inside Right",
+        role: "right half of dog-lover thank-you spread",
+        headline: "So Very Grateful",
+        body: "Your kindness had a long reach, and I will remember it.",
+        composition:
+          "matching warm cream interior, slim sky-blue border, tiny leash-red accent at outer-right edge",
+        modeCHint:
+          "Keep the center plain warm cream. Place only a tiny leash-red accent or paw mark on the far outer-right edge, outside the text-safe field."
+      },
+      back: {
+        id: "back",
+        panelType: "Back Cover",
+        role: "coordinating no-text dog-lover back panel",
+        composition:
+          "mostly plain graphite negative space, one tiny cream paw mark near lower edge, no copy",
+        modeCHint:
+          "Back cover must be at least 90% plain graphite. Use one tiny cream paw mark near the lower third only. No dog portrait, no bone pattern, no full park scene, no text-like marks."
+      }
+    }
+  }
+];
+
 const typographyModes = [
   {
     id: "mode-a-current-overlay",
@@ -105,60 +277,7 @@ const typographyModes = [
 
 const pipelineQualityStoryId = "sympathy-quiet-support";
 const typographyPanelOrder = ["front", "inside-left", "inside-right", "back"];
-const typographyTextPanels = {
-  front: {
-    id: "front",
-    headline: typographyExperimentSpec.headline,
-    body: typographyExperimentSpec.body,
-    text_layout: {
-      headline_zone: "center",
-      body_zone: "lower",
-      alignment: "center",
-      font_pairing: "bold-editorial",
-      color_mode: "light-ink",
-      scale: "large"
-    }
-  },
-  "inside-left": {
-    id: "inside-left",
-    headline: typographyExperimentSpec.panels["inside-left"].headline,
-    body: typographyExperimentSpec.panels["inside-left"].body,
-    text_layout: {
-      headline_zone: "upper",
-      body_zone: "center",
-      alignment: "center",
-      font_pairing: "soft-serif",
-      color_mode: "dark-ink",
-      scale: "standard"
-    }
-  },
-  "inside-right": {
-    id: "inside-right",
-    headline: typographyExperimentSpec.panels["inside-right"].headline,
-    body: typographyExperimentSpec.panels["inside-right"].body,
-    text_layout: {
-      headline_zone: "upper",
-      body_zone: "center",
-      alignment: "center",
-      font_pairing: "soft-serif",
-      color_mode: "dark-ink",
-      scale: "standard"
-    }
-  },
-  back: {
-    id: "back",
-    headline: "",
-    body: "",
-    text_layout: {
-      headline_zone: "lower",
-      body_zone: "bottom",
-      alignment: "center",
-      font_pairing: "minimal-sans",
-      color_mode: "light-ink",
-      scale: "compact"
-    }
-  }
-};
+const typographyTextPanels = buildTypographyTextPanels(typographyExperimentSpec);
 
 export const stories = {
   "first-time-user-birthday": {
@@ -996,14 +1115,17 @@ export function localTypographyRuns(candidates) {
 export function localProductionTextRuns(candidates) {
   const image = firstConfigured(candidates.image, "image-local-comfyui");
   if (!image || image.id !== "image-local-comfyui") return [];
-  return [
-    {
+  return productionTextBenchmarkSpecs.map((spec) => ({
       phase: "local-production-text",
       focus: "local-comfy-production-text-composer",
-      storyId: typographyExperimentSpec.id,
+      storyId: spec.id,
       story: {
-        id: typographyExperimentSpec.id,
-        must_include: [typographyExperimentSpec.headline, typographyExperimentSpec.body],
+        id: spec.id,
+        customer_type: "fixture",
+        occasion: spec.mood || "benchmark",
+        memory_load: "fixed",
+        request: productionTextBenchmarkRequest(spec),
+        must_include: productionTextMustInclude(spec),
         must_avoid: ["lorem ipsum", "placeholder", "extra words", "fake lettering", "mockup"]
       },
       text: {
@@ -1017,9 +1139,106 @@ export function localProductionTextRuns(candidates) {
         id: "customcard-production-text-composer",
         label: "CustomCard production text composer",
         strategy: "comfy-deterministic-text-composer"
+      },
+      typographySpec: spec
+  }));
+}
+
+function buildTypographyTextPanels(spec = typographyExperimentSpec) {
+  return {
+    front: {
+      id: "front",
+      headline: spec.panels?.front?.headline || spec.headline || "",
+      body: spec.panels?.front?.body || spec.body || "",
+      text_layout: {
+        headline_zone: "center",
+        body_zone: "lower",
+        alignment: "center",
+        font_pairing: "bold-editorial",
+        color_mode: "light-ink",
+        scale: "large"
+      }
+    },
+    "inside-left": {
+      id: "inside-left",
+      headline: spec.panels?.["inside-left"]?.headline || "",
+      body: spec.panels?.["inside-left"]?.body || "",
+      text_layout: {
+        headline_zone: "upper",
+        body_zone: "center",
+        alignment: "center",
+        font_pairing: "soft-serif",
+        color_mode: "dark-ink",
+        scale: "standard"
+      }
+    },
+    "inside-right": {
+      id: "inside-right",
+      headline: spec.panels?.["inside-right"]?.headline || "",
+      body: spec.panels?.["inside-right"]?.body || "",
+      text_layout: {
+        headline_zone: "upper",
+        body_zone: "center",
+        alignment: "center",
+        font_pairing: "soft-serif",
+        color_mode: "dark-ink",
+        scale: "standard"
+      }
+    },
+    back: {
+      id: "back",
+      headline: "",
+      body: "",
+      text_layout: {
+        headline_zone: "lower",
+        body_zone: "bottom",
+        alignment: "center",
+        font_pairing: "minimal-sans",
+        color_mode: "light-ink",
+        scale: "compact"
       }
     }
-  ];
+  };
+}
+
+function productionTextBenchmarkRequest(spec) {
+  return {
+    sender: "CustomCard benchmark",
+    recipient: spec.id.replaceAll("-", " "),
+    relationship: "recipient",
+    occasion: spec.mood || "card",
+    tone: spec.mood || "warm",
+    style: `${spec.palette}; ${spec.motif}`,
+    language: "English",
+    personal_note: `${spec.id}: ${spec.headline} ${spec.body}`.trim(),
+    memory_notes: [spec.motif, spec.palette].filter(Boolean)
+  };
+}
+
+function productionTextMustInclude(spec) {
+  return typographyPanelOrder
+    .flatMap((panelId) => [spec.panels?.[panelId]?.headline, spec.panels?.[panelId]?.body])
+    .filter(Boolean);
+}
+
+function productionTextBenchmarkInputSummary(spec) {
+  return {
+    id: spec.id,
+    palette: spec.palette,
+    motif: spec.motif,
+    mood: spec.mood,
+    panels: Object.fromEntries(
+      typographyPanelOrder.map((panelId) => [
+        panelId,
+        {
+          headline: spec.panels?.[panelId]?.headline || "",
+          body: spec.panels?.[panelId]?.body || "",
+          composition: spec.panels?.[panelId]?.composition || "",
+          modeCHint: spec.panels?.[panelId]?.modeCHint || ""
+        }
+      ])
+    )
+  };
 }
 
 export function pipelineQualityRuns(candidates) {
@@ -1325,11 +1544,15 @@ async function runProductionTextWorkflowPanel({ run, phaseDir, providerHttp, env
   mkdirSync(runDir, { recursive: true });
   const startedAt = new Date().toISOString();
   const providerStartIndex = providerHttp.length;
+  const typographySpec = run.typographySpec || typographyExperimentSpec;
   const promptPlans = typographyPanelOrder.map((panelId) =>
-    buildTypographyExperimentPrompt("mode-c-hybrid-reserved-layout", typographyExperimentSpec, panelId)
+    buildTypographyExperimentPrompt("mode-c-hybrid-reserved-layout", typographySpec, panelId)
   );
-  const panelCopies = Object.fromEntries(typographyPanelOrder.map((panelId) => [panelId, typographyTextPanels[panelId]]));
-  writeJson(resolve(runDir, "run-config.json"), sanitize({ ...plannedRunSummary(run), promptPlans, panelCopies }, env));
+  const panelCopies = buildTypographyTextPanels(typographySpec);
+  writeJson(
+    resolve(runDir, "run-config.json"),
+    sanitize({ ...plannedRunSummary(run), benchmarkInput: productionTextBenchmarkInputSummary(typographySpec), promptPlans, panelCopies }, env)
+  );
   for (const promptPlan of promptPlans) {
     writeMarkdown(resolve(runDir, `prompt-${promptPlan.panelId}.md`), promptPlan.prompt);
   }
@@ -2619,6 +2842,8 @@ function plannedRunSummary(run) {
     phase: run.phase,
     focus: run.focus,
     storyId: run.storyId,
+    benchmarkInputId: run.typographySpec?.id,
+    benchmarkInputMotif: run.typographySpec?.motif,
     textCandidateId: run.text.id,
     textAdapterId: run.text.adapterId,
     textModel: run.text.model,

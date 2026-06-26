@@ -145,7 +145,10 @@ Run a full-card benchmark through the production workflow:
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1
 ```
 
-By default the helper writes to a timestamped
+The `local-production-text` phase now benchmarks four fixed production-text
+inputs: the sunburst typography baseline, aquarium lover birthday, koi fish
+lover encouragement, and dog lover thank-you. By default the helper writes to a
+timestamped
 `docs/evidence/generated-card-comparisons/production-text-workflow-YYYYMMDD-HHMMSS`
 directory. Pass `-OutputDir` only when you intentionally want a stable evidence
 path.

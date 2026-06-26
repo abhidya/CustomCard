@@ -27,6 +27,10 @@ repeatable print output.
   contract used by both the app generator and benchmark loop. Put template
   variables, safe-field geometry, artwork guards, and workflow-input metadata
   there first so the two execution paths do not drift.
+- `local-production-text` now plans deterministic production fixtures for the
+  original sunburst typography baseline plus aquarium lover, koi fish lover, and
+  dog lover requests. These fixtures exercise specific recipient interests while
+  keeping exact copy out of the artwork prompts.
 - `executeLocalComfyUiImage` now exposes text/layout variables to Comfy workflow
   templates:
   - `headline_text`, `body_text`
@@ -260,6 +264,21 @@ Comfy template variables exposed by the local adapter include:
   - Defaults to a timestamped evidence directory and accepts checkpoint/sampler
     overrides for quick candidate comparisons.
 
+## Production Benchmark Inputs
+
+The production-text phase uses fixed story fixtures so model/workflow changes
+can be compared without LLM prompt-writer variance:
+
+- `folded-card-sunburst-typography`: original abstract sympathy/support
+  typography stress test.
+- `aquarium-lover-birthday`: aquarium plants, bubbles, tiny fish mark, and
+  birthday copy.
+- `koi-fish-lover-encouragement`: koi/ripple stationery for encouragement.
+- `dog-lover-thank-you`: paw/collar-tag stationery for a thank-you card.
+
+Each fixture defines all four panels, exact front/interior copy, panel-specific
+artwork hints, and a sparse no-text back-cover contract.
+
 ## Gates Before Production Default
 
 1. Install `CustomCardTextComposer` into the target Comfy runtime with
@@ -292,6 +311,10 @@ every candidate as blocked after applying manual visual grades.
 - Keep soft text-hug safe fields and artwork guards, but tune per-panel
   typography scale and field merging so body copy stays readable without
   looking pasted on.
+- Run and manually grade the expanded production-text fixture matrix
+  (`folded-card-sunburst-typography`, `aquarium-lover-birthday`,
+  `koi-fish-lover-encouragement`, `dog-lover-thank-you`) before treating the
+  aggregate as representative of customer requests.
 - Test a flatter illustration/stationery checkpoint, masks, or stricter workflow
   controls so the surrounding artwork stays restrained instead of dense
   ornamental fill or object/mockup scenes.
