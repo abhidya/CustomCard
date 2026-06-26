@@ -427,7 +427,6 @@ function buildCoverageMarkdown(aggregate) {
       item.recommendation
     ].map(markdownCell).join(" | ").replace(/^/, "| ").replace(/$/, " |"));
   }
-  lines.push("");
   return `${lines.join("\n")}\n`;
 }
 

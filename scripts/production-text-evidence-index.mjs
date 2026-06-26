@@ -15,6 +15,7 @@ if (isMainModule()) {
     rerunPlans: result.rerunPlans.length,
     plannerPreflights: result.plannerPreflights.length,
     readinessReports: result.readinessReports.length,
+    modelCoverageReports: result.modelCoverageReports.length,
     manualGradeChecklists: result.manualGradeChecklists.length,
     benchmarkSummaries: result.benchmarkSummaries.length,
     aggregates: result.aggregates.length
@@ -44,6 +45,11 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     .map(readinessEntry)
     .filter(Boolean)
     .sort(newestFirst);
+  const modelCoverageReports = files
+    .filter((file) => basename(file) === "local-model-coverage.json")
+    .map(modelCoverageEntry)
+    .filter(Boolean)
+    .sort(newestFirst);
   const preflights = files
     .filter((file) => basename(file) === "production-text-preflight.json")
     .map(preflightEntry)
@@ -71,6 +77,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
   const latestRerunPlan = rerunPlans[0];
   const latestPlannerPreflight = plannerPreflights[0];
   const latestReadiness = readinessReports[0];
+  const latestModelCoverage = modelCoverageReports[0];
   const latestAggregate = aggregates.find((entry) => entry.kind === "llm-planned") || aggregates[0];
   const latestBenchmark = benchmarkSummaries.find((entry) => entry.llmGeneratedRuns > 0) || benchmarkSummaries[0];
   const latestPreflight = preflights[0];
@@ -87,6 +94,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
   const findings = buildFindings({
     latestPlannerPreflight,
     latestReadiness,
+    latestModelCoverage,
     latestAggregate,
     latestBenchmark,
     latestPreflight,
@@ -95,6 +103,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
   const nextSteps = buildNextSteps({
     latestPlannerPreflight,
     latestReadiness,
+    latestModelCoverage,
     latestAggregate,
     latestBenchmark,
     latestPreflight,
@@ -109,6 +118,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     scanMode,
     latest: {
       readiness: latestReadiness?.path || "",
+      modelCoverage: latestModelCoverage?.path || "",
       rerunPlan: latestRerunPlan?.path || "",
       plannerPreflight: latestPlannerPreflight?.path || "",
       preflight: latestPreflight?.path || "",
@@ -121,6 +131,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     rerunPlans,
     plannerPreflights,
     readinessReports,
+    modelCoverageReports,
     preflights,
     manualGradeChecklists,
     aggregates,
@@ -184,6 +195,7 @@ function isEvidenceCandidate(filePath) {
   const name = basename(filePath);
   const rel = relativePath(filePath);
   return name === "production-text-rerun-plan.json" ||
+    name === "local-model-coverage.json" ||
     name === "production-text-readiness.json" ||
     name === "production-text-planner-preflight.json" ||
     name === "production-text-preflight.json" ||
@@ -255,6 +267,42 @@ function readinessEntry(filePath) {
     smallPlannerActive: (payload.activePlannerEndpoints || payload.plannerEndpoints || [])
       .some((endpoint) => endpoint.reachable && endpoint.smallPlanner),
     nextSteps: payload.nextSteps || []
+  };
+}
+
+function modelCoverageEntry(filePath) {
+  const payload = readJson(filePath);
+  if (!payload) return undefined;
+  const recommended = Array.isArray(payload.recommendedCoverage) ? payload.recommendedCoverage : [];
+  const productionPlannerCandidates = recommended.filter((item) =>
+    /planner|planning/i.test(`${item.id || ""} ${item.role || ""}`) && !/qwen3-4b|smoke/i.test(String(item.id || ""))
+  );
+  const installedProductionPlanners = productionPlannerCandidates.filter((item) => item.installed).map((item) => item.id);
+  const evaluatedProductionPlanners = productionPlannerCandidates.filter((item) => item.evaluated).map((item) => item.id);
+  const unevaluatedProductionPlanners = productionPlannerCandidates
+    .filter((item) => item.installed && !item.evaluated)
+    .map((item) => item.id);
+  const missingProductionPlanners = productionPlannerCandidates.filter((item) => !item.installed).map((item) => item.id);
+  return {
+    path: relativePath(filePath),
+    createdAtIso: payload.createdAtIso || fileMtime(filePath),
+    status: unevaluatedProductionPlanners.length || missingProductionPlanners.length ? "action-needed" : "covered",
+    promotionReady: false,
+    localModelRoot: payload.localModelRoot || "",
+    comfyModelsRoot: payload.comfyModelsRoot || "",
+    installedModelFiles: Number(payload.totals?.installedModelFiles || 0),
+    recommendedInstalled: Number(payload.totals?.recommendedInstalled || 0),
+    recommendedEvaluated: Number(payload.totals?.recommendedEvaluated || 0),
+    recommendedMissing: Number(payload.totals?.recommendedMissing || 0),
+    installedProductionPlanners,
+    evaluatedProductionPlanners,
+    unevaluatedProductionPlanners,
+    missingProductionPlanners,
+    pullQueue: (payload.pullQueue || []).map((item) => ({
+      id: item.id || "",
+      pull: item.pull || "",
+      nextAction: item.nextAction || ""
+    })).filter((item) => item.id)
   };
 }
 
@@ -364,7 +412,15 @@ function benchmarkSummaryEntry(filePath) {
   };
 }
 
-function buildFindings({ latestPlannerPreflight, latestReadiness, latestAggregate, latestBenchmark, latestPreflight, latestManualGradeChecklist }) {
+function buildFindings({
+  latestPlannerPreflight,
+  latestReadiness,
+  latestModelCoverage,
+  latestAggregate,
+  latestBenchmark,
+  latestPreflight,
+  latestManualGradeChecklist
+}) {
   const findings = [];
   if (latestPreflight?.liveComfyReachable && latestPreflight?.liveNodeAvailable) {
     findings.push("Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.");
@@ -380,6 +436,15 @@ function buildFindings({ latestPlannerPreflight, latestReadiness, latestAggregat
   }
   if (latestReadiness && !latestReadiness.productionSuitablePlannerReachable) {
     findings.push("No production-suitable planner endpoint is reachable/configured in the latest readiness report.");
+  }
+  if (latestModelCoverage?.installedProductionPlanners?.length) {
+    findings.push(`Installed production planner candidates found locally: ${latestModelCoverage.installedProductionPlanners.join(", ")}.`);
+  }
+  if (latestModelCoverage?.unevaluatedProductionPlanners?.length) {
+    findings.push(`Installed production planner candidates still need local production-text evaluation: ${latestModelCoverage.unevaluatedProductionPlanners.join(", ")}.`);
+  }
+  if (latestModelCoverage?.missingProductionPlanners?.length) {
+    findings.push(`Recommended production planner candidates still missing locally: ${latestModelCoverage.missingProductionPlanners.join(", ")}.`);
   }
   if (latestBenchmark?.totalRuns >= 3) {
     findings.push(`The latest LLM-planned benchmark covers ${latestBenchmark.totalRuns} customer request runs.`);
@@ -399,7 +464,15 @@ function buildFindings({ latestPlannerPreflight, latestReadiness, latestAggregat
   return findings;
 }
 
-function buildNextSteps({ latestPlannerPreflight, latestReadiness, latestAggregate, latestBenchmark, latestPreflight, latestManualGradeChecklist }) {
+function buildNextSteps({
+  latestPlannerPreflight,
+  latestReadiness,
+  latestModelCoverage,
+  latestAggregate,
+  latestBenchmark,
+  latestPreflight,
+  latestManualGradeChecklist
+}) {
   const steps = [];
   if (!latestPreflight?.liveComfyReachable || !latestPreflight?.liveNodeAvailable) {
     steps.push("Run production-text preflight with live Comfy and CustomCardTextComposer loaded.");
@@ -409,6 +482,12 @@ function buildNextSteps({ latestPlannerPreflight, latestReadiness, latestAggrega
   }
   if (!latestReadiness?.productionSuitablePlannerReachable) {
     steps.push("Run the planner preflight, then start or configure a production-suitable planner endpoint with 8192+ context before collecting promotion evidence.");
+  }
+  if (latestModelCoverage?.unevaluatedProductionPlanners?.length) {
+    steps.push(`Run production-text planner preflight and benchmark evidence against installed production planner candidate(s): ${latestModelCoverage.unevaluatedProductionPlanners.join(", ")}.`);
+  }
+  if (latestModelCoverage?.pullQueue?.length) {
+    steps.push(`Resolve local model pull queue if the installed planner is too slow: ${latestModelCoverage.pullQueue.map((item) => item.id).join(", ")}.`);
   }
   if (latestReadiness?.smallPlannerActive || latestBenchmark?.smallPlannerUsed) {
     steps.push("Keep Qwen3-4B/8B and other small planner runs as smoke or failure evidence only.");
@@ -449,6 +528,7 @@ function buildMarkdown(result) {
   lines.push(latestRow("Rerun Plan", result.rerunPlans[0], rerunPlanSummary));
   lines.push(latestRow("Planner", result.plannerPreflights[0], plannerSummary));
   lines.push(latestRow("Readiness", result.readinessReports[0], readinessSummary));
+  lines.push(latestRow("Model Coverage", result.modelCoverageReports[0], modelCoverageSummary));
   lines.push(latestRow("Preflight", result.preflights[0], preflightSummary));
   lines.push(latestRow("Manual Grades", result.manualGradeChecklists[0], manualGradeChecklistSummary));
   lines.push(latestRow("Aggregate", result.aggregates[0], aggregateSummary));
@@ -487,6 +567,10 @@ function latestRow(label, entry, summarize) {
 
 function readinessSummary(entry) {
   return `${entry.blockerCount} blocker(s); planner=${entry.activePlannerModels.join(", ") || "none"}`;
+}
+
+function modelCoverageSummary(entry) {
+  return `${entry.recommendedInstalled} recommended installed; unevaluated production planners=${entry.unevaluatedProductionPlanners.join(", ") || "none"}`;
 }
 
 function preflightSummary(entry) {

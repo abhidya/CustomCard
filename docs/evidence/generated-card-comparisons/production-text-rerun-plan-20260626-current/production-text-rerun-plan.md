@@ -1,6 +1,6 @@
 # Production Text Rerun Plan
 
-Created: 2026-06-26T23:24:06.638Z
+Created: 2026-06-26T23:44:17.163Z
 Status: rerun-required
 Gate: docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current/production-text-promotion-gate.json
 Evidence index: docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current/production-text-evidence-index.json
@@ -29,6 +29,13 @@ Do not use for promotion:
 - 4096-context planner runs
 - Reduced creative prompt contracts used only to fit small local models
 - -AllowSmallPlanner except when collecting explicit smoke/failure evidence
+
+## Local Model Coverage
+
+- Coverage report: docs/evidence/generated-card-comparisons/local-model-coverage-20260626-current/local-model-coverage.json
+- Installed production planners: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash
+- Installed but not evaluated: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash
+- Missing production planner fallbacks: qwen3-14b-instruct
 
 ## Commands
 

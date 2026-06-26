@@ -1,6 +1,6 @@
 # Production Text Evidence Index
 
-Created: 2026-06-26T23:24:18.659Z
+Created: 2026-06-26T23:44:22.851Z
 Status: blocked
 Promotion ready: no
 
@@ -9,6 +9,9 @@ Promotion ready: no
 - Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.
 - Latest planner preflight is blocked: smoke-only model koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S.
 - No production-suitable planner endpoint is reachable/configured in the latest readiness report.
+- Installed production planner candidates found locally: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
+- Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
+- Recommended production planner candidates still missing locally: qwen3-14b-instruct.
 - The latest LLM-planned benchmark covers 3 customer request runs.
 - Planner/theme adherence is still failing required terms: Nina, aquarium, Morgan, dog.
 - Latest aggregate is blocked: best score 38 across 3 run(s).
@@ -18,6 +21,8 @@ Promotion ready: no
 
 - Run production-text planner preflight with a production-suitable model, 8192+ context, and the full output budget.
 - Run the planner preflight, then start or configure a production-suitable planner endpoint with 8192+ context before collecting promotion evidence.
+- Run production-text planner preflight and benchmark evidence against installed production planner candidate(s): gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
+- Resolve local model pull queue if the installed planner is too slow: qwen3-14b-instruct.
 - Keep Qwen3-4B/8B and other small planner runs as smoke or failure evidence only.
 - Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.
 - Manually grade every production-text run and aggregate only after all candidates pass.
@@ -30,6 +35,7 @@ Promotion ready: no
 | Rerun Plan | [open](../production-text-rerun-plan-20260626-current/production-text-rerun-plan.json) | rerun-required | 8 failed requirement(s); commands=9 |
 | Planner | [open](../production-text-planner-preflight-20260626-current/production-text-planner-preflight.json) | blocked | smoke-only; model=koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S; context=4096 |
 | Readiness | [open](../production-text-readiness-20260626-current/production-text-readiness.json) | blocked | 5 blocker(s); planner=none |
+| Model Coverage | [open](../local-model-coverage-20260626-current/local-model-coverage.json) | action-needed | 9 recommended installed; unevaluated production planners=gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash |
 | Preflight | [open](../production-text-preflight-20260626T042126Z/production-text-preflight.json) | promotion-ready | comfy=yes node=yes |
 | Manual Grades | [open](../production-text-manual-grade-checklist-20260626-current/production-text-manual-grade-checklist.json) | blocked | 2/2 generated graded; manual-grades=3; missing=0; failed-before-image=1 |
 | Aggregate | [open](../benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json) | blocked | 3 run(s); best=38; ready=no |

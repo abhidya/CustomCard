@@ -41,6 +41,7 @@ export function buildProductionTextResearchRollup(args = {}) {
   const latest = index.latest || {};
   const latestPlanner = first(index.plannerPreflights);
   const latestReadiness = first(index.readinessReports);
+  const latestModelCoverage = first(index.modelCoverageReports);
   const latestPreflight = first(index.preflights);
   const latestBenchmark = first(index.benchmarkSummaries);
   const latestManualChecklist = first(index.manualGradeChecklists);
@@ -96,6 +97,19 @@ export function buildProductionTextResearchRollup(args = {}) {
         hasTextComposer: Boolean(latestReadiness?.hasTextComposer),
         blockers: latestReadiness?.blockers || []
       },
+      modelCoverage: {
+        path: latestModelCoverage?.path || "",
+        status: latestModelCoverage?.status || "missing",
+        installedModelFiles: latestModelCoverage?.installedModelFiles ?? 0,
+        recommendedInstalled: latestModelCoverage?.recommendedInstalled ?? 0,
+        recommendedEvaluated: latestModelCoverage?.recommendedEvaluated ?? 0,
+        recommendedMissing: latestModelCoverage?.recommendedMissing ?? 0,
+        installedProductionPlanners: latestModelCoverage?.installedProductionPlanners || [],
+        evaluatedProductionPlanners: latestModelCoverage?.evaluatedProductionPlanners || [],
+        unevaluatedProductionPlanners: latestModelCoverage?.unevaluatedProductionPlanners || [],
+        missingProductionPlanners: latestModelCoverage?.missingProductionPlanners || [],
+        pullQueue: latestModelCoverage?.pullQueue || []
+      },
       benchmark: {
         path: latestBenchmark?.path || "",
         totalRuns: latestBenchmark?.totalRuns ?? 0,
@@ -149,6 +163,7 @@ export function buildProductionTextResearchRollup(args = {}) {
       index,
       latestPlanner,
       latestReadiness,
+      latestModelCoverage,
       latestBenchmark,
       latestManualChecklist,
       latestAggregate,
@@ -169,6 +184,7 @@ function buildFindings({
   index,
   latestPlanner,
   latestReadiness,
+  latestModelCoverage,
   latestBenchmark,
   latestManualChecklist,
   latestAggregate,
@@ -187,6 +203,12 @@ function buildFindings({
   }
   if (latestReadiness && !latestReadiness.productionSuitablePlannerReachable) {
     findings.push("A production-suitable planner endpoint is not currently reachable.");
+  }
+  if (latestModelCoverage?.unevaluatedProductionPlanners?.length) {
+    findings.push(`Production planner files are installed but not yet evaluated in local production-text evidence: ${latestModelCoverage.unevaluatedProductionPlanners.join(", ")}.`);
+  }
+  if (latestModelCoverage?.missingProductionPlanners?.length) {
+    findings.push(`Optional production planner pull queue remains: ${latestModelCoverage.missingProductionPlanners.join(", ")}.`);
   }
   if (latestBenchmark?.smallPlannerUsed) {
     findings.push("The latest LLM-planned matrix is smoke/failure evidence because it used a known-small planner.");
@@ -232,6 +254,7 @@ function buildMarkdown(result) {
   lines.push(evidenceRow("Comfy text composer", result.evidenceSummary.liveComfyTextComposerProof, (item) => `comfy=${yesNo(item.liveComfyReachable)} node=${yesNo(item.liveNodeAvailable)}`));
   lines.push(evidenceRow("Planner", result.evidenceSummary.planner, (item) => `${item.classification || "n/a"} ${item.activeModel || "n/a"}; context=${item.reportedContextTokens ?? "n/a"}; max=${item.maxOutputTokens ?? "n/a"}`));
   lines.push(evidenceRow("Readiness", result.evidenceSummary.readiness, (item) => `production planner reachable=${yesNo(item.productionSuitablePlannerReachable)}; blockers=${item.blockers.length}`));
+  lines.push(evidenceRow("Model coverage", result.evidenceSummary.modelCoverage, (item) => `${item.recommendedInstalled} recommended installed; unevaluated planners=${item.unevaluatedProductionPlanners.join(", ") || "none"}`));
   lines.push(evidenceRow("Benchmark", result.evidenceSummary.benchmark, (item) => `${item.completedRuns}/${item.totalRuns} completed; failed=${item.failedRuns}; missing=${item.missingMustInclude.join(", ") || "none"}`));
   lines.push(evidenceRow("Manual grades", result.evidenceSummary.manualGrades, (item) => `${item.gradedGeneratedRuns}/${item.gradableRuns} generated graded; blocked=${item.blockedGrades}; failed-before-image=${item.failedBeforeImageGeneration}`));
   lines.push(evidenceRow("Aggregate", result.evidenceSummary.aggregate, (item) => `${item.totalRuns} run(s); best=${item.bestScore ?? "n/a"}; statuses=${JSON.stringify(item.statuses)}`));

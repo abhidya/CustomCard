@@ -38,6 +38,7 @@ export function buildProductionTextRerunPlan(args = {}) {
       details: item.details || {}
     }));
   const latestPlanner = index.plannerPreflights?.[0] || {};
+  const latestModelCoverage = index.modelCoverageReports?.[0] || {};
   const latestBenchmark = index.benchmarkSummaries?.[0] || {};
   const latestAggregate = (index.aggregates || []).find((entry) => entry.kind === "llm-planned") || index.aggregates?.[0] || {};
   const recommended = {
@@ -75,6 +76,10 @@ export function buildProductionTextRerunPlan(args = {}) {
       plannerClassification: latestPlanner.classification || "",
       plannerModel: latestPlanner.activeModel || "",
       plannerContextTokens: latestPlanner.reportedContextTokens ?? null,
+      localModelCoverage: latestModelCoverage.path || "",
+      installedProductionPlanners: latestModelCoverage.installedProductionPlanners || [],
+      unevaluatedProductionPlanners: latestModelCoverage.unevaluatedProductionPlanners || [],
+      missingProductionPlanners: latestModelCoverage.missingProductionPlanners || [],
       latestBenchmark: latestBenchmark.path || gate.latest?.benchmark || "",
       latestAggregate: latestAggregate.path || gate.latest?.aggregate || "",
       bestScore: latestAggregate.bestScore ?? null
@@ -205,6 +210,15 @@ function buildMarkdown(plan) {
   lines.push("Do not use for promotion:");
   for (const item of plan.productionPlannerContract.disallowedForPromotion) {
     lines.push(`- ${item}`);
+  }
+  if (plan.currentEvidence.localModelCoverage) {
+    lines.push("");
+    lines.push("## Local Model Coverage");
+    lines.push("");
+    lines.push(`- Coverage report: ${plan.currentEvidence.localModelCoverage}`);
+    lines.push(`- Installed production planners: ${plan.currentEvidence.installedProductionPlanners.join(", ") || "none"}`);
+    lines.push(`- Installed but not evaluated: ${plan.currentEvidence.unevaluatedProductionPlanners.join(", ") || "none"}`);
+    lines.push(`- Missing production planner fallbacks: ${plan.currentEvidence.missingProductionPlanners.join(", ") || "none"}`);
   }
   lines.push("");
   lines.push("## Commands");

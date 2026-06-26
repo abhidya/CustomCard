@@ -180,15 +180,25 @@ This report distinguishes generated runs that need visual grades from stories
 that failed before image generation, then records missing/invalid/blocked
 manual grades before aggregate or gate evidence is cited.
 
+Local model coverage before the tracked evidence index:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/local-model-coverage.mjs --output-dir docs/evidence/generated-card-comparisons/local-model-coverage-20260626-current
+```
+
+The coverage report separates installed production planner files from live
+endpoint readiness. Stage or commit this artifact before running the tracked
+evidence index if it should count in current production-text findings.
+
 Evidence index before deciding the next run:
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-evidence-index.mjs --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current
 ```
 
-The index scans tracked production-text planner preflight, readiness, Comfy
-preflight, benchmark, aggregate, and manual-grade evidence. Pass
-`--include-untracked` only for local scratch review.
+The index scans tracked production-text planner preflight, readiness, local
+model coverage, Comfy preflight, benchmark, aggregate, and manual-grade
+evidence. Pass `--include-untracked` only for local scratch review.
 
 Promotion gate before defaulting the workflow:
 
@@ -289,10 +299,16 @@ Latest live evidence:
   `docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current`
   - Blocks promotion because the 5001 `/models` probe is not currently
     reachable and the explicit Qwen3-4B/4096-context planner is smoke-only.
+- Current local model coverage:
+  `docs/evidence/generated-card-comparisons/local-model-coverage-20260626-current`
+  - Gemma 31B, Magistral Small, and DeepSeek V4 Flash are installed production
+    planner candidates but still need local production-text evaluation.
+  - Qwen3 14B remains an optional missing fallback if installed planners are too
+    slow for routine benchmark loops.
 - Current rerun plan:
   `docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current`
   - Converts the 8 failed gate requirements into 9 ordered commands for the
-    next production-suitable planner pass.
+    next production-suitable planner pass and records local planner coverage.
 - Current manual grade checklist:
   `docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current`
   - Blocks promotion: 2 generated runs were graded and blocked, koi failed
@@ -300,8 +316,8 @@ Latest live evidence:
 - Current evidence index:
   `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current`
   - Tracks the current production-text evidence set, including planner
-    preflight and rerun plan, and keeps promotion blocked until the planner
-    endpoint and aggregate evidence pass.
+    preflight, local model coverage, and rerun plan, and keeps promotion blocked
+    until the planner endpoint and aggregate evidence pass.
 - Current promotion gate:
   `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current`
   - Passes live Comfy/text-composer proof and final-Comfy-image evidence.

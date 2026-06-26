@@ -62,6 +62,21 @@ describe("production text research rollup", () => {
           blockers: ["configured production planner endpoint is reachable"]
         }
       ],
+      modelCoverageReports: [
+        {
+          path: "docs/evidence/generated-card-comparisons/local-model-coverage-current/local-model-coverage.json",
+          status: "action-needed",
+          installedModelFiles: 47,
+          recommendedInstalled: 9,
+          recommendedEvaluated: 3,
+          recommendedMissing: 1,
+          installedProductionPlanners: ["gemma-4-31b-it", "magistral-small-2509"],
+          evaluatedProductionPlanners: [],
+          unevaluatedProductionPlanners: ["gemma-4-31b-it", "magistral-small-2509"],
+          missingProductionPlanners: ["qwen3-14b-instruct"],
+          pullQueue: [{ id: "qwen3-14b-instruct" }]
+        }
+      ],
       benchmarkSummaries: [
         {
           path: "docs/evidence/generated-card-comparisons/production-text-workflow-current/production-text-workflow-summary.json",
@@ -166,9 +181,17 @@ describe("production text research rollup", () => {
       failedBeforeImageGeneration: 1,
       blockedGrades: 3
     });
+    expect(report.evidenceSummary.modelCoverage).toMatchObject({
+      status: "action-needed",
+      installedProductionPlanners: ["gemma-4-31b-it", "magistral-small-2509"],
+      unevaluatedProductionPlanners: ["gemma-4-31b-it", "magistral-small-2509"],
+      missingProductionPlanners: ["qwen3-14b-instruct"]
+    });
     expect(report.findings.join("\n")).toContain("known-small planner");
     expect(report.findings.join("\n")).toContain("switch the runtime, not the prompt quality");
     expect(report.findings.join("\n")).toContain("Reduced creative prompt contracts are disallowed");
+    expect(report.findings.join("\n")).toContain("Production planner files are installed but not yet evaluated");
+    expect(report.findings.join("\n")).toContain("Optional production planner pull queue remains");
     expect(report.findings.join("\n")).toContain("Promotion gate currently fails 2 requirement");
     expect(report.nextSteps).toEqual(
       expect.arrayContaining([

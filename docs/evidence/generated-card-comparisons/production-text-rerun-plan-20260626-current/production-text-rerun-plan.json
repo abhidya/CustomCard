@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-26T23:24:06.638Z",
+  "createdAtIso": "2026-06-26T23:44:17.163Z",
   "status": "rerun-required",
   "promotionReady": false,
   "reportDir": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current",
@@ -12,6 +12,20 @@
     "plannerClassification": "smoke-only",
     "plannerModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
     "plannerContextTokens": 4096,
+    "localModelCoverage": "docs/evidence/generated-card-comparisons/local-model-coverage-20260626-current/local-model-coverage.json",
+    "installedProductionPlanners": [
+      "gemma-4-31b-it",
+      "magistral-small-2509",
+      "deepseek-v4-flash"
+    ],
+    "unevaluatedProductionPlanners": [
+      "gemma-4-31b-it",
+      "magistral-small-2509",
+      "deepseek-v4-flash"
+    ],
+    "missingProductionPlanners": [
+      "qwen3-14b-instruct"
+    ],
     "latestBenchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
     "latestAggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
     "bestScore": 38

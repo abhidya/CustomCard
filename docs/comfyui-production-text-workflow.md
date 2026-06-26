@@ -304,11 +304,16 @@ Comfy template variables exposed by the local adapter include:
     contract, exact rerun commands, and acceptance checks.
   - Keeps the recovery path aligned with production-suitable planner evidence
     instead of reduced prompt quality.
+- `scripts/local-model-coverage.mjs`
+  - Scans local model/runtime files, Comfy model files, and benchmark evidence.
+  - For production text, refresh it before the evidence index so installed but
+    unevaluated planner candidates such as Gemma 31B, Magistral Small, and
+    DeepSeek V4 Flash are tracked separately from live endpoint readiness.
 - `scripts/production-text-evidence-index.mjs`
   - Read-only evidence index for the production-text workflow.
-  - Scans tracked rerun plan, planner preflight, readiness, Comfy preflight,
-    benchmark, aggregate, and manual-grade evidence and writes one current
-    JSON/Markdown summary.
+  - Scans tracked rerun plan, planner preflight, readiness, local model
+    coverage, Comfy preflight, benchmark, aggregate, and manual-grade evidence
+    and writes one current JSON/Markdown summary.
   - Use `--include-untracked` only when intentionally reviewing local scratch
     evidence that should not be cited as committed promotion proof.
 - `scripts/production-text-research-rollup.mjs`
@@ -399,11 +404,14 @@ customer-theme quality.
    should not be satisfied by Qwen3-4B/8B smoke planners.
 6. Run `npm run comfy:production-text:rerun-plan -- --output-dir docs/evidence/generated-card-comparisons/production-text-rerun-plan-YYYYMMDD-current`
    to write the exact command chain for the next production-suitable rerun.
-7. Run `npm run comfy:production-text:evidence -- --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-YYYYMMDD-current`
+7. Run `npm run comfy:production-text:model-coverage -- --output-dir docs/evidence/generated-card-comparisons/local-model-coverage-YYYYMMDD-current`
+   to refresh installed/evaluated planner and Comfy model coverage. Commit or
+   stage this artifact before the tracked evidence index if it should count.
+8. Run `npm run comfy:production-text:evidence -- --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-YYYYMMDD-current`
    to refresh the tracked evidence index before deciding what to run next.
-8. Run `npm run comfy:production-text:gate -- --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-YYYYMMDD-current`
+9. Run `npm run comfy:production-text:gate -- --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-YYYYMMDD-current`
    and confirm every requirement passes before promoting.
-9. Run the production overlay workflow against the LLM-planned customer request
+10. Run the production overlay workflow against the LLM-planned customer request
    matrix through `tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl ...`
    and manually grade every run. Use `-AllowCompositorFixtureFallback` only for
    compositor/node smoke evidence.
@@ -432,11 +440,17 @@ planner files are installed locally, but no production-suitable planner endpoint
 is currently reachable/configured. The current rerun plan is
 `docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current`:
 it turns the 8 failed gate requirements into 9 ordered commands for the next
-production-suitable planner evidence pass. The current evidence index is
+production-suitable planner evidence pass and records the current local model
+coverage. The current local model coverage is
+`docs/evidence/generated-card-comparisons/local-model-coverage-20260626-current`;
+Gemma 31B, Magistral Small, and DeepSeek V4 Flash are installed but still need
+local production-text evaluation, while Qwen3 14B remains an optional missing
+fallback if installed planners are too slow. The current evidence index is
 `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current`;
-it aggregates the tracked rerun plan, planner preflight, readiness, Comfy
-preflight, benchmark, and manual-grade evidence and keeps promotion blocked for
-the same planner/model reasons. The current research rollup is
+it aggregates the tracked rerun plan, planner preflight, readiness, local model
+coverage, Comfy preflight, benchmark, and manual-grade evidence and keeps
+promotion blocked for the same planner/model reasons. The current research
+rollup is
 `docs/evidence/generated-card-comparisons/production-text-research-rollup-20260626-current`;
 it derives findings, failed gate requirements, evidence summary, and the next
 9 commands from the tracked index/gate/rerun artifacts. The current manual grade

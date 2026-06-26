@@ -66,6 +66,50 @@ describe("production text evidence index", () => {
       },
       commands: [{ step: 1 }, { step: 2 }]
     });
+    writeJson(join(root, "local-model-coverage.json"), {
+      createdAtIso: "2026-06-26T05:12:00.000Z",
+      localModelRoot: "D:\\models",
+      comfyModelsRoot: "D:\\ComfyUI\\models",
+      totals: {
+        installedModelFiles: 47,
+        recommendedInstalled: 9,
+        recommendedEvaluated: 3,
+        recommendedMissing: 1
+      },
+      recommendedCoverage: [
+        {
+          id: "qwen3-4b-instruct",
+          role: "fast local card-copy planner",
+          installed: true,
+          evaluated: true
+        },
+        {
+          id: "gemma-4-31b-it",
+          role: "higher-quality local card-copy planner",
+          installed: true,
+          evaluated: false
+        },
+        {
+          id: "magistral-small-2509",
+          role: "alternate local copy/planning family",
+          installed: true,
+          evaluated: false
+        },
+        {
+          id: "qwen3-14b-instruct",
+          role: "minimum local production-floor planner beneath Gemma 31B quality",
+          installed: false,
+          evaluated: false
+        }
+      ],
+      pullQueue: [
+        {
+          id: "qwen3-14b-instruct",
+          pull: "Qwen/Qwen3-14B-GGUF, Q4_K_M",
+          nextAction: "Pull only if Gemma 31B is too slow."
+        }
+      ]
+    });
     writeJson(join(root, "production-text-preflight.json"), {
       createdAtIso: "2026-06-26T04:00:00.000Z",
       status: "promotion-ready",
@@ -165,6 +209,7 @@ describe("production text evidence index", () => {
     expect(report.rerunPlans).toHaveLength(1);
     expect(report.plannerPreflights).toHaveLength(1);
     expect(report.readinessReports).toHaveLength(1);
+    expect(report.modelCoverageReports).toHaveLength(1);
     expect(report.manualGradeChecklists).toHaveLength(1);
     expect(report.plannerPreflights[0]).toMatchObject({
       activeModel: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
@@ -176,6 +221,12 @@ describe("production text evidence index", () => {
       status: "rerun-required",
       failedRequirements: ["planner preflight is production-ready", "manual aggregate is promotion-ready"],
       commandCount: 2
+    });
+    expect(report.modelCoverageReports[0]).toMatchObject({
+      status: "action-needed",
+      installedProductionPlanners: ["gemma-4-31b-it", "magistral-small-2509"],
+      unevaluatedProductionPlanners: ["gemma-4-31b-it", "magistral-small-2509"],
+      missingProductionPlanners: ["qwen3-14b-instruct"]
     });
     expect(report.aggregates[0]).toMatchObject({
       totalRuns: 2,
@@ -199,8 +250,12 @@ describe("production text evidence index", () => {
     });
     expect(report.findings.join("\n")).toContain("known-small smoke model");
     expect(report.findings.join("\n")).toContain("Latest planner preflight is blocked");
+    expect(report.findings.join("\n")).toContain("Installed production planner candidates found locally");
+    expect(report.findings.join("\n")).toContain("Installed production planner candidates still need local production-text evaluation");
     expect(report.findings.join("\n")).toContain("Latest manual grade checklist is blocked");
     expect(report.nextSteps.join("\n")).toContain("production-suitable planner endpoint");
+    expect(report.nextSteps.join("\n")).toContain("installed production planner candidate");
+    expect(report.nextSteps.join("\n")).toContain("local model pull queue");
     expect(report.nextSteps.join("\n")).toContain("planner preflight");
     expect(report.nextSteps.join("\n")).toContain("manual grade checklist blockers");
   });

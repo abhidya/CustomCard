@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-26T23:24:18.659Z",
+  "createdAtIso": "2026-06-26T23:44:22.851Z",
   "status": "blocked",
   "promotionReady": false,
   "evidenceRoot": "docs/evidence/generated-card-comparisons",
@@ -7,6 +7,7 @@
   "scanMode": "git-tracked",
   "latest": {
     "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
+    "modelCoverage": "docs/evidence/generated-card-comparisons/local-model-coverage-20260626-current/local-model-coverage.json",
     "rerunPlan": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current/production-text-rerun-plan.json",
     "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current/production-text-planner-preflight.json",
     "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626T042126Z/production-text-preflight.json",
@@ -18,6 +19,9 @@
     "Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.",
     "Latest planner preflight is blocked: smoke-only model koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S.",
     "No production-suitable planner endpoint is reachable/configured in the latest readiness report.",
+    "Installed production planner candidates found locally: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
+    "Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
+    "Recommended production planner candidates still missing locally: qwen3-14b-instruct.",
     "The latest LLM-planned benchmark covers 3 customer request runs.",
     "Planner/theme adherence is still failing required terms: Nina, aquarium, Morgan, dog.",
     "Latest aggregate is blocked: best score 38 across 3 run(s).",
@@ -26,6 +30,8 @@
   "nextSteps": [
     "Run production-text planner preflight with a production-suitable model, 8192+ context, and the full output budget.",
     "Run the planner preflight, then start or configure a production-suitable planner endpoint with 8192+ context before collecting promotion evidence.",
+    "Run production-text planner preflight and benchmark evidence against installed production planner candidate(s): gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
+    "Resolve local model pull queue if the installed planner is too slow: qwen3-14b-instruct.",
     "Keep Qwen3-4B/8B and other small planner runs as smoke or failure evidence only.",
     "Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.",
     "Manually grade every production-text run and aggregate only after all candidates pass.",
@@ -34,7 +40,7 @@
   "rerunPlans": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current/production-text-rerun-plan.json",
-      "createdAtIso": "2026-06-26T23:24:06.638Z",
+      "createdAtIso": "2026-06-26T23:44:17.163Z",
       "status": "rerun-required",
       "promotionReady": false,
       "failedRequirements": [
@@ -110,6 +116,154 @@
         "Start the configured local/hosted OpenAI-compatible planner endpoint before running promotion evidence.",
         "Run tools/start-local-card-planner.ps1 with 8192+ context and GPU/offload, use a hosted/self-hosted production planner, or point -LocalLlmBaseUrl at that endpoint.",
         "Run the full LLM-planned matrix with a production-suitable planner, manually grade every run, then aggregate."
+      ]
+    }
+  ],
+  "modelCoverageReports": [
+    {
+      "path": "docs/evidence/generated-card-comparisons/local-model-coverage-20260626-current/local-model-coverage.json",
+      "createdAtIso": "2026-06-26T23:44:01.722Z",
+      "status": "action-needed",
+      "promotionReady": false,
+      "localModelRoot": "D:\\models",
+      "comfyModelsRoot": "D:\\ComfyUI-Easy-Install\\ComfyUI-Easy-Install\\ComfyUI\\models",
+      "installedModelFiles": 47,
+      "recommendedInstalled": 9,
+      "recommendedEvaluated": 3,
+      "recommendedMissing": 1,
+      "installedProductionPlanners": [
+        "gemma-4-31b-it",
+        "magistral-small-2509",
+        "deepseek-v4-flash"
+      ],
+      "evaluatedProductionPlanners": [],
+      "unevaluatedProductionPlanners": [
+        "gemma-4-31b-it",
+        "magistral-small-2509",
+        "deepseek-v4-flash"
+      ],
+      "missingProductionPlanners": [
+        "qwen3-14b-instruct"
+      ],
+      "pullQueue": [
+        {
+          "id": "qwen3-14b-instruct",
+          "pull": "Qwen/Qwen3-14B-GGUF, Q4_K_M",
+          "nextAction": "Pull Qwen3 14B if Gemma 31B is too slow for routine benchmark loops; keep Qwen3 8B as smoke-only evidence."
+        }
+      ]
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/local-model-coverage-2026-06-26-after-downloads/local-model-coverage.json",
+      "createdAtIso": "2026-06-26T00:25:32.964Z",
+      "status": "action-needed",
+      "promotionReady": false,
+      "localModelRoot": "D:\\models",
+      "comfyModelsRoot": "D:\\ComfyUI-Easy-Install\\ComfyUI-Easy-Install\\ComfyUI\\models",
+      "installedModelFiles": 41,
+      "recommendedInstalled": 10,
+      "recommendedEvaluated": 2,
+      "recommendedMissing": 0,
+      "installedProductionPlanners": [
+        "gemma-4-31b-it",
+        "magistral-small-2509",
+        "deepseek-v4-flash",
+        "qwen3-8b-or-14b-instruct"
+      ],
+      "evaluatedProductionPlanners": [],
+      "unevaluatedProductionPlanners": [
+        "gemma-4-31b-it",
+        "magistral-small-2509",
+        "deepseek-v4-flash",
+        "qwen3-8b-or-14b-instruct"
+      ],
+      "missingProductionPlanners": [],
+      "pullQueue": []
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/local-model-coverage-2026-06-25-script-check/local-model-coverage.json",
+      "createdAtIso": "2026-06-26T00:01:36.046Z",
+      "status": "action-needed",
+      "promotionReady": false,
+      "localModelRoot": "D:\\models",
+      "comfyModelsRoot": "D:\\ComfyUI-Easy-Install\\ComfyUI-Easy-Install\\ComfyUI\\models",
+      "installedModelFiles": 35,
+      "recommendedInstalled": 7,
+      "recommendedEvaluated": 2,
+      "recommendedMissing": 3,
+      "installedProductionPlanners": [
+        "gemma-4-31b-it",
+        "magistral-small-2509",
+        "deepseek-v4-flash"
+      ],
+      "evaluatedProductionPlanners": [],
+      "unevaluatedProductionPlanners": [
+        "gemma-4-31b-it",
+        "magistral-small-2509",
+        "deepseek-v4-flash"
+      ],
+      "missingProductionPlanners": [
+        "qwen3-8b-or-14b-instruct"
+      ],
+      "pullQueue": [
+        {
+          "id": "qwen3-8b-or-14b-instruct",
+          "pull": "Qwen/Qwen3-8B-GGUF or Qwen/Qwen3-14B-GGUF, Q4_K_M",
+          "nextAction": "Pull one mid-tier Qwen if Gemma 31B is too slow for routine benchmark loops."
+        },
+        {
+          "id": "sdxl-base-or-card-checkpoint",
+          "pull": "SDXL base 1.0 or a rights-clean SDXL card/stationery checkpoint",
+          "nextAction": "Pull if DreamShaper keeps creating faces, fake text, or physical-card artifacts."
+        },
+        {
+          "id": "flux-schnell",
+          "pull": "ComfyUI-compatible FLUX.1 Schnell model stack",
+          "nextAction": "Optional after SDXL baseline; verify VRAM fit before making it benchmark-critical."
+        }
+      ]
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/local-model-coverage-2026-06-25/local-model-coverage.json",
+      "createdAtIso": "2026-06-26T00:01:13.016Z",
+      "status": "action-needed",
+      "promotionReady": false,
+      "localModelRoot": "D:\\models",
+      "comfyModelsRoot": "D:\\ComfyUI-Easy-Install\\ComfyUI-Easy-Install\\ComfyUI\\models",
+      "installedModelFiles": 35,
+      "recommendedInstalled": 7,
+      "recommendedEvaluated": 2,
+      "recommendedMissing": 3,
+      "installedProductionPlanners": [
+        "gemma-4-31b-it",
+        "magistral-small-2509",
+        "deepseek-v4-flash"
+      ],
+      "evaluatedProductionPlanners": [],
+      "unevaluatedProductionPlanners": [
+        "gemma-4-31b-it",
+        "magistral-small-2509",
+        "deepseek-v4-flash"
+      ],
+      "missingProductionPlanners": [
+        "qwen3-8b-or-14b-instruct"
+      ],
+      "pullQueue": [
+        {
+          "id": "qwen3-8b-or-14b-instruct",
+          "pull": "Qwen/Qwen3-8B-GGUF or Qwen/Qwen3-14B-GGUF, Q4_K_M",
+          "nextAction": "Pull one mid-tier Qwen if Gemma 31B is too slow for routine benchmark loops."
+        },
+        {
+          "id": "sdxl-base-or-card-checkpoint",
+          "pull": "SDXL base 1.0 or a rights-clean SDXL card/stationery checkpoint",
+          "nextAction": "Pull if DreamShaper keeps creating faces, fake text, or physical-card artifacts."
+        },
+        {
+          "id": "flux-schnell",
+          "pull": "ComfyUI-compatible FLUX.1 Schnell model stack",
+          "nextAction": "Optional after SDXL baseline; verify VRAM fit before making it benchmark-critical."
+        }
       ]
     }
   ],

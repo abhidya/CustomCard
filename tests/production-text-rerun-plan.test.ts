@@ -45,6 +45,14 @@ describe("production text rerun plan", () => {
           path: "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json"
         }
       ],
+      modelCoverageReports: [
+        {
+          path: "docs/evidence/generated-card-comparisons/local-model-coverage-20260626-current/local-model-coverage.json",
+          installedProductionPlanners: ["gemma-4-31b-it", "magistral-small-2509"],
+          unevaluatedProductionPlanners: ["gemma-4-31b-it", "magistral-small-2509"],
+          missingProductionPlanners: ["qwen3-14b-instruct"]
+        }
+      ],
       aggregates: [
         {
           kind: "llm-planned",
@@ -71,6 +79,12 @@ describe("production text rerun plan", () => {
     expect(plan.productionPlannerContract.minimumOpenWeightPlannerClass).toContain("14B+");
     expect(plan.productionPlannerContract.disallowedForPromotion.join("\n")).toContain("Qwen3-4B");
     expect(plan.productionPlannerContract.disallowedForPromotion.join("\n")).toContain("8B");
+    expect(plan.currentEvidence).toMatchObject({
+      localModelCoverage: "docs/evidence/generated-card-comparisons/local-model-coverage-20260626-current/local-model-coverage.json",
+      installedProductionPlanners: ["gemma-4-31b-it", "magistral-small-2509"],
+      unevaluatedProductionPlanners: ["gemma-4-31b-it", "magistral-small-2509"],
+      missingProductionPlanners: ["qwen3-14b-instruct"]
+    });
     expect(plan.commands.map((item) => item.title)).toEqual([
       "Start or configure production planner",
       "Write planner preflight evidence",

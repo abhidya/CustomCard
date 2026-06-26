@@ -34,6 +34,9 @@ Current generated production-text research rollup:
 Current production-text evidence index:
 `production-text-evidence-index-20260626-current/production-text-evidence-index.md`.
 
+Current production-text local model coverage:
+`local-model-coverage-20260626-current/local-model-coverage.md`.
+
 Current production-text planner preflight:
 `production-text-planner-preflight-20260626-current/production-text-planner-preflight.md`.
 
