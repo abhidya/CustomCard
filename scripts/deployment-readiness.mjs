@@ -137,10 +137,6 @@ const checks = [
   checkIncludes("vercel", "vercel-static-api-routing", contents.vercel, [
     '"buildCommand": "npm run build"',
     '"outputDirectory": "dist"',
-    '"source": "/api/artifacts/(.*)"',
-    '"destination": "/api/artifacts?objectKey=$1"',
-    '"source": "/api/(.*)"',
-    '"destination": "/api/$1"',
     '"source": "/oauth/callback"',
     '"destination": "/api/oauth/callback"',
     '"destination": "/index.html"'

@@ -645,8 +645,6 @@ describe("production infrastructure contract", () => {
     });
     expect(vercel.rewrites).toEqual([
       { source: "/robots.txt", destination: "/api/robots" },
-      { source: "/api/artifacts/(.*)", destination: "/api/artifacts?objectKey=$1" },
-      { source: "/api/(.*)", destination: "/api/$1" },
       { source: "/oauth/callback", destination: "/api/oauth/callback" },
       { source: "/((?!api/).*)", destination: "/index.html" }
     ]);
