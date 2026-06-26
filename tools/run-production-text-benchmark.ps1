@@ -18,6 +18,14 @@ param(
   [string]$LocalLlmApiKey = "",
   [int]$LocalLlmPreflightTimeoutSec = 5,
   [int]$PlannerMaxTokens = 3200,
+  [int]$PlannerContextSize = 8192,
+  [string]$ProductionPlannerModelPath = "D:\models\gemma-4-31B-it-Q4_K_M.gguf",
+  [int]$PlannerPort = 5003,
+  [int]$PlannerThreads = 8,
+  [int]$PlannerGpuLayers = 0,
+  [int]$PlannerStartupTimeoutSec = 120,
+  [switch]$NoAutoStartPlanner,
+  [switch]$AllowUnknownProductionPlanner,
   [switch]$DryRun,
   [switch]$AllowCompositorFixtureFallback,
   [switch]$AllowSmallPlanner,
@@ -29,7 +37,9 @@ $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 $ResolvedWorkflowPath = Resolve-Path (Join-Path $RepoRoot $WorkflowPath)
 $NodeWrapper = Join-Path $PSScriptRoot "node.ps1"
 $PreflightScript = Join-Path $RepoRoot "scripts\comfyui-production-text-preflight.mjs"
+$PlannerPreflightScript = Join-Path $RepoRoot "scripts\production-text-planner-preflight.mjs"
 $BenchmarkScript = Join-Path $RepoRoot "scripts\model-benchmark-loop.mjs"
+$StartPlannerScript = Join-Path $PSScriptRoot "start-local-card-planner.ps1"
 
 if ([string]::IsNullOrWhiteSpace($OutputDir)) {
   $Stamp = (Get-Date).ToUniversalTime().ToString("yyyyMMdd-HHmmss")
@@ -101,34 +111,6 @@ function Get-FirstUsableEnvValue {
   return ""
 }
 
-function Resolve-LocalLlmModelsUrl {
-  param([string]$BaseUrl)
-
-  try {
-    $Builder = [System.UriBuilder]$BaseUrl
-  } catch {
-    throw "Local LLM base URL is invalid: $BaseUrl"
-  }
-
-  $HostName = $Builder.Host.ToLowerInvariant()
-  $AllowedHosts = @("localhost", "127.0.0.1", "::1", "0.0.0.0")
-  if ($Builder.Scheme -ne "http" -or -not ($AllowedHosts -contains $HostName)) {
-    throw "Local LLM base URL must be a localhost HTTP URL, got $BaseUrl"
-  }
-
-  $Path = $Builder.Path.TrimEnd("/")
-  if ($Path.EndsWith("/chat/completions")) {
-    $Path = $Path.Substring(0, $Path.Length - "/chat/completions".Length).TrimEnd("/")
-  }
-  if (-not $Path.EndsWith("/v1")) {
-    $Path = "$Path/v1".Replace("//", "/")
-  }
-  $Builder.Path = "$($Path.TrimStart("/"))/models"
-  $Builder.Query = ""
-  $Builder.Fragment = ""
-  return $Builder.Uri.AbsoluteUri
-}
-
 $ResolvedLocalLlmBaseUrl = Get-FirstUsableEnvValue @(
   "CUSTOMCARD_LOCAL_LLM_BASE_URL",
   "LMSTUDIO_BASE_URL",
@@ -136,8 +118,30 @@ $ResolvedLocalLlmBaseUrl = Get-FirstUsableEnvValue @(
 )
 $HasLocalLlm = Test-UsableEnvValue $ResolvedLocalLlmBaseUrl
 
+if (-not $HasLocalLlm -and -not $AllowCompositorFixtureFallback -and -not $NoAutoStartPlanner) {
+  if ((Test-Path -LiteralPath $StartPlannerScript) -and (Test-Path -LiteralPath $ProductionPlannerModelPath)) {
+    Write-Host "Local LLM planner: auto-starting production planner $ProductionPlannerModelPath on port $PlannerPort"
+    & powershell -NoProfile -ExecutionPolicy Bypass -File $StartPlannerScript `
+      -ModelPath $ProductionPlannerModelPath `
+      -Port $PlannerPort `
+      -ContextSize $PlannerContextSize `
+      -Threads $PlannerThreads `
+      -GpuLayers $PlannerGpuLayers `
+      -StartupTimeoutSec $PlannerStartupTimeoutSec
+    if ($LASTEXITCODE -ne 0) {
+      exit $LASTEXITCODE
+    }
+    $ResolvedLocalLlmBaseUrl = "http://127.0.0.1:$PlannerPort/v1"
+    $env:CUSTOMCARD_LOCAL_LLM_BASE_URL = $ResolvedLocalLlmBaseUrl
+    if ([string]::IsNullOrWhiteSpace($LocalLlmModel)) {
+      $env:CUSTOMCARD_LOCAL_LLM_MODEL = "koboldcpp/$(Split-Path -Leaf $ProductionPlannerModelPath)"
+    }
+    $HasLocalLlm = $true
+  }
+}
+
 if (-not $HasLocalLlm -and -not $AllowCompositorFixtureFallback) {
-  [Console]::Error.WriteLine("local-production-text requires a local LLM for the LLM-planned customer request matrix. Pass -LocalLlmBaseUrl http://127.0.0.1:1234 or -LocalLlmBaseUrl http://127.0.0.1:1234/v1 and -LocalLlmModel <model>, set CUSTOMCARD_LOCAL_LLM_BASE_URL/LMSTUDIO_BASE_URL/KOBOLDCPP_BASE_URL, or pass -AllowCompositorFixtureFallback to run only the structural compositor fixture.")
+  [Console]::Error.WriteLine("local-production-text requires a production-suitable LLM planner for the LLM-planned customer request matrix. Let this script auto-start $ProductionPlannerModelPath, pass -LocalLlmBaseUrl and -LocalLlmModel for a stronger hosted/self-hosted endpoint, set CUSTOMCARD_LOCAL_LLM_BASE_URL/LMSTUDIO_BASE_URL/KOBOLDCPP_BASE_URL, or pass -AllowCompositorFixtureFallback to run only the structural compositor fixture.")
   exit 2
 }
 
@@ -157,32 +161,42 @@ if ($DryRun) {
 
 if ($HasLocalLlm -and -not $DryRun) {
   try {
-    $LocalLlmModelsUrl = Resolve-LocalLlmModelsUrl $ResolvedLocalLlmBaseUrl
     $LocalLlmApiKeyValue = Get-FirstUsableEnvValue @(
       "CUSTOMCARD_LOCAL_LLM_API_KEY",
       "LMSTUDIO_API_KEY",
       "KOBOLDCPP_API_KEY"
     )
-    $Headers = @{}
-    if (Test-UsableEnvValue $LocalLlmApiKeyValue) {
-      $Headers["Authorization"] = "Bearer $LocalLlmApiKeyValue"
-    }
-    Write-Host "Local LLM preflight: $LocalLlmModelsUrl"
-    $ModelsResponse = Invoke-RestMethod -Uri $LocalLlmModelsUrl -Headers $Headers -TimeoutSec $LocalLlmPreflightTimeoutSec
     $PlannerModelName = Get-FirstUsableEnvValue @(
       "CUSTOMCARD_LOCAL_LLM_MODEL",
       "LMSTUDIO_MODEL",
       "KOBOLDCPP_MODEL"
     )
-    if (-not (Test-UsableEnvValue $PlannerModelName) -and $null -ne $ModelsResponse.data -and $ModelsResponse.data.Count -gt 0) {
-      $PlannerModelName = [string]$ModelsResponse.data[0].id
+    $PlannerPreflightArgs = @(
+      $PlannerPreflightScript,
+      "--base-url", $ResolvedLocalLlmBaseUrl,
+      "--timeout-ms", [string]($LocalLlmPreflightTimeoutSec * 1000),
+      "--max-output-tokens", [string]$PlannerMaxTokens,
+      "--reported-context-tokens", [string]$PlannerContextSize
+    )
+    if (Test-UsableEnvValue $PlannerModelName) {
+      $PlannerPreflightArgs += @("--model", $PlannerModelName)
     }
-    if (-not $AllowSmallPlanner -and $PlannerModelName -match "(?i)(^|[-_/])(1\.5b|3b|4b|7b)([-_/]|$)") {
-      [Console]::Error.WriteLine("Local LLM planner '$PlannerModelName' is too small for the full production card-copy contract. Use a stronger planner such as D:\models\gemma-4-31B-it-Q4_K_M.gguf or a cloud/self-hosted model with enough context, or pass -AllowSmallPlanner for exploratory failure evidence only.")
-      exit 4
+    if (Test-UsableEnvValue $LocalLlmApiKeyValue) {
+      $PlannerPreflightArgs += @("--api-key", $LocalLlmApiKeyValue)
+    }
+    if ($AllowSmallPlanner) {
+      $PlannerPreflightArgs += "--allow-small"
+    }
+    if ($AllowUnknownProductionPlanner) {
+      $PlannerPreflightArgs += "--allow-unknown-production-model"
+    }
+    Write-Host "Local LLM production planner preflight: $ResolvedLocalLlmBaseUrl"
+    & powershell -NoProfile -ExecutionPolicy Bypass -File $NodeWrapper @PlannerPreflightArgs
+    if ($LASTEXITCODE -ne 0) {
+      exit $LASTEXITCODE
     }
   } catch {
-    [Console]::Error.WriteLine("Local LLM preflight failed. Start the OpenAI-compatible local text server, verify -LocalLlmBaseUrl, or use -DryRun for planning only. $($_.Exception.Message)")
+    [Console]::Error.WriteLine("Local LLM production planner preflight failed. Start a production-suitable OpenAI-compatible text server, verify -LocalLlmBaseUrl, or use -DryRun for planning only. $($_.Exception.Message)")
     exit 3
   }
 }

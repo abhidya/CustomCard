@@ -90,7 +90,7 @@ describe("model benchmark typography experiment", () => {
           id: "text-local-openai-compatible",
           label: "Local OpenAI-compatible chat",
           adapterId: "local-openai-compatible-chat",
-          model: "local-qwen-card-copy",
+          model: "koboldcpp/gemma-4-31B-it-Q4_K_M",
           configured: true
         }
       ],

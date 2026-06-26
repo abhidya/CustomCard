@@ -288,6 +288,12 @@ Comfy template variables exposed by the local adapter include:
     quality, local model inventory, and active planner endpoint suitability.
   - Treats known-small planners such as Qwen3-4B as smoke/failure evidence, not
     production evidence.
+- `scripts/production-text-planner-preflight.mjs`
+  - Checks the active OpenAI-compatible planner before benchmark work.
+  - Requires a production-suitable model class, a full output budget, and an
+    8192+ intended context budget for promotion evidence.
+  - Allows Qwen3-4B/4096-context runs only when `--allow-small` is explicit, and
+    still reports them as smoke/failure evidence instead of production-ready.
 - `scripts/production-text-evidence-index.mjs`
   - Read-only evidence index for the production-text workflow.
   - Scans tracked readiness, preflight, benchmark, aggregate, and manual-grade
@@ -310,15 +316,18 @@ Comfy template variables exposed by the local adapter include:
   - Accepts `-LocalLlmBaseUrl`, `-LocalLlmModel`, and `-LocalLlmApiKey` so the
     LLM-planned customer request matrix can be run without brittle shell env
     setup.
-  - Accepts either a root local LLM URL such as `http://127.0.0.1:5001` or a
-    `/v1` URL such as `http://127.0.0.1:5001/v1`, then probes `/v1/models`
-    before live runs.
-  - Accepts `-PlannerMaxTokens` for the completion cap while keeping the full
-    planner prompt. Use lower caps only to bound slow local decoding, not to
-    shrink the creative contract.
+  - Auto-starts the default Gemma 31B planner on port `5003` when no planner URL
+    is configured and the local model files exist; pass `-NoAutoStartPlanner`
+    when a hosted/self-hosted endpoint should be used instead.
+  - Accepts either a root planner URL such as `http://127.0.0.1:5003` or a `/v1`
+    URL such as `http://127.0.0.1:5003/v1`, then runs the production planner
+    preflight before live runs.
+  - Accepts `-PlannerMaxTokens` and `-PlannerContextSize` while keeping the full
+    planner prompt. Do not shrink the creative contract to fit a 4096-context
+    local model.
   - Rejects known-small local planners such as Qwen3-4B for production
     evidence. Use `-AllowSmallPlanner` only for exploratory failure evidence.
-  - Fails fast when no local LLM is configured. Use
+  - Fails fast when no production planner is available. Use
     `-AllowCompositorFixtureFallback` only for the one-run structural
     compositor fixture.
   - Defaults to a timestamped evidence directory and accepts checkpoint/sampler
@@ -356,24 +365,27 @@ customer-theme quality.
    names.
 3. Run preflight with `--require-live true` and confirm
    `CustomCardTextComposer` is present in live `/object_info`.
-4. Run `npm run comfy:production-text:doctor -- --advisory` and confirm the
+4. Run `npm run comfy:production-text:planner -- --base-url ... --model ... --reported-context-tokens 8192 --max-output-tokens 3200`
+   and confirm the active planner is production-suitable. Qwen3-4B/4096-context
+   should be run only with `--allow-small` for failure evidence.
+5. Run `npm run comfy:production-text:doctor -- --advisory` and confirm the
    configured planner endpoint is reachable and production-suitable. The doctor
    should not be satisfied by the Qwen3-4B smoke planner.
-5. Run `npm run comfy:production-text:evidence -- --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-YYYYMMDD-current`
+6. Run `npm run comfy:production-text:evidence -- --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-YYYYMMDD-current`
    to refresh the tracked evidence index before deciding what to run next.
-6. Run `npm run comfy:production-text:gate -- --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-YYYYMMDD-current`
+7. Run `npm run comfy:production-text:gate -- --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-YYYYMMDD-current`
    and confirm every requirement passes before promoting.
-7. Run the production overlay workflow against the LLM-planned customer request
+8. Run the production overlay workflow against the LLM-planned customer request
    matrix through `tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl ...`
    and manually grade every run. Use `-AllowCompositorFixtureFallback` only for
    compositor/node smoke evidence.
-8. Add an overflow/contrast QA gate. Minimum acceptable gate:
+9. Add an overflow/contrast QA gate. Minimum acceptable gate:
    - all panels rendered
    - no text missing
    - no fake text in artwork-only areas
    - no people/mockup/object-scene leakage
    - text contrast meets print/readability threshold
-9. Promote only after aggregate benchmark evidence beats the current
+10. Promote only after aggregate benchmark evidence beats the current
    app-compositor baseline.
 
 Current status: gates 1, 3, and the readiness portion of 4 have current local
@@ -389,14 +401,14 @@ current promotion gate is
 `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current`;
 it passes live Comfy/text-composer and final-Comfy-image requirements, but fails
 readiness, production-suitable planner, no-small-planner, full matrix
-completion, must-include adherence, and manual aggregate requirements. Gate 7's
+completion, must-include adherence, and manual aggregate requirements. Gate 8's
 live LLM-planned
 matrix ran through KoboldCPP
 Qwen3-4B and local Comfy, then failed quality review: aquarium scored 38/100,
 dog scored 34/100, and koi failed before image generation because the local LLM
 returned truncated invalid JSON. The code now keeps full prompt quality and
 requires a stronger planner plus validated card-copy output before spending
-Comfy image work. Gate 8 still blocks promotion, and gate 9 is
+Comfy image work. Gate 9 still blocks promotion, and gate 10 is
 not satisfied because both the production-text candidate aggregate and the new
 LLM-planner aggregate rank every candidate as blocked after applying manual
 visual grades. The best structural compositor grade remains 72/100, but the

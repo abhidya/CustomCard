@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, extname, resolve } from "node:path";
+import { classifyProductionTextPlanner, isQualityPlanner, isSmallPlanner } from "./production-text-planner-policy.mjs";
 
 const repoRoot = resolve(import.meta.dirname, "..");
 const evidenceRoot = resolve(repoRoot, "docs/evidence/generated-card-comparisons");
@@ -199,13 +200,21 @@ async function probePlanner(baseUrl, timeoutMs) {
     const body = await response.json();
     const models = (body?.data || []).map((item) => String(item?.id || "")).filter(Boolean);
     const activeModel = models[0] || "";
+    const plannerClass = classifyProductionTextPlanner(activeModel);
     return {
       baseUrl,
       reachable: true,
       activeModel,
       models,
-      smallPlanner: isSmallPlanner(activeModel),
-      productionSuitable: isQualityPlanner(activeModel) && !isSmallPlanner(activeModel)
+      smallPlanner: plannerClass.smallPlanner,
+      productionSuitable: plannerClass.productionSuitable,
+      plannerClass: plannerClass.classification,
+      plannerPolicy: {
+        minContextTokens: plannerClass.minContextTokens,
+        recommendedOutputTokens: plannerClass.recommendedOutputTokens,
+        blockers: plannerClass.blockers,
+        warnings: plannerClass.warnings
+      }
     };
   } catch (error) {
     return {
@@ -263,10 +272,10 @@ function buildNextSteps({ blockers, modelInventory, plannerEndpoints, comfy, agg
     steps.push("Start the configured local/hosted OpenAI-compatible planner endpoint before running promotion evidence.");
   }
   if (blockerNames.has("configured production planner endpoint is production-suitable")) {
-    steps.push("Run tools/start-local-card-planner.ps1 with GPU/offload, use a hosted/self-hosted larger planner, or point -LocalLlmBaseUrl at that endpoint.");
+    steps.push("Run tools/start-local-card-planner.ps1 with 8192+ context and GPU/offload, use a hosted/self-hosted production planner, or point -LocalLlmBaseUrl at that endpoint.");
   }
   if (blockerNames.has("configured production planner is not a small smoke model")) {
-    steps.push("Switch the production planner URL away from Qwen3-4B/small smoke models; keep -AllowSmallPlanner only for exploratory failure evidence.");
+    steps.push("Switch the production planner URL away from Qwen3-4B/small smoke models; keep -AllowSmallPlanner only for exploratory failure evidence, not promotion.");
   }
   if (modelInventory.missingMidTierPlanner) {
     steps.push(modelInventory.recommendedNextPull);
@@ -329,16 +338,8 @@ function check(name, ok, required, details = {}) {
   return { name, ok: Boolean(ok), required: Boolean(required), details };
 }
 
-function isSmallPlanner(value) {
-  return /(^|[-_/])(?:1\.5b|3b|4b|7b)([-_/]|$)/i.test(String(value || ""));
-}
-
 function isPlannerModelFile(file) {
   return !/mmproj|vision|qwen3[-_]?vl|[-_/]vl[-_/]|textencoders?|image|flux|vae|clip/i.test(`${file.path} ${file.name}`);
-}
-
-function isQualityPlanner(value) {
-  return /gemma.*31b|magistral-small|deepseekv4|qwen3.*(?:8b|14b|30b|32b|235b)|gpt-|claude|gemini/i.test(String(value || ""));
 }
 
 function normalizeOpenAiBaseUrl(value) {

@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, resolve } from "node:path";
+import { isSmallPlanner } from "./production-text-planner-policy.mjs";
 
 const repoRoot = resolve(import.meta.dirname, "..");
 const defaultEvidenceRoot = resolve(repoRoot, "docs/evidence/generated-card-comparisons");
@@ -282,13 +283,13 @@ function buildNextSteps({ latestReadiness, latestAggregate, latestBenchmark, lat
     steps.push("Run production-text preflight with live Comfy and CustomCardTextComposer loaded.");
   }
   if (!latestReadiness?.productionSuitablePlannerReachable) {
-    steps.push("Start or configure a production-suitable planner endpoint before collecting promotion evidence.");
+    steps.push("Run the planner preflight, then start or configure a production-suitable planner endpoint with 8192+ context before collecting promotion evidence.");
   }
   if (latestReadiness?.smallPlannerActive || latestBenchmark?.smallPlannerUsed) {
     steps.push("Keep Qwen3-4B/small planner runs as smoke or failure evidence only.");
   }
   if (!latestBenchmark || latestBenchmark.completedRuns < 3 || latestBenchmark.failedRuns > 0) {
-    steps.push("Run the full aquarium/koi/dog LLM-planned production-text matrix with the stronger planner.");
+    steps.push("Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.");
   }
   if (!latestAggregate?.promotionReady) {
     steps.push("Manually grade every production-text run and aggregate only after all candidates pass.");
@@ -393,10 +394,6 @@ function countBy(values) {
 
 function unique(values) {
   return Array.from(new Set(values.filter(Boolean)));
-}
-
-function isSmallPlanner(value) {
-  return /(^|[-_/])(?:1\.5b|3b|4b|7b)([-_/]|$)/i.test(String(value || ""));
 }
 
 function newestFirst(a, b) {

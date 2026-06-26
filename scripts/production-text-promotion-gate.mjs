@@ -114,16 +114,16 @@ function buildNextSteps(requirements, indexedNextSteps) {
     steps.push("Run production-text live preflight with ComfyUI and CustomCardTextComposer loaded.");
   }
   if (failed.has("readiness doctor is promotion-ready") || failed.has("production-suitable planner endpoint is reachable")) {
-    steps.push("Run the readiness doctor after starting a production-suitable planner endpoint.");
+    steps.push("Run the planner preflight and readiness doctor after starting a production-suitable planner endpoint with 8192+ context.");
   }
   if (failed.has("no small smoke planner is active or used")) {
-    steps.push("Use Qwen3-4B only for smoke/failure evidence; run promotion evidence with the larger planner endpoint.");
+    steps.push("Use Qwen3-4B only for smoke/failure evidence; run promotion evidence with Gemma 31B, Magistral Small, Qwen3-8B-or-better, or a hosted/self-hosted production planner.");
   }
   if (failed.has("LLM-planned customer request matrix completed")) {
     steps.push("Run the full aquarium/koi/dog production-text matrix to completion.");
   }
   if (failed.has("planner preserved required terms and avoided forbidden terms")) {
-    steps.push("Keep the full prompt and retry/repair planner output until must_include and must_avoid checks pass before Comfy work.");
+    steps.push("Keep the full prompt and correct planner runtime; retry/repair planner output until must_include and must_avoid checks pass before Comfy work.");
   }
   if (failed.has("manual aggregate is promotion-ready")) {
     steps.push("Manually grade every run and regenerate the aggregate only after all candidates pass.");

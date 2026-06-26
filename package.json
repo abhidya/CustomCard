@@ -95,6 +95,7 @@
     "worker:provider:http": "node scripts/provider-http-worker.mjs",
     "comfy:models:setup": "node scripts/setup-comfyui-models.mjs",
     "comfy:production-text:preflight": "node scripts/comfyui-production-text-preflight.mjs",
+    "comfy:production-text:planner": "node scripts/production-text-planner-preflight.mjs",
     "comfy:production-text:doctor": "node scripts/production-text-readiness-doctor.mjs",
     "comfy:production-text:evidence": "node scripts/production-text-evidence-index.mjs",
     "comfy:production-text:gate": "node scripts/production-text-promotion-gate.mjs",

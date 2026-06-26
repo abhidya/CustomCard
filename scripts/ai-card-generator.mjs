@@ -3204,6 +3204,12 @@ function hasExternalNetworkEvent(events) {
 }
 
 function extractText(data) {
+  const finishReason = data?.choices?.[0]?.finish_reason ?? data?.choices?.[0]?.finishReason ?? data?.finish_reason;
+  if (String(finishReason || "").toLowerCase() === "length") {
+    throw new Error(
+      "AI text provider stopped with finish_reason=length before completing the card-copy JSON; use a production-suitable planner with 8192+ context/output budget instead of reducing the creative contract."
+    );
+  }
   const parsedMessage = data?.choices?.[0]?.message?.parsed;
   if (parsedMessage && typeof parsedMessage === "object") return JSON.stringify(parsedMessage);
   const responseOutputText = Array.isArray(data?.output)

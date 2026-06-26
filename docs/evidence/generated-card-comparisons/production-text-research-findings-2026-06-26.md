@@ -26,7 +26,8 @@ Production text should be planned by the card-copy LLM and rendered by ComfyUI:
 | `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live` | Blocked | Manual grades: aquarium 38/100, dog 34/100, koi 0/100. Promotion remains blocked by planner theme adherence and JSON reliability, not by Comfy text compositing. |
 | Card-copy contract follow-up | Implemented | The generator keeps the full planner prompt, passes benchmark `must_include`/`must_avoid` into the request, validates and retries missing required terms before Comfy, and preserves useful loose LLM JSON shapes instead of falling back to generic themes. |
 | `tools/run-production-text-benchmark.ps1` small-planner guard | Implemented | Production evidence now rejects known-small planners such as Qwen3-4B unless `-AllowSmallPlanner` is explicit. The 4B path remains useful for smoke/failure evidence, not promotion. |
-| `tools/start-local-card-planner.ps1` Gemma 31B attempt | Operationally blocked | Gemma 31B loaded at `http://127.0.0.1:5003/v1`, but CPU decoding did not finish the first benchmark planner response in a practical window even with `-PlannerMaxTokens 1800`. Use GPU/offload or a hosted/self-hosted larger planner for promotion evidence. |
+| `scripts/production-text-planner-preflight.mjs` | Implemented | Planner preflight now rejects Qwen3-4B/4096-context and reduced output caps for production evidence. It allows small planners only as explicit smoke/failure evidence and keeps the full creative contract. |
+| `tools/start-local-card-planner.ps1` Gemma 31B attempt | Operationally blocked | Gemma 31B loaded at `http://127.0.0.1:5003/v1`, but CPU decoding did not finish the first benchmark planner response in a practical window. Do not reduce prompt quality for promotion; use GPU/offload or a hosted/self-hosted larger planner with the full output budget. |
 | `docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current` | Blocked | Readiness doctor confirms ComfyUI and `CustomCardTextComposer` are live and higher-quality planner files are installed, but the discovered reachable planner is still Qwen3-4B on `5001` and no production-suitable endpoint is reachable/configured. |
 | `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current` | Blocked | Evidence index aggregates the tracked readiness, preflight, benchmark, aggregate, and manual-grade reports. It excludes untracked scratch by default and keeps promotion blocked by the small planner endpoint plus failed LLM-planned aggregate. |
 | `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current` | Blocked | Promotion gate passes live Comfy/text-composer and final-Comfy-image requirements, but fails readiness, production-suitable planner, no-small-planner, full matrix completion, must-include adherence, and manual aggregate requirements. |
@@ -71,13 +72,14 @@ For the installed higher-quality local planner:
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/start-local-card-planner.ps1 -Port 5003 -ContextSize 8192
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5003/v1 -LocalLlmModel koboldcpp/gemma-4-31B-it-Q4_K_M -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 1800
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-preflight.mjs --base-url http://127.0.0.1:5003/v1 --model koboldcpp/gemma-4-31B-it-Q4_K_M --reported-context-tokens 8192 --max-output-tokens 3200
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5003/v1 -LocalLlmModel koboldcpp/gemma-4-31B-it-Q4_K_M -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 3200 -PlannerContextSize 8192
 ```
 
 Gemma 31B loaded successfully on this machine but was too slow on CPU-only
 settings for a practical benchmark pass. The next promotion attempt should run
-the same full-quality prompt through GPU/offload or a hosted/self-hosted larger
-planner.
+the same full-quality prompt and 3200-token output budget through GPU/offload or
+a hosted/self-hosted larger planner.
 
 The wrapper accepts either a root local URL such as `http://127.0.0.1:5001` or
 a `/v1` URL such as `http://127.0.0.1:5001/v1`, then probes `/v1/models` before
@@ -93,6 +95,10 @@ Run `npm run comfy:production-text:evidence -- --output-dir docs/evidence/genera
 to refresh the tracked production-text evidence index. Add `--include-untracked`
 only when intentionally reviewing local scratch runs that should not be treated
 as promotion proof.
+
+Run `npm run comfy:production-text:planner -- --base-url ... --model ... --reported-context-tokens 8192 --max-output-tokens 3200`
+before any live production benchmark. This is the fast check that prevents a
+4096-context local model from turning the koi case into truncated JSON again.
 
 Run `npm run comfy:production-text:gate -- --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current --index-output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current`
 as the final promotion contract. Remove `--advisory` only when the current

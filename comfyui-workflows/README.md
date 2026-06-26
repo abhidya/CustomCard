@@ -149,6 +149,17 @@ The doctor checks the production workflow, live Comfy node, latest aggregate,
 local model inventory, and planner endpoint suitability. It should stay blocked
 when the only reachable planner is a Qwen3-4B smoke model.
 
+Planner runtime preflight:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-preflight.mjs --base-url http://127.0.0.1:5003/v1 --model koboldcpp/gemma-4-31B-it-Q4_K_M --reported-context-tokens 8192 --max-output-tokens 3200
+```
+
+This checks the planner model class, output cap, and intended context budget.
+Production evidence keeps the full creative contract and requires a
+production-suitable planner. Qwen3-4B/4096-context runs are smoke/failure
+evidence only.
+
 Evidence index before deciding the next run:
 
 ```powershell
@@ -172,7 +183,7 @@ adherence, and manual aggregate requirements all pass.
 Run a full-card benchmark through the production workflow:
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:1234/v1 -LocalLlmModel local-qwen-card-copy
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1
 ```
 
 The `local-production-text` phase benchmarks fixed customer request inputs when
@@ -181,14 +192,16 @@ lover encouragement, and dog lover thank-you. The LLM decides the final theme,
 copy, layout, and per-panel artwork prompts; Comfy renders the exact generated
 copy with `CustomCardTextComposer`. The helper fails fast when no local LLM is
 configured so agents do not accidentally benchmark only the structural fixture.
-For live runs, it also preflights the local LLM at `/v1/models`; pass either a
-root local URL such as `http://127.0.0.1:5001` or a `/v1` URL such as
-`http://127.0.0.1:5001/v1` as `-LocalLlmBaseUrl`. Use `-DryRun` to inspect the
+For live runs, it auto-starts the default Gemma 31B planner on port `5003` when
+no planner URL is configured and the local model files exist. You can also pass
+either a root URL such as `http://127.0.0.1:5003` or a `/v1` URL such as
+`http://127.0.0.1:5003/v1` as `-LocalLlmBaseUrl`, plus `-LocalLlmModel`, for a
+GPU/offloaded or hosted/self-hosted endpoint. Use `-DryRun` to inspect the
 planned matrix without requiring a live text server. The helper rejects known
 small planners such as Qwen3-4B for production evidence because they miss
 customer terms and can truncate the full card-copy contract; pass
-`-AllowSmallPlanner` only for exploratory failure evidence. Start the installed
-local quality planner with:
+`-AllowSmallPlanner` only for exploratory failure evidence. To start the
+installed local quality planner explicitly:
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/start-local-card-planner.ps1 -Port 5003 -ContextSize 8192
@@ -209,7 +222,7 @@ path.
 Checkpoint comparison example:
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5003/v1 -LocalLlmModel koboldcpp/gemma-4-31B-it-Q4_K_M -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 1800
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5003/v1 -LocalLlmModel koboldcpp/gemma-4-31B-it-Q4_K_M -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 3200 -PlannerContextSize 8192
 ```
 
 This helper uses the benchmark `local-production-text` phase rather than

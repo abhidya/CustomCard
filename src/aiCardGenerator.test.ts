@@ -666,6 +666,54 @@ describe("AI card generator service", () => {
     expect(JSON.stringify(result.payload)).toContain("Morgan");
   });
 
+  it("reports length-truncated planner output as a runtime/model failure", async () => {
+    const fetchImpl = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          choices: [
+            {
+              finish_reason: "length",
+              message: { content: "{\"theme_guide\":{\"theme_title\":\"unfinished koi" }
+            }
+          ]
+        }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      )
+    );
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel
+      },
+      fetchImpl,
+      aiFlowAdminConfig: buildDefaultAiFlowAdminConfigs().map((config) =>
+        config.flowId === "card-image" ? { ...config, liveProviderCallsEnabled: false } : config
+      )
+    });
+
+    const result = await service.generateCard(
+      {
+        ...cardRequest,
+        sender: "Mara",
+        recipient: "Uncle Ken",
+        occasion: "encouragement card",
+        style: "premium folded greeting card for a koi fish lover",
+        personal_note: "Create an encouragement card for Uncle Ken, who loves his backyard koi pond.",
+        must_include: ["Uncle Ken", "koi", "encouragement"]
+      },
+      { rateKey: "test-length-finish-runtime-failure" }
+    );
+
+    expect(result.statusCode).toBe(502);
+    expect(JSON.stringify(result.payload)).toContain("finish_reason=length");
+    expect(JSON.stringify(result.payload)).toContain("production-suitable planner");
+    expect(JSON.stringify(result.payload)).toContain("8192+ context");
+  });
+
   it("returns an explicit provider failure when card-copy provider credentials are missing", async () => {
     const fetchImpl = vi.fn();
     const service = createAiCardGenerationService({ env: {}, fetchImpl });
