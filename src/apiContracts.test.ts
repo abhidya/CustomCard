@@ -378,8 +378,8 @@ describe("api contracts", () => {
     });
     expect(summary.aiProviderReadiness).toMatchObject({
       total: 8,
-      textProviderContracts: 16,
-      imageProviderContracts: 18,
+      textProviderContracts: 17,
+      imageProviderContracts: 19,
       localFallbacks: 0,
       liveProviderCallsEnabled: 0,
       externalNetworkCalls: 0,
@@ -736,8 +736,8 @@ describe("api contracts", () => {
     );
     expect(payload.aiProviderReadiness.summary).toMatchObject({
       total: 8,
-      textProviderContracts: 16,
-      imageProviderContracts: 18,
+      textProviderContracts: 17,
+      imageProviderContracts: 19,
       liveProviderCallsEnabled: 0,
       productionTrafficEnabled: 0
     });
