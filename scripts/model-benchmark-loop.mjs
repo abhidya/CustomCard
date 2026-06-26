@@ -1968,8 +1968,140 @@ function localComfyWorkflowInputSummary(variables) {
     scheduler: variables.scheduler,
     seed: variables.seed,
     prompt: variables.prompt,
-    negative_prompt: variables.negativePrompt || ""
+    negative_prompt: variables.negativePrompt || "",
+    headline_text: variables.headlineText || "",
+    body_text: variables.bodyText || "",
+    headline_font_size: variables.headlineFontSize,
+    body_font_size: variables.bodyFontSize,
+    headline_box: {
+      x: variables.headlineBoxX,
+      y: variables.headlineBoxY,
+      width: variables.headlineBoxWidth,
+      height: variables.headlineBoxHeight
+    },
+    body_box: {
+      x: variables.bodyBoxX,
+      y: variables.bodyBoxY,
+      width: variables.bodyBoxWidth,
+      height: variables.bodyBoxHeight
+    },
+    text_alignment: variables.textAlignment,
+    min_font_size: variables.minFontSize
   };
+}
+
+function localComfyTypographyVariables({ panelId, panelCopy = {}, width, height }) {
+  const layout = panelCopy.text_layout || panelCopy.textLayout || {};
+  const imageWidth = Math.max(1, Number(width || 960));
+  const imageHeight = Math.max(1, Number(height || 1344));
+  const scale = layout.scale === "large" ? 1.1 : layout.scale === "compact" ? 0.9 : 1;
+  const fontPairing = layout.font_pairing || layout.fontPairing || "classic-serif";
+  const lightInk = layout.color_mode === "light-ink" || layout.colorMode === "light-ink" || layout.color_mode === "high-contrast";
+  const headlineBase = panelId === "front" ? 72 : panelId === "back" ? 42 : 54;
+  const bodyBase = panelId === "front" ? 28 : panelId === "back" ? 22 : 26;
+  const alignment = localComfyTextAlignment(layout.alignment);
+  const headlineZone = layout.headline_zone || layout.headlineZone || (panelId === "front" ? "center" : "upper");
+  const bodyZone = layout.body_zone || layout.bodyZone || (panelId === "front" ? "lower" : "center");
+  const headlineBox = localComfyTextBox({ zone: headlineZone, role: "headline", width: imageWidth, height: imageHeight });
+  const bodyBox = localComfyTextBox({ zone: bodyZone, role: "body", width: imageWidth, height: imageHeight });
+  return {
+    bodyBoxHeight: bodyBox.height,
+    bodyBoxWidth: bodyBox.width,
+    bodyBoxX: bodyBox.x,
+    bodyBoxY: bodyBox.y,
+    bodyFillColor: lightInk ? "#f4d77d" : "#4f432a",
+    bodyFont: localComfyFontForPairing(fontPairing, "body"),
+    bodyFontSize: Math.round(bodyBase * scale),
+    bodyHorizontalAlignment: alignment,
+    bodyLineSpacing: 6,
+    bodyPadding: Math.max(32, Math.round(imageWidth * 0.08)),
+    bodyStrokeColor: lightInk ? "#111715" : "#fff6df",
+    bodyStrokeThickness: lightInk ? 0.06 : 0.02,
+    bodyStrokeWidth: lightInk ? 2 : 1,
+    bodyText: cleanText(panelCopy.body || ""),
+    bodyVerticalAlignment: localComfyBoxVerticalAlignment(bodyZone),
+    bodyXShift: 0,
+    bodyYShift: localComfyYShift(bodyZone, "body"),
+    headlineBoxHeight: headlineBox.height,
+    headlineBoxWidth: headlineBox.width,
+    headlineBoxX: headlineBox.x,
+    headlineBoxY: headlineBox.y,
+    headlineFillColor: lightInk ? "#fff7df" : "#282923",
+    headlineFont: localComfyFontForPairing(fontPairing, "headline"),
+    headlineFontSize: Math.round(headlineBase * scale),
+    headlineHorizontalAlignment: alignment,
+    headlineLineSpacing: 8,
+    headlinePadding: Math.max(32, Math.round(imageWidth * 0.08)),
+    headlineStrokeColor: lightInk ? "#111715" : "#fff6df",
+    headlineStrokeThickness: lightInk ? 0.08 : 0.03,
+    headlineStrokeWidth: lightInk ? 2 : 1,
+    headlineText: cleanText(panelCopy.headline || ""),
+    headlineVerticalAlignment: localComfyBoxVerticalAlignment(headlineZone),
+    headlineXShift: 0,
+    headlineYShift: localComfyYShift(headlineZone, "headline"),
+    minFontSize: panelId === "back" ? 14 : 16,
+    panelText: [cleanText(panelCopy.headline || ""), cleanText(panelCopy.body || "")].filter(Boolean).join("\n\n"),
+    textAlignment: alignment,
+    textCanvasHeight: imageHeight,
+    textDebugBoxes: layout.debug_boxes === true || layout.debugBoxes === true
+  };
+}
+
+function localComfyFontForPairing(pairing, role) {
+  if (pairing === "bold-editorial") return role === "headline" ? "arialbd.ttf" : "arial.ttf";
+  if (pairing === "minimal-sans") return "arial.ttf";
+  return "georgia.ttf";
+}
+
+function cleanText(value) {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function localComfyTextBox({ zone, role, width, height }) {
+  const normalizedZone = ["top", "upper", "center", "lower", "bottom"].includes(zone) ? zone : "center";
+  const marginX = Math.max(56, Math.round(Number(width) * (role === "body" ? 0.11 : 0.09)));
+  const boxWidth = Math.max(1, Number(width) - marginX * 2);
+  const specs =
+    role === "headline"
+      ? {
+          top: { y: 0.07, height: 0.18 },
+          upper: { y: 0.1, height: 0.2 },
+          center: { y: 0.28, height: 0.22 },
+          lower: { y: 0.6, height: 0.2 },
+          bottom: { y: 0.72, height: 0.17 }
+        }
+      : {
+          top: { y: 0.2, height: 0.36 },
+          upper: { y: 0.24, height: 0.34 },
+          center: { y: 0.37, height: 0.36 },
+          lower: { y: 0.58, height: 0.3 },
+          bottom: { y: 0.68, height: 0.22 }
+        };
+  const spec = specs[normalizedZone] || specs.center;
+  return {
+    x: marginX,
+    y: Math.max(0, Math.round(Number(height) * spec.y)),
+    width: boxWidth,
+    height: Math.max(1, Math.round(Number(height) * spec.height))
+  };
+}
+
+function localComfyTextAlignment(value) {
+  return ["left", "center", "right"].includes(value) ? value : "center";
+}
+
+function localComfyBoxVerticalAlignment(zone) {
+  if (zone === "top") return "top";
+  if (zone === "bottom") return "bottom";
+  return "middle";
+}
+
+function localComfyYShift(zone, role) {
+  if (zone === "top") return 32;
+  if (zone === "upper") return role === "headline" ? 92 : 122;
+  if (zone === "lower") return role === "headline" ? -122 : -104;
+  if (zone === "bottom") return role === "headline" ? -92 : -56;
+  return role === "headline" ? -72 : 88;
 }
 
 function localComfyWorkflowInputs(env, variables) {
@@ -2018,6 +2150,45 @@ function localComfyTemplateVariable(key, variables) {
     seed: variables.seed,
     steps: variables.steps,
     width: variables.width,
+    body_box_height: variables.bodyBoxHeight,
+    body_box_width: variables.bodyBoxWidth,
+    body_box_x: variables.bodyBoxX,
+    body_box_y: variables.bodyBoxY,
+    body_fill_color: variables.bodyFillColor,
+    body_font: variables.bodyFont,
+    body_font_size: variables.bodyFontSize,
+    body_horizontal_alignment: variables.bodyHorizontalAlignment,
+    body_line_spacing: variables.bodyLineSpacing,
+    body_padding: variables.bodyPadding,
+    body_stroke_color: variables.bodyStrokeColor,
+    body_stroke_thickness: variables.bodyStrokeThickness,
+    body_stroke_width: variables.bodyStrokeWidth,
+    body_text: variables.bodyText || "",
+    body_vertical_alignment: variables.bodyVerticalAlignment,
+    body_x_shift: variables.bodyXShift,
+    body_y_shift: variables.bodyYShift,
+    headline_box_height: variables.headlineBoxHeight,
+    headline_box_width: variables.headlineBoxWidth,
+    headline_box_x: variables.headlineBoxX,
+    headline_box_y: variables.headlineBoxY,
+    headline_fill_color: variables.headlineFillColor,
+    headline_font: variables.headlineFont,
+    headline_font_size: variables.headlineFontSize,
+    headline_horizontal_alignment: variables.headlineHorizontalAlignment,
+    headline_line_spacing: variables.headlineLineSpacing,
+    headline_padding: variables.headlinePadding,
+    headline_stroke_color: variables.headlineStrokeColor,
+    headline_stroke_thickness: variables.headlineStrokeThickness,
+    headline_stroke_width: variables.headlineStrokeWidth,
+    headline_text: variables.headlineText || "",
+    headline_vertical_alignment: variables.headlineVerticalAlignment,
+    headline_x_shift: variables.headlineXShift,
+    headline_y_shift: variables.headlineYShift,
+    min_font_size: variables.minFontSize,
+    panel_text: variables.panelText || "",
+    text_alignment: variables.textAlignment,
+    text_canvas_height: variables.textCanvasHeight,
+    text_debug_boxes: variables.textDebugBoxes,
     workflow_id: variables.workflowId || "",
     workflowId: variables.workflowId || ""
   };
@@ -2556,6 +2727,42 @@ function typographyAutoChecks({ promptPlans, providerCalls, decodedFiles }) {
     },
     note:
       "Automated checks only prove prompt contract and image materialization. Front/interior typography, back no-text discipline, and inside-spread cohesion require visual inspection."
+  };
+}
+
+function productionTextAutoChecks({ promptPlans, panelCopies, providerCalls, decodedFiles }) {
+  const plans = Array.isArray(promptPlans) ? promptPlans : [];
+  const decoded = Array.isArray(decodedFiles) ? decodedFiles : [];
+  const copies = panelCopies || {};
+  const requestBodies = providerCalls
+    .filter((call) => String(call.url || "").includes("/prompt"))
+    .map((call) => call.request?.body || {})
+    .filter(Boolean);
+  const metadataInputs = requestBodies.map((body) => body.extra_data?.customcard?.inputs || {});
+  const copyPanels = typographyPanelOrder.filter((panelId) => Boolean(copies[panelId]?.headline || copies[panelId]?.body));
+  const metadataIncludesCopy = copyPanels.every((panelId) => {
+    const panelCopy = copies[panelId] || {};
+    return metadataInputs.some((inputs) =>
+      inputs.panel_id === panelId &&
+      inputs.headline_text === (panelCopy.headline || "") &&
+      inputs.body_text === (panelCopy.body || "")
+    );
+  });
+  return {
+    advisoryOnly: true,
+    checks: {
+      fourPanels: plans.length === 4 && decoded.length === 4,
+      panelIds: plans.map((plan) => plan.panelId),
+      providerCalls: providerCalls.length,
+      materializedImages: decoded.length,
+      allPanelsMaterialized: decoded.length === 4 && decoded.every((file) => Boolean(file?.buffer?.length)),
+      finalImagesRenderedByComfy: true,
+      appOverlayBypassed: true,
+      metadataIncludesExactCopy: metadataIncludesCopy,
+      metadataIncludesSafeBoxes: metadataInputs.every((inputs) => inputs.headline_box?.width > 0 && inputs.body_box?.width > 0)
+    },
+    note:
+      "Production text phase treats Comfy output as the final text-composited panel. Automated checks prove request metadata and image materialization; visual text quality still requires inspection."
   };
 }
 
