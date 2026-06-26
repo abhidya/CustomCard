@@ -1,0 +1,21 @@
+{
+  "phase": "local-production-text",
+  "focus": "local-comfy-production-text-composer",
+  "storyId": "folded-card-sunburst-typography",
+  "textCandidateId": "text-fixture-panel-copy",
+  "textAdapterId": "fixture",
+  "textModel": "",
+  "imageCandidateId": "image-local-comfyui",
+  "imageAdapterId": "local-comfyui-api-image",
+  "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+  "typographyModeId": "customcard-production-text-composer",
+  "typographyModeLabel": "CustomCard production text composer",
+  "typographyStrategy": "comfy-deterministic-text-composer",
+  "runDir": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui",
+  "startedAt": "2026-06-26T01:47:08.898Z",
+  "finishedAt": "2026-06-26T01:48:06.033Z",
+  "status": "failed",
+  "error": "Input file is missing: D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\preview-inside-left.png",
+  "providerCallCount": 49,
+  "effectiveProviderRequests": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\effective-provider-requests.json"
+}
