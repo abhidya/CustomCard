@@ -94,6 +94,8 @@ Production text workflow tracking:
   `tools/run-production-text-benchmark.ps1`
   - Pass `-LocalLlmBaseUrl` and `-LocalLlmModel` for the normal
     LLM-planned production-text matrix.
+  - Live runs preflight the local text server at `/v1/models`; use `-DryRun`
+    for planning-only evidence while LM Studio/KoboldCPP is offline.
   - The wrapper fails fast without a local LLM so agents do not mistake the
     one-run compositor fixture for customer-theme evidence.
   - Pass `-AllowCompositorFixtureFallback` only for structural compositor smoke

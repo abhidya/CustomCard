@@ -151,9 +151,12 @@ lover encouragement, and dog lover thank-you. The LLM decides the final theme,
 copy, layout, and per-panel artwork prompts; Comfy renders the exact generated
 copy with `CustomCardTextComposer`. The helper fails fast when no local LLM is
 configured so agents do not accidentally benchmark only the structural fixture.
-Pass `-AllowCompositorFixtureFallback` only when intentionally testing the
-single sunburst compositor calibration fixture. By default the helper writes to
-a timestamped
+For live runs, it also preflights the local LLM at `/v1/models`; pass either
+`http://127.0.0.1:1234` or `http://127.0.0.1:1234/v1` as `-LocalLlmBaseUrl`.
+Use `-DryRun` to inspect the planned matrix without requiring a live text
+server. Pass `-AllowCompositorFixtureFallback` only when intentionally testing
+the single sunburst compositor calibration fixture. By default the helper writes
+to a timestamped
 `docs/evidence/generated-card-comparisons/production-text-workflow-YYYYMMDD-HHMMSS`
 directory. Pass `-OutputDir` only when you intentionally want a stable evidence
 path.

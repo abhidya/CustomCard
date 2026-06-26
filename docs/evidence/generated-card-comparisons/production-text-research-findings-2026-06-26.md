@@ -21,6 +21,7 @@ Production text should be planned by the card-copy LLM and rendered by ComfyUI:
 | `tools/run-production-text-benchmark.ps1 -DryRun -SkipPreflight` without local LLM | Failed fast | The wrapper now refuses to silently run the compositor fixture when the LLM-planned matrix cannot be scheduled. |
 | `.codex/tmp/production-text-wrapper-fixture` with `-AllowCompositorFixtureFallback` | Planned 1 run | Explicit fallback still schedules only `folded-card-sunburst-typography` as `compositor-fixture`. |
 | `.codex/tmp/production-text-wrapper-llm` with `-LocalLlmBaseUrl` and `-LocalLlmModel` | Planned 3 runs | Wrapper parameters schedule the full `llm-generated-copy` aquarium/koi/dog matrix without manual env setup. |
+| Live wrapper preflight on 2026-06-26 04:16 UTC | Blocked before image generation | Local ComfyUI passed live preflight, but the local LLM probe to `http://127.0.0.1:1234/v1/models` failed with connection refused. This is now a fast setup failure, not a late benchmark failure. |
 | `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-artwork-guard-v2` | 72/100, blocked | Deterministic Comfy text, soft text fields, and artwork guards work structurally, but artwork remains too dense for production. |
 | `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-candidates` | Blocked | Aggregate evidence still says do not promote production Comfy text as the default path. |
 
@@ -52,6 +53,11 @@ text server is available. The wrapper accepts the local LLM settings directly:
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:1234/v1 -LocalLlmModel local-qwen-card-copy -OutputDir docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live
 ```
+
+The wrapper accepts either `http://127.0.0.1:1234` or
+`http://127.0.0.1:1234/v1` and probes `/v1/models` before live provider calls.
+Use `-DryRun` to inspect planned aquarium/koi/dog runs while the text server is
+offline. Do not use `-SkipPreflight` for promotion evidence.
 
 Use `-AllowCompositorFixtureFallback` only when intentionally collecting a
 single-run structural compositor smoke test.

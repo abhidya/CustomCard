@@ -22,8 +22,9 @@ repeatable print output.
 - `local-production-text` is the benchmark phase for this candidate. With a
   configured local LLM, it runs fixed customer request fixtures through the real
   card-copy planner, then treats Comfy output as the final text-composited panel
-  and bypasses the benchmark preview overlay. Without a local LLM, it falls back
-  to one sunburst compositor calibration fixture.
+  and bypasses the benchmark preview overlay. The lower-level phase still has a
+  one-run sunburst compositor calibration fixture, but the tracked wrapper only
+  allows that path when `-AllowCompositorFixtureFallback` is passed explicitly.
 - `buildImagePromptPlan` now carries `headline`, `body`, and normalized
   `text_layout` into image-provider execution as `panel_copy`.
 - `scripts/local-comfy-production-text.mjs` is the shared production text
@@ -82,8 +83,9 @@ quality.
     hardcoded finished themes.
   - Dry-run with local Comfy + local LLM env plans the three
     `llm-generated-copy` runs.
-  - Current live gate is blocked by missing local LLM runtime in the ambient
-    shell, not by the benchmark contract.
+  - Current live gate is blocked by missing local LLM runtime on
+    `127.0.0.1:1234`, not by the benchmark contract. The wrapper now probes
+    `/v1/models` before spending a live Comfy run.
 - Soft safe-field proof:
   `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-soft-fields`
   - `CustomCardTextComposer` rendered exact copy plus text-hug rounded
@@ -276,6 +278,8 @@ Comfy template variables exposed by the local adapter include:
   - Accepts `-LocalLlmBaseUrl`, `-LocalLlmModel`, and `-LocalLlmApiKey` so the
     LLM-planned customer request matrix can be run without brittle shell env
     setup.
+  - Accepts either a root local LLM URL (`http://127.0.0.1:1234`) or a `/v1`
+    URL (`http://127.0.0.1:1234/v1`) and probes `/v1/models` before live runs.
   - Fails fast when no local LLM is configured. Use
     `-AllowCompositorFixtureFallback` only for the one-run structural
     compositor fixture.
@@ -327,13 +331,16 @@ customer-theme quality.
 6. Promote only after aggregate benchmark evidence beats the current
    app-compositor baseline.
 
-Current status: gates 1, 3, and 4 have passing evidence for the local Comfy
-runtime used on 2026-06-26. Gate 5 still blocks promotion, but the best manual
-grade moved from 47/100 to 65/100 after deterministic safe-field backgrounds
-were added, then to 68/100 after rounded text-hug safe fields were added to
-`CustomCardTextComposer`, then to 72/100 after deterministic artwork guards were
-added. Gate 6 is not satisfied because the production-text aggregate still ranks
-every candidate as blocked after applying manual visual grades.
+Current status: gates 1 and 3 have passing evidence for the local Comfy runtime
+used on 2026-06-26. Gate 4 has structural compositor evidence and dry-run proof
+that the aquarium/koi/dog customer-request matrix schedules through the LLM
+planner, but it does not yet have a live LLM-planned matrix with manual grades.
+Gate 5 still blocks promotion, but the best manual grade moved from 47/100 to
+65/100 after deterministic safe-field backgrounds were added, then to 68/100
+after rounded text-hug safe fields were added to `CustomCardTextComposer`, then
+to 72/100 after deterministic artwork guards were added. Gate 6 is not
+satisfied because the production-text aggregate still ranks every candidate as
+blocked after applying manual visual grades.
 
 ## Open Engineering Work
 
