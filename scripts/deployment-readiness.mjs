@@ -138,7 +138,7 @@ const checks = [
     '"buildCommand": "npm run build"',
     '"outputDirectory": "dist"',
     '"functions"',
-    '"api/**/*.js"',
+    '"api/[...path].js"',
     '"excludeFiles"',
     "docs/evidence/generated-card-comparisons/**",
     "node_modules/puppeteer/**",

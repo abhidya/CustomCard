@@ -171,7 +171,7 @@ const checks = [
     signals: [
       '"buildCommand": "npm run build"',
       '"functions"',
-      '"api/**/*.js"',
+      '"api/[...path].js"',
       '"excludeFiles"',
       "docs/evidence/generated-card-comparisons/**",
       "node_modules/puppeteer/**",
