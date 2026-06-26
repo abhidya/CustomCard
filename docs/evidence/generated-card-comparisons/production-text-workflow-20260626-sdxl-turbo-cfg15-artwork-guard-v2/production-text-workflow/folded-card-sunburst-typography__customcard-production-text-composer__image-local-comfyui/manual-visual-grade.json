@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "createdAtIso": "2026-06-26T02:55:00.000Z",
+  "reviewer": "codex-manual-visual-inspection",
+  "sourceContactSheet": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-artwork-guard-v2/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/contact-sheet.png",
+  "totalScore": 72,
+  "status": "blocked",
+  "passed": false,
+  "productionRecommendation": "do-not-promote-yet",
+  "rubric": {
+    "fourPanelPromptAdherenceAndPanelContract": { "score": 7, "maxScore": 10 },
+    "frontExactTextAndTypography": { "score": 17, "maxScore": 20 },
+    "insideLeftRightExactTextAndReadability": { "score": 18, "maxScore": 20 },
+    "insideLeftRightVisualCohesionAsOpenedSpread": { "score": 11, "maxScore": 15 },
+    "backNoTextDisciplineAndCoordinatingMark": { "score": 4, "maxScore": 10 },
+    "overallFoldedCardThemeCoherence": { "score": 8, "maxScore": 10 },
+    "printReadinessAndMargins": { "score": 7, "maxScore": 15 }
+  },
+  "blockingFailures": [
+    "Artwork guards protect deterministic typography better than the soft text fields alone and preserve exact readable copy on all text-bearing panels.",
+    "The front still depends on a visibly heavy dark guard to overpower dense ornament, so the artwork layer is not naturally leaving a quiet text-safe field.",
+    "The interior panels are readable but over-softened by broad guards, making them feel rescued rather than purpose-designed.",
+    "The back panel is calmer and text-free, but it becomes a full dark patterned field without the requested small coordinating mark."
+  ],
+  "smallestNextFix": "Keep the deterministic compositor with soft text fields and artwork guards, then replace or constrain the artwork pass so it generates stationery-simple panels with plain centers and a genuinely sparse back before text composition."
+}

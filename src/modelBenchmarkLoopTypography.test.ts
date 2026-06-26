@@ -456,6 +456,37 @@ describe("model benchmark typography experiment", () => {
       headline: "For Moments That Matter",
       body: "Wishing you strength and peace on your day."
     };
+    const requestForPanel = (panelId: string) => ({
+      url: "http://127.0.0.1:8188/prompt",
+      method: "POST",
+      request: {
+        body: {
+          extra_data: {
+            customcard: {
+              panel_id: panelId,
+              inputs: {
+                headline_text: panelId === "front" ? frontCopy.headline : "",
+                body_text: panelId === "front" ? frontCopy.body : "",
+                artwork_guard: { x: 76, y: 268, width: 806, height: 860 },
+                artwork_guard_opacity: 0.74,
+                artwork_guard_style: "box",
+                headline_box: { x: 86, y: 376, width: 788, height: 296 },
+                headline_box_background_color: panelId === "front" ? "#111715" : "",
+                headline_box_background_radius: panelId === "front" ? 34 : 0,
+                headline_box_background_opacity: panelId === "front" ? 0.96 : 0,
+                headline_box_background_style: panelId === "front" ? "text-hug" : "box",
+                body_box: { x: 106, y: 780, width: 748, height: 403 },
+                body_box_background_color: panelId === "front" ? "#111715" : "",
+                body_box_background_radius: panelId === "front" ? 34 : 0,
+                body_box_background_opacity: panelId === "front" ? 0.96 : 0,
+                body_box_background_style: panelId === "front" ? "text-hug" : "box"
+              }
+            }
+          }
+        }
+      },
+      response: { status: 200, ok: true, contentType: "application/json" }
+    });
     const autoChecks = productionTextAutoChecks({
       promptPlans: [
         { panelId: "front" },
@@ -464,36 +495,7 @@ describe("model benchmark typography experiment", () => {
         { panelId: "back" }
       ],
       panelCopies: { front: frontCopy },
-      providerCalls: [
-        {
-          url: "http://127.0.0.1:8188/prompt",
-          method: "POST",
-          request: {
-            body: {
-              extra_data: {
-                customcard: {
-                  panel_id: "front",
-                  inputs: {
-                    headline_text: frontCopy.headline,
-                    body_text: frontCopy.body,
-                    headline_box: { x: 86, y: 376, width: 788, height: 296 },
-                    headline_box_background_color: "#111715",
-                    headline_box_background_radius: 34,
-                    headline_box_background_opacity: 0.96,
-                    headline_box_background_style: "text-hug",
-                    body_box: { x: 106, y: 780, width: 748, height: 403 },
-                    body_box_background_color: "#111715",
-                    body_box_background_radius: 34,
-                    body_box_background_opacity: 0.96,
-                    body_box_background_style: "text-hug"
-                  }
-                }
-              }
-            }
-          },
-          response: { status: 200, ok: true, contentType: "application/json" }
-        }
-      ],
+      providerCalls: ["front", "inside-left", "inside-right", "back"].map(requestForPanel),
       decodedFiles: [
         { buffer: Buffer.from("front") },
         { buffer: Buffer.from("inside-left") },
@@ -506,5 +508,6 @@ describe("model benchmark typography experiment", () => {
     expect(autoChecks.checks.metadataIncludesSafeBoxes).toBe(true);
     expect(autoChecks.checks.metadataIncludesSafeFieldBackgrounds).toBe(true);
     expect(autoChecks.checks.metadataIncludesSoftSafeFields).toBe(true);
+    expect(autoChecks.checks.metadataIncludesArtworkGuards).toBe(true);
   });
 });

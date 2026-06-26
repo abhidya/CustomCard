@@ -9,8 +9,8 @@ the local worker or benchmark loop.
 - `customcard-production-text-overlay.json`
   - Production candidate for Comfy-side deterministic text compositing.
   - Requires the checked-in `CustomCardTextComposer` node from `comfyui-custom-nodes/CustomCardTextComposer`.
-  - The diffusion model still generates artwork only; exact card copy and deterministic soft text-hug safe fields are rendered into explicit safe boxes before `SaveImage`.
-  - Live local evidence on 2026-06-26 proves the text-composer path works. The best soft-field candidate is improved but still blocked for visual quality. Do not make this the production default until a manual/local-vision grade passes.
+  - The diffusion model still generates artwork only; exact card copy, deterministic soft text-hug safe fields, and broader artwork guards are rendered before `SaveImage`.
+  - Live local evidence on 2026-06-26 proves the text-composer path works. The best artwork-guard candidate is improved but still blocked for visual quality. Do not make this the production default until a manual/local-vision grade passes.
 - `customcard-hybrid-reserved-layout.json`
   - Production-leaning benchmark workflow for four greeting-card panels.
   - The image model generates coordinated, text-safe artwork only; the model benchmark flattens exact greeting-card copy into the final `preview-*.png` panels with deterministic typography.
@@ -118,9 +118,10 @@ Prerequisites:
   (`georgia.ttf`, `arial.ttf`, `arialbd.ttf`) or update
   `localComfyFontForPairing` in `scripts/ai-card-generator.mjs`.
 - Confirm `http://127.0.0.1:8188/object_info` contains
-  `CustomCardTextComposer` and the soft safe-field inputs
+  `CustomCardTextComposer`, the soft safe-field inputs
   (`*_box_background_style`, `*_box_background_radius`,
-  `*_box_background_opacity`) before running the production workflow.
+  `*_box_background_opacity`), and the artwork-guard inputs
+  (`artwork_guard_*`) before running the production workflow.
 
 See `docs/comfyui-production-text-workflow.md` for research, production gates,
 and the remaining QA work.
@@ -152,7 +153,7 @@ path.
 Checkpoint comparison example:
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 0 -Sampler euler_ancestral -Scheduler sgm_uniform
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform
 ```
 
 This helper uses the benchmark `local-production-text` phase rather than
@@ -166,7 +167,9 @@ Latest live evidence:
 - Aggregate: `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text`
 - Candidate aggregate: `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-candidates`
 - Soft-field benchmark: `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-soft-fields`
-- Best current manual visual grade: 68/100, blocked, do not promote yet.
+- Artwork-guard preflight: `docs/evidence/generated-card-comparisons/production-text-preflight-20260626-artwork-guard`
+- Artwork-guard benchmark: `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-artwork-guard-v2`
+- Best current manual visual grade: 72/100, blocked, do not promote yet.
 
 ## Local Visual Quality Gate
 

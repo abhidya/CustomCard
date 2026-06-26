@@ -99,10 +99,12 @@ Production text workflow tracking:
 - Production-text aggregate:
   `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-candidates`
 - Current production-text recommendation:
-  keep the Comfy-side deterministic text composer and soft text-hug safe-field
-  backgrounds, but do not promote yet. The best local candidate is SDXL Turbo
-  CFG 1.5 with rounded text-hug safe fields at 68/100, still blocked due to
-  dense surrounding ornament and a busy back panel.
+  keep the Comfy-side deterministic text composer with soft text-hug safe-field
+  backgrounds and broader deterministic artwork guards, but do not promote yet.
+  The best local candidate is SDXL Turbo CFG 1.5 with rounded text-hug fields
+  and artwork guards at 72/100, still blocked because the art layer needs a
+  heavy front guard, over-softens the interiors, and fails the sparse back-mark
+  contract.
 
 Installed research candidates under `D:\models\`:
 

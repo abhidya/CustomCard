@@ -962,6 +962,16 @@ function localComfyWorkflowInputSummary(variables) {
     seed: variables.seed,
     prompt: variables.prompt,
     negative_prompt: variables.negativePrompt || "",
+    artwork_guard: {
+      x: variables.artworkGuardX,
+      y: variables.artworkGuardY,
+      width: variables.artworkGuardWidth,
+      height: variables.artworkGuardHeight
+    },
+    artwork_guard_color: variables.artworkGuardColor || "",
+    artwork_guard_opacity: variables.artworkGuardOpacity || 0,
+    artwork_guard_radius: variables.artworkGuardRadius || 0,
+    artwork_guard_style: variables.artworkGuardStyle || "none",
     headline_text: variables.headlineText || "",
     body_text: variables.bodyText || "",
     headline_font_size: variables.headlineFontSize,
@@ -1012,7 +1022,16 @@ function localComfyTypographyVariables({ panelId, panelCopy = {}, width, height 
   const textBoxBackgroundRadius = Math.max(24, Math.round(imageWidth * 0.035));
   const textBoxBackgroundOpacity = 0.96;
   const textBoxBackgroundStyle = "text-hug";
+  const artworkGuard = localComfyArtworkGuard({ panelId, lightInk, width: imageWidth, height: imageHeight });
   return {
+    artworkGuardColor: artworkGuard.color,
+    artworkGuardHeight: artworkGuard.height,
+    artworkGuardOpacity: artworkGuard.opacity,
+    artworkGuardRadius: artworkGuard.radius,
+    artworkGuardStyle: artworkGuard.style,
+    artworkGuardWidth: artworkGuard.width,
+    artworkGuardX: artworkGuard.x,
+    artworkGuardY: artworkGuard.y,
     bodyBoxHeight: bodyBox.height,
     bodyBoxWidth: bodyBox.width,
     bodyBoxX: bodyBox.x,
@@ -1068,6 +1087,45 @@ function localComfyTypographyVariables({ panelId, panelCopy = {}, width, height 
 function localComfyTextBoxBackgroundColor({ panelId, lightInk }) {
   if (panelId === "back") return "";
   return lightInk ? "#111715" : "#fff6df";
+}
+
+function localComfyArtworkGuard({ panelId, lightInk, width, height }) {
+  const imageWidth = Math.max(1, Number(width || 960));
+  const imageHeight = Math.max(1, Number(height || 1344));
+  if (panelId === "back") {
+    return {
+      x: 0,
+      y: 0,
+      width: imageWidth,
+      height: imageHeight,
+      color: "#111715",
+      opacity: 0.94,
+      radius: 0,
+      style: "box"
+    };
+  }
+  if (panelId === "front") {
+    return {
+      x: Math.round(imageWidth * 0.08),
+      y: Math.round(imageHeight * 0.2),
+      width: Math.round(imageWidth * 0.84),
+      height: Math.round(imageHeight * 0.64),
+      color: lightInk ? "#111715" : "#fff6df",
+      opacity: 0.66,
+      radius: Math.round(imageWidth * 0.045),
+      style: "box"
+    };
+  }
+  return {
+    x: Math.round(imageWidth * 0.09),
+    y: Math.round(imageHeight * 0.14),
+    width: Math.round(imageWidth * 0.82),
+    height: Math.round(imageHeight * 0.72),
+    color: "#fff6df",
+    opacity: 0.74,
+    radius: Math.round(imageWidth * 0.055),
+    style: "box"
+  };
 }
 
 function localComfyFontForPairing(pairing, role) {
@@ -1161,6 +1219,14 @@ function localComfyTemplateVariable(key, variables) {
     seed: variables.seed,
     steps: variables.steps,
     width: variables.width,
+    artwork_guard_x: variables.artworkGuardX || 0,
+    artwork_guard_y: variables.artworkGuardY || 0,
+    artwork_guard_width: variables.artworkGuardWidth || 1,
+    artwork_guard_height: variables.artworkGuardHeight || 1,
+    artwork_guard_color: variables.artworkGuardColor || "",
+    artwork_guard_opacity: variables.artworkGuardOpacity || 0,
+    artwork_guard_radius: variables.artworkGuardRadius || 0,
+    artwork_guard_style: variables.artworkGuardStyle || "none",
     body_fill_color: variables.bodyFillColor,
     body_font: variables.bodyFont,
     body_font_size: variables.bodyFontSize,

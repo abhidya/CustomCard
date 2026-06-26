@@ -7,7 +7,15 @@ const defaultWorkflowPath = resolve(repoRoot, "comfyui-workflows/customcard-prod
 const defaultNodeSource = resolve(repoRoot, "comfyui-custom-nodes/CustomCardTextComposer");
 const defaultOutputRoot = resolve(repoRoot, "docs/evidence/generated-card-comparisons");
 const requiredNodeClass = "CustomCardTextComposer";
-const requiredSoftFieldInputs = [
+const requiredComposerInputs = [
+  "artwork_guard_x",
+  "artwork_guard_y",
+  "artwork_guard_width",
+  "artwork_guard_height",
+  "artwork_guard_color",
+  "artwork_guard_opacity",
+  "artwork_guard_radius",
+  "artwork_guard_style",
   "headline_box_background_radius",
   "headline_box_background_opacity",
   "headline_box_background_style",
@@ -46,10 +54,10 @@ export async function runPreflight(args = {}) {
     classTypes: classTypes.filter((value, index) => classTypes.indexOf(value) === index).sort()
   }));
   const workflowNodeInputs = collectWorkflowNodeInputs(workflow, requiredNodeClass);
-  const missingWorkflowSoftFieldInputs = requiredSoftFieldInputs.filter((input) => !workflowNodeInputs.includes(input));
-  checks.push(check("workflow maps soft safe-field inputs", missingWorkflowSoftFieldInputs.length === 0, {
-    requiredInputs: requiredSoftFieldInputs,
-    missingInputs: missingWorkflowSoftFieldInputs
+  const missingWorkflowComposerInputs = requiredComposerInputs.filter((input) => !workflowNodeInputs.includes(input));
+  checks.push(check("workflow maps production text compositor inputs", missingWorkflowComposerInputs.length === 0, {
+    requiredInputs: requiredComposerInputs,
+    missingInputs: missingWorkflowComposerInputs
   }));
   checks.push(check("custom node source exists", existsSync(nodeSource), { nodeSource }));
   checks.push(check("custom node module files exist", existsSync(resolve(nodeSource, "__init__.py")) && existsSync(resolve(nodeSource, "nodes.py")), {
@@ -70,10 +78,10 @@ export async function runPreflight(args = {}) {
     liveComfyReachable
   }, { required: requireLive, advisory: !requireLive }));
   const liveNodeInputs = collectLiveNodeInputs(live.objectInfo?.[requiredNodeClass]);
-  const missingLiveSoftFieldInputs = requiredSoftFieldInputs.filter((input) => !liveNodeInputs.includes(input));
-  checks.push(check("live ComfyUI exposes soft safe-field inputs", liveComfyReachable && liveNodeAvailable && missingLiveSoftFieldInputs.length === 0, {
-    requiredInputs: requiredSoftFieldInputs,
-    missingInputs: missingLiveSoftFieldInputs,
+  const missingLiveComposerInputs = requiredComposerInputs.filter((input) => !liveNodeInputs.includes(input));
+  checks.push(check("live ComfyUI exposes production text compositor inputs", liveComfyReachable && liveNodeAvailable && missingLiveComposerInputs.length === 0, {
+    requiredInputs: requiredComposerInputs,
+    missingInputs: missingLiveComposerInputs,
     liveInputCount: liveNodeInputs.length
   }, { required: requireLive, advisory: !requireLive }));
 

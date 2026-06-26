@@ -1,14 +1,55 @@
 {
-  "createdAtIso": "2026-06-26T02:30:51.171Z",
+  "createdAtIso": "2026-06-26T02:56:40.724Z",
   "inputDir": "docs/evidence/generated-card-comparisons",
   "outputDir": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-candidates",
   "phaseFilter": [
     "local-production-text"
   ],
-  "totalRuns": 5,
+  "totalRuns": 6,
   "ranked": [
     {
       "rank": 1,
+      "benchmarkKind": "model-benchmark-loop",
+      "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-artwork-guard-v2/production-text-workflow-summary.json",
+      "runId": "production-text-workflow:folded-card-sunburst-typography:text-fixture-panel-copy:image-local-comfyui",
+      "phase": "local-production-text",
+      "createdAtIso": "2026-06-26T02:51:23.321Z",
+      "fixtureId": "folded-card-sunburst-typography",
+      "textAdapterId": "fixture",
+      "textModel": "",
+      "imageAdapterId": "local-comfyui-api-image",
+      "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+      "provider": "local-comfyui-api-image",
+      "technique": "comfy-deterministic-text-composer",
+      "score": 72,
+      "status": "blocked",
+      "passed": 9,
+      "total": 9,
+      "autoScore": 100,
+      "manualVisualGrade": {
+        "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-artwork-guard-v2/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/manual-visual-grade.json",
+        "score": 72,
+        "status": "blocked",
+        "passed": false,
+        "recommendation": "do-not-promote-yet",
+        "blockingFailures": [
+          "Artwork guards protect deterministic typography better than the soft text fields alone and preserve exact readable copy on all text-bearing panels.",
+          "The front still depends on a visibly heavy dark guard to overpower dense ornament, so the artwork layer is not naturally leaving a quiet text-safe field.",
+          "The interior panels are readable but over-softened by broad guards, making them feel rescued rather than purpose-designed.",
+          "The back panel is calmer and text-free, but it becomes a full dark patterned field without the requested small coordinating mark."
+        ]
+      },
+      "panelCount": 4,
+      "providerCallCount": 62,
+      "contactSheet": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-artwork-guard-v2/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/contact-sheet.png",
+      "settings": {
+        "phase": "local-production-text",
+        "phaseDir": "production-text-workflow",
+        "localOnlyNetworkGuard": true
+      }
+    },
+    {
+      "rank": 2,
       "benchmarkKind": "model-benchmark-loop",
       "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-soft-fields/production-text-workflow-summary.json",
       "runId": "production-text-workflow:folded-card-sunburst-typography:text-fixture-panel-copy:image-local-comfyui",
@@ -48,7 +89,7 @@
       }
     },
     {
-      "rank": 2,
+      "rank": 3,
       "benchmarkKind": "model-benchmark-loop",
       "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields/production-text-workflow-summary.json",
       "runId": "production-text-workflow:folded-card-sunburst-typography:text-fixture-panel-copy:image-local-comfyui",
@@ -88,7 +129,7 @@
       }
     },
     {
-      "rank": 3,
+      "rank": 4,
       "benchmarkKind": "model-benchmark-loop",
       "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-live-node/production-text-workflow-summary.json",
       "runId": "production-text-workflow:folded-card-sunburst-typography:text-fixture-panel-copy:image-local-comfyui",
@@ -129,7 +170,7 @@
       }
     },
     {
-      "rank": 4,
+      "rank": 5,
       "benchmarkKind": "model-benchmark-loop",
       "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15/production-text-workflow-summary.json",
       "runId": "production-text-workflow:folded-card-sunburst-typography:text-fixture-panel-copy:image-local-comfyui",
@@ -169,7 +210,7 @@
       }
     },
     {
-      "rank": 5,
+      "rank": 6,
       "benchmarkKind": "model-benchmark-loop",
       "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo/production-text-workflow-summary.json",
       "runId": "production-text-workflow:folded-card-sunburst-typography:text-fixture-panel-copy:image-local-comfyui",

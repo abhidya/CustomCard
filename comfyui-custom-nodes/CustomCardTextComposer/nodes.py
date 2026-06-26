@@ -23,6 +23,14 @@ class CustomCardTextComposer:
                 "headline_font_size": ("INT", {"default": 54, "min": 8, "max": 240, "step": 1}),
                 "body_font_size": ("INT", {"default": 28, "min": 8, "max": 180, "step": 1}),
                 "min_font_size": ("INT", {"default": 16, "min": 6, "max": 80, "step": 1}),
+                "artwork_guard_x": ("INT", {"default": 0, "min": 0, "max": 8192, "step": 1}),
+                "artwork_guard_y": ("INT", {"default": 0, "min": 0, "max": 8192, "step": 1}),
+                "artwork_guard_width": ("INT", {"default": 1, "min": 1, "max": 8192, "step": 1}),
+                "artwork_guard_height": ("INT", {"default": 1, "min": 1, "max": 8192, "step": 1}),
+                "artwork_guard_color": ("STRING", {"default": ""}),
+                "artwork_guard_opacity": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.01}),
+                "artwork_guard_radius": ("INT", {"default": 0, "min": 0, "max": 512, "step": 1}),
+                "artwork_guard_style": (["none", "box"], {"default": "none"}),
                 "headline_box_x": ("INT", {"default": 80, "min": 0, "max": 8192, "step": 1}),
                 "headline_box_y": ("INT", {"default": 120, "min": 0, "max": 8192, "step": 1}),
                 "headline_box_width": ("INT", {"default": 800, "min": 1, "max": 8192, "step": 1}),
@@ -72,6 +80,14 @@ class CustomCardTextComposer:
         headline_font_size,
         body_font_size,
         min_font_size,
+        artwork_guard_x,
+        artwork_guard_y,
+        artwork_guard_width,
+        artwork_guard_height,
+        artwork_guard_color,
+        artwork_guard_opacity,
+        artwork_guard_radius,
+        artwork_guard_style,
         headline_box_x,
         headline_box_y,
         headline_box_width,
@@ -107,6 +123,14 @@ class CustomCardTextComposer:
         rendered = []
         for frame in frames:
             canvas = _tensor_to_pil(frame)
+            canvas = _draw_artwork_guard(
+                canvas=canvas,
+                box=(artwork_guard_x, artwork_guard_y, artwork_guard_width, artwork_guard_height),
+                fill=artwork_guard_color,
+                opacity=artwork_guard_opacity,
+                radius=artwork_guard_radius,
+                style=artwork_guard_style,
+            )
             canvas = _draw_box_background(
                 canvas=canvas,
                 text=headline,
@@ -302,6 +326,27 @@ def _draw_box_background(
         min(image_size[1], int(round(bottom))),
     )
     return _draw_safe_field(canvas, rect, color, radius, opacity)
+
+
+def _draw_artwork_guard(canvas, box, fill, opacity, radius, style):
+    if str(style or "").strip().lower() in {"", "none"}:
+        return canvas
+    color = _parse_optional_color(fill)
+    if color is None:
+        return canvas
+    rect = _box_rect(canvas.size, box, padding=0)
+    return _draw_safe_field(canvas, rect, color, radius, opacity)
+
+
+def _box_rect(image_size, box, padding=0):
+    x, y, width, height = _clip_box(image_size, box)
+    pad = max(0, int(round(float(padding or 0))))
+    return (
+        max(0, x - pad),
+        max(0, y - pad),
+        min(image_size[0], x + width + pad),
+        min(image_size[1], y + height + pad),
+    )
 
 
 def _draw_safe_field(canvas, rect, color, radius, opacity):

@@ -30,6 +30,7 @@ repeatable print output.
   - explicit headline/body safe boxes with x, y, width, and height
   - deterministic safe-field background colors, padding, radius, opacity, and
     style
+  - deterministic artwork guard boxes, color, radius, opacity, and style
   - panel/workflow metadata for evidence
 
 ## Latest Evidence
@@ -56,7 +57,13 @@ quality.
 - Aggregate report:
   `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-candidates/benchmark-rankings.md`
   - Manual visual grade is preferred over the structural auto-check score.
-  - Current best result: 68/100, blocked, `do-not-promote-yet`.
+- Artwork-guard proof:
+  `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-artwork-guard-v2`
+  - `CustomCardTextComposer` rendered exact copy plus soft text-hug safe fields
+    and broader deterministic artwork guards.
+  - Auto-checks prove exact copy, safe boxes, safe-field backgrounds,
+    soft-field metadata, and artwork-guard metadata reached live Comfy.
+  - Manual visual grade: 72/100, blocked, `do-not-promote-yet`.
 - Soft safe-field proof:
   `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-soft-fields`
   - `CustomCardTextComposer` rendered exact copy plus text-hug rounded
@@ -71,11 +78,12 @@ quality.
     reached live Comfy.
 
 The current best run proves the Comfy text architecture and improves visual
-polish with soft text-hug safe fields, but it still does not prove production
-card quality. Visual blockers are dense ornamental centers, a busy back panel,
-and weak artwork-layer control. The safe-field node update proves a stronger
-architecture: Comfy can own deterministic text and deterministic readability
-fields, while the image model only supplies surrounding art.
+polish with soft text-hug safe fields plus deterministic artwork guards, but it
+still does not prove production card quality. Visual blockers are dense
+ornamental centers, a back panel that becomes a full dark pattern rather than a
+small coordinating mark, and weak artwork-layer control. The node update proves
+a stronger architecture: Comfy can own deterministic text and deterministic
+readability fields, while the image model only supplies surrounding art.
 
 ## Research Summary
 
@@ -90,7 +98,8 @@ The production path is now a checked-in custom node:
 The node draws exact headline and body copy into explicit pixel safe boxes. It
 can draw deterministic safe-field backgrounds behind text, including rounded
 text-hug fields with opacity, wraps text, shrinks font size down to a configured
-floor, uses pinned fonts from the node `fonts/` directory or system fonts, and
+floor, draws broader artwork guards before typography when the art layer needs
+calming, uses pinned fonts from the node `fonts/` directory or system fonts, and
 returns the final Comfy image.
 
 Why this is the production path:
@@ -103,6 +112,8 @@ Why this is the production path:
 - Readability is not left entirely to the image model: the node can draw solid
   or soft text-hug safe fields behind text inside Comfy before writing exact
   copy.
+- Broader per-panel artwork guards can calm the generated layer before the
+  smaller text-hug fields and exact copy are drawn.
 - The node is repo-owned, so agents do not need to guess which public custom
   text node happens to be installed.
 
@@ -216,6 +227,10 @@ Comfy template variables exposed by the local adapter include:
 - `{{body_box_background_color}}`, `{{body_box_background_padding}}`
 - `{{body_box_background_radius}}`, `{{body_box_background_opacity}}`
 - `{{body_box_background_style}}`
+- `{{artwork_guard_x}}`, `{{artwork_guard_y}}`
+- `{{artwork_guard_width}}`, `{{artwork_guard_height}}`
+- `{{artwork_guard_color}}`, `{{artwork_guard_opacity}}`
+- `{{artwork_guard_radius}}`, `{{artwork_guard_style}}`
 - `{{min_font_size}}`
 
 ## Workflow Files
@@ -261,14 +276,15 @@ Current status: gates 1, 3, and 4 have passing evidence for the local Comfy
 runtime used on 2026-06-26. Gate 5 still blocks promotion, but the best manual
 grade moved from 47/100 to 65/100 after deterministic safe-field backgrounds
 were added, then to 68/100 after rounded text-hug safe fields were added to
-`CustomCardTextComposer`. Gate 6 is not satisfied because the production-text
-aggregate still ranks every candidate as blocked after applying manual visual
-grades.
+`CustomCardTextComposer`, then to 72/100 after deterministic artwork guards were
+added. Gate 6 is not satisfied because the production-text aggregate still ranks
+every candidate as blocked after applying manual visual grades.
 
 ## Open Engineering Work
 
-- Keep soft text-hug safe fields, but tune per-panel typography scale and field
-  merging so body copy stays readable without looking pasted on.
+- Keep soft text-hug safe fields and artwork guards, but tune per-panel
+  typography scale and field merging so body copy stays readable without
+  looking pasted on.
 - Test a flatter illustration/stationery checkpoint, masks, or stricter workflow
   controls so the surrounding artwork stays restrained instead of dense
   ornamental fill or object/mockup scenes.
