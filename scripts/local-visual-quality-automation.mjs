@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, openSync } from "node:fs";
 import { basename, relative, resolve } from "node:path";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 
 const repoRoot = resolve(import.meta.dirname, "..");
 const defaultEvidenceRoot = resolve(repoRoot, "docs/evidence/generated-card-comparisons");
@@ -271,11 +271,20 @@ function waitForChild(child) {
 }
 
 function stopProcess(pid) {
+  const taskkill = spawnSync("taskkill", ["/PID", String(pid), "/T", "/F"], {
+    encoding: "utf8",
+    windowsHide: true
+  });
+  if (taskkill.status === 0) {
+    console.log(`Stopped KoboldCPP reviewer pid ${pid}`);
+    return;
+  }
   try {
     process.kill(pid);
     console.log(`Stopped KoboldCPP reviewer pid ${pid}`);
   } catch (error) {
-    console.warn(`Could not stop KoboldCPP reviewer pid ${pid}: ${errorMessage(error)}`);
+    const detail = taskkill.stderr || taskkill.stdout || errorMessage(error);
+    console.warn(`Could not stop KoboldCPP reviewer pid ${pid}: ${detail.trim()}`);
   }
 }
 
