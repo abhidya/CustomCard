@@ -51,9 +51,6 @@ export function PrintView({
   const rtlReview = panels.some((candidate) => candidate.rtl);
   const approvalBlocked = overflowPanels.length > 0 || panels.length < 4;
   const proofApproved = isProofApproved(proofChecklist) && !approvalBlocked;
-  // The four per-panel review checks live on the panels themselves (review next to
-  // its object); names / crop / final approval are the closing gate below.
-  const finalApprovalItems = proofChecklistItems.filter((item) => !item.id.startsWith("panel-"));
   useEffect(() => {
     setProofChecklist(emptyProofChecklistState);
   }, [proofSignature]);
@@ -139,20 +136,16 @@ export function PrintView({
           </section>
 
           <details className="panelcard printsection printsection-manual moreoptions">
-            <summary>Download print files</summary>
-            <h2>Print file package</h2>
-            <p>Save one package with ready-to-upload images, a PDF proof, and step-by-step upload instructions.</p>
+            <summary>Manual upload helpers</summary>
+            <h2>Upload helpers</h2>
+            <p>After approval, save individual panel images or copy the print-shop upload instructions.</p>
             <div className="downloadrow">
               <button
-                className="btn btn-primary"
-                disabled={!printPackage.manifest.passed}
-                onClick={() => void onDownloadPackage()}
+                className="btn btn-ghost"
+                disabled={!printPackage.manifest.passed || !proofApproved}
+                onClick={() => void onDownloadPanels()}
                 type="button"
               >
-                <Download size={16} />
-                Save print package
-              </button>
-              <button className="btn btn-ghost" onClick={() => void onDownloadPanels()} type="button">
                 <FileDown size={16} />
                 Save upload panels
               </button>
@@ -173,7 +166,9 @@ export function PrintView({
               ))}
             </ol>
             <span className="filemeta">
-              {panels.length} ready-to-upload images + a combined PDF, sized for 5 × 7.
+              {proofApproved
+                ? `${panels.length} ready-to-upload images + a combined PDF, sized for 5 × 7.`
+                : "Approve the proof to save print files."}
             </span>
           </details>
         </div>
@@ -199,13 +194,11 @@ export function PrintView({
                 </button>
               </div>
             </div>
-            <p>All four panels of your 5 × 7 folded card, exactly as they print. Confirm each one as you review it.</p>
+            <p>All four panels of your 5 × 7 folded card, exactly as they print. Review them here before the final approval below.</p>
             <div className="proofpanels" data-trim={showTrimGuides}>
               {panels.map((panel) => {
-                const reviewItem = proofChecklistItems.find((item) => item.id === `panel-${panel.id}`);
-                const reviewed = reviewItem ? proofChecklist[reviewItem.id] === true : false;
                 return (
-                  <figure className="proofpanel" data-overflow={panel.overflowRisk} data-reviewed={reviewed} key={panel.id}>
+                  <figure className="proofpanel" data-overflow={panel.overflowRisk} key={panel.id}>
                     <div className="proofpanelFrame">
                       <PanelArt panel={panel} />
                       {showTrimGuides ? (
@@ -219,17 +212,6 @@ export function PrintView({
                       <strong>{panel.label}</strong>
                       {panel.overflowRisk ? <small className="proofpanelWarn">Too much text</small> : null}
                     </figcaption>
-                    {reviewItem ? (
-                      <label className="proofcheck proofcheck-panel" data-on={reviewed}>
-                        <input
-                          aria-label={reviewItem.label}
-                          checked={reviewed}
-                          onChange={() => setProofChecklist((current) => toggleProofChecklistItem(current, reviewItem.id))}
-                          type="checkbox"
-                        />
-                        <span>{reviewItem.label}</span>
-                      </label>
-                    ) : null}
                   </figure>
                 );
               })}
@@ -260,7 +242,7 @@ export function PrintView({
               </div>
             ) : null}
             <div className="proofchecklist">
-              {finalApprovalItems.map((item) => (
+              {proofChecklistItems.map((item) => (
                 <label
                   className="proofcheck"
                   data-approve={item.id === "approve" ? true : undefined}

@@ -163,6 +163,7 @@ describeWithChrome("CustomCard UI smoke", () => {
         const studioObjectText = document.querySelector(".studioObject")?.textContent;
         const generationScopeText = document.querySelector(".generationScope")?.textContent;
         await clickByText("Continue to proof checks");
+        const printHeading = document.querySelector("h1")?.textContent;
         const printCtaDock = !!document.querySelector(".ctadock");
         const proofInputs = [...document.querySelectorAll(".proofcheck input")];
         proofInputs.forEach((node) => node.click());
@@ -170,6 +171,12 @@ describeWithChrome("CustomCard UI smoke", () => {
         const checkoutButton = [...document.querySelectorAll("button")].find((node) =>
           node.textContent?.includes("Download print package")
         );
+        const printText = document.body.textContent;
+        const proofProgress = document.querySelector(".proofprogress")?.textContent;
+        const downloadButtons = [...document.querySelectorAll("button")].map((node) => node.textContent);
+        await clickByText("Edit card");
+        const returnedProofVisible = document.querySelector(".studio")?.getAttribute("data-proof-visible");
+        const returnedPanelEditorVisible = !!document.querySelector("#panel-editor");
 
         return {
           homeText,
@@ -179,17 +186,19 @@ describeWithChrome("CustomCard UI smoke", () => {
           panelCount,
           objectFaceCount,
           generationTargetCount,
-          generateWholeDisabledSignedOut: generateWholeButton ? generateWholeButton.disabled : false,
-          improveSelectedDisabledSignedOut: improveSelectedButton ? improveSelectedButton.disabled : false,
+          generateWholeVisibleSignedOut: Boolean(generateWholeButton),
+          improveSelectedVisibleSignedOut: Boolean(improveSelectedButton),
           regeneratePanelDisabledSignedOut: regeneratePanelButton ? regeneratePanelButton.disabled : false,
           studioObjectText,
           generationScopeText,
           checkoutButtonEnabledAfterApproval: checkoutButton ? !checkoutButton.disabled : false,
-          printHeading: document.querySelector("h1")?.textContent,
+          printHeading,
           printCtaDock,
-          printText: document.body.textContent,
-          proofProgress: document.querySelector(".proofprogress")?.textContent,
-          downloadButtons: [...document.querySelectorAll("button")].map((node) => node.textContent),
+          printText,
+          proofProgress,
+          downloadButtons,
+          returnedProofVisible,
+          returnedPanelEditorVisible,
           checkoutInputs: [...document.querySelectorAll(".checkoutgrid input")].length,
           storeSteps: document.querySelectorAll(".storestep").length,
           adminRows: document.querySelectorAll(".adminHeroCard, .adapterRow").length,
@@ -208,16 +217,15 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.preDraftProofCta).toBe(false);
     expect(result.panelCount).toBe(4);
     expect(result.objectFaceCount).toBe(4);
-    expect(result.generationTargetCount).toBe(4);
-    expect(result.generateWholeDisabledSignedOut).toBe(true);
-    expect(result.improveSelectedDisabledSignedOut).toBe(true);
+    expect(result.generationTargetCount).toBe(0);
+    expect(result.generateWholeVisibleSignedOut).toBe(false);
+    expect(result.improveSelectedVisibleSignedOut).toBe(false);
     expect(result.regeneratePanelDisabledSignedOut).toBe(true);
     expect(result.studioObjectText).toContain("Folded card object");
-    expect(result.generationScopeText).toContain("Choose what to improve");
-    expect(result.generationScopeText).toContain("Current proof");
+    expect(result.generationScopeText ?? "").toBe("");
     expect(result.printHeading).toBe("Finish at a print shop");
     expect(result.printText).toContain("Print-shop details");
-    expect(result.printText).toContain("Save print package");
+    expect(result.printText).toContain("Upload helpers");
     expect(result.printText).toContain("Download print package");
     expect(result.printText).toContain("Approve your proof");
     expect(result.printText).toContain("I approve this proof for printing");
@@ -226,11 +234,12 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.printCtaDock).toBe(false);
     expect(result.proofProgress).toContain("Proof approved");
     expect(result.checkoutButtonEnabledAfterApproval).toBe(true);
+    expect(result.returnedProofVisible).toBe("true");
+    expect(result.returnedPanelEditorVisible).toBe(true);
     expect(result.printText).not.toContain("Manual fallback");
     expect(result.printText).not.toContain("CVS");
     expect(result.printText).not.toContain("FedEx Office");
     expect(result.printText).not.toContain("Staples");
-    expect(result.downloadButtons.join(" ")).toContain("Save print package");
     expect(result.downloadButtons.join(" ")).toContain("Save upload panels");
     expect(result.downloadButtons.join(" ")).toContain("Copy steps");
     expect(result.checkoutInputs).toBe(0);

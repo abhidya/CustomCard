@@ -285,7 +285,7 @@ describe("customer shell server render", () => {
     expect(print.text).toContain("I approve this proof for printing");
     expect(print.text).toContain("Download print package");
     expect(print.text).toContain("Finish the proof approval checklist to unlock the print-shop package.");
-    expect(print.text).toContain("Save print package");
+    expect(print.text).toContain("Manual upload helpers");
     expect(print.text).not.toContain("Sign in to continue");
     expect(print.text).not.toContain("Account required");
   });
@@ -495,10 +495,12 @@ describe("customer shell server render", () => {
           onGenerateAi: () => undefined,
           onKeepArtwork: () => undefined,
           onReviewProof: () => undefined,
+          onTemplateReviewChange: () => undefined,
           onPanelEdit: () => undefined,
           onPanelRevert: () => undefined,
           panelOverrides: {},
-          printFitPassed: true
+          printFitPassed: true,
+          templateReviewStarted: false
         })
       );
       const text = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ");
@@ -520,8 +522,8 @@ describe("customer shell server render", () => {
 
       expect(text).toContain("Finish at a print shop");
       expect(text).toContain("Print-shop details");
-      expect(text).toContain("Print file package");
-      expect(text).toContain("Save print package");
+      expect(text).toContain("Upload helpers");
+      expect(text).toContain("Download print package");
       expect(text).toContain("Save upload panels");
       expect(text).toContain("Copy steps");
       expect(text).toContain("Open print shop");
@@ -563,10 +565,12 @@ describe("customer shell server render", () => {
           onGenerateAi: () => undefined,
           onKeepArtwork: () => undefined,
           onReviewProof: () => undefined,
+          onTemplateReviewChange: () => undefined,
           onPanelEdit: () => undefined,
           onPanelRevert: () => undefined,
           panelOverrides: {},
-          printFitPassed: true
+          printFitPassed: true,
+          templateReviewStarted: false
         })
       );
       const text = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ");
@@ -599,16 +603,15 @@ describe("customer shell server render", () => {
       expect(html).toContain('aria-selected="true"');
     });
 
-    it("renders the four-panel print proof with per-panel review checks and trim toggle", () => {
+    it("renders the four-panel print proof with compact approval and trim toggle", () => {
       const { html, text } = renderShell({ search: "?view=handoff", storedWorkspace: sampleWorkspace });
 
       expect(text).toContain("Your print proof");
       expect(text).toContain("Show trim / safe area");
       expect(html.split('class="proofpanel"').length - 1).toBe(4);
-      for (const label of ["Front reviewed", "Inside left reviewed", "Inside right reviewed", "Back reviewed"]) {
+      for (const label of ["All four panels look right", "Names, spelling, and tone are approved", "Crop and safe area reviewed"]) {
         expect(text).toContain(label);
       }
-      expect(text).toContain("Names, spelling, and tone are approved");
       expect(text).toContain("I approve this proof for printing");
     });
 

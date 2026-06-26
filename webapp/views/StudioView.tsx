@@ -111,6 +111,7 @@ export function StudioView({
   aiStatus,
   aiPanelProgress,
   aiRequiresSignIn,
+  templateReviewStarted,
   panelOverrides = EMPTY_PANEL_OVERRIDES,
   printFitPassed,
   sourceMoment,
@@ -118,6 +119,7 @@ export function StudioView({
   onField,
   onGenerateAi,
   onKeepArtwork,
+  onTemplateReviewChange,
   onReviewProof,
   onPanelEdit = NOOP,
   onPanelRevert = NOOP
@@ -132,6 +134,7 @@ export function StudioView({
   aiStatus?: string;
   aiPanelProgress: AiPanelGenerationProgress;
   aiRequiresSignIn: boolean;
+  templateReviewStarted: boolean;
   panelOverrides: PanelOverrides;
   printFitPassed: boolean;
   sourceMoment?: CalendarMomentDraftContext;
@@ -139,14 +142,16 @@ export function StudioView({
   onField: <K extends keyof CardDraftInput>(field: K, value: CardDraftInput[K]) => void;
   onGenerateAi: (panelId?: CardPanel["id"] | CardPanel["id"][]) => void;
   onKeepArtwork: () => void;
+  onTemplateReviewChange: (started: boolean) => void;
   onReviewProof: () => void;
   onPanelEdit: (panelId: CardPanel["id"], patch: PanelOverride) => void;
   onPanelRevert: (panelId: CardPanel["id"]) => void;
 }) {
   const [activePanel, setActivePanel] = useState<CardPanel["id"]>("front");
   const [previewMode, setPreviewMode] = useState<"proof" | "folded">("proof");
-  const [templateReviewStarted, setTemplateReviewStarted] = useState(false);
   const [rawGenerationPanelIds, setGenerationPanelIds] = useState<CardPanel["id"][]>(["front"]);
+  const studioRef = useRef<HTMLDivElement | null>(null);
+  const proofWasVisible = useRef(false);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const generationPanelIds = normalizeGenerationPanelIds({ activePanelId: activePanel, draft, generationPanelIds: rawGenerationPanelIds });
   const {
@@ -184,6 +189,20 @@ export function StudioView({
   useEffect(() => {
     if (sensitive && toneImpliesHumor(draftInput.tone)) onField("tone", "simple");
   }, [draftInput.tone, onField, sensitive]);
+
+  useEffect(() => {
+    if (!proofWorkspaceVisible) {
+      proofWasVisible.current = false;
+      return undefined;
+    }
+    if (proofWasVisible.current) return undefined;
+    proofWasVisible.current = true;
+    const frame = window.requestAnimationFrame(() => {
+      studioRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+      studioRef.current?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [proofWorkspaceVisible]);
   function handleTabKeys(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     const lastIndex = draft.panels.length - 1;
     const nextIndexByKey: Partial<Record<string, number>> = {
@@ -205,17 +224,17 @@ export function StudioView({
 
   function startAiGeneration(panelId?: CardPanel["id"] | CardPanel["id"][]) {
     if (aiRequiresSignIn) return;
-    setTemplateReviewStarted(false);
+    onTemplateReviewChange(false);
     onGenerateAi(panelId);
   }
 
   function startTemplateReview() {
-    setTemplateReviewStarted(true);
+    onTemplateReviewChange(true);
   }
 
   function applyTemplate(template: CardTemplateChoice) {
     setActivePanel("front");
-    setTemplateReviewStarted(true);
+    onTemplateReviewChange(true);
     if (genericOccasion(draftInput.occasion)) onField("occasion", template.occasion);
     onField("style", template.styleId);
     onPanelEdit("front", templatePanelPatch(template));
@@ -523,7 +542,12 @@ export function StudioView({
         </div>
       ) : null}
 
-      <div className="studio" data-proof-visible={proofWorkspaceVisible ? "true" : "false"}>
+      <div
+        className="studio"
+        data-proof-visible={proofWorkspaceVisible ? "true" : "false"}
+        ref={studioRef}
+        tabIndex={proofWorkspaceVisible ? -1 : undefined}
+      >
         <div className="stage reveal reveal-1">
           {proofWorkspaceVisible ? (
             <>
@@ -667,7 +691,7 @@ export function StudioView({
             </details>
           ) : aiLaunchPanel}
 
-          {proofWorkspaceVisible ? (
+          {proofWorkspaceVisible && (!aiRequiresSignIn || aiActive || aiLoading) ? (
             <GenerationScopePanel
               activePanelId={activePanel}
               aiActive={aiActive}

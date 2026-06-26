@@ -93,6 +93,7 @@ export default function App() {
   const { isLoaded, isSignedIn, user } = useUser();
   const state = useAppState(getToken);
   const [studioMomentContext, setStudioMomentContext] = useState<CalendarMomentDraftContext | null>(null);
+  const [studioReviewStarted, setStudioReviewStarted] = useState(false);
   const {
     activeView,
     setActiveView,
@@ -195,6 +196,16 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function openStudioSetup() {
+    setStudioReviewStarted(false);
+    openView("studio");
+  }
+
+  function openStudioReview() {
+    setStudioReviewStarted(true);
+    openView("studio");
+  }
+
   /* ---------- workspace + notes ---------- */
   function saveWorkspace(next: LocalWorkspace | undefined) {
     setWorkspace(next);
@@ -232,7 +243,7 @@ export default function App() {
   function startOccasion(occasion: string) {
     setStudioMomentContext(null);
     setDraftInput((current) => ({ ...current, occasion }));
-    openView("studio");
+    openStudioSetup();
   }
 
   function acceptOpportunity() {
@@ -245,7 +256,7 @@ export default function App() {
         opportunityChanged: true
       })
     );
-    openView("studio");
+    openStudioSetup();
   }
 
   function dismissOpportunity() {
@@ -270,7 +281,7 @@ export default function App() {
       saveWorkspace(base);
       setStudioMomentContext(context);
       setDraftInput((current) => applyCalendarMomentToDraftInput(current, moment));
-      openView("studio");
+      openStudioSetup();
       return;
     }
     setStudioMomentContext(null);
@@ -519,7 +530,7 @@ export default function App() {
             }}
             onCreate={() => {
               setStudioMomentContext(null);
-              openView("studio");
+              openStudioSetup();
             }}
             onFindMoments={() => openView("opportunities")}
             onOccasion={startOccasion}
@@ -530,7 +541,7 @@ export default function App() {
         {!isAdminView && showBusinessLanding ? (
           <BusinessLandingView
             draft={displayDraft}
-            onCreate={() => openView("studio")}
+            onCreate={openStudioSetup}
             onReview={() => openView("opportunities")}
           />
         ) : null}
@@ -567,11 +578,13 @@ export default function App() {
             onGenerateAi={triggerAiCardGen}
             onKeepArtwork={keepAiArtwork}
             onReviewProof={() => openView("handoff")}
+            onTemplateReviewChange={setStudioReviewStarted}
             onPanelEdit={updatePanelOverride}
             onPanelRevert={revertPanelOverride}
             panelOverrides={panelOverrides}
             printFitPassed={validation.passed}
             sourceMoment={studioMomentContext ?? undefined}
+            templateReviewStarted={studioReviewStarted}
           />
         ) : null}
 
@@ -584,7 +597,7 @@ export default function App() {
             isSignedIn={Boolean(isSignedIn)}
             onMakeAnother={(recipient) => {
               updateDraft("recipient", recipient);
-              openView("studio");
+              openStudioSetup();
             }}
             onResume={() => openView("studio")}
             onReviewProof={() => openView("handoff")}
@@ -603,7 +616,7 @@ export default function App() {
             onForm={setMemoryForm}
             onMakeCard={(recipient) => {
               updateDraft("recipient", recipient);
-              openView("studio");
+              openStudioSetup();
             }}
           />
         ) : null}
@@ -619,7 +632,7 @@ export default function App() {
 
         {!isAdminView && visibleCustomerView === "handoff" ? (
           <PrintView
-            onBackToDesign={() => openView("studio")}
+            onBackToDesign={openStudioReview}
             onCardEvent={handleCardEvent}
             onCopyChecklist={copyChecklist}
             onDownloadPackage={downloadPrintPackage}

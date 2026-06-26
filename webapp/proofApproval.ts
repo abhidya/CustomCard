@@ -1,9 +1,9 @@
 import type { CardDraft, CardPanel } from "../src/customerWorkflow";
 
 /**
- * Proof approval policy: the customer must explicitly confirm every panel of
- * the 2D print proof before the print-shop package unlocks. The proof view is the
- * source of truth for what prints; this checklist is the human gate.
+ * Proof approval policy: the proof view is the source of truth for what prints.
+ * Keep the human gate short; automatic fit checks and the exact-panel proof do
+ * the heavy lifting before the print-shop package unlocks.
  */
 
 export interface ProofChecklistItem {
@@ -12,19 +12,13 @@ export interface ProofChecklistItem {
 }
 
 export type ProofChecklistItemId =
-  | "panel-front"
-  | "panel-inside-left"
-  | "panel-inside-right"
-  | "panel-back"
+  | "panels"
   | "names"
   | "crop"
   | "approve";
 
 export const proofChecklistItems: ProofChecklistItem[] = [
-  { id: "panel-front", label: "Front reviewed" },
-  { id: "panel-inside-left", label: "Inside left reviewed" },
-  { id: "panel-inside-right", label: "Inside right reviewed" },
-  { id: "panel-back", label: "Back reviewed" },
+  { id: "panels", label: "All four panels look right" },
   { id: "names", label: "Names, spelling, and tone are approved" },
   { id: "crop", label: "Crop and safe area reviewed" },
   { id: "approve", label: "I approve this proof for printing" }

@@ -417,11 +417,10 @@ describe("frontend architecture seams", () => {
     expect(isProofApproved(revoked)).toBe(false);
   });
 
-  it("requires a reviewed check for every printed panel", () => {
+  it("keeps proof approval compact instead of requiring per-panel checkbox gates", () => {
     const ids = proofChecklistItems.map((item) => item.id);
-    expect(ids).toEqual(
-      expect.arrayContaining(["panel-front", "panel-inside-left", "panel-inside-right", "panel-back", "approve"])
-    );
+    expect(ids).toEqual(["panels", "names", "crop", "approve"]);
+    expect(ids.some((id) => id.startsWith("panel-"))).toBe(false);
   });
 
   it("resets proof approval when any printed aspect of the draft changes", () => {
