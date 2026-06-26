@@ -2,7 +2,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "functions": {
-    "api/ai/**": { "maxDuration": 60 }
+    "api/[...path].js": { "maxDuration": 60 }
   },
   "rewrites": [
     {

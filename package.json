@@ -18,7 +18,7 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "mobile:web:preview": "vite --host 127.0.0.1 --open /?view=mobile",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/prune-vercel-api-shims.mjs",
     "check": "npm run test -- --run && npm run test:coverage && npm run build && npm audit --audit-level=high",
     "test": "vitest run --no-file-parallelism",
     "test:coverage": "vitest run --coverage src/*.test.ts tests/infra-contract.test.ts tests/mobile-contract.test.ts",
