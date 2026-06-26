@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-26T23:48:03.335Z",
+  "createdAtIso": "2026-06-26T23:55:32.730Z",
   "status": "rerun-required",
   "promotionReady": false,
   "reportDir": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current",
@@ -31,6 +31,20 @@
     "bestScore": 38
   },
   "failedRequirements": [
+    {
+      "name": "live ComfyUI proof is current",
+      "details": {
+        "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626T042126Z/production-text-preflight.json",
+        "preflightCreatedAtIso": "2026-06-26T04:21:27.154Z",
+        "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
+        "readinessCreatedAtIso": "2026-06-26T23:10:59.401Z",
+        "preflightLiveComfyReachable": true,
+        "preflightLiveNodeAvailable": true,
+        "readinessComfyReachable": false,
+        "readinessHasTextComposer": false,
+        "staleReason": "newer readiness evidence reports live ComfyUI or CustomCardTextComposer unavailable"
+      }
+    },
     {
       "name": "planner preflight is production-ready",
       "details": {
@@ -171,6 +185,7 @@
   },
   "rerunPaths": {
     "plannerPreflightOutput": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-production-planner",
+    "liveComfyPreflightOutput": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626-production-planner",
     "readinessOutput": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-production-planner",
     "benchmarkOutput": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner",
     "manualGradeChecklistOutput": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-production-planner",
@@ -193,42 +208,48 @@
     },
     {
       "step": 3,
+      "title": "Refresh live Comfy preflight",
+      "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/comfyui-production-text-preflight.mjs --require-live true --report-dir docs/evidence/generated-card-comparisons/production-text-preflight-20260626-production-planner",
+      "why": "Proves the current ComfyUI runtime is reachable and has CustomCardTextComposer loaded before readiness or image work rely on it."
+    },
+    {
+      "step": 4,
       "title": "Refresh readiness",
       "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-readiness-doctor.mjs --advisory --local-llm-base-url http://127.0.0.1:5003/v1 --output-dir docs/evidence/generated-card-comparisons/production-text-readiness-20260626-production-planner",
       "why": "Confirms Comfy, the custom text node, aggregate state, model inventory, and configured planner endpoint."
     },
     {
-      "step": 4,
+      "step": 5,
       "title": "Run full production-text matrix",
       "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5003/v1 -LocalLlmModel koboldcpp/gemma-4-31B-it-Q4_K_M -OutputDir docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 3200 -PlannerContextSize 8192",
       "why": "Runs aquarium/koi/dog customer requests through the production Comfy text workflow with LLM-owned theme/copy/layout."
     },
     {
-      "step": 5,
+      "step": 6,
       "title": "Manually grade every run",
       "command": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner/production-text-workflow/*/manual-grade-template.md",
       "why": "Fill each template and save manual-visual-grade.json before aggregating promotion evidence."
     },
     {
-      "step": 6,
+      "step": 7,
       "title": "Write manual grade checklist",
       "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-manual-grade-checklist.mjs --advisory --input docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner --output-dir docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-production-planner",
       "why": "Summarizes generated runs, missing/invalid manual grades, blocked grades, and failed-before-image stories before aggregation."
     },
     {
-      "step": 7,
+      "step": 8,
       "title": "Aggregate production-text results",
       "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/model-benchmark-aggregate.mjs --input docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner --output-dir docs/evidence/generated-card-comparisons/benchmark-aggregate-20260626-production-text-production-planner --phase local-production-text",
       "why": "Builds the ranked aggregate used by the promotion gate."
     },
     {
-      "step": 8,
+      "step": 9,
       "title": "Refresh tracked evidence index",
       "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-evidence-index.mjs --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-production-planner",
       "why": "Aggregates tracked planner/readiness/preflight/benchmark/aggregate evidence after the rerun artifacts are committed."
     },
     {
-      "step": 9,
+      "step": 10,
       "title": "Run final promotion gate",
       "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-promotion-gate.mjs --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-production-planner --index-output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-production-planner",
       "why": "Shows whether every production-text requirement now passes. Remove --advisory only when a pass is expected."
@@ -236,6 +257,7 @@
   ],
   "acceptanceChecks": [
     "planner preflight is production-ready",
+    "live ComfyUI proof is current",
     "readiness doctor is promotion-ready",
     "production-suitable planner endpoint is reachable",
     "no small smoke planner is active or used",

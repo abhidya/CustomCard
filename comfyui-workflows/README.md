@@ -167,8 +167,9 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 ```
 
 The rerun plan reads the current promotion gate and evidence index, then writes
-the exact planner preflight, readiness, benchmark, manual grading, aggregate,
-index, and gate commands needed for the next production-suitable evidence pass.
+the exact planner preflight, live Comfy preflight, readiness, benchmark, manual
+grading, aggregate, index, and gate commands needed for the next
+production-suitable evidence pass.
 
 Manual grade checklist after a production-text benchmark:
 
@@ -308,7 +309,7 @@ Latest live evidence:
     slow for routine benchmark loops.
 - Current rerun plan:
   `docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current`
-  - Converts the 8 failed gate requirements into 9 ordered commands for the
+  - Converts the 9 failed gate requirements into 10 ordered commands for the
     next production-suitable planner pass and records local planner coverage.
 - Current manual grade checklist:
   `docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current`
@@ -321,14 +322,16 @@ Latest live evidence:
     until the planner endpoint and aggregate evidence pass.
 - Current promotion gate:
   `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current`
-  - Passes live Comfy/text-composer proof, final-Comfy-image evidence, local
-    model coverage, and production-planner-candidate availability.
-  - Fails planner preflight/readiness, production-suitable endpoint,
-    no-small-planner, matrix completion, must-include, and manual aggregate
-    requirements, so production promotion remains blocked.
+  - Passes historical live Comfy/text-composer preflight, final-Comfy-image
+    evidence, local model coverage, and production-planner-candidate
+    availability.
+  - Fails current live Comfy proof, planner preflight/readiness,
+    production-suitable endpoint, no-small-planner, matrix completion,
+    must-include, manual grade checklist, and manual aggregate requirements, so
+    production promotion remains blocked.
 - Current research rollup:
   `docs/evidence/generated-card-comparisons/production-text-research-rollup-20260626-current`
-  - Derives current findings, failed gate requirements, evidence summary, and 9
+  - Derives current findings, failed gate requirements, evidence summary, and 10
     next commands from tracked index/gate/rerun artifacts.
   - Records that reduced planner prompts are not promotion evidence; rerun with
     Gemma 31B, Magistral Small, Qwen3 14B+, or a stronger hosted/self-hosted

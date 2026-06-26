@@ -88,6 +88,7 @@ describe("production text rerun plan", () => {
     expect(plan.commands.map((item) => item.title)).toEqual([
       "Start or configure production planner",
       "Write planner preflight evidence",
+      "Refresh live Comfy preflight",
       "Refresh readiness",
       "Run full production-text matrix",
       "Manually grade every run",
@@ -96,10 +97,13 @@ describe("production text rerun plan", () => {
       "Refresh tracked evidence index",
       "Run final promotion gate"
     ]);
-    expect(plan.commands[3].command).toContain("-PlannerMaxTokens 3200");
-    expect(plan.commands[3].command).not.toContain("-AllowSmallPlanner");
-    expect(plan.commands[5].command).toContain("production-text-manual-grade-checklist.mjs");
+    expect(plan.commands[2].command).toContain("comfyui-production-text-preflight.mjs");
+    expect(plan.commands[2].command).toContain("--require-live true");
+    expect(plan.commands[4].command).toContain("-PlannerMaxTokens 3200");
+    expect(plan.commands[4].command).not.toContain("-AllowSmallPlanner");
+    expect(plan.commands[6].command).toContain("production-text-manual-grade-checklist.mjs");
     expect(plan.acceptanceChecks).toContain("planner preflight is production-ready");
+    expect(plan.acceptanceChecks).toContain("live ComfyUI proof is current");
     expect(plan.acceptanceChecks).toContain("manual grade checklist is promotion-ready");
     expect(existsSync(join(outputDir, "production-text-rerun-plan.json"))).toBe(true);
     expect(existsSync(join(outputDir, "production-text-rerun-plan.md"))).toBe(true);

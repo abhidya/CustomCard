@@ -1,6 +1,6 @@
 # Production Text Evidence Index
 
-Created: 2026-06-26T23:48:11.111Z
+Created: 2026-06-26T23:55:37.032Z
 Status: blocked
 Promotion ready: no
 
@@ -32,7 +32,7 @@ Promotion ready: no
 
 | Type | Path | Status | Key result |
 | --- | --- | --- | --- |
-| Rerun Plan | [open](../production-text-rerun-plan-20260626-current/production-text-rerun-plan.json) | rerun-required | 8 failed requirement(s); commands=9 |
+| Rerun Plan | [open](../production-text-rerun-plan-20260626-current/production-text-rerun-plan.json) | rerun-required | 9 failed requirement(s); commands=10 |
 | Planner | [open](../production-text-planner-preflight-20260626-current/production-text-planner-preflight.json) | blocked | smoke-only; model=koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S; context=4096 |
 | Readiness | [open](../production-text-readiness-20260626-current/production-text-readiness.json) | blocked | 5 blocker(s); planner=none |
 | Model Coverage | [open](../local-model-coverage-20260626-current/local-model-coverage.json) | action-needed | 9 recommended installed; unevaluated production planners=gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash |

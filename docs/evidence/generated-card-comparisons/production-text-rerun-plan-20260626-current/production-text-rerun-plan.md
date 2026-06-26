@@ -1,12 +1,13 @@
 # Production Text Rerun Plan
 
-Created: 2026-06-26T23:48:03.335Z
+Created: 2026-06-26T23:55:32.730Z
 Status: rerun-required
 Gate: docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current/production-text-promotion-gate.json
 Evidence index: docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current/production-text-evidence-index.json
 
 ## Current Blockers
 
+- live ComfyUI proof is current
 - planner preflight is production-ready
 - readiness doctor is promotion-ready
 - production-suitable planner endpoint is reachable
@@ -55,7 +56,15 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 Proves the planner model, context budget, and output cap before image work starts.
 
-### 3. Refresh readiness
+### 3. Refresh live Comfy preflight
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/comfyui-production-text-preflight.mjs --require-live true --report-dir docs/evidence/generated-card-comparisons/production-text-preflight-20260626-production-planner
+```
+
+Proves the current ComfyUI runtime is reachable and has CustomCardTextComposer loaded before readiness or image work rely on it.
+
+### 4. Refresh readiness
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-readiness-doctor.mjs --advisory --local-llm-base-url http://127.0.0.1:5003/v1 --output-dir docs/evidence/generated-card-comparisons/production-text-readiness-20260626-production-planner
@@ -63,7 +72,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 Confirms Comfy, the custom text node, aggregate state, model inventory, and configured planner endpoint.
 
-### 4. Run full production-text matrix
+### 5. Run full production-text matrix
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5003/v1 -LocalLlmModel koboldcpp/gemma-4-31B-it-Q4_K_M -OutputDir docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 3200 -PlannerContextSize 8192
@@ -71,7 +80,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-producti
 
 Runs aquarium/koi/dog customer requests through the production Comfy text workflow with LLM-owned theme/copy/layout.
 
-### 5. Manually grade every run
+### 6. Manually grade every run
 
 ```powershell
 docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner/production-text-workflow/*/manual-grade-template.md
@@ -79,7 +88,7 @@ docs/evidence/generated-card-comparisons/production-text-workflow-20260626-produ
 
 Fill each template and save manual-visual-grade.json before aggregating promotion evidence.
 
-### 6. Write manual grade checklist
+### 7. Write manual grade checklist
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-manual-grade-checklist.mjs --advisory --input docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner --output-dir docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-production-planner
@@ -87,7 +96,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 Summarizes generated runs, missing/invalid manual grades, blocked grades, and failed-before-image stories before aggregation.
 
-### 7. Aggregate production-text results
+### 8. Aggregate production-text results
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/model-benchmark-aggregate.mjs --input docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner --output-dir docs/evidence/generated-card-comparisons/benchmark-aggregate-20260626-production-text-production-planner --phase local-production-text
@@ -95,7 +104,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 Builds the ranked aggregate used by the promotion gate.
 
-### 8. Refresh tracked evidence index
+### 9. Refresh tracked evidence index
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-evidence-index.mjs --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-production-planner
@@ -103,7 +112,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 Aggregates tracked planner/readiness/preflight/benchmark/aggregate evidence after the rerun artifacts are committed.
 
-### 9. Run final promotion gate
+### 10. Run final promotion gate
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-promotion-gate.mjs --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-production-planner --index-output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-production-planner
@@ -114,6 +123,7 @@ Shows whether every production-text requirement now passes. Remove --advisory on
 ## Acceptance Checks
 
 - planner preflight is production-ready
+- live ComfyUI proof is current
 - readiness doctor is promotion-ready
 - production-suitable planner endpoint is reachable
 - no small smoke planner is active or used

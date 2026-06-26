@@ -440,7 +440,7 @@ readiness probe finds local Comfy and planner endpoints offline. Higher-quality
 planner files are installed locally, but no production-suitable planner endpoint
 is currently reachable/configured. The current rerun plan is
 `docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current`:
-it turns the 8 failed gate requirements into 9 ordered commands for the next
+it turns the 9 failed gate requirements into 10 ordered commands for the next
 production-suitable planner evidence pass and records the current local model
 coverage. The current local model coverage is
 `docs/evidence/generated-card-comparisons/local-model-coverage-20260626-current`;
@@ -454,18 +454,20 @@ promotion blocked for the same planner/model reasons. The current research
 rollup is
 `docs/evidence/generated-card-comparisons/production-text-research-rollup-20260626-current`;
 it derives findings, failed gate requirements, evidence summary, and the next
-9 commands from the tracked index/gate/rerun artifacts. The current manual grade
+10 commands from the tracked index/gate/rerun artifacts. The current manual grade
 checklist is
 `docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current`;
 it records 3 blocked manual grades, 2 generated gradable runs, and 1 koi run
 that failed before image generation. The
 current promotion gate is
 `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current`;
-it passes live Comfy/text-composer, final-Comfy-image, local model coverage, and
-production-planner-candidate availability requirements, but fails planner
+it passes historical live Comfy/text-composer preflight, final-Comfy-image,
+local model coverage, and production-planner-candidate availability
+requirements, but fails the current live Comfy proof because newer readiness
+evidence reports Comfy/text-composer unavailable. It also fails planner
 preflight, readiness, production-suitable endpoint, no-small-planner, full
 matrix completion, must-include adherence, manual grade checklist, and manual
-aggregate requirements: 8 failed requirements total. Gate 9's live LLM-planned
+aggregate requirements: 9 failed requirements total. Gate 9's live LLM-planned
 matrix ran through KoboldCPP
 Qwen3-4B and local Comfy, then failed quality review: aquarium scored 38/100,
 dog scored 34/100, and koi failed before image generation because the local LLM

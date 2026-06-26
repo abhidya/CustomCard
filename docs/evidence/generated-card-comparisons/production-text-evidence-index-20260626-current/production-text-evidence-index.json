@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-26T23:48:11.111Z",
+  "createdAtIso": "2026-06-26T23:55:37.032Z",
   "status": "blocked",
   "promotionReady": false,
   "evidenceRoot": "docs/evidence/generated-card-comparisons",
@@ -40,10 +40,11 @@
   "rerunPlans": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current/production-text-rerun-plan.json",
-      "createdAtIso": "2026-06-26T23:48:03.335Z",
+      "createdAtIso": "2026-06-26T23:55:32.730Z",
       "status": "rerun-required",
       "promotionReady": false,
       "failedRequirements": [
+        "live ComfyUI proof is current",
         "planner preflight is production-ready",
         "readiness doctor is promotion-ready",
         "production-suitable planner endpoint is reachable",
@@ -53,7 +54,7 @@
         "manual grade checklist is promotion-ready",
         "manual aggregate is promotion-ready"
       ],
-      "commandCount": 9,
+      "commandCount": 10,
       "plannerModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
       "plannerClassification": "smoke-only",
       "nextBenchmarkOutput": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner"

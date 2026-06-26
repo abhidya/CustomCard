@@ -168,6 +168,35 @@ describe("production text promotion gate", () => {
     expect(report.requirements.find((item) => item.name === "production planner candidate is available")?.ok).toBe(true);
   });
 
+  it("blocks stale live Comfy proof when newer readiness contradicts it", () => {
+    const root = mkdtempSync(join(tmpdir(), "production-text-promotion-gate-stale-comfy-"));
+    writeBaseEvidence(root, { ready: false });
+    writeJson(join(root, "production-text-readiness.json"), {
+      createdAtIso: "2026-06-26T06:00:00.000Z",
+      status: "blocked",
+      promotionReady: false,
+      comfy: { reachable: false, hasTextComposer: false },
+      activePlannerEndpoints: [],
+      blockers: [
+        { name: "live ComfyUI reachable" },
+        { name: "live ComfyUI exposes CustomCardTextComposer" },
+        { name: "configured production planner endpoint is reachable" }
+      ]
+    });
+
+    const report = runProductionTextPromotionGate({
+      input: root,
+      "output-dir": join(root, "gate"),
+      "include-untracked": true,
+      advisory: true
+    });
+
+    const currentProof = report.requirements.find((item) => item.name === "live ComfyUI proof is current");
+    expect(currentProof?.ok).toBe(false);
+    expect(JSON.stringify(currentProof?.details)).toContain("newer readiness evidence");
+    expect(report.nextSteps.join("\n")).toContain("Refresh live ComfyUI preflight");
+  });
+
   it("passes only when planner, matrix, and manual aggregate evidence all pass", () => {
     const root = mkdtempSync(join(tmpdir(), "production-text-promotion-gate-ready-"));
     writeBaseEvidence(root, { ready: true });

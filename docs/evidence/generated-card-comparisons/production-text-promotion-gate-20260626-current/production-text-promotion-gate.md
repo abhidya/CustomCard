@@ -1,6 +1,6 @@
 # Production Text Promotion Gate
 
-Created: 2026-06-26T23:47:57.371Z
+Created: 2026-06-26T23:55:28.979Z
 Status: blocked
 Promotion ready: no
 Evidence index: docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current
@@ -9,7 +9,8 @@ Evidence index: docs/evidence/generated-card-comparisons/production-text-evidenc
 
 | Requirement | Status | Details |
 | --- | --- | --- |
-| live ComfyUI preflight passed | ok | {"preflight":"docs/evidence/generated-card-comparisons/production-text-preflight-20260626T042126Z/production-text-preflight.json","liveComfyReachable":true,"liveNodeAvailable":true} |
+| live ComfyUI preflight passed | ok | {"preflight":"docs/evidence/generated-card-comparisons/production-text-preflight-20260626T042126Z/production-text-preflight.json","preflightCreatedAtIso":"2026-06-26T04:21:27.154Z","liveComfyReachable":true,"liveNodeAvailable":true} |
+| live ComfyUI proof is current | fail | {"preflight":"docs/evidence/generated-card-comparisons/production-text-preflight-20260626T042126Z/production-text-preflight.json","preflightCreatedAtIso":"2026-06-26T04:21:27.154Z","readiness":"docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json","readinessCreatedAtIso":"2026-06-26T23:10:59.401Z","preflightLiveComfyReachable":true,"preflightLiveNodeAvailable":true,"readinessComfyReachable":false,"readinessHasTextComposer":false,"staleReason":"newer readiness evidence reports live ComfyUI or CustomCardTextComposer unavailable"} |
 | planner preflight is production-ready | fail | {"plannerPreflight":"docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current/production-text-planner-preflight.json","activeModel":"koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S","classification":"smoke-only","reportedContextTokens":4096,"maxOutputTokens":3200,"blockers":["Planner /models preflight failed: fetch failed","Planner model 'koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S' is below the production model floor for production text and is smoke-only; use Gemma 31B, Magistral Small, Qwen3 14B+, or a stronger hosted planner.","Planner context 4096 is below the production minimum 8192; 4096-token local runs are smoke-only."]} |
 | readiness doctor is promotion-ready | fail | {"readiness":"docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json","blockers":["live ComfyUI reachable","live ComfyUI exposes CustomCardTextComposer","latest LLM-planned aggregate is passing","configured production planner endpoint is reachable","configured production planner endpoint is production-suitable"]} |
 | local model coverage is tracked | ok | {"modelCoverage":"docs/evidence/generated-card-comparisons/local-model-coverage-20260626-current/local-model-coverage.json","installedModelFiles":47,"recommendedInstalled":9,"recommendedEvaluated":3,"recommendedMissing":1} |
@@ -24,6 +25,7 @@ Evidence index: docs/evidence/generated-card-comparisons/production-text-evidenc
 
 ## Next Steps
 
+- Refresh live ComfyUI preflight after the current readiness probe, with CustomCardTextComposer loaded.
 - Run production-text planner preflight with a production-suitable model, 8192+ context, and the full output budget.
 - Run the planner preflight and readiness doctor after starting a production-suitable planner endpoint with 8192+ context.
 - Use Qwen3-4B/8B only for smoke/failure evidence; run promotion evidence with Gemma 31B, Magistral Small, Qwen3-14B+, or a hosted/self-hosted production planner.

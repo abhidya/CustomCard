@@ -36,11 +36,24 @@ export function runProductionTextPromotionGate(args = {}) {
   const latestBenchmark = index.benchmarkSummaries.find((entry) => entry.llmGeneratedRuns > 0) || index.benchmarkSummaries[0];
   const latestManualGradeChecklist = index.manualGradeChecklists[0];
   const requiredFixtures = parseList(args.fixtures || "aquarium-lover-birthday,koi-fish-lover-encouragement,dog-lover-thank-you");
+  const liveComfyProofCurrent = isLiveComfyProofCurrent(latestPreflight, latestReadiness);
   const requirements = [
     requirement("live ComfyUI preflight passed", latestPreflight?.liveComfyReachable && latestPreflight?.liveNodeAvailable, {
       preflight: latestPreflight?.path || "",
+      preflightCreatedAtIso: latestPreflight?.createdAtIso || "",
       liveComfyReachable: latestPreflight?.liveComfyReachable,
       liveNodeAvailable: latestPreflight?.liveNodeAvailable
+    }),
+    requirement("live ComfyUI proof is current", liveComfyProofCurrent.ok, {
+      preflight: latestPreflight?.path || "",
+      preflightCreatedAtIso: latestPreflight?.createdAtIso || "",
+      readiness: latestReadiness?.path || "",
+      readinessCreatedAtIso: latestReadiness?.createdAtIso || "",
+      preflightLiveComfyReachable: latestPreflight?.liveComfyReachable,
+      preflightLiveNodeAvailable: latestPreflight?.liveNodeAvailable,
+      readinessComfyReachable: latestReadiness?.comfyReachable,
+      readinessHasTextComposer: latestReadiness?.hasTextComposer,
+      staleReason: liveComfyProofCurrent.reason
     }),
     requirement("planner preflight is production-ready", latestPlannerPreflight?.promotionReady, {
       plannerPreflight: latestPlannerPreflight?.path || "",
@@ -146,11 +159,31 @@ function requirement(name, ok, details = {}) {
   return { name, ok: Boolean(ok), details };
 }
 
+function isLiveComfyProofCurrent(latestPreflight, latestReadiness) {
+  const liveProofPassed = Boolean(latestPreflight?.liveComfyReachable && latestPreflight?.liveNodeAvailable);
+  if (!liveProofPassed) return { ok: false, reason: "latest live Comfy preflight did not pass" };
+  if (!latestReadiness) return { ok: true, reason: "" };
+  const preflightTime = Date.parse(latestPreflight.createdAtIso || "");
+  const readinessTime = Date.parse(latestReadiness.createdAtIso || "");
+  const readinessIsNewer = Number.isFinite(preflightTime) &&
+    Number.isFinite(readinessTime) &&
+    readinessTime > preflightTime;
+  if (!readinessIsNewer) return { ok: true, reason: "" };
+  if (latestReadiness.comfyReachable && latestReadiness.hasTextComposer) return { ok: true, reason: "" };
+  return {
+    ok: false,
+    reason: "newer readiness evidence reports live ComfyUI or CustomCardTextComposer unavailable"
+  };
+}
+
 function buildNextSteps(requirements, indexedNextSteps) {
   const steps = [];
   const failed = new Set(requirements.filter((item) => !item.ok).map((item) => item.name));
   if (failed.has("live ComfyUI preflight passed")) {
     steps.push("Run production-text live preflight with ComfyUI and CustomCardTextComposer loaded.");
+  }
+  if (failed.has("live ComfyUI proof is current")) {
+    steps.push("Refresh live ComfyUI preflight after the current readiness probe, with CustomCardTextComposer loaded.");
   }
   if (failed.has("planner preflight is production-ready")) {
     steps.push("Run production-text planner preflight with a production-suitable model, 8192+ context, and the full output budget.");
