@@ -58,6 +58,34 @@ function writeBaseEvidence(root: string, options: { ready: boolean }) {
     },
     blockers: options.ready ? [] : ["Planner model is smoke-only."]
   });
+  writeJson(join(root, "local-model-coverage.json"), {
+    createdAtIso: "2026-06-26T05:07:00.000Z",
+    status: "action-needed",
+    installedModelFiles: 47,
+    recommendedInstalled: 9,
+    recommendedEvaluated: options.ready ? 4 : 3,
+    recommendedMissing: 1,
+    recommendedCoverage: [
+      {
+        id: "gemma-4-31b-it",
+        role: "higher-quality local card-copy planner",
+        installed: true,
+        evaluated: options.ready
+      },
+      {
+        id: "magistral-small-2509",
+        role: "alternate local copy/planning family",
+        installed: true,
+        evaluated: false
+      },
+      {
+        id: "qwen3-14b-instruct",
+        role: "minimum local production-floor planner beneath Gemma 31B quality",
+        installed: false,
+        evaluated: false
+      }
+    ]
+  });
   writeJson(join(root, "benchmark-aggregate.json"), {
     createdAtIso: "2026-06-26T04:30:00.000Z",
     totalRuns: fixtures.length,
@@ -136,6 +164,8 @@ describe("production text promotion gate", () => {
       "manual grade checklist is promotion-ready",
       "manual aggregate is promotion-ready"
     ]);
+    expect(report.requirements.find((item) => item.name === "local model coverage is tracked")?.ok).toBe(true);
+    expect(report.requirements.find((item) => item.name === "production planner candidate is available")?.ok).toBe(true);
   });
 
   it("passes only when planner, matrix, and manual aggregate evidence all pass", () => {
@@ -151,6 +181,8 @@ describe("production text promotion gate", () => {
     expect(report.status).toBe("promotion-ready");
     expect(report.promotionReady).toBe(true);
     expect(report.requirements.every((item) => item.ok)).toBe(true);
+    expect(report.requirements.map((item) => item.name)).toContain("local model coverage is tracked");
+    expect(report.requirements.map((item) => item.name)).toContain("production planner candidate is available");
     expect(report.requirements.map((item) => item.name)).toContain("manual grade checklist is promotion-ready");
   });
 });

@@ -1,6 +1,6 @@
 # Production Text Rerun Plan
 
-Created: 2026-06-26T23:44:17.163Z
+Created: 2026-06-26T23:48:03.335Z
 Status: rerun-required
 Gate: docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current/production-text-promotion-gate.json
 Evidence index: docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current/production-text-evidence-index.json

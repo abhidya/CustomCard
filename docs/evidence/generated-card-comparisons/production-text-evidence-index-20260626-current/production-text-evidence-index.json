@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-26T23:44:22.851Z",
+  "createdAtIso": "2026-06-26T23:48:11.111Z",
   "status": "blocked",
   "promotionReady": false,
   "evidenceRoot": "docs/evidence/generated-card-comparisons",
@@ -40,7 +40,7 @@
   "rerunPlans": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current/production-text-rerun-plan.json",
-      "createdAtIso": "2026-06-26T23:44:17.163Z",
+      "createdAtIso": "2026-06-26T23:48:03.335Z",
       "status": "rerun-required",
       "promotionReady": false,
       "failedRequirements": [

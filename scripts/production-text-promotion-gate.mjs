@@ -30,6 +30,7 @@ export function runProductionTextPromotionGate(args = {}) {
   });
   const latestPlannerPreflight = index.plannerPreflights[0];
   const latestReadiness = index.readinessReports[0];
+  const latestModelCoverage = index.modelCoverageReports[0];
   const latestPreflight = index.preflights[0];
   const latestAggregate = index.aggregates.find((entry) => entry.kind === "llm-planned") || index.aggregates[0];
   const latestBenchmark = index.benchmarkSummaries.find((entry) => entry.llmGeneratedRuns > 0) || index.benchmarkSummaries[0];
@@ -52,6 +53,24 @@ export function runProductionTextPromotionGate(args = {}) {
     requirement("readiness doctor is promotion-ready", latestReadiness?.promotionReady, {
       readiness: latestReadiness?.path || "",
       blockers: latestReadiness?.blockers || []
+    }),
+    requirement("local model coverage is tracked", Boolean(latestModelCoverage), {
+      modelCoverage: latestModelCoverage?.path || "",
+      installedModelFiles: latestModelCoverage?.installedModelFiles ?? 0,
+      recommendedInstalled: latestModelCoverage?.recommendedInstalled ?? 0,
+      recommendedEvaluated: latestModelCoverage?.recommendedEvaluated ?? 0,
+      recommendedMissing: latestModelCoverage?.recommendedMissing ?? 0
+    }),
+    requirement("production planner candidate is available", Boolean(
+      latestReadiness?.productionSuitablePlannerReachable ||
+      latestModelCoverage?.installedProductionPlanners?.length
+    ), {
+      modelCoverage: latestModelCoverage?.path || "",
+      readiness: latestReadiness?.path || "",
+      productionSuitablePlannerReachable: latestReadiness?.productionSuitablePlannerReachable,
+      installedProductionPlanners: latestModelCoverage?.installedProductionPlanners || [],
+      unevaluatedProductionPlanners: latestModelCoverage?.unevaluatedProductionPlanners || [],
+      missingProductionPlanners: latestModelCoverage?.missingProductionPlanners || []
     }),
     requirement("production-suitable planner endpoint is reachable", latestReadiness?.productionSuitablePlannerReachable, {
       readiness: latestReadiness?.path || "",
@@ -138,6 +157,12 @@ function buildNextSteps(requirements, indexedNextSteps) {
   }
   if (failed.has("readiness doctor is promotion-ready") || failed.has("production-suitable planner endpoint is reachable")) {
     steps.push("Run the planner preflight and readiness doctor after starting a production-suitable planner endpoint with 8192+ context.");
+  }
+  if (failed.has("local model coverage is tracked")) {
+    steps.push("Refresh and commit local model coverage before running the final production-text promotion gate.");
+  }
+  if (failed.has("production planner candidate is available")) {
+    steps.push("Install a production-suitable local planner such as Gemma 31B, Magistral Small, or Qwen3 14B+, or configure a hosted/self-hosted production planner endpoint.");
   }
   if (failed.has("no small smoke planner is active or used")) {
     steps.push("Use Qwen3-4B/8B only for smoke/failure evidence; run promotion evidence with Gemma 31B, Magistral Small, Qwen3-14B+, or a hosted/self-hosted production planner.");

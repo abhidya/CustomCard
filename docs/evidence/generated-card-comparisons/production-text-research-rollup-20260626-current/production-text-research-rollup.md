@@ -1,6 +1,6 @@
 # Production Text Research Rollup
 
-Created: 2026-06-26T23:44:28.288Z
+Created: 2026-06-26T23:48:16.731Z
 Status: blocked
 Promotion ready: no
 
@@ -60,6 +60,8 @@ Failed requirements:
 
 Passed requirements:
 - live ComfyUI preflight passed
+- local model coverage is tracked
+- production planner candidate is available
 - final images came from Comfy text composer
 
 ## Next Commands

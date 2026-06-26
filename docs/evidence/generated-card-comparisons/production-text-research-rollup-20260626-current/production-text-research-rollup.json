@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-26T23:44:28.288Z",
+  "createdAtIso": "2026-06-26T23:48:16.731Z",
   "status": "blocked",
   "promotionReady": false,
   "reportDir": "docs/evidence/generated-card-comparisons/production-text-research-rollup-20260626-current",
@@ -279,6 +279,37 @@
           "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626T042126Z/production-text-preflight.json",
           "liveComfyReachable": true,
           "liveNodeAvailable": true
+        }
+      },
+      {
+        "name": "local model coverage is tracked",
+        "details": {
+          "modelCoverage": "docs/evidence/generated-card-comparisons/local-model-coverage-20260626-current/local-model-coverage.json",
+          "installedModelFiles": 47,
+          "recommendedInstalled": 9,
+          "recommendedEvaluated": 3,
+          "recommendedMissing": 1
+        }
+      },
+      {
+        "name": "production planner candidate is available",
+        "details": {
+          "modelCoverage": "docs/evidence/generated-card-comparisons/local-model-coverage-20260626-current/local-model-coverage.json",
+          "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
+          "productionSuitablePlannerReachable": false,
+          "installedProductionPlanners": [
+            "gemma-4-31b-it",
+            "magistral-small-2509",
+            "deepseek-v4-flash"
+          ],
+          "unevaluatedProductionPlanners": [
+            "gemma-4-31b-it",
+            "magistral-small-2509",
+            "deepseek-v4-flash"
+          ],
+          "missingProductionPlanners": [
+            "qwen3-14b-instruct"
+          ]
         }
       },
       {

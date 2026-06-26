@@ -208,7 +208,8 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 The gate is the final pass/fail contract for production-text promotion. It is
 expected to stay blocked until planner preflight, planner endpoint readiness,
-LLM-planned matrix, term adherence, and manual aggregate requirements all pass.
+tracked model coverage, production planner candidate availability, LLM-planned
+matrix, term adherence, and manual aggregate requirements all pass.
 
 Research rollup after the index/gate/rerun refresh:
 
@@ -320,9 +321,11 @@ Latest live evidence:
     until the planner endpoint and aggregate evidence pass.
 - Current promotion gate:
   `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current`
-  - Passes live Comfy/text-composer proof and final-Comfy-image evidence.
-  - Fails planner preflight/readiness, matrix completion, must-include, and
-    manual aggregate requirements, so production promotion remains blocked.
+  - Passes live Comfy/text-composer proof, final-Comfy-image evidence, local
+    model coverage, and production-planner-candidate availability.
+  - Fails planner preflight/readiness, production-suitable endpoint,
+    no-small-planner, matrix completion, must-include, and manual aggregate
+    requirements, so production promotion remains blocked.
 - Current research rollup:
   `docs/evidence/generated-card-comparisons/production-text-research-rollup-20260626-current`
   - Derives current findings, failed gate requirements, evidence summary, and 9

@@ -331,7 +331,8 @@ Comfy template variables exposed by the local adapter include:
 - `scripts/production-text-promotion-gate.mjs`
   - Blocking promotion gate over the indexed production-text evidence.
   - Requires live Comfy/text-node proof, a production-ready planner preflight, a
-    promotion-ready readiness report, a production-suitable planner endpoint, a
+    promotion-ready readiness report, tracked local model coverage, an available
+    production planner candidate, a production-suitable planner endpoint, a
     completed aquarium/koi/dog matrix, no small smoke planner evidence,
     preserved required terms, and passing manual aggregate grades.
 - `scripts/local-comfy-production-text.mjs`
@@ -460,10 +461,11 @@ it records 3 blocked manual grades, 2 generated gradable runs, and 1 koi run
 that failed before image generation. The
 current promotion gate is
 `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current`;
-it passes live Comfy/text-composer and final-Comfy-image requirements, but fails
-planner preflight, readiness, production-suitable planner, no-small-planner,
-full matrix completion, must-include adherence, manual grade checklist, and
-manual aggregate requirements: 8 failed requirements total. Gate 9's live LLM-planned
+it passes live Comfy/text-composer, final-Comfy-image, local model coverage, and
+production-planner-candidate availability requirements, but fails planner
+preflight, readiness, production-suitable endpoint, no-small-planner, full
+matrix completion, must-include adherence, manual grade checklist, and manual
+aggregate requirements: 8 failed requirements total. Gate 9's live LLM-planned
 matrix ran through KoboldCPP
 Qwen3-4B and local Comfy, then failed quality review: aquarium scored 38/100,
 dog scored 34/100, and koi failed before image generation because the local LLM
