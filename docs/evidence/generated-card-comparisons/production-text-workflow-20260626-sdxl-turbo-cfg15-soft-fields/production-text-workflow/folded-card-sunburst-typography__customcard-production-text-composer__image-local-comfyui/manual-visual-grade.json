@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "createdAtIso": "2026-06-26T02:34:00.000Z",
+  "reviewer": "codex-manual-visual-inspection",
+  "sourceContactSheet": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-soft-fields/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/contact-sheet.png",
+  "totalScore": 68,
+  "status": "blocked",
+  "passed": false,
+  "productionRecommendation": "do-not-promote-yet",
+  "rubric": {
+    "fourPanelPromptAdherenceAndPanelContract": { "score": 6, "maxScore": 10 },
+    "frontExactTextAndTypography": { "score": 16, "maxScore": 20 },
+    "insideLeftRightExactTextAndReadability": { "score": 17, "maxScore": 20 },
+    "insideLeftRightVisualCohesionAsOpenedSpread": { "score": 10, "maxScore": 15 },
+    "backNoTextDisciplineAndCoordinatingMark": { "score": 3, "maxScore": 10 },
+    "overallFoldedCardThemeCoherence": { "score": 8, "maxScore": 10 },
+    "printReadinessAndMargins": { "score": 8, "maxScore": 15 }
+  },
+  "blockingFailures": [
+    "Soft text-hug safe fields remove most of the blunt rectangle problem and preserve exact readable copy.",
+    "The generated artwork is still too dense around and behind the text-safe zones, especially on the front and interior medallions.",
+    "The back panel remains a busy ornamental illustration instead of mostly plain deep-charcoal negative space with one small coordinating mark."
+  ],
+  "smallestNextFix": "Keep soft deterministic text fields, then move the artwork layer to a flatter stationery workflow/checkpoint or add mask/control constraints so the model cannot fill the back and center fields with dense ornament."
+}

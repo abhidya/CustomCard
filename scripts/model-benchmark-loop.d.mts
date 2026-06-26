@@ -169,6 +169,7 @@ export interface ProductionTextAutoChecks {
     metadataIncludesExactCopy: boolean;
     metadataIncludesSafeBoxes: boolean;
     metadataIncludesSafeFieldBackgrounds: boolean;
+    metadataIncludesSoftSafeFields: boolean;
   };
   note: string;
 }

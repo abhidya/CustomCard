@@ -478,8 +478,14 @@ describe("model benchmark typography experiment", () => {
                     body_text: frontCopy.body,
                     headline_box: { x: 86, y: 376, width: 788, height: 296 },
                     headline_box_background_color: "#111715",
+                    headline_box_background_radius: 34,
+                    headline_box_background_opacity: 0.96,
+                    headline_box_background_style: "text-hug",
                     body_box: { x: 106, y: 780, width: 748, height: 403 },
-                    body_box_background_color: "#111715"
+                    body_box_background_color: "#111715",
+                    body_box_background_radius: 34,
+                    body_box_background_opacity: 0.96,
+                    body_box_background_style: "text-hug"
                   }
                 }
               }
@@ -499,5 +505,6 @@ describe("model benchmark typography experiment", () => {
     expect(autoChecks.checks.metadataIncludesExactCopy).toBe(true);
     expect(autoChecks.checks.metadataIncludesSafeBoxes).toBe(true);
     expect(autoChecks.checks.metadataIncludesSafeFieldBackgrounds).toBe(true);
+    expect(autoChecks.checks.metadataIncludesSoftSafeFields).toBe(true);
   });
 });

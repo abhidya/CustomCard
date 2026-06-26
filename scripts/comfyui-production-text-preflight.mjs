@@ -7,6 +7,14 @@ const defaultWorkflowPath = resolve(repoRoot, "comfyui-workflows/customcard-prod
 const defaultNodeSource = resolve(repoRoot, "comfyui-custom-nodes/CustomCardTextComposer");
 const defaultOutputRoot = resolve(repoRoot, "docs/evidence/generated-card-comparisons");
 const requiredNodeClass = "CustomCardTextComposer";
+const requiredSoftFieldInputs = [
+  "headline_box_background_radius",
+  "headline_box_background_opacity",
+  "headline_box_background_style",
+  "body_box_background_radius",
+  "body_box_background_opacity",
+  "body_box_background_style"
+];
 
 if (isMainModule()) {
   const result = await runPreflight(parseArgs(process.argv.slice(2)));
@@ -37,6 +45,12 @@ export async function runPreflight(args = {}) {
     requiredNodeClass,
     classTypes: classTypes.filter((value, index) => classTypes.indexOf(value) === index).sort()
   }));
+  const workflowNodeInputs = collectWorkflowNodeInputs(workflow, requiredNodeClass);
+  const missingWorkflowSoftFieldInputs = requiredSoftFieldInputs.filter((input) => !workflowNodeInputs.includes(input));
+  checks.push(check("workflow maps soft safe-field inputs", missingWorkflowSoftFieldInputs.length === 0, {
+    requiredInputs: requiredSoftFieldInputs,
+    missingInputs: missingWorkflowSoftFieldInputs
+  }));
   checks.push(check("custom node source exists", existsSync(nodeSource), { nodeSource }));
   checks.push(check("custom node module files exist", existsSync(resolve(nodeSource, "__init__.py")) && existsSync(resolve(nodeSource, "nodes.py")), {
     files: ["__init__.py", "nodes.py"]
@@ -54,6 +68,13 @@ export async function runPreflight(args = {}) {
     comfyUrl,
     requiredNodeClass,
     liveComfyReachable
+  }, { required: requireLive, advisory: !requireLive }));
+  const liveNodeInputs = collectLiveNodeInputs(live.objectInfo?.[requiredNodeClass]);
+  const missingLiveSoftFieldInputs = requiredSoftFieldInputs.filter((input) => !liveNodeInputs.includes(input));
+  checks.push(check("live ComfyUI exposes soft safe-field inputs", liveComfyReachable && liveNodeAvailable && missingLiveSoftFieldInputs.length === 0, {
+    requiredInputs: requiredSoftFieldInputs,
+    missingInputs: missingLiveSoftFieldInputs,
+    liveInputCount: liveNodeInputs.length
   }, { required: requireLive, advisory: !requireLive }));
 
   const cachedObjectInfoPath = resolve(repoRoot, ".codex/comfyui/object_info.json");
@@ -129,6 +150,23 @@ function collectClassTypes(workflow) {
     .map((node) => node?.class_type)
     .filter(Boolean)
     .map(String);
+}
+
+function collectWorkflowNodeInputs(workflow, classType) {
+  return Object.values(workflow || {})
+    .filter((node) => node?.class_type === classType)
+    .flatMap((node) => Object.keys(node?.inputs || {}))
+    .filter((value, index, values) => values.indexOf(value) === index)
+    .sort();
+}
+
+function collectLiveNodeInputs(nodeInfo) {
+  const inputGroups = nodeInfo?.input || {};
+  return Object.values(inputGroups)
+    .filter((value) => value && typeof value === "object")
+    .flatMap((group) => Object.keys(group))
+    .filter((value, index, values) => values.indexOf(value) === index)
+    .sort();
 }
 
 function check(name, ok, details = {}, options = {}) {

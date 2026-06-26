@@ -1981,6 +1981,9 @@ function localComfyWorkflowInputSummary(variables) {
     },
     headline_box_background_color: variables.headlineBoxBackgroundColor || "",
     headline_box_background_padding: variables.headlineBoxBackgroundPadding || 0,
+    headline_box_background_radius: variables.headlineBoxBackgroundRadius || 0,
+    headline_box_background_opacity: variables.headlineBoxBackgroundOpacity ?? 1,
+    headline_box_background_style: variables.headlineBoxBackgroundStyle || "box",
     body_box: {
       x: variables.bodyBoxX,
       y: variables.bodyBoxY,
@@ -1989,6 +1992,9 @@ function localComfyWorkflowInputSummary(variables) {
     },
     body_box_background_color: variables.bodyBoxBackgroundColor || "",
     body_box_background_padding: variables.bodyBoxBackgroundPadding || 0,
+    body_box_background_radius: variables.bodyBoxBackgroundRadius || 0,
+    body_box_background_opacity: variables.bodyBoxBackgroundOpacity ?? 1,
+    body_box_background_style: variables.bodyBoxBackgroundStyle || "box",
     text_alignment: variables.textAlignment,
     min_font_size: variables.minFontSize
   };
@@ -2010,6 +2016,9 @@ function localComfyTypographyVariables({ panelId, panelCopy = {}, width, height 
   const bodyBox = localComfyTextBox({ zone: bodyZone, role: "body", width: imageWidth, height: imageHeight });
   const textBoxBackgroundColor = localComfyTextBoxBackgroundColor({ panelId, lightInk });
   const textBoxBackgroundPadding = Math.max(16, Math.round(imageWidth * 0.025));
+  const textBoxBackgroundRadius = Math.max(24, Math.round(imageWidth * 0.035));
+  const textBoxBackgroundOpacity = 0.96;
+  const textBoxBackgroundStyle = "text-hug";
   return {
     bodyBoxHeight: bodyBox.height,
     bodyBoxWidth: bodyBox.width,
@@ -2017,6 +2026,9 @@ function localComfyTypographyVariables({ panelId, panelCopy = {}, width, height 
     bodyBoxY: bodyBox.y,
     bodyBoxBackgroundColor: panelCopy.body ? textBoxBackgroundColor : "",
     bodyBoxBackgroundPadding: panelCopy.body ? textBoxBackgroundPadding : 0,
+    bodyBoxBackgroundRadius: panelCopy.body ? textBoxBackgroundRadius : 0,
+    bodyBoxBackgroundOpacity: panelCopy.body ? textBoxBackgroundOpacity : 0,
+    bodyBoxBackgroundStyle: panelCopy.body ? textBoxBackgroundStyle : "box",
     bodyFillColor: lightInk ? "#f4d77d" : "#4f432a",
     bodyFont: localComfyFontForPairing(fontPairing, "body"),
     bodyFontSize: Math.round(bodyBase * scale),
@@ -2036,6 +2048,9 @@ function localComfyTypographyVariables({ panelId, panelCopy = {}, width, height 
     headlineBoxY: headlineBox.y,
     headlineBoxBackgroundColor: panelCopy.headline ? textBoxBackgroundColor : "",
     headlineBoxBackgroundPadding: panelCopy.headline ? textBoxBackgroundPadding : 0,
+    headlineBoxBackgroundRadius: panelCopy.headline ? textBoxBackgroundRadius : 0,
+    headlineBoxBackgroundOpacity: panelCopy.headline ? textBoxBackgroundOpacity : 0,
+    headlineBoxBackgroundStyle: panelCopy.headline ? textBoxBackgroundStyle : "box",
     headlineFillColor: lightInk ? "#fff7df" : "#282923",
     headlineFont: localComfyFontForPairing(fontPairing, "headline"),
     headlineFontSize: Math.round(headlineBase * scale),
@@ -2171,6 +2186,9 @@ function localComfyTemplateVariable(key, variables) {
     body_box_y: variables.bodyBoxY,
     body_box_background_color: variables.bodyBoxBackgroundColor || "",
     body_box_background_padding: variables.bodyBoxBackgroundPadding || 0,
+    body_box_background_radius: variables.bodyBoxBackgroundRadius || 0,
+    body_box_background_opacity: variables.bodyBoxBackgroundOpacity ?? 1,
+    body_box_background_style: variables.bodyBoxBackgroundStyle || "box",
     body_fill_color: variables.bodyFillColor,
     body_font: variables.bodyFont,
     body_font_size: variables.bodyFontSize,
@@ -2190,6 +2208,9 @@ function localComfyTemplateVariable(key, variables) {
     headline_box_y: variables.headlineBoxY,
     headline_box_background_color: variables.headlineBoxBackgroundColor || "",
     headline_box_background_padding: variables.headlineBoxBackgroundPadding || 0,
+    headline_box_background_radius: variables.headlineBoxBackgroundRadius || 0,
+    headline_box_background_opacity: variables.headlineBoxBackgroundOpacity ?? 1,
+    headline_box_background_style: variables.headlineBoxBackgroundStyle || "box",
     headline_fill_color: variables.headlineFillColor,
     headline_font: variables.headlineFont,
     headline_font_size: variables.headlineFontSize,
@@ -2795,6 +2816,23 @@ export function productionTextAutoChecks({ promptPlans, panelCopies, providerCal
         (!panelCopy.body || Boolean(inputs.body_box_background_color))
     );
   });
+  const metadataIncludesSoftSafeFields = copyPanels.every((panelId) => {
+    const panelCopy = copies[panelId] || {};
+    return metadataInputs.some(
+      (inputs) =>
+        inputs.panel_id === panelId &&
+        (!panelCopy.headline ||
+          (inputs.headline_box_background_style === "text-hug" &&
+            Number(inputs.headline_box_background_radius) > 0 &&
+            Number(inputs.headline_box_background_opacity) > 0 &&
+            Number(inputs.headline_box_background_opacity) <= 1)) &&
+        (!panelCopy.body ||
+          (inputs.body_box_background_style === "text-hug" &&
+            Number(inputs.body_box_background_radius) > 0 &&
+            Number(inputs.body_box_background_opacity) > 0 &&
+            Number(inputs.body_box_background_opacity) <= 1))
+    );
+  });
   return {
     advisoryOnly: true,
     checks: {
@@ -2807,10 +2845,11 @@ export function productionTextAutoChecks({ promptPlans, panelCopies, providerCal
       appOverlayBypassed: true,
       metadataIncludesExactCopy: metadataIncludesCopy,
       metadataIncludesSafeBoxes: metadataInputs.every((inputs) => inputs.headline_box?.width > 0 && inputs.body_box?.width > 0),
-      metadataIncludesSafeFieldBackgrounds
+      metadataIncludesSafeFieldBackgrounds,
+      metadataIncludesSoftSafeFields
     },
     note:
-      "Production text phase treats Comfy output as the final text-composited panel. Automated checks prove request metadata and image materialization; visual text quality still requires inspection."
+      "Production text phase treats Comfy output as the final text-composited panel. Automated checks prove request metadata and image materialization, including soft text-hug safe-field inputs; visual text quality still requires inspection."
   };
 }
 

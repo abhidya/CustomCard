@@ -1,14 +1,54 @@
 {
-  "createdAtIso": "2026-06-26T02:10:33.944Z",
+  "createdAtIso": "2026-06-26T02:30:51.171Z",
   "inputDir": "docs/evidence/generated-card-comparisons",
   "outputDir": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-candidates",
   "phaseFilter": [
     "local-production-text"
   ],
-  "totalRuns": 4,
+  "totalRuns": 5,
   "ranked": [
     {
       "rank": 1,
+      "benchmarkKind": "model-benchmark-loop",
+      "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-soft-fields/production-text-workflow-summary.json",
+      "runId": "production-text-workflow:folded-card-sunburst-typography:text-fixture-panel-copy:image-local-comfyui",
+      "phase": "local-production-text",
+      "createdAtIso": "2026-06-26T02:29:11.425Z",
+      "fixtureId": "folded-card-sunburst-typography",
+      "textAdapterId": "fixture",
+      "textModel": "",
+      "imageAdapterId": "local-comfyui-api-image",
+      "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+      "provider": "local-comfyui-api-image",
+      "technique": "comfy-deterministic-text-composer",
+      "score": 68,
+      "status": "blocked",
+      "passed": 8,
+      "total": 8,
+      "autoScore": 100,
+      "manualVisualGrade": {
+        "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-soft-fields/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/manual-visual-grade.json",
+        "score": 68,
+        "status": "blocked",
+        "passed": false,
+        "recommendation": "do-not-promote-yet",
+        "blockingFailures": [
+          "Soft text-hug safe fields remove most of the blunt rectangle problem and preserve exact readable copy.",
+          "The generated artwork is still too dense around and behind the text-safe zones, especially on the front and interior medallions.",
+          "The back panel remains a busy ornamental illustration instead of mostly plain deep-charcoal negative space with one small coordinating mark."
+        ]
+      },
+      "panelCount": 4,
+      "providerCallCount": 88,
+      "contactSheet": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-soft-fields/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/contact-sheet.png",
+      "settings": {
+        "phase": "local-production-text",
+        "phaseDir": "production-text-workflow",
+        "localOnlyNetworkGuard": true
+      }
+    },
+    {
+      "rank": 2,
       "benchmarkKind": "model-benchmark-loop",
       "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields/production-text-workflow-summary.json",
       "runId": "production-text-workflow:folded-card-sunburst-typography:text-fixture-panel-copy:image-local-comfyui",
@@ -48,7 +88,7 @@
       }
     },
     {
-      "rank": 2,
+      "rank": 3,
       "benchmarkKind": "model-benchmark-loop",
       "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-live-node/production-text-workflow-summary.json",
       "runId": "production-text-workflow:folded-card-sunburst-typography:text-fixture-panel-copy:image-local-comfyui",
@@ -89,7 +129,7 @@
       }
     },
     {
-      "rank": 3,
+      "rank": 4,
       "benchmarkKind": "model-benchmark-loop",
       "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15/production-text-workflow-summary.json",
       "runId": "production-text-workflow:folded-card-sunburst-typography:text-fixture-panel-copy:image-local-comfyui",
@@ -129,7 +169,7 @@
       }
     },
     {
-      "rank": 4,
+      "rank": 5,
       "benchmarkKind": "model-benchmark-loop",
       "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo/production-text-workflow-summary.json",
       "runId": "production-text-workflow:folded-card-sunburst-typography:text-fixture-panel-copy:image-local-comfyui",

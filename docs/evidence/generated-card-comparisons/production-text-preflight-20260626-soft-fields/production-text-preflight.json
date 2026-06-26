@@ -1,0 +1,133 @@
+{
+  "ok": true,
+  "promotionReady": true,
+  "status": "promotion-ready",
+  "createdAtIso": "2026-06-26T02:33:34.908Z",
+  "comfyUrl": "http://127.0.0.1:8188",
+  "workflowPath": "comfyui-workflows/customcard-production-text-overlay.json",
+  "nodeSource": "comfyui-custom-nodes/CustomCardTextComposer",
+  "requiredNodeClass": "CustomCardTextComposer",
+  "liveComfyReachable": true,
+  "liveNodeAvailable": true,
+  "cachedObjectInfoPath": ".codex/comfyui/object_info.json",
+  "cachedNodeAvailable": false,
+  "checks": [
+    {
+      "name": "workflow file exists",
+      "ok": true,
+      "required": true,
+      "advisory": false,
+      "details": {
+        "workflowPath": "comfyui-workflows/customcard-production-text-overlay.json"
+      }
+    },
+    {
+      "name": "workflow JSON parses",
+      "ok": true,
+      "required": true,
+      "advisory": false,
+      "details": {
+        "workflowPath": "comfyui-workflows/customcard-production-text-overlay.json"
+      }
+    },
+    {
+      "name": "workflow contains CustomCardTextComposer",
+      "ok": true,
+      "required": true,
+      "advisory": false,
+      "details": {
+        "requiredNodeClass": "CustomCardTextComposer",
+        "classTypes": [
+          "CLIPTextEncode",
+          "CheckpointLoaderSimple",
+          "CustomCardTextComposer",
+          "EmptyLatentImage",
+          "KSampler",
+          "SaveImage",
+          "VAEDecode"
+        ]
+      }
+    },
+    {
+      "name": "workflow maps soft safe-field inputs",
+      "ok": true,
+      "required": true,
+      "advisory": false,
+      "details": {
+        "requiredInputs": [
+          "headline_box_background_radius",
+          "headline_box_background_opacity",
+          "headline_box_background_style",
+          "body_box_background_radius",
+          "body_box_background_opacity",
+          "body_box_background_style"
+        ],
+        "missingInputs": []
+      }
+    },
+    {
+      "name": "custom node source exists",
+      "ok": true,
+      "required": true,
+      "advisory": false,
+      "details": {
+        "nodeSource": "D:\\manny\\Documents\\CustomCard\\comfyui-custom-nodes\\CustomCardTextComposer"
+      }
+    },
+    {
+      "name": "custom node module files exist",
+      "ok": true,
+      "required": true,
+      "advisory": false,
+      "details": {
+        "files": [
+          "__init__.py",
+          "nodes.py"
+        ]
+      }
+    },
+    {
+      "name": "live ComfyUI reachable",
+      "ok": true,
+      "required": true,
+      "advisory": false,
+      "details": {
+        "comfyUrl": "http://127.0.0.1:8188",
+        "requireLive": true
+      }
+    },
+    {
+      "name": "live ComfyUI has CustomCardTextComposer",
+      "ok": true,
+      "required": true,
+      "advisory": false,
+      "details": {
+        "comfyUrl": "http://127.0.0.1:8188",
+        "requiredNodeClass": "CustomCardTextComposer",
+        "liveComfyReachable": true
+      }
+    },
+    {
+      "name": "live ComfyUI exposes soft safe-field inputs",
+      "ok": true,
+      "required": true,
+      "advisory": false,
+      "details": {
+        "requiredInputs": [
+          "headline_box_background_radius",
+          "headline_box_background_opacity",
+          "headline_box_background_style",
+          "body_box_background_radius",
+          "body_box_background_opacity",
+          "body_box_background_style"
+        ],
+        "missingInputs": [],
+        "liveInputCount": 38
+      }
+    }
+  ],
+  "nextSteps": [
+    "Run tools/run-production-text-benchmark.ps1 to produce four-panel production workflow evidence."
+  ],
+  "reportDir": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626-soft-fields"
+}

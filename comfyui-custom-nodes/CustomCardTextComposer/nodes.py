@@ -29,12 +29,18 @@ class CustomCardTextComposer:
                 "headline_box_height": ("INT", {"default": 260, "min": 1, "max": 8192, "step": 1}),
                 "headline_box_background_color": ("STRING", {"default": ""}),
                 "headline_box_background_padding": ("INT", {"default": 0, "min": 0, "max": 512, "step": 1}),
+                "headline_box_background_radius": ("INT", {"default": 32, "min": 0, "max": 512, "step": 1}),
+                "headline_box_background_opacity": ("FLOAT", {"default": 0.96, "min": 0.0, "max": 1.0, "step": 0.01}),
+                "headline_box_background_style": (["text-hug", "box"], {"default": "text-hug"}),
                 "body_box_x": ("INT", {"default": 100, "min": 0, "max": 8192, "step": 1}),
                 "body_box_y": ("INT", {"default": 460, "min": 0, "max": 8192, "step": 1}),
                 "body_box_width": ("INT", {"default": 760, "min": 1, "max": 8192, "step": 1}),
                 "body_box_height": ("INT", {"default": 520, "min": 1, "max": 8192, "step": 1}),
                 "body_box_background_color": ("STRING", {"default": ""}),
                 "body_box_background_padding": ("INT", {"default": 0, "min": 0, "max": 512, "step": 1}),
+                "body_box_background_radius": ("INT", {"default": 32, "min": 0, "max": 512, "step": 1}),
+                "body_box_background_opacity": ("FLOAT", {"default": 0.96, "min": 0.0, "max": 1.0, "step": 0.01}),
+                "body_box_background_style": (["text-hug", "box"], {"default": "text-hug"}),
                 "alignment": (["left", "center", "right"], {"default": "center"}),
                 "headline_vertical_alignment": (["top", "middle", "bottom"], {"default": "middle"}),
                 "body_vertical_alignment": (["top", "middle", "bottom"], {"default": "middle"}),
@@ -72,12 +78,18 @@ class CustomCardTextComposer:
         headline_box_height,
         headline_box_background_color,
         headline_box_background_padding,
+        headline_box_background_radius,
+        headline_box_background_opacity,
+        headline_box_background_style,
         body_box_x,
         body_box_y,
         body_box_width,
         body_box_height,
         body_box_background_color,
         body_box_background_padding,
+        body_box_background_radius,
+        body_box_background_opacity,
+        body_box_background_style,
         alignment,
         headline_vertical_alignment,
         body_vertical_alignment,
@@ -95,23 +107,41 @@ class CustomCardTextComposer:
         rendered = []
         for frame in frames:
             canvas = _tensor_to_pil(frame)
-            draw = ImageDraw.Draw(canvas)
-            _draw_box_background(
-                draw=draw,
-                image_size=canvas.size,
+            canvas = _draw_box_background(
+                canvas=canvas,
                 text=headline,
                 box=(headline_box_x, headline_box_y, headline_box_width, headline_box_height),
                 fill=headline_box_background_color,
                 padding=headline_box_background_padding,
+                radius=headline_box_background_radius,
+                opacity=headline_box_background_opacity,
+                style=headline_box_background_style,
+                font_name=headline_font,
+                font_size=headline_font_size,
+                min_font_size=min_font_size,
+                alignment=alignment,
+                vertical_alignment=headline_vertical_alignment,
+                stroke_width=headline_stroke_width,
+                line_spacing=headline_line_spacing,
             )
-            _draw_box_background(
-                draw=draw,
-                image_size=canvas.size,
+            canvas = _draw_box_background(
+                canvas=canvas,
                 text=body,
                 box=(body_box_x, body_box_y, body_box_width, body_box_height),
                 fill=body_box_background_color,
                 padding=body_box_background_padding,
+                radius=body_box_background_radius,
+                opacity=body_box_background_opacity,
+                style=body_box_background_style,
+                font_name=body_font,
+                font_size=body_font_size,
+                min_font_size=min_font_size,
+                alignment=alignment,
+                vertical_alignment=body_vertical_alignment,
+                stroke_width=body_stroke_width,
+                line_spacing=body_line_spacing,
             )
+            draw = ImageDraw.Draw(canvas)
             _draw_text_box(
                 draw=draw,
                 image_size=canvas.size,
@@ -214,19 +244,82 @@ def _draw_text_box(
         cursor_y += measurement["height"] + spacing
 
 
-def _draw_box_background(draw, image_size, text, box, fill, padding):
+def _draw_box_background(
+    canvas,
+    text,
+    box,
+    fill,
+    padding,
+    radius,
+    opacity,
+    style,
+    font_name,
+    font_size,
+    min_font_size,
+    alignment,
+    vertical_alignment,
+    stroke_width,
+    line_spacing,
+):
     if not _normalize_text(text):
-        return
+        return canvas
     color = _parse_optional_color(fill)
     if color is None:
-        return
+        return canvas
+    image_size = canvas.size
     x, y, width, height = _clip_box(image_size, box)
     pad = max(0, int(round(float(padding or 0))))
-    x = max(0, x - pad)
-    y = max(0, y - pad)
-    right = min(image_size[0], x + width + pad * 2)
-    bottom = min(image_size[1], y + height + pad * 2)
-    draw.rectangle((x, y, right, bottom), fill=color)
+    if str(style or "").strip().lower() in {"text-hug", "hug", "soft", "soft-hug"}:
+        measure_draw = ImageDraw.Draw(canvas)
+        stroke = max(0, int(round(float(stroke_width or 0))))
+        spacing = int(line_spacing or 0)
+        _font, _lines, measurements, total_height = _fit_text(
+            draw=measure_draw,
+            text=_normalize_text(text),
+            font_name=font_name,
+            font_size=int(font_size or min_font_size),
+            min_font_size=int(min_font_size or 12),
+            max_width=width,
+            max_height=height,
+            stroke_width=stroke,
+            line_spacing=spacing,
+        )
+        text_width = min(width, max((item["width"] for item in measurements), default=width))
+        text_height = min(height, total_height)
+        left = _aligned_x(x, width, text_width, alignment) - pad
+        top = _aligned_y(y, height, text_height, vertical_alignment) - pad
+        right = left + text_width + pad * 2
+        bottom = top + text_height + pad * 2
+    else:
+        left = x - pad
+        top = y - pad
+        right = x + width + pad
+        bottom = y + height + pad
+    rect = (
+        max(0, int(round(left))),
+        max(0, int(round(top))),
+        min(image_size[0], int(round(right))),
+        min(image_size[1], int(round(bottom))),
+    )
+    return _draw_safe_field(canvas, rect, color, radius, opacity)
+
+
+def _draw_safe_field(canvas, rect, color, radius, opacity):
+    left, top, right, bottom = rect
+    if right <= left or bottom <= top:
+        return canvas
+    alpha = int(round(_bounded_opacity(opacity) * 255))
+    if alpha <= 0:
+        return canvas
+    rounded_radius = max(0, min(int(round(float(radius or 0))), (right - left) // 2, (bottom - top) // 2))
+    if alpha >= 255:
+        draw = ImageDraw.Draw(canvas)
+        draw.rounded_rectangle((left, top, right, bottom), radius=rounded_radius, fill=color)
+        return canvas
+    overlay = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+    draw.rounded_rectangle((left, top, right, bottom), radius=rounded_radius, fill=(*color, alpha))
+    return Image.alpha_composite(canvas.convert("RGBA"), overlay).convert("RGB")
 
 
 def _fit_text(draw, text, font_name, font_size, min_font_size, max_width, max_height, stroke_width, line_spacing):
@@ -353,6 +446,14 @@ def _parse_optional_color(value):
         return ImageColor.getrgb(text)
     except ValueError:
         return None
+
+
+def _bounded_opacity(value):
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError):
+        return 1.0
+    return max(0.0, min(1.0, parsed))
 
 
 def _normalize_text(value):

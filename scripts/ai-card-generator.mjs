@@ -974,6 +974,9 @@ function localComfyWorkflowInputSummary(variables) {
     },
     headline_box_background_color: variables.headlineBoxBackgroundColor || "",
     headline_box_background_padding: variables.headlineBoxBackgroundPadding || 0,
+    headline_box_background_radius: variables.headlineBoxBackgroundRadius || 0,
+    headline_box_background_opacity: variables.headlineBoxBackgroundOpacity ?? 1,
+    headline_box_background_style: variables.headlineBoxBackgroundStyle || "box",
     body_box: {
       x: variables.bodyBoxX,
       y: variables.bodyBoxY,
@@ -982,6 +985,9 @@ function localComfyWorkflowInputSummary(variables) {
     },
     body_box_background_color: variables.bodyBoxBackgroundColor || "",
     body_box_background_padding: variables.bodyBoxBackgroundPadding || 0,
+    body_box_background_radius: variables.bodyBoxBackgroundRadius || 0,
+    body_box_background_opacity: variables.bodyBoxBackgroundOpacity ?? 1,
+    body_box_background_style: variables.bodyBoxBackgroundStyle || "box",
     text_alignment: variables.textAlignment,
     min_font_size: variables.minFontSize
   };
@@ -1003,6 +1009,9 @@ function localComfyTypographyVariables({ panelId, panelCopy = {}, width, height 
   const bodyBox = localComfyTextBox({ zone: bodyZone, role: "body", width: imageWidth, height: imageHeight });
   const textBoxBackgroundColor = localComfyTextBoxBackgroundColor({ panelId, lightInk });
   const textBoxBackgroundPadding = Math.max(16, Math.round(imageWidth * 0.025));
+  const textBoxBackgroundRadius = Math.max(24, Math.round(imageWidth * 0.035));
+  const textBoxBackgroundOpacity = 0.96;
+  const textBoxBackgroundStyle = "text-hug";
   return {
     bodyBoxHeight: bodyBox.height,
     bodyBoxWidth: bodyBox.width,
@@ -1010,6 +1019,9 @@ function localComfyTypographyVariables({ panelId, panelCopy = {}, width, height 
     bodyBoxY: bodyBox.y,
     bodyBoxBackgroundColor: panelCopy.body ? textBoxBackgroundColor : "",
     bodyBoxBackgroundPadding: panelCopy.body ? textBoxBackgroundPadding : 0,
+    bodyBoxBackgroundRadius: panelCopy.body ? textBoxBackgroundRadius : 0,
+    bodyBoxBackgroundOpacity: panelCopy.body ? textBoxBackgroundOpacity : 0,
+    bodyBoxBackgroundStyle: panelCopy.body ? textBoxBackgroundStyle : "box",
     bodyFont: localComfyFontForPairing(fontPairing, "body"),
     bodyFontSize: Math.round(bodyBase * scale),
     bodyHorizontalAlignment: alignment,
@@ -1029,6 +1041,9 @@ function localComfyTypographyVariables({ panelId, panelCopy = {}, width, height 
     headlineBoxY: headlineBox.y,
     headlineBoxBackgroundColor: panelCopy.headline ? textBoxBackgroundColor : "",
     headlineBoxBackgroundPadding: panelCopy.headline ? textBoxBackgroundPadding : 0,
+    headlineBoxBackgroundRadius: panelCopy.headline ? textBoxBackgroundRadius : 0,
+    headlineBoxBackgroundOpacity: panelCopy.headline ? textBoxBackgroundOpacity : 0,
+    headlineBoxBackgroundStyle: panelCopy.headline ? textBoxBackgroundStyle : "box",
     headlineFont: localComfyFontForPairing(fontPairing, "headline"),
     headlineFontSize: Math.round(headlineBase * scale),
     headlineHorizontalAlignment: alignment,
@@ -1165,6 +1180,9 @@ function localComfyTemplateVariable(key, variables) {
     body_box_height: variables.bodyBoxHeight,
     body_box_background_color: variables.bodyBoxBackgroundColor || "",
     body_box_background_padding: variables.bodyBoxBackgroundPadding || 0,
+    body_box_background_radius: variables.bodyBoxBackgroundRadius || 0,
+    body_box_background_opacity: variables.bodyBoxBackgroundOpacity ?? 1,
+    body_box_background_style: variables.bodyBoxBackgroundStyle || "box",
     headline_fill_color: variables.headlineFillColor,
     headline_font: variables.headlineFont,
     headline_font_size: variables.headlineFontSize,
@@ -1184,6 +1202,9 @@ function localComfyTemplateVariable(key, variables) {
     headline_box_height: variables.headlineBoxHeight,
     headline_box_background_color: variables.headlineBoxBackgroundColor || "",
     headline_box_background_padding: variables.headlineBoxBackgroundPadding || 0,
+    headline_box_background_radius: variables.headlineBoxBackgroundRadius || 0,
+    headline_box_background_opacity: variables.headlineBoxBackgroundOpacity ?? 1,
+    headline_box_background_style: variables.headlineBoxBackgroundStyle || "box",
     min_font_size: variables.minFontSize,
     panel_text: variables.panelText || "",
     text_alignment: variables.textAlignment,
