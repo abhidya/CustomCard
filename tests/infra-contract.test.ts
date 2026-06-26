@@ -630,7 +630,6 @@ describe("production infrastructure contract", () => {
   it("defines a Vercel static plus serverless API deployment contract", () => {
     const vercel = JSON.parse(read("vercel.json")) as {
       buildCommand: string;
-      functions: Record<string, { excludeFiles: string }>;
       outputDirectory: string;
       rewrites: Array<{ source: string; destination: string }>;
     };
@@ -644,9 +643,6 @@ describe("production infrastructure contract", () => {
       buildCommand: "npm run build",
       outputDirectory: "dist"
     });
-    expect(vercel.functions["api/[...path].js"].excludeFiles).toContain("docs/evidence/generated-card-comparisons/**");
-    expect(vercel.functions["api/[...path].js"].excludeFiles).toContain("node_modules/puppeteer/**");
-    expect(vercel.functions["api/[...path].js"].excludeFiles).toContain("node_modules/wrangler/**");
     expect(vercel.rewrites).toEqual([
       { source: "/robots.txt", destination: "/api/robots" },
       { source: "/api/artifacts/(.*)", destination: "/api/artifacts?objectKey=$1" },

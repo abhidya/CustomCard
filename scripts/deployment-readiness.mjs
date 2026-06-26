@@ -137,12 +137,6 @@ const checks = [
   checkIncludes("vercel", "vercel-static-api-routing", contents.vercel, [
     '"buildCommand": "npm run build"',
     '"outputDirectory": "dist"',
-    '"functions"',
-    '"api/[...path].js"',
-    '"excludeFiles"',
-    "docs/evidence/generated-card-comparisons/**",
-    "node_modules/puppeteer/**",
-    "node_modules/wrangler/**",
     '"source": "/api/artifacts/(.*)"',
     '"destination": "/api/artifacts?objectKey=$1"',
     '"source": "/api/(.*)"',

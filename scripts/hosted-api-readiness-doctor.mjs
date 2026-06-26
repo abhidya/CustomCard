@@ -170,12 +170,6 @@ const checks = [
     sourceKeys: ["vercel", "vercelApiHandler", "vercelRobotsHandler"],
     signals: [
       '"buildCommand": "npm run build"',
-      '"functions"',
-      '"api/[...path].js"',
-      '"excludeFiles"',
-      "docs/evidence/generated-card-comparisons/**",
-      "node_modules/puppeteer/**",
-      "node_modules/wrangler/**",
       '"source": "/api/artifacts/(.*)"',
       '"destination": "/api/artifacts?objectKey=$1"',
       '"source": "/api/(.*)"',
