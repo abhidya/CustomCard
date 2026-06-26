@@ -195,6 +195,7 @@ function buildMarkdown(result) {
     "",
     "## Runtime Contract",
     "",
+    `- Minimum planner class: ${result.classification.minimumOpenWeightPlannerClass}`,
     `- Minimum context tokens: ${result.classification.minContextTokens}`,
     `- Reported context tokens: ${result.classification.reportedContextTokens ?? "n/a"}`,
     `- Minimum output tokens: ${result.classification.minOutputTokens}`,

@@ -129,7 +129,7 @@ function buildNextSteps(requirements, indexedNextSteps) {
     steps.push("Run the planner preflight and readiness doctor after starting a production-suitable planner endpoint with 8192+ context.");
   }
   if (failed.has("no small smoke planner is active or used")) {
-    steps.push("Use Qwen3-4B only for smoke/failure evidence; run promotion evidence with Gemma 31B, Magistral Small, Qwen3-8B-or-better, or a hosted/self-hosted production planner.");
+    steps.push("Use Qwen3-4B/8B only for smoke/failure evidence; run promotion evidence with Gemma 31B, Magistral Small, Qwen3-14B+, or a hosted/self-hosted production planner.");
   }
   if (failed.has("LLM-planned customer request matrix completed")) {
     steps.push("Run the full aquarium/koi/dog production-text matrix to completion.");

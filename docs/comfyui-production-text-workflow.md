@@ -89,7 +89,7 @@ quality.
   - Follow-up code keeps the full planner prompt, passes benchmark
     `must_include`/`must_avoid` terms into card-copy input, validates and
     retries card-copy output before Comfy, preserves useful loose LLM JSON
-    shapes, and blocks known-small planners such as Qwen3-4B for production
+    shapes, and blocks known-small planners such as Qwen3-4B/8B for production
     evidence unless `-AllowSmallPlanner` is explicit.
   - `tools/start-local-card-planner.ps1` starts the installed Gemma 31B
     KoboldCPP planner with 8k context. It loaded on this machine, but CPU
@@ -286,14 +286,15 @@ Comfy template variables exposed by the local adapter include:
   - Advisory or blocking readiness check for promotion attempts.
   - Aggregates workflow/node availability, live Comfy status, latest aggregate
     quality, local model inventory, and active planner endpoint suitability.
-  - Treats known-small planners such as Qwen3-4B as smoke/failure evidence, not
-    production evidence.
+  - Treats known-small planners such as Qwen3-4B/8B as smoke/failure evidence,
+    not production evidence.
 - `scripts/production-text-planner-preflight.mjs`
   - Checks the active OpenAI-compatible planner before benchmark work.
   - Requires a production-suitable model class, a full output budget, and an
     8192+ intended context budget for promotion evidence.
-  - Allows Qwen3-4B/4096-context runs only when `--allow-small` is explicit, and
-    still reports them as smoke/failure evidence instead of production-ready.
+  - Allows Qwen3-4B/8B and 4096-context runs only when `--allow-small` is
+    explicit, and still reports them as smoke/failure evidence instead of
+    production-ready.
 - `scripts/production-text-rerun-plan.mjs`
   - Reads the current promotion gate and evidence index.
   - Writes JSON/Markdown with failed gate requirements, the full planner
@@ -332,7 +333,7 @@ Comfy template variables exposed by the local adapter include:
   - Accepts `-PlannerMaxTokens` and `-PlannerContextSize` while keeping the full
     planner prompt. Do not shrink the creative contract to fit a 4096-context
     local model.
-  - Rejects known-small local planners such as Qwen3-4B for production
+  - Rejects known-small local planners such as Qwen3-4B/8B for production
     evidence. Use `-AllowSmallPlanner` only for exploratory failure evidence.
   - Fails fast when no production planner is available. Use
     `-AllowCompositorFixtureFallback` only for the one-run structural
@@ -373,11 +374,12 @@ customer-theme quality.
 3. Run preflight with `--require-live true` and confirm
    `CustomCardTextComposer` is present in live `/object_info`.
 4. Run `npm run comfy:production-text:planner -- --base-url ... --model ... --reported-context-tokens 8192 --max-output-tokens 3200`
-   and confirm the active planner is production-suitable. Qwen3-4B/4096-context
-   should be run only with `--allow-small` for failure evidence.
+   and confirm the active planner is production-suitable. Qwen3-4B/8B and
+   4096-context planners should be run only with `--allow-small` for failure
+   evidence.
 5. Run `npm run comfy:production-text:doctor -- --advisory` and confirm the
    configured planner endpoint is reachable and production-suitable. The doctor
-   should not be satisfied by the Qwen3-4B smoke planner.
+   should not be satisfied by Qwen3-4B/8B smoke planners.
 6. Run `npm run comfy:production-text:rerun-plan -- --output-dir docs/evidence/generated-card-comparisons/production-text-rerun-plan-YYYYMMDD-current`
    to write the exact command chain for the next production-suitable rerun.
 7. Run `npm run comfy:production-text:evidence -- --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-YYYYMMDD-current`
@@ -440,8 +442,9 @@ text compositor.
 - Use a correct planner runtime for the full contract: keep theme/palette/motif
   and panel-layout decisions with the LLM, keep the full prompt quality rather
   than shrinking the creative brief for a small model, run promotion evidence
-  through Gemma 31B with GPU/offload or a hosted larger planner, and use Qwen3-4B
-  only for smoke/failure evidence with `-AllowSmallPlanner`.
+  through Gemma 31B with GPU/offload, Qwen3 14B+ or Magistral Small for routine
+  local loops, or a hosted larger planner. Use Qwen3-4B/8B only for
+  smoke/failure evidence with `-AllowSmallPlanner`.
 - Continue tightening planner output handling: preserve `must_include` terms in
   copy/theme/prompt output, reject or retry omissions before Comfy image
   generation, preserve useful loose JSON shapes instead of falling back to

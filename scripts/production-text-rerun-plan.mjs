@@ -81,12 +81,13 @@ export function buildProductionTextRerunPlan(args = {}) {
     failedRequirements,
     productionPlannerContract: {
       summary: "Keep the full creative planner prompt and switch the runtime, not the prompt quality.",
+      minimumOpenWeightPlannerClass: productionTextPlannerPolicy.minimumOpenWeightPlannerClass,
       minContextTokens: productionTextPlannerPolicy.minContextTokens,
       minOutputTokens: productionTextPlannerPolicy.minOutputTokens,
       recommendedOutputTokens: productionTextPlannerPolicy.recommendedOutputTokens,
       recommendedModels: productionTextPlannerPolicy.recommendedModels,
       disallowedForPromotion: [
-        "Qwen3-4B and other 1.5B/3B/4B/7B local planners",
+        "Qwen3-4B/8B and other 1.5B/3B/4B/7B/8B local planners",
         "4096-context planner runs",
         "Reduced creative prompt contracts used only to fit small local models",
         "-AllowSmallPlanner except when collecting explicit smoke/failure evidence"
@@ -188,6 +189,7 @@ function buildMarkdown(plan) {
   lines.push("## Planner Contract");
   lines.push("");
   lines.push(`- ${plan.productionPlannerContract.summary}`);
+  lines.push(`- Minimum planner class: ${plan.productionPlannerContract.minimumOpenWeightPlannerClass}`);
   lines.push(`- Minimum context tokens: ${plan.productionPlannerContract.minContextTokens}`);
   lines.push(`- Recommended output tokens: ${plan.productionPlannerContract.recommendedOutputTokens}`);
   lines.push(`- Recommended models: ${plan.productionPlannerContract.recommendedModels.join(", ")}`);

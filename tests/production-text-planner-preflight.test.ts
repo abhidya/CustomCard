@@ -56,6 +56,26 @@ describe("production text planner preflight", () => {
     expect(report.warnings.join("\n")).toContain("smoke/failure evidence only");
   });
 
+  it("blocks Qwen3 8B as reduced-quality smoke evidence for the production prompt", async () => {
+    const fetchImpl = async () => modelsResponse("koboldcpp/Qwen3-8B-Q4_K_M");
+    const root = mkdtempSync(join(tmpdir(), "production-text-planner-preflight-qwen8b-"));
+
+    const report = await runProductionTextPlannerPreflight(
+      {
+        "base-url": "http://127.0.0.1:5002/v1",
+        "reported-context-tokens": "8192",
+        "max-output-tokens": "3200",
+        "output-dir": root
+      },
+      { fetchImpl }
+    );
+
+    expect(report.runAllowed).toBe(false);
+    expect(report.promotionReady).toBe(false);
+    expect(report.classification.classification).toBe("smoke-only");
+    expect(report.blockers.join("\n")).toContain("Qwen3 14B+");
+  });
+
   it("accepts a production planner with enough context and output budget", async () => {
     const fetchImpl = async () => modelsResponse("koboldcpp/gemma-4-31B-it-Q4_K_M");
     const root = mkdtempSync(join(tmpdir(), "production-text-planner-preflight-ready-"));
@@ -73,6 +93,7 @@ describe("production text planner preflight", () => {
     expect(report.runAllowed).toBe(true);
     expect(report.promotionReady).toBe(true);
     expect(report.classification.classification).toBe("production-suitable");
+    expect(report.classification.minimumOpenWeightPlannerClass).toContain("14B+");
     expect(report.blockers).toEqual([]);
   });
 

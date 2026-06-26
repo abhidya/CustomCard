@@ -359,7 +359,7 @@ function buildNextSteps({ latestPlannerPreflight, latestReadiness, latestAggrega
     steps.push("Run the planner preflight, then start or configure a production-suitable planner endpoint with 8192+ context before collecting promotion evidence.");
   }
   if (latestReadiness?.smallPlannerActive || latestBenchmark?.smallPlannerUsed) {
-    steps.push("Keep Qwen3-4B/small planner runs as smoke or failure evidence only.");
+    steps.push("Keep Qwen3-4B/8B and other small planner runs as smoke or failure evidence only.");
   }
   if (!latestBenchmark || latestBenchmark.completedRuns < 3 || latestBenchmark.failedRuns > 0) {
     steps.push("Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.");

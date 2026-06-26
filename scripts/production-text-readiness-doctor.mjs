@@ -148,7 +148,7 @@ function summarizeModelInventory(modelRoot) {
   const installedSmallPlanners = plannerModels
     .filter((file) => isSmallPlanner(file.name))
     .map((file) => file.path);
-  const missingMidTierPlanner = !plannerModels.some((file) => /qwen3.*(?:8b|14b)|magistral-small/i.test(file.name));
+  const missingMidTierPlanner = !plannerModels.some((file) => /qwen3.*14b|magistral-small/i.test(file.name));
   return {
     modelRoot,
     fileCount: files.length,
@@ -159,7 +159,7 @@ function summarizeModelInventory(modelRoot) {
     installedSmallPlanners,
     missingMidTierPlanner,
     recommendedNextPull: missingMidTierPlanner
-      ? "Pull one mid-tier planner such as Qwen3 14B/8B or Magistral Small for routine loops if Gemma 31B remains too slow."
+      ? "Pull one production-floor planner such as Qwen3 14B or Magistral Small for routine loops if Gemma 31B remains too slow; Qwen3 8B remains smoke-only."
       : ""
   };
 }
@@ -275,7 +275,7 @@ function buildNextSteps({ blockers, modelInventory, plannerEndpoints, comfy, agg
     steps.push("Run tools/start-local-card-planner.ps1 with 8192+ context and GPU/offload, use a hosted/self-hosted production planner, or point -LocalLlmBaseUrl at that endpoint.");
   }
   if (blockerNames.has("configured production planner is not a small smoke model")) {
-    steps.push("Switch the production planner URL away from Qwen3-4B/small smoke models; keep -AllowSmallPlanner only for exploratory failure evidence, not promotion.");
+    steps.push("Switch the production planner URL away from Qwen3-4B/8B and other small smoke models; keep -AllowSmallPlanner only for exploratory failure evidence, not promotion.");
   }
   if (modelInventory.missingMidTierPlanner) {
     steps.push(modelInventory.recommendedNextPull);

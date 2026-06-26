@@ -62,11 +62,11 @@ const recommendedCoverage = [
     nextAction: "Keep as baseline, but current live run shows it needs visual QA gates."
   },
   {
-    id: "qwen3-8b-or-14b-instruct",
-    role: "missing mid-tier planner between 4B speed and 31B quality",
-    patterns: ["qwen3-8b", "qwen3-14b"],
-    pull: "Qwen/Qwen3-8B-GGUF or Qwen/Qwen3-14B-GGUF, Q4_K_M",
-    nextAction: "Pull one mid-tier Qwen if Gemma 31B is too slow for routine benchmark loops."
+    id: "qwen3-14b-instruct",
+    role: "minimum local production-floor planner beneath Gemma 31B quality",
+    patterns: ["qwen3-14b"],
+    pull: "Qwen/Qwen3-14B-GGUF, Q4_K_M",
+    nextAction: "Pull Qwen3 14B if Gemma 31B is too slow for routine benchmark loops; keep Qwen3 8B as smoke-only evidence."
   },
   {
     id: "sdxl-base-or-card-checkpoint",

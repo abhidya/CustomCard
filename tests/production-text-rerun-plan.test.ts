@@ -68,7 +68,9 @@ describe("production text rerun plan", () => {
       "manual aggregate is promotion-ready"
     ]);
     expect(plan.productionPlannerContract.minContextTokens).toBe(8192);
+    expect(plan.productionPlannerContract.minimumOpenWeightPlannerClass).toContain("14B+");
     expect(plan.productionPlannerContract.disallowedForPromotion.join("\n")).toContain("Qwen3-4B");
+    expect(plan.productionPlannerContract.disallowedForPromotion.join("\n")).toContain("8B");
     expect(plan.commands.map((item) => item.title)).toEqual([
       "Start or configure production planner",
       "Write planner preflight evidence",

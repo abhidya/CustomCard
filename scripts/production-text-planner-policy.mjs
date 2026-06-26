@@ -2,10 +2,11 @@ export const productionTextPlannerPolicy = Object.freeze({
   minContextTokens: 8192,
   minOutputTokens: 2200,
   recommendedOutputTokens: 3200,
+  minimumOpenWeightPlannerClass: "14B+ dense/open-weight planner or stronger hosted model",
   recommendedModels: [
     "koboldcpp/gemma-4-31B-it-Q4_K_M",
     "koboldcpp/Magistral-Small-2509-Q4_K_M",
-    "koboldcpp/Qwen3-8B-Q4_K_M",
+    "koboldcpp/Qwen3-14B-Q4_K_M",
     "hosted/self-hosted GPT, Claude, Gemini, DeepSeek, Mistral, or Qwen 14B+ endpoint"
   ]
 });
@@ -25,7 +26,9 @@ export function classifyProductionTextPlanner(modelName, options = {}) {
   if (!model) {
     blockers.push("Planner model name is missing; pass -LocalLlmModel or expose it from /v1/models.");
   } else if (smallPlanner && !allowSmall) {
-    blockers.push(`Planner model '${model}' is smoke-only for production text; use a production-suitable planner instead.`);
+    blockers.push(
+      `Planner model '${model}' is below the production model floor for production text and is smoke-only; use Gemma 31B, Magistral Small, Qwen3 14B+, or a stronger hosted planner.`
+    );
   } else if (!smallPlanner && !qualityPlanner && !allowUnknownProductionModel) {
     blockers.push(`Planner model '${model}' is not on the production-suitable model allowlist.`);
   }
@@ -62,6 +65,7 @@ export function classifyProductionTextPlanner(modelName, options = {}) {
     classification: productionSuitable ? "production-suitable" : smallPlanner ? "smoke-only" : "blocked",
     reportedContextTokens: reportedContextTokens || null,
     maxOutputTokens: maxOutputTokens || null,
+    minimumOpenWeightPlannerClass: productionTextPlannerPolicy.minimumOpenWeightPlannerClass,
     minContextTokens: productionTextPlannerPolicy.minContextTokens,
     minOutputTokens: productionTextPlannerPolicy.minOutputTokens,
     recommendedOutputTokens: productionTextPlannerPolicy.recommendedOutputTokens,
@@ -72,11 +76,11 @@ export function classifyProductionTextPlanner(modelName, options = {}) {
 }
 
 export function isSmallPlanner(value) {
-  return /(^|[-_/])(?:1\.5b|3b|4b|7b)([-_/]|$)|local-qwen-card-copy/i.test(String(value || ""));
+  return /(^|[-_/])(?:1\.5b|3b|4b|7b|8b)([-_/]|$)|local-qwen-card-copy/i.test(String(value || ""));
 }
 
 export function isQualityPlanner(value) {
-  return /gemma.*31b|magistral-small|deepseekv4|qwen3.*(?:8b|14b|30b|32b|235b)|mistral.*(?:small|large)|llama.*(?:70b|405b)|gpt-|claude|gemini|deepseek/i.test(String(value || ""));
+  return /gemma.*31b|magistral-small|deepseekv4|qwen3.*(?:14b|30b|32b|235b)|mistral.*(?:small|large)|llama.*(?:70b|405b)|gpt-|claude|gemini|deepseek/i.test(String(value || ""));
 }
 
 function positiveInteger(value) {

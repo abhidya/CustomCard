@@ -147,7 +147,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 The doctor checks the production workflow, live Comfy node, latest aggregate,
 local model inventory, and planner endpoint suitability. It should stay blocked
-when the only reachable planner is a Qwen3-4B smoke model.
+when the only reachable planner is a Qwen3-4B/8B smoke model.
 
 Planner runtime preflight:
 
@@ -157,8 +157,8 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 This checks the planner model class, output cap, and intended context budget.
 Production evidence keeps the full creative contract and requires a
-production-suitable planner. Qwen3-4B/4096-context runs are smoke/failure
-evidence only.
+production-suitable planner. Qwen3-4B/8B and 4096-context runs are
+smoke/failure evidence only.
 
 Generate the blocked-evidence rerun plan:
 
@@ -208,8 +208,8 @@ either a root URL such as `http://127.0.0.1:5003` or a `/v1` URL such as
 `http://127.0.0.1:5003/v1` as `-LocalLlmBaseUrl`, plus `-LocalLlmModel`, for a
 GPU/offloaded or hosted/self-hosted endpoint. Use `-DryRun` to inspect the
 planned matrix without requiring a live text server. The helper rejects known
-small planners such as Qwen3-4B for production evidence because they miss
-customer terms and can truncate the full card-copy contract; pass
+small planners such as Qwen3-4B/8B for production evidence because they miss
+customer terms or can truncate the full card-copy contract; pass
 `-AllowSmallPlanner` only for exploratory failure evidence. To start the
 installed local quality planner explicitly:
 
@@ -256,7 +256,7 @@ Latest live evidence:
   - Main blocker: local Qwen3-4B planner misses customer themes/must-include
     terms and can emit truncated invalid JSON. Current code now passes
     `must_include`/`must_avoid` into the planner, retries invalid or incomplete
-    card-copy output before Comfy, and refuses Qwen3-4B for production evidence
+    card-copy output before Comfy, and refuses Qwen3-4B/8B for production evidence
     unless `-AllowSmallPlanner` is explicit.
 - Current readiness doctor:
   `docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current`

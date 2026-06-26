@@ -48,9 +48,9 @@ Installed candidates, in suggested benchmark order:
 - `D:\models\gemma-4-31B-it-Q4_K_M.gguf` or `D:\models\lmstudio-community\gemma-4-31B-it-QAT-GGUF\gemma-4-31B-it-QAT-Q4_0.gguf` for higher-quality copy comparison.
 - `D:\models\lmstudio-community\Magistral-Small-2509-GGUF\Magistral-Small-2509-Q4_K_M.gguf` as a second-family long-form/copywriting comparison.
 - `D:\models\DeepSeekV4-Flash-158B-Q4_K_M.gguf` only if local runtime and memory tests show it is practical for repeated benchmark runs.
-- `D:\models\Qwen3-4B-Instruct-2507-Q4_K_S.gguf` only for fast schema smoke tests and failure evidence, not production promotion.
+- `D:\models\Qwen3-4B-Instruct-2507-Q4_K_S.gguf` and Qwen3 8B-class local planners only for fast schema smoke tests and failure evidence, not production promotion.
 
-LM Studio is preferred for schema/JSON experiments because it exposes OpenAI-compatible endpoints and structured-output support. KoboldCPP is useful for lightweight GGUF serving; keep JSON enforcement in prompt/post-parse repair if the server does not support JSON schema. For promotion runs, keep the full creative prompt and move to a stronger planner/runtime instead of shrinking the contract to fit Qwen3-4B.
+LM Studio is preferred for schema/JSON experiments because it exposes OpenAI-compatible endpoints and structured-output support. KoboldCPP is useful for lightweight GGUF serving; keep JSON enforcement in prompt/post-parse repair if the server does not support JSON schema. For promotion runs, keep the full creative prompt and move to a stronger planner/runtime instead of shrinking the contract to fit Qwen3-4B/8B.
 
 ### Image Renderer
 
@@ -116,11 +116,12 @@ Production text workflow tracking:
   layer needs a heavy front guard, over-softens the interiors, and fails the
   sparse back-mark contract. The live LLM-planned customer-request matrix is
   lower quality: aquarium 38/100, dog 34/100, koi 0/100. That run proves local
-  text plus local Comfy reachability, but Qwen3-4B is now treated as a smoke or
-  failure-evidence planner only. Current code passes `must_include`/`must_avoid`
-  into the full prompt, validates and retries missing terms before Comfy, and
-  preserves useful loose JSON shapes. The next promotion run should use Gemma
-  31B with GPU/offload or a hosted/self-hosted larger planner.
+  text plus local Comfy reachability, but Qwen3-4B/8B is now treated as smoke or
+  failure-evidence only for the production-text prompt. Current code passes
+  `must_include`/`must_avoid` into the full prompt, validates and retries
+  missing terms before Comfy, and preserves useful loose JSON shapes. The next
+  promotion run should use Gemma 31B with GPU/offload, Qwen3 14B+/Magistral
+  Small for routine local loops, or a hosted/self-hosted larger planner.
 
 Installed research candidates under `D:\models\`:
 

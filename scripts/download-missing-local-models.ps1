@@ -2,10 +2,10 @@ $ErrorActionPreference = "Stop"
 
 $downloads = @(
   @{
-    Id = "qwen3-8b-q4-k-m"
-    Url = "https://huggingface.co/Qwen/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q4_K_M.gguf?download=true"
-    Dest = "D:\models\Qwen\Qwen3-8B-GGUF\Qwen3-8B-Q4_K_M.gguf"
-    MinBytes = 4900000000
+    Id = "qwen3-14b-q4-k-m"
+    Url = "https://huggingface.co/Qwen/Qwen3-14B-GGUF/resolve/main/Qwen3-14B-Q4_K_M.gguf?download=true"
+    Dest = "D:\models\Qwen\Qwen3-14B-GGUF\Qwen3-14B-Q4_K_M.gguf"
+    MinBytes = 8500000000
   },
   @{
     Id = "sdxl-base-1.0"
