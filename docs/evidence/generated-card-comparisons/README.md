@@ -37,6 +37,9 @@ Current production-text planner preflight:
 Current production-text rerun plan:
 `production-text-rerun-plan-20260626-current/production-text-rerun-plan.md`.
 
+Current production-text manual grade checklist:
+`production-text-manual-grade-checklist-20260626-current/production-text-manual-grade-checklist.md`.
+
 Current production-text promotion gate:
 `production-text-promotion-gate-20260626-current/production-text-promotion-gate.md`.
 

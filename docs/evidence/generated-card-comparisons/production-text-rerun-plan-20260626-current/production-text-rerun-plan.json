@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-26T22:48:25.114Z",
+  "createdAtIso": "2026-06-26T23:14:14.817Z",
   "status": "rerun-required",
   "promotionReady": false,
   "reportDir": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current",
@@ -27,7 +27,7 @@
         "maxOutputTokens": 3200,
         "blockers": [
           "Planner /models preflight failed: fetch failed",
-          "Planner model 'koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S' is smoke-only for production text; use a production-suitable planner instead.",
+          "Planner model 'koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S' is below the production model floor for production text and is smoke-only; use Gemma 31B, Magistral Small, Qwen3 14B+, or a stronger hosted planner.",
           "Planner context 4096 is below the production minimum 8192; 4096-token local runs are smoke-only."
         ]
       }
@@ -37,9 +37,11 @@
       "details": {
         "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
         "blockers": [
+          "live ComfyUI reachable",
+          "live ComfyUI exposes CustomCardTextComposer",
           "latest LLM-planned aggregate is passing",
-          "configured production planner endpoint is production-suitable",
-          "configured production planner is not a small smoke model"
+          "configured production planner endpoint is reachable",
+          "configured production planner endpoint is production-suitable"
         ]
       }
     },
@@ -47,15 +49,13 @@
       "name": "production-suitable planner endpoint is reachable",
       "details": {
         "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
-        "activePlannerModels": [
-          "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
-        ]
+        "activePlannerModels": []
       }
     },
     {
       "name": "no small smoke planner is active or used",
       "details": {
-        "readinessSmallPlannerActive": true,
+        "readinessSmallPlannerActive": false,
         "benchmarkSmallPlannerUsed": true,
         "textModels": [
           "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
@@ -120,17 +120,18 @@
   ],
   "productionPlannerContract": {
     "summary": "Keep the full creative planner prompt and switch the runtime, not the prompt quality.",
+    "minimumOpenWeightPlannerClass": "14B+ dense/open-weight planner or stronger hosted model",
     "minContextTokens": 8192,
     "minOutputTokens": 2200,
     "recommendedOutputTokens": 3200,
     "recommendedModels": [
       "koboldcpp/gemma-4-31B-it-Q4_K_M",
       "koboldcpp/Magistral-Small-2509-Q4_K_M",
-      "koboldcpp/Qwen3-8B-Q4_K_M",
+      "koboldcpp/Qwen3-14B-Q4_K_M",
       "hosted/self-hosted GPT, Claude, Gemini, DeepSeek, Mistral, or Qwen 14B+ endpoint"
     ],
     "disallowedForPromotion": [
-      "Qwen3-4B and other 1.5B/3B/4B/7B local planners",
+      "Qwen3-4B/8B and other 1.5B/3B/4B/7B/8B local planners",
       "4096-context planner runs",
       "Reduced creative prompt contracts used only to fit small local models",
       "-AllowSmallPlanner except when collecting explicit smoke/failure evidence"
@@ -140,6 +141,7 @@
     "plannerPreflightOutput": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-production-planner",
     "readinessOutput": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-production-planner",
     "benchmarkOutput": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner",
+    "manualGradeChecklistOutput": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-production-planner",
     "aggregateOutput": "docs/evidence/generated-card-comparisons/benchmark-aggregate-20260626-production-text-production-planner",
     "evidenceIndexOutput": "docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-production-planner",
     "promotionGateOutput": "docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-production-planner"
@@ -177,18 +179,24 @@
     },
     {
       "step": 6,
+      "title": "Write manual grade checklist",
+      "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-manual-grade-checklist.mjs --advisory --input docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner --output-dir docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-production-planner",
+      "why": "Summarizes generated runs, missing/invalid manual grades, blocked grades, and failed-before-image stories before aggregation."
+    },
+    {
+      "step": 7,
       "title": "Aggregate production-text results",
       "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/model-benchmark-aggregate.mjs --input docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner --output-dir docs/evidence/generated-card-comparisons/benchmark-aggregate-20260626-production-text-production-planner --phase local-production-text",
       "why": "Builds the ranked aggregate used by the promotion gate."
     },
     {
-      "step": 7,
+      "step": 8,
       "title": "Refresh tracked evidence index",
       "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-evidence-index.mjs --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-production-planner",
       "why": "Aggregates tracked planner/readiness/preflight/benchmark/aggregate evidence after the rerun artifacts are committed."
     },
     {
-      "step": 8,
+      "step": 9,
       "title": "Run final promotion gate",
       "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-promotion-gate.mjs --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-production-planner --index-output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-production-planner",
       "why": "Shows whether every production-text requirement now passes. Remove --advisory only when a pass is expected."

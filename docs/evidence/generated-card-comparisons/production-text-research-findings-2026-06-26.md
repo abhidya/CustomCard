@@ -25,12 +25,13 @@ Production text should be planned by the card-copy LLM and rendered by ComfyUI:
 | `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15` | Ran 3 planned runs | KoboldCPP Qwen3-4B on `http://127.0.0.1:5001/v1` plus local Comfy reached the full aquarium/koi/dog matrix. Aquarium and dog rendered four panels; koi failed before images due truncated invalid JSON. |
 | `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live` | Blocked | Manual grades: aquarium 38/100, dog 34/100, koi 0/100. Promotion remains blocked by planner theme adherence and JSON reliability, not by Comfy text compositing. |
 | Card-copy contract follow-up | Implemented | The generator keeps the full planner prompt, passes benchmark `must_include`/`must_avoid` into the request, validates and retries missing required terms before Comfy, and preserves useful loose LLM JSON shapes instead of falling back to generic themes. |
-| `tools/run-production-text-benchmark.ps1` small-planner guard | Implemented | Production evidence now rejects known-small planners such as Qwen3-4B unless `-AllowSmallPlanner` is explicit. The 4B path remains useful for smoke/failure evidence, not promotion. |
-| `scripts/production-text-planner-preflight.mjs` | Implemented | Planner preflight now rejects Qwen3-4B/4096-context and reduced output caps for production evidence. It allows small planners only as explicit smoke/failure evidence and keeps the full creative contract. |
+| `tools/run-production-text-benchmark.ps1` small-planner guard | Implemented | Production evidence now rejects known-small planners such as Qwen3-4B/8B unless `-AllowSmallPlanner` is explicit. The 4B/8B path remains useful for smoke/failure evidence, not promotion. |
+| `scripts/production-text-planner-preflight.mjs` | Implemented | Planner preflight now rejects Qwen3-4B/8B, 4096-context, and reduced output caps for production evidence. It allows small planners only as explicit smoke/failure evidence and keeps the full creative contract. |
 | `docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current` | Blocked | The current 5001 `/models` probe is not reachable, and the explicit Qwen3-4B/4096-context planner is smoke-only. Promotion evidence must use a production-suitable planner with 8192+ context and the full output budget. |
-| `docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current` | Rerun required | Converts the 7 failed promotion-gate requirements into 8 ordered commands: production planner start/configuration, planner preflight, readiness, aquarium/koi/dog benchmark, manual grading, aggregate, evidence index, and final gate. |
+| `docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current` | Rerun required | Converts the 7 failed promotion-gate requirements into 9 ordered commands: production planner start/configuration, planner preflight, readiness, aquarium/koi/dog benchmark, manual grading, manual grade checklist, aggregate, evidence index, and final gate. |
 | `tools/start-local-card-planner.ps1` Gemma 31B attempt | Operationally blocked | Gemma 31B loaded at `http://127.0.0.1:5003/v1`, but CPU decoding did not finish the first benchmark planner response in a practical window. Do not reduce prompt quality for promotion; use GPU/offload or a hosted/self-hosted larger planner with the full output budget. |
-| `docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current` | Blocked | Readiness doctor confirms ComfyUI and `CustomCardTextComposer` are live and higher-quality planner files are installed, but the discovered reachable planner is still Qwen3-4B on `5001` and no production-suitable endpoint is reachable/configured. |
+| `docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current` | Blocked | Previous live preflight proves `CustomCardTextComposer` worked, but the latest readiness probe finds local Comfy and planner endpoints offline. Higher-quality planner files are installed, but no production-suitable endpoint is currently reachable/configured. |
+| `docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current` | Blocked | Manual grade checklist records 3 valid manual grades, 2 generated gradable runs, and 1 koi run that failed before image generation. All grades remain blocked or failed; aquarium/dog still miss required customer terms. |
 | `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current` | Blocked | Evidence index aggregates the tracked rerun plan, planner preflight, readiness, Comfy preflight, benchmark, aggregate, and manual-grade reports. It excludes untracked scratch by default and keeps promotion blocked by the planner preflight, small planner endpoint, and failed LLM-planned aggregate. |
 | `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current` | Blocked | Promotion gate passes live Comfy/text-composer and final-Comfy-image requirements, but now fails 7 requirements: planner preflight, readiness, production-suitable planner, no-small-planner, full matrix completion, must-include adherence, and manual aggregate. |
 | `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-artwork-guard-v2` | 72/100, blocked | Deterministic Comfy text, soft text fields, and artwork guards work structurally, but artwork remains too dense for production. |
@@ -66,9 +67,10 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-producti
 ```
 
 That run is failure evidence, not promotion evidence. The wrapper now rejects
-Qwen3-4B by default for live production evidence because the run proved it can
-miss required customer terms and truncate JSON. Use `-AllowSmallPlanner` only
-when intentionally collecting exploratory failure evidence.
+Qwen3-4B/8B by default for live production evidence because the run proved the
+small-planner path can miss required customer terms and truncate JSON. Use
+`-AllowSmallPlanner` only when intentionally collecting exploratory failure
+evidence.
 
 For the installed higher-quality local planner:
 
@@ -97,6 +99,11 @@ Run `npm run comfy:production-text:evidence -- --output-dir docs/evidence/genera
 to refresh the tracked production-text evidence index. Add `--include-untracked`
 only when intentionally reviewing local scratch runs that should not be treated
 as promotion proof.
+
+Run `npm run comfy:production-text:manual-grades -- --advisory --input <benchmark-output-dir> --output-dir docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-YYYYMMDD-current`
+after every production-text benchmark and before aggregate/gate refresh. The
+report separates generated runs that need visual grades from stories that
+failed before image generation.
 
 Run `npm run comfy:production-text:planner -- --base-url ... --model ... --reported-context-tokens 8192 --max-output-tokens 3200`
 before any live production benchmark. This is the fast check that prevents a

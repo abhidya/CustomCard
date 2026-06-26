@@ -308,6 +308,12 @@ Comfy template variables exposed by the local adapter include:
     JSON/Markdown summary.
   - Use `--include-untracked` only when intentionally reviewing local scratch
     evidence that should not be cited as committed promotion proof.
+- `scripts/production-text-manual-grade-checklist.mjs`
+  - Writes JSON/Markdown after a benchmark to show which generated runs have
+    valid `manual-visual-grade.json`, which generated runs still need grades,
+    and which stories failed before image generation.
+  - Use this before refreshing aggregate/gate evidence so blocked visual grades
+    and planner failures are visible without opening every run directory.
 - `scripts/production-text-promotion-gate.mjs`
   - Blocking promotion gate over the indexed production-text evidence.
   - Requires live Comfy/text-node proof, a production-ready planner preflight, a
@@ -390,13 +396,16 @@ customer-theme quality.
    matrix through `tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl ...`
    and manually grade every run. Use `-AllowCompositorFixtureFallback` only for
    compositor/node smoke evidence.
-10. Add an overflow/contrast QA gate. Minimum acceptable gate:
+10. Run `npm run comfy:production-text:manual-grades -- --advisory --input <benchmark-output-dir> --output-dir docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-YYYYMMDD-current`
+   and confirm generated runs have valid manual grades while failed-before-image
+   stories are tracked separately.
+11. Add an overflow/contrast QA gate. Minimum acceptable gate:
    - all panels rendered
    - no text missing
    - no fake text in artwork-only areas
    - no people/mockup/object-scene leakage
    - text contrast meets print/readability threshold
-11. Promote only after aggregate benchmark evidence beats the current
+12. Promote only after aggregate benchmark evidence beats the current
    app-compositor baseline.
 
 Current status: gates 1, 3, and the readiness portion of 4 have current local
@@ -406,16 +415,21 @@ the configured 5001 `/models` probe is not currently reachable, and the
 explicit Qwen3-4B/4096-context planner is smoke-only rather than production
 evidence. The current readiness report is
 `docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current`:
-ComfyUI and `CustomCardTextComposer` are live, higher-quality planner files are
-installed locally, but the reachable planner endpoint is still Qwen3-4B and no
-production-suitable planner endpoint is running. The current rerun plan is
+previous live preflight proves `CustomCardTextComposer` worked, but the latest
+readiness probe finds local Comfy and planner endpoints offline. Higher-quality
+planner files are installed locally, but no production-suitable planner endpoint
+is currently reachable/configured. The current rerun plan is
 `docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current`:
-it turns the 7 failed gate requirements into 8 ordered commands for the next
+it turns the 7 failed gate requirements into 9 ordered commands for the next
 production-suitable planner evidence pass. The current evidence index is
 `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current`;
 it aggregates the tracked rerun plan, planner preflight, readiness, Comfy
 preflight, benchmark, and manual-grade evidence and keeps promotion blocked for
 the same planner/model reasons. The
+current manual grade checklist is
+`docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current`;
+it records 3 blocked manual grades, 2 generated gradable runs, and 1 koi run
+that failed before image generation. The
 current promotion gate is
 `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current`;
 it passes live Comfy/text-composer and final-Comfy-image requirements, but fails

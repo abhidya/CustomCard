@@ -1,6 +1,6 @@
 # Production Text Rerun Plan
 
-Created: 2026-06-26T22:48:25.114Z
+Created: 2026-06-26T23:14:14.817Z
 Status: rerun-required
 Gate: docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current/production-text-promotion-gate.json
 Evidence index: docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current/production-text-evidence-index.json
@@ -18,12 +18,13 @@ Evidence index: docs/evidence/generated-card-comparisons/production-text-evidenc
 ## Planner Contract
 
 - Keep the full creative planner prompt and switch the runtime, not the prompt quality.
+- Minimum planner class: 14B+ dense/open-weight planner or stronger hosted model
 - Minimum context tokens: 8192
 - Recommended output tokens: 3200
-- Recommended models: koboldcpp/gemma-4-31B-it-Q4_K_M, koboldcpp/Magistral-Small-2509-Q4_K_M, koboldcpp/Qwen3-8B-Q4_K_M, hosted/self-hosted GPT, Claude, Gemini, DeepSeek, Mistral, or Qwen 14B+ endpoint
+- Recommended models: koboldcpp/gemma-4-31B-it-Q4_K_M, koboldcpp/Magistral-Small-2509-Q4_K_M, koboldcpp/Qwen3-14B-Q4_K_M, hosted/self-hosted GPT, Claude, Gemini, DeepSeek, Mistral, or Qwen 14B+ endpoint
 
 Do not use for promotion:
-- Qwen3-4B and other 1.5B/3B/4B/7B local planners
+- Qwen3-4B/8B and other 1.5B/3B/4B/7B/8B local planners
 - 4096-context planner runs
 - Reduced creative prompt contracts used only to fit small local models
 - -AllowSmallPlanner except when collecting explicit smoke/failure evidence
@@ -70,7 +71,15 @@ docs/evidence/generated-card-comparisons/production-text-workflow-20260626-produ
 
 Fill each template and save manual-visual-grade.json before aggregating promotion evidence.
 
-### 6. Aggregate production-text results
+### 6. Write manual grade checklist
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-manual-grade-checklist.mjs --advisory --input docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner --output-dir docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-production-planner
+```
+
+Summarizes generated runs, missing/invalid manual grades, blocked grades, and failed-before-image stories before aggregation.
+
+### 7. Aggregate production-text results
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/model-benchmark-aggregate.mjs --input docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner --output-dir docs/evidence/generated-card-comparisons/benchmark-aggregate-20260626-production-text-production-planner --phase local-production-text
@@ -78,7 +87,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 Builds the ranked aggregate used by the promotion gate.
 
-### 7. Refresh tracked evidence index
+### 8. Refresh tracked evidence index
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-evidence-index.mjs --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-production-planner
@@ -86,7 +95,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 Aggregates tracked planner/readiness/preflight/benchmark/aggregate evidence after the rerun artifacts are committed.
 
-### 8. Run final promotion gate
+### 9. Run final promotion gate
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-promotion-gate.mjs --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-production-planner --index-output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-production-planner

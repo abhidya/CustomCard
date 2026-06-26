@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-26T22:48:47.127Z",
+  "createdAtIso": "2026-06-26T23:11:08.841Z",
   "status": "blocked",
   "promotionReady": false,
   "advisory": true,
@@ -14,6 +14,7 @@
     "rerunPlan": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current/production-text-rerun-plan.json",
     "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current/production-text-planner-preflight.json",
     "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626T042126Z/production-text-preflight.json",
+    "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current/production-text-manual-grade-checklist.json",
     "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
     "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json"
   },
@@ -38,7 +39,7 @@
         "maxOutputTokens": 3200,
         "blockers": [
           "Planner /models preflight failed: fetch failed",
-          "Planner model 'koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S' is smoke-only for production text; use a production-suitable planner instead.",
+          "Planner model 'koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S' is below the production model floor for production text and is smoke-only; use Gemma 31B, Magistral Small, Qwen3 14B+, or a stronger hosted planner.",
           "Planner context 4096 is below the production minimum 8192; 4096-token local runs are smoke-only."
         ]
       }
@@ -49,9 +50,11 @@
       "details": {
         "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
         "blockers": [
+          "live ComfyUI reachable",
+          "live ComfyUI exposes CustomCardTextComposer",
           "latest LLM-planned aggregate is passing",
-          "configured production planner endpoint is production-suitable",
-          "configured production planner is not a small smoke model"
+          "configured production planner endpoint is reachable",
+          "configured production planner endpoint is production-suitable"
         ]
       }
     },
@@ -60,16 +63,14 @@
       "ok": false,
       "details": {
         "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
-        "activePlannerModels": [
-          "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
-        ]
+        "activePlannerModels": []
       }
     },
     {
       "name": "no small smoke planner is active or used",
       "ok": false,
       "details": {
-        "readinessSmallPlannerActive": true,
+        "readinessSmallPlannerActive": false,
         "benchmarkSmallPlannerUsed": true,
         "textModels": [
           "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
@@ -147,7 +148,7 @@
   "nextSteps": [
     "Run production-text planner preflight with a production-suitable model, 8192+ context, and the full output budget.",
     "Run the planner preflight and readiness doctor after starting a production-suitable planner endpoint with 8192+ context.",
-    "Use Qwen3-4B only for smoke/failure evidence; run promotion evidence with Gemma 31B, Magistral Small, Qwen3-8B-or-better, or a hosted/self-hosted production planner.",
+    "Use Qwen3-4B/8B only for smoke/failure evidence; run promotion evidence with Gemma 31B, Magistral Small, Qwen3-14B+, or a hosted/self-hosted production planner.",
     "Run the full aquarium/koi/dog production-text matrix to completion.",
     "Keep the full prompt and correct planner runtime; retry/repair planner output until must_include and must_avoid checks pass before Comfy work.",
     "Manually grade every run and regenerate the aggregate only after all candidates pass."

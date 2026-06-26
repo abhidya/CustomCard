@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-26T22:48:47.124Z",
+  "createdAtIso": "2026-06-26T23:14:22.703Z",
   "status": "blocked",
   "promotionReady": false,
   "evidenceRoot": "docs/evidence/generated-card-comparisons",
@@ -10,29 +10,31 @@
     "rerunPlan": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current/production-text-rerun-plan.json",
     "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current/production-text-planner-preflight.json",
     "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626T042126Z/production-text-preflight.json",
+    "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current/production-text-manual-grade-checklist.json",
     "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
     "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json"
   },
   "findings": [
     "Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.",
     "Latest planner preflight is blocked: smoke-only model koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S.",
-    "The currently reachable planner is a known-small smoke model, so current evidence must not be promoted.",
     "No production-suitable planner endpoint is reachable/configured in the latest readiness report.",
     "The latest LLM-planned benchmark covers 3 customer request runs.",
     "Planner/theme adherence is still failing required terms: Nina, aquarium, Morgan, dog.",
-    "Latest aggregate is blocked: best score 38 across 3 run(s)."
+    "Latest aggregate is blocked: best score 38 across 3 run(s).",
+    "Latest manual grade checklist is blocked: 2/2 generated run(s) graded, 1 failed before image generation."
   ],
   "nextSteps": [
     "Run production-text planner preflight with a production-suitable model, 8192+ context, and the full output budget.",
     "Run the planner preflight, then start or configure a production-suitable planner endpoint with 8192+ context before collecting promotion evidence.",
-    "Keep Qwen3-4B/small planner runs as smoke or failure evidence only.",
+    "Keep Qwen3-4B/8B and other small planner runs as smoke or failure evidence only.",
     "Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.",
-    "Manually grade every production-text run and aggregate only after all candidates pass."
+    "Manually grade every production-text run and aggregate only after all candidates pass.",
+    "Resolve the latest manual grade checklist blockers before treating the aggregate as promotion evidence."
   ],
   "rerunPlans": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current/production-text-rerun-plan.json",
-      "createdAtIso": "2026-06-26T22:48:25.114Z",
+      "createdAtIso": "2026-06-26T23:14:14.817Z",
       "status": "rerun-required",
       "promotionReady": false,
       "failedRequirements": [
@@ -44,7 +46,7 @@
         "planner preserved required terms and avoided forbidden terms",
         "manual aggregate is promotion-ready"
       ],
-      "commandCount": 8,
+      "commandCount": 9,
       "plannerModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
       "plannerClassification": "smoke-only",
       "nextBenchmarkOutput": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner"
@@ -53,7 +55,7 @@
   "plannerPreflights": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current/production-text-planner-preflight.json",
-      "createdAtIso": "2026-06-26T22:41:32.513Z",
+      "createdAtIso": "2026-06-26T23:09:30.041Z",
       "status": "blocked",
       "promotionReady": false,
       "runAllowed": false,
@@ -71,13 +73,13 @@
       "blockerCount": 3,
       "blockers": [
         "Planner /models preflight failed: fetch failed",
-        "Planner model 'koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S' is smoke-only for production text; use a production-suitable planner instead.",
+        "Planner model 'koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S' is below the production model floor for production text and is smoke-only; use Gemma 31B, Magistral Small, Qwen3 14B+, or a stronger hosted planner.",
         "Planner context 4096 is below the production minimum 8192; 4096-token local runs are smoke-only."
       ],
       "warnings": [],
       "nextSteps": [
         "Start or point to an OpenAI-compatible planner endpoint before collecting production evidence.",
-        "Use a production planner such as koboldcpp/gemma-4-31B-it-Q4_K_M, koboldcpp/Magistral-Small-2509-Q4_K_M, koboldcpp/Qwen3-8B-Q4_K_M with 8192+ context tokens.",
+        "Use a production planner such as koboldcpp/gemma-4-31B-it-Q4_K_M, koboldcpp/Magistral-Small-2509-Q4_K_M, koboldcpp/Qwen3-14B-Q4_K_M with 8192+ context tokens.",
         "Keep the full creative planner contract; use -AllowSmallPlanner only for smoke/failure evidence."
       ]
     }
@@ -85,25 +87,27 @@
   "readinessReports": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
-      "createdAtIso": "2026-06-26T05:22:09.061Z",
+      "createdAtIso": "2026-06-26T23:10:59.401Z",
       "status": "blocked",
       "promotionReady": false,
-      "blockerCount": 3,
+      "blockerCount": 5,
       "blockers": [
+        "live ComfyUI reachable",
+        "live ComfyUI exposes CustomCardTextComposer",
         "latest LLM-planned aggregate is passing",
-        "configured production planner endpoint is production-suitable",
-        "configured production planner is not a small smoke model"
+        "configured production planner endpoint is reachable",
+        "configured production planner endpoint is production-suitable"
       ],
-      "comfyReachable": true,
-      "hasTextComposer": true,
-      "activePlannerModels": [
-        "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
-      ],
+      "comfyReachable": false,
+      "hasTextComposer": false,
+      "activePlannerModels": [],
       "productionSuitablePlannerReachable": false,
-      "smallPlannerActive": true,
+      "smallPlannerActive": false,
       "nextSteps": [
-        "Run tools/start-local-card-planner.ps1 with GPU/offload, use a hosted/self-hosted larger planner, or point -LocalLlmBaseUrl at that endpoint.",
-        "Switch the production planner URL away from Qwen3-4B/small smoke models; keep -AllowSmallPlanner only for exploratory failure evidence.",
+        "Start the target ComfyUI server on the configured URL.",
+        "Install/link comfyui-custom-nodes/CustomCardTextComposer into ComfyUI/custom_nodes and restart ComfyUI.",
+        "Start the configured local/hosted OpenAI-compatible planner endpoint before running promotion evidence.",
+        "Run tools/start-local-card-planner.ps1 with 8192+ context and GPU/offload, use a hosted/self-hosted production planner, or point -LocalLlmBaseUrl at that endpoint.",
         "Run the full LLM-planned matrix with a production-suitable planner, manually grade every run, then aggregate."
       ]
     }
@@ -229,6 +233,33 @@
         "Link comfyui-custom-nodes/CustomCardTextComposer into ComfyUI/custom_nodes and restart ComfyUI.",
         "After restart, refresh /object_info evidence so CustomCardTextComposer is visible to future agents.",
         "Use --require-live true in CI or promotion gates so missing live Comfy nodes fail the command."
+      ]
+    }
+  ],
+  "manualGradeChecklists": [
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current/production-text-manual-grade-checklist.json",
+      "createdAtIso": "2026-06-26T23:09:16.511Z",
+      "status": "blocked",
+      "promotionReady": false,
+      "benchmarkSummary": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
+      "totalRuns": 3,
+      "gradableRuns": 2,
+      "gradedGeneratedRuns": 2,
+      "gradedRuns": 3,
+      "missingGrades": 0,
+      "invalidGrades": 0,
+      "failedBeforeImageGeneration": 1,
+      "blockedGrades": 3,
+      "blockers": [
+        "3 manual grade(s) are blocked or failed.",
+        "1 run(s) failed before image generation.",
+        "Automated must_include checks failed for: Nina, aquarium, Morgan, dog.",
+        "Automated must_avoid checks failed for: mockup."
+      ],
+      "nextSteps": [
+        "Rerun failed stories only after the planner preflight proves a production-floor model and output budget.",
+        "Fix planner contract adherence before spending more Comfy image work."
       ]
     }
   ],

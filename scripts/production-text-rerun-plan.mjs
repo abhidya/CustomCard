@@ -55,6 +55,7 @@ export function buildProductionTextRerunPlan(args = {}) {
     plannerPreflightOutput: `docs/evidence/generated-card-comparisons/production-text-planner-preflight-${reportDate}-production-planner`,
     readinessOutput: `docs/evidence/generated-card-comparisons/production-text-readiness-${reportDate}-production-planner`,
     benchmarkOutput: `docs/evidence/generated-card-comparisons/production-text-workflow-${reportDate}-production-planner`,
+    manualGradeChecklistOutput: `docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-${reportDate}-production-planner`,
     aggregateOutput: `docs/evidence/generated-card-comparisons/benchmark-aggregate-${reportDate}-production-text-production-planner`,
     evidenceIndexOutput: `docs/evidence/generated-card-comparisons/production-text-evidence-index-${reportDate}-production-planner`,
     promotionGateOutput: `docs/evidence/generated-card-comparisons/production-text-promotion-gate-${reportDate}-production-planner`
@@ -147,18 +148,24 @@ function buildCommands({ recommended, paths }) {
     },
     {
       step: 6,
+      title: "Write manual grade checklist",
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-manual-grade-checklist.mjs --advisory --input ${paths.benchmarkOutput} --output-dir ${paths.manualGradeChecklistOutput}`,
+      why: "Summarizes generated runs, missing/invalid manual grades, blocked grades, and failed-before-image stories before aggregation."
+    },
+    {
+      step: 7,
       title: "Aggregate production-text results",
       command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/model-benchmark-aggregate.mjs --input ${paths.benchmarkOutput} --output-dir ${paths.aggregateOutput} --phase local-production-text`,
       why: "Builds the ranked aggregate used by the promotion gate."
     },
     {
-      step: 7,
+      step: 8,
       title: "Refresh tracked evidence index",
       command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-evidence-index.mjs --output-dir ${paths.evidenceIndexOutput}`,
       why: "Aggregates tracked planner/readiness/preflight/benchmark/aggregate evidence after the rerun artifacts are committed."
     },
     {
-      step: 8,
+      step: 9,
       title: "Run final promotion gate",
       command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-promotion-gate.mjs --advisory --output-dir ${paths.promotionGateOutput} --index-output-dir ${paths.evidenceIndexOutput}`,
       why: "Shows whether every production-text requirement now passes. Remove --advisory only when a pass is expected."

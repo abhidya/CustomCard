@@ -1,6 +1,6 @@
 # Production Text Evidence Index
 
-Created: 2026-06-26T22:48:47.124Z
+Created: 2026-06-26T23:14:22.703Z
 Status: blocked
 Promotion ready: no
 
@@ -8,28 +8,30 @@ Promotion ready: no
 
 - Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.
 - Latest planner preflight is blocked: smoke-only model koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S.
-- The currently reachable planner is a known-small smoke model, so current evidence must not be promoted.
 - No production-suitable planner endpoint is reachable/configured in the latest readiness report.
 - The latest LLM-planned benchmark covers 3 customer request runs.
 - Planner/theme adherence is still failing required terms: Nina, aquarium, Morgan, dog.
 - Latest aggregate is blocked: best score 38 across 3 run(s).
+- Latest manual grade checklist is blocked: 2/2 generated run(s) graded, 1 failed before image generation.
 
 ## Next Steps
 
 - Run production-text planner preflight with a production-suitable model, 8192+ context, and the full output budget.
 - Run the planner preflight, then start or configure a production-suitable planner endpoint with 8192+ context before collecting promotion evidence.
-- Keep Qwen3-4B/small planner runs as smoke or failure evidence only.
+- Keep Qwen3-4B/8B and other small planner runs as smoke or failure evidence only.
 - Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.
 - Manually grade every production-text run and aggregate only after all candidates pass.
+- Resolve the latest manual grade checklist blockers before treating the aggregate as promotion evidence.
 
 ## Latest Evidence
 
 | Type | Path | Status | Key result |
 | --- | --- | --- | --- |
-| Rerun Plan | [open](../production-text-rerun-plan-20260626-current/production-text-rerun-plan.json) | rerun-required | 7 failed requirement(s); commands=8 |
+| Rerun Plan | [open](../production-text-rerun-plan-20260626-current/production-text-rerun-plan.json) | rerun-required | 7 failed requirement(s); commands=9 |
 | Planner | [open](../production-text-planner-preflight-20260626-current/production-text-planner-preflight.json) | blocked | smoke-only; model=koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S; context=4096 |
-| Readiness | [open](../production-text-readiness-20260626-current/production-text-readiness.json) | blocked | 3 blocker(s); planner=koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S |
+| Readiness | [open](../production-text-readiness-20260626-current/production-text-readiness.json) | blocked | 5 blocker(s); planner=none |
 | Preflight | [open](../production-text-preflight-20260626T042126Z/production-text-preflight.json) | promotion-ready | comfy=yes node=yes |
+| Manual Grades | [open](../production-text-manual-grade-checklist-20260626-current/production-text-manual-grade-checklist.json) | blocked | 2/2 generated graded; manual-grades=3; missing=0; failed-before-image=1 |
 | Aggregate | [open](../benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json) | blocked | 3 run(s); best=38; ready=no |
 | Benchmark | [open](../production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json) | blocked | 2/3 completed; failed=1 |
 

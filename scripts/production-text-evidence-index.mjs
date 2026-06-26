@@ -15,6 +15,7 @@ if (isMainModule()) {
     rerunPlans: result.rerunPlans.length,
     plannerPreflights: result.plannerPreflights.length,
     readinessReports: result.readinessReports.length,
+    manualGradeChecklists: result.manualGradeChecklists.length,
     benchmarkSummaries: result.benchmarkSummaries.length,
     aggregates: result.aggregates.length
   }, null, 2));
@@ -48,6 +49,11 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     .map(preflightEntry)
     .filter(Boolean)
     .sort(newestFirst);
+  const manualGradeChecklists = files
+    .filter((file) => basename(file) === "production-text-manual-grade-checklist.json")
+    .map(manualGradeChecklistEntry)
+    .filter(Boolean)
+    .sort(newestFirst);
   const aggregates = files
     .filter((file) => basename(file) === "benchmark-aggregate.json")
     .filter((file) => relativePath(file).includes("production-text"))
@@ -68,6 +74,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
   const latestAggregate = aggregates.find((entry) => entry.kind === "llm-planned") || aggregates[0];
   const latestBenchmark = benchmarkSummaries.find((entry) => entry.llmGeneratedRuns > 0) || benchmarkSummaries[0];
   const latestPreflight = preflights[0];
+  const latestManualGradeChecklist = manualGradeChecklists[0];
   const promotionReady = Boolean(
     latestReadiness?.promotionReady &&
     latestPlannerPreflight?.promotionReady &&
@@ -76,8 +83,22 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     latestBenchmark?.completedRuns >= 3
   );
   const status = promotionReady ? "promotion-ready" : "blocked";
-  const findings = buildFindings({ latestPlannerPreflight, latestReadiness, latestAggregate, latestBenchmark, latestPreflight });
-  const nextSteps = buildNextSteps({ latestPlannerPreflight, latestReadiness, latestAggregate, latestBenchmark, latestPreflight });
+  const findings = buildFindings({
+    latestPlannerPreflight,
+    latestReadiness,
+    latestAggregate,
+    latestBenchmark,
+    latestPreflight,
+    latestManualGradeChecklist
+  });
+  const nextSteps = buildNextSteps({
+    latestPlannerPreflight,
+    latestReadiness,
+    latestAggregate,
+    latestBenchmark,
+    latestPreflight,
+    latestManualGradeChecklist
+  });
   const result = {
     createdAtIso: new Date().toISOString(),
     status,
@@ -90,6 +111,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
       rerunPlan: latestRerunPlan?.path || "",
       plannerPreflight: latestPlannerPreflight?.path || "",
       preflight: latestPreflight?.path || "",
+      manualGradeChecklist: latestManualGradeChecklist?.path || "",
       aggregate: latestAggregate?.path || "",
       benchmark: latestBenchmark?.path || ""
     },
@@ -99,6 +121,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     plannerPreflights,
     readinessReports,
     preflights,
+    manualGradeChecklists,
     aggregates,
     benchmarkSummaries
   };
@@ -163,6 +186,7 @@ function isEvidenceCandidate(filePath) {
     name === "production-text-readiness.json" ||
     name === "production-text-planner-preflight.json" ||
     name === "production-text-preflight.json" ||
+    name === "production-text-manual-grade-checklist.json" ||
     (name === "benchmark-aggregate.json" && rel.includes("production-text")) ||
     (name.endsWith("-summary.json") && rel.includes("production-text"));
 }
@@ -248,6 +272,28 @@ function preflightEntry(filePath) {
   };
 }
 
+function manualGradeChecklistEntry(filePath) {
+  const payload = readJson(filePath);
+  if (!payload) return undefined;
+  return {
+    path: relativePath(filePath),
+    createdAtIso: payload.createdAtIso || fileMtime(filePath),
+    status: payload.status || "unknown",
+    promotionReady: Boolean(payload.promotionReady),
+    benchmarkSummary: payload.benchmarkSummary || "",
+    totalRuns: Number(payload.summary?.totalRuns || 0),
+    gradableRuns: Number(payload.summary?.gradableRuns || 0),
+    gradedGeneratedRuns: Number(payload.summary?.gradedGeneratedRuns ?? payload.summary?.gradedRuns ?? 0),
+    gradedRuns: Number(payload.summary?.gradedRuns || 0),
+    missingGrades: Number(payload.summary?.missingGrades || 0),
+    invalidGrades: Number(payload.summary?.invalidGrades || 0),
+    failedBeforeImageGeneration: Number(payload.summary?.failedBeforeImageGeneration || 0),
+    blockedGrades: Number(payload.summary?.blockedGrades || 0),
+    blockers: payload.blockers || [],
+    nextSteps: payload.nextSteps || []
+  };
+}
+
 function aggregateEntry(filePath) {
   const payload = readJson(filePath);
   if (!payload) return undefined;
@@ -317,7 +363,7 @@ function benchmarkSummaryEntry(filePath) {
   };
 }
 
-function buildFindings({ latestPlannerPreflight, latestReadiness, latestAggregate, latestBenchmark, latestPreflight }) {
+function buildFindings({ latestPlannerPreflight, latestReadiness, latestAggregate, latestBenchmark, latestPreflight, latestManualGradeChecklist }) {
   const findings = [];
   if (latestPreflight?.liveComfyReachable && latestPreflight?.liveNodeAvailable) {
     findings.push("Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.");
@@ -343,11 +389,16 @@ function buildFindings({ latestPlannerPreflight, latestReadiness, latestAggregat
   if (latestAggregate && !latestAggregate.promotionReady) {
     findings.push(`Latest aggregate is blocked: best score ${latestAggregate.bestScore ?? "n/a"} across ${latestAggregate.totalRuns} run(s).`);
   }
+  if (latestManualGradeChecklist && !latestManualGradeChecklist.promotionReady) {
+    findings.push(
+      `Latest manual grade checklist is blocked: ${latestManualGradeChecklist.gradedGeneratedRuns}/${latestManualGradeChecklist.gradableRuns} generated run(s) graded, ${latestManualGradeChecklist.failedBeforeImageGeneration} failed before image generation.`
+    );
+  }
   if (!findings.length) findings.push("No production-text evidence was found.");
   return findings;
 }
 
-function buildNextSteps({ latestPlannerPreflight, latestReadiness, latestAggregate, latestBenchmark, latestPreflight }) {
+function buildNextSteps({ latestPlannerPreflight, latestReadiness, latestAggregate, latestBenchmark, latestPreflight, latestManualGradeChecklist }) {
   const steps = [];
   if (!latestPreflight?.liveComfyReachable || !latestPreflight?.liveNodeAvailable) {
     steps.push("Run production-text preflight with live Comfy and CustomCardTextComposer loaded.");
@@ -366,6 +417,9 @@ function buildNextSteps({ latestPlannerPreflight, latestReadiness, latestAggrega
   }
   if (!latestAggregate?.promotionReady) {
     steps.push("Manually grade every production-text run and aggregate only after all candidates pass.");
+  }
+  if (latestManualGradeChecklist && !latestManualGradeChecklist.promotionReady) {
+    steps.push("Resolve the latest manual grade checklist blockers before treating the aggregate as promotion evidence.");
   }
   return unique(steps);
 }
@@ -395,6 +449,7 @@ function buildMarkdown(result) {
   lines.push(latestRow("Planner", result.plannerPreflights[0], plannerSummary));
   lines.push(latestRow("Readiness", result.readinessReports[0], readinessSummary));
   lines.push(latestRow("Preflight", result.preflights[0], preflightSummary));
+  lines.push(latestRow("Manual Grades", result.manualGradeChecklists[0], manualGradeChecklistSummary));
   lines.push(latestRow("Aggregate", result.aggregates[0], aggregateSummary));
   lines.push(latestRow("Benchmark", result.benchmarkSummaries[0], benchmarkSummary));
   lines.push("");
@@ -435,6 +490,10 @@ function readinessSummary(entry) {
 
 function preflightSummary(entry) {
   return `comfy=${entry.liveComfyReachable ? "yes" : "no"} node=${entry.liveNodeAvailable ? "yes" : "no"}`;
+}
+
+function manualGradeChecklistSummary(entry) {
+  return `${entry.gradedGeneratedRuns}/${entry.gradableRuns} generated graded; manual-grades=${entry.gradedRuns}; missing=${entry.missingGrades}; failed-before-image=${entry.failedBeforeImageGeneration}`;
 }
 
 function aggregateSummary(entry) {

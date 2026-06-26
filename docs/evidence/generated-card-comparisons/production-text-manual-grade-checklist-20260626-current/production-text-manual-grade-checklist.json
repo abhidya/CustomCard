@@ -1,0 +1,160 @@
+{
+  "createdAtIso": "2026-06-26T23:09:16.511Z",
+  "status": "blocked",
+  "promotionReady": false,
+  "advisory": true,
+  "benchmarkSummary": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
+  "benchmarkCreatedAtIso": "2026-06-26T04:21:27.749Z",
+  "phase": "local-production-text",
+  "phaseDir": "production-text-workflow",
+  "summary": {
+    "totalRuns": 3,
+    "gradableRuns": 2,
+    "generatedVisualRuns": 2,
+    "gradedGeneratedRuns": 2,
+    "gradedRuns": 3,
+    "validGrades": 3,
+    "missingGrades": 0,
+    "invalidGrades": 0,
+    "passingGrades": 0,
+    "blockedGrades": 3,
+    "failedBeforeImageGeneration": 1,
+    "failedRuns": 1,
+    "stories": [
+      "aquarium-lover-birthday",
+      "koi-fish-lover-encouragement",
+      "dog-lover-thank-you"
+    ]
+  },
+  "blockers": [
+    "3 manual grade(s) are blocked or failed.",
+    "1 run(s) failed before image generation.",
+    "Automated must_include checks failed for: Nina, aquarium, Morgan, dog.",
+    "Automated must_avoid checks failed for: mockup."
+  ],
+  "runs": [
+    {
+      "storyId": "aquarium-lover-birthday",
+      "productionTextMode": "llm-generated-copy",
+      "textModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+      "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+      "runDir": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow/aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui",
+      "generatedVisuals": true,
+      "failedBeforeImageGeneration": false,
+      "status": "",
+      "statusCode": 200,
+      "error": "",
+      "panelCount": 4,
+      "providerCallCount": 133,
+      "contactSheet": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow/aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui/contact-sheet.png",
+      "manualGradeTemplate": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow/aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui/manual-grade-template.md",
+      "manualGradePath": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow/aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui/manual-visual-grade.json",
+      "gradeExpected": true,
+      "gradePresent": true,
+      "gradeValid": true,
+      "gradeIssues": [],
+      "score": 38,
+      "productScore": 38,
+      "contractScore": 72,
+      "gradeStatus": "blocked",
+      "passed": false,
+      "productionRecommendation": "do-not-promote",
+      "blockingFailures": [
+        "Planner missed required recipient/name/theme terms: Nina and aquarium are absent.",
+        "Artwork and copy drifted into botanical birthday stationery instead of aquarium-lover stationery.",
+        "Back panel is too dark, contains visible text, and does not behave as a sparse no-copy back cover."
+      ],
+      "notes": "Comfy-side deterministic text compositing worked structurally, but the LLM-planned creative concept failed the customer request.",
+      "missingMustInclude": [
+        "Nina",
+        "aquarium"
+      ],
+      "avoidedFailures": [
+        "mockup"
+      ],
+      "benchmarkSummary": "2026-06-26T04:21:27.749Z"
+    },
+    {
+      "storyId": "koi-fish-lover-encouragement",
+      "productionTextMode": "llm-generated-copy",
+      "textModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+      "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+      "runDir": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow/koi-fish-lover-encouragement__text-local-openai-compatible__image-local-comfyui",
+      "generatedVisuals": false,
+      "failedBeforeImageGeneration": true,
+      "status": "failed",
+      "statusCode": null,
+      "error": "Expected ',' or '}' after property value in JSON at position 5353 (line 55 column 4)",
+      "panelCount": 0,
+      "providerCallCount": 1,
+      "contactSheet": "",
+      "manualGradeTemplate": "",
+      "manualGradePath": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow/koi-fish-lover-encouragement__text-local-openai-compatible__image-local-comfyui/manual-visual-grade.json",
+      "gradeExpected": false,
+      "gradePresent": true,
+      "gradeValid": true,
+      "gradeIssues": [],
+      "score": 0,
+      "productScore": 0,
+      "contractScore": 15,
+      "gradeStatus": "failed",
+      "passed": false,
+      "productionRecommendation": "do-not-promote",
+      "blockingFailures": [
+        "Local Qwen3-4B planner returned invalid JSON.",
+        "The LLM response hit the 2200-token completion cap with finish_reason length.",
+        "No image panels were generated for the koi encouragement request."
+      ],
+      "notes": "This run failed before Comfy image generation. The local planner needs tighter schema/token control or a stronger model before promotion.",
+      "missingMustInclude": [],
+      "avoidedFailures": [],
+      "benchmarkSummary": "2026-06-26T04:21:27.749Z"
+    },
+    {
+      "storyId": "dog-lover-thank-you",
+      "productionTextMode": "llm-generated-copy",
+      "textModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+      "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+      "runDir": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow/dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui",
+      "generatedVisuals": true,
+      "failedBeforeImageGeneration": false,
+      "status": "",
+      "statusCode": 200,
+      "error": "",
+      "panelCount": 4,
+      "providerCallCount": 123,
+      "contactSheet": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow/dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui/contact-sheet.png",
+      "manualGradeTemplate": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow/dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui/manual-grade-template.md",
+      "manualGradePath": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow/dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui/manual-visual-grade.json",
+      "gradeExpected": true,
+      "gradePresent": true,
+      "gradeValid": true,
+      "gradeIssues": [],
+      "score": 34,
+      "productScore": 34,
+      "contractScore": 70,
+      "gradeStatus": "blocked",
+      "passed": false,
+      "productionRecommendation": "do-not-promote",
+      "blockingFailures": [
+        "Planner missed required recipient/name/theme terms: Morgan and dog are absent.",
+        "Copy invents plant-watering context and says the plants are grateful, which contradicts the dog-lover thank-you request.",
+        "Back panel is too dark, contains visible text, and does not behave as a sparse no-copy back cover."
+      ],
+      "notes": "The deterministic Comfy text path rendered four panels, but the local planner failed customer-theme adherence.",
+      "missingMustInclude": [
+        "Morgan",
+        "dog"
+      ],
+      "avoidedFailures": [
+        "mockup"
+      ],
+      "benchmarkSummary": "2026-06-26T04:21:27.749Z"
+    }
+  ],
+  "nextSteps": [
+    "Rerun failed stories only after the planner preflight proves a production-floor model and output budget.",
+    "Fix planner contract adherence before spending more Comfy image work."
+  ],
+  "reportDir": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current"
+}

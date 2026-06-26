@@ -170,6 +170,16 @@ The rerun plan reads the current promotion gate and evidence index, then writes
 the exact planner preflight, readiness, benchmark, manual grading, aggregate,
 index, and gate commands needed for the next production-suitable evidence pass.
 
+Manual grade checklist after a production-text benchmark:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-manual-grade-checklist.mjs --advisory --input docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15 --output-dir docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current
+```
+
+This report distinguishes generated runs that need visual grades from stories
+that failed before image generation, then records missing/invalid/blocked
+manual grades before aggregate or gate evidence is cited.
+
 Evidence index before deciding the next run:
 
 ```powershell
@@ -260,17 +270,22 @@ Latest live evidence:
     unless `-AllowSmallPlanner` is explicit.
 - Current readiness doctor:
   `docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current`
-  - ComfyUI and `CustomCardTextComposer` are live.
+  - Previous live preflight proves `CustomCardTextComposer` worked, but the
+    latest readiness probe finds local Comfy and planner endpoints offline.
   - Higher-quality local planner files exist, but no production-suitable
-    planner endpoint is reachable/configured yet.
+    planner endpoint is currently reachable/configured.
 - Current planner preflight:
   `docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current`
   - Blocks promotion because the 5001 `/models` probe is not currently
     reachable and the explicit Qwen3-4B/4096-context planner is smoke-only.
 - Current rerun plan:
   `docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current`
-  - Converts the 7 failed gate requirements into 8 ordered commands for the
+  - Converts the 7 failed gate requirements into 9 ordered commands for the
     next production-suitable planner pass.
+- Current manual grade checklist:
+  `docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current`
+  - Blocks promotion: 2 generated runs were graded and blocked, koi failed
+    before image generation, and must-include/theme adherence remains broken.
 - Current evidence index:
   `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current`
   - Tracks the current production-text evidence set, including planner

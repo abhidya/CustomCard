@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-26T05:22:09.061Z",
+  "createdAtIso": "2026-06-26T23:10:59.401Z",
   "status": "blocked",
   "advisory": true,
   "promotionReady": false,
@@ -9,21 +9,21 @@
   "modelRoot": "D:\\models",
   "comfy": {
     "comfyUrl": "http://127.0.0.1:8188",
-    "reachable": true,
-    "hasTextComposer": true,
-    "objectInfoKeyCount": 1889
+    "reachable": false,
+    "hasTextComposer": false,
+    "objectInfoKeyCount": 0,
+    "error": "fetch failed"
   },
   "configuredPlannerUrls": [],
   "activePlannerEndpoints": [
     {
       "baseUrl": "http://127.0.0.1:5001/v1",
-      "reachable": true,
-      "activeModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
-      "models": [
-        "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
-      ],
-      "smallPlanner": true,
-      "productionSuitable": false
+      "reachable": false,
+      "activeModel": "",
+      "models": [],
+      "smallPlanner": false,
+      "productionSuitable": false,
+      "error": "fetch failed"
     },
     {
       "baseUrl": "http://127.0.0.1:5003/v1",
@@ -38,13 +38,12 @@
   "plannerEndpoints": [
     {
       "baseUrl": "http://127.0.0.1:5001/v1",
-      "reachable": true,
-      "activeModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
-      "models": [
-        "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
-      ],
-      "smallPlanner": true,
-      "productionSuitable": false
+      "reachable": false,
+      "activeModel": "",
+      "models": [],
+      "smallPlanner": false,
+      "productionSuitable": false,
+      "error": "fetch failed"
     },
     {
       "baseUrl": "http://127.0.0.1:5003/v1",
@@ -91,10 +90,10 @@
       "D:\\models\\DeepSeekV4-Flash-158B-Q4_K_M.gguf",
       "D:\\models\\gemma-4-31B-it-Q4_K_M.gguf",
       "D:\\models\\lmstudio-community\\gemma-4-31B-it-QAT-GGUF\\gemma-4-31B-it-QAT-Q4_0.gguf",
-      "D:\\models\\lmstudio-community\\Magistral-Small-2509-GGUF\\Magistral-Small-2509-Q4_K_M.gguf",
-      "D:\\models\\Qwen\\Qwen3-8B-GGUF\\Qwen3-8B-Q4_K_M.gguf"
+      "D:\\models\\lmstudio-community\\Magistral-Small-2509-GGUF\\Magistral-Small-2509-Q4_K_M.gguf"
     ],
     "installedSmallPlanners": [
+      "D:\\models\\Qwen\\Qwen3-8B-GGUF\\Qwen3-8B-Q4_K_M.gguf",
       "D:\\models\\Qwen3-4B-Instruct-2507-Q4_K_S.gguf"
     ],
     "missingMidTierPlanner": false,
@@ -119,19 +118,20 @@
     },
     {
       "name": "live ComfyUI reachable",
-      "ok": true,
+      "ok": false,
       "required": true,
       "details": {
-        "comfyUrl": "http://127.0.0.1:8188"
+        "comfyUrl": "http://127.0.0.1:8188",
+        "error": "fetch failed"
       }
     },
     {
       "name": "live ComfyUI exposes CustomCardTextComposer",
-      "ok": true,
+      "ok": false,
       "required": true,
       "details": {
         "comfyUrl": "http://127.0.0.1:8188",
-        "objectInfoKeys": 1889
+        "objectInfoKeys": 0
       }
     },
     {
@@ -212,14 +212,13 @@
           "D:\\models\\DeepSeekV4-Flash-158B-Q4_K_M.gguf",
           "D:\\models\\gemma-4-31B-it-Q4_K_M.gguf",
           "D:\\models\\lmstudio-community\\gemma-4-31B-it-QAT-GGUF\\gemma-4-31B-it-QAT-Q4_0.gguf",
-          "D:\\models\\lmstudio-community\\Magistral-Small-2509-GGUF\\Magistral-Small-2509-Q4_K_M.gguf",
-          "D:\\models\\Qwen\\Qwen3-8B-GGUF\\Qwen3-8B-Q4_K_M.gguf"
+          "D:\\models\\lmstudio-community\\Magistral-Small-2509-GGUF\\Magistral-Small-2509-Q4_K_M.gguf"
         ]
       }
     },
     {
       "name": "configured production planner endpoint is reachable",
-      "ok": true,
+      "ok": false,
       "required": true,
       "details": {
         "configuredPlannerUrls": [],
@@ -227,13 +226,12 @@
         "activePlannerEndpoints": [
           {
             "baseUrl": "http://127.0.0.1:5001/v1",
-            "reachable": true,
-            "activeModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
-            "models": [
-              "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
-            ],
-            "smallPlanner": true,
-            "productionSuitable": false
+            "reachable": false,
+            "activeModel": "",
+            "models": [],
+            "smallPlanner": false,
+            "productionSuitable": false,
+            "error": "fetch failed"
           },
           {
             "baseUrl": "http://127.0.0.1:5003/v1",
@@ -257,13 +255,12 @@
         "activePlannerEndpoints": [
           {
             "baseUrl": "http://127.0.0.1:5001/v1",
-            "reachable": true,
-            "activeModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
-            "models": [
-              "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
-            ],
-            "smallPlanner": true,
-            "productionSuitable": false
+            "reachable": false,
+            "activeModel": "",
+            "models": [],
+            "smallPlanner": false,
+            "productionSuitable": false,
+            "error": "fetch failed"
           },
           {
             "baseUrl": "http://127.0.0.1:5003/v1",
@@ -279,7 +276,7 @@
     },
     {
       "name": "configured production planner is not a small smoke model",
-      "ok": false,
+      "ok": true,
       "required": true,
       "details": {
         "configuredPlannerUrls": [],
@@ -287,13 +284,12 @@
         "activePlannerEndpoints": [
           {
             "baseUrl": "http://127.0.0.1:5001/v1",
-            "reachable": true,
-            "activeModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
-            "models": [
-              "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
-            ],
-            "smallPlanner": true,
-            "productionSuitable": false
+            "reachable": false,
+            "activeModel": "",
+            "models": [],
+            "smallPlanner": false,
+            "productionSuitable": false,
+            "error": "fetch failed"
           },
           {
             "baseUrl": "http://127.0.0.1:5003/v1",
@@ -309,6 +305,24 @@
     }
   ],
   "blockers": [
+    {
+      "name": "live ComfyUI reachable",
+      "ok": false,
+      "required": true,
+      "details": {
+        "comfyUrl": "http://127.0.0.1:8188",
+        "error": "fetch failed"
+      }
+    },
+    {
+      "name": "live ComfyUI exposes CustomCardTextComposer",
+      "ok": false,
+      "required": true,
+      "details": {
+        "comfyUrl": "http://127.0.0.1:8188",
+        "objectInfoKeys": 0
+      }
+    },
     {
       "name": "latest LLM-planned aggregate is passing",
       "ok": false,
@@ -340,7 +354,7 @@
       }
     },
     {
-      "name": "configured production planner endpoint is production-suitable",
+      "name": "configured production planner endpoint is reachable",
       "ok": false,
       "required": true,
       "details": {
@@ -349,13 +363,12 @@
         "activePlannerEndpoints": [
           {
             "baseUrl": "http://127.0.0.1:5001/v1",
-            "reachable": true,
-            "activeModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
-            "models": [
-              "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
-            ],
-            "smallPlanner": true,
-            "productionSuitable": false
+            "reachable": false,
+            "activeModel": "",
+            "models": [],
+            "smallPlanner": false,
+            "productionSuitable": false,
+            "error": "fetch failed"
           },
           {
             "baseUrl": "http://127.0.0.1:5003/v1",
@@ -370,7 +383,7 @@
       }
     },
     {
-      "name": "configured production planner is not a small smoke model",
+      "name": "configured production planner endpoint is production-suitable",
       "ok": false,
       "required": true,
       "details": {
@@ -379,13 +392,12 @@
         "activePlannerEndpoints": [
           {
             "baseUrl": "http://127.0.0.1:5001/v1",
-            "reachable": true,
-            "activeModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
-            "models": [
-              "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
-            ],
-            "smallPlanner": true,
-            "productionSuitable": false
+            "reachable": false,
+            "activeModel": "",
+            "models": [],
+            "smallPlanner": false,
+            "productionSuitable": false,
+            "error": "fetch failed"
           },
           {
             "baseUrl": "http://127.0.0.1:5003/v1",
@@ -401,8 +413,10 @@
     }
   ],
   "nextSteps": [
-    "Run tools/start-local-card-planner.ps1 with GPU/offload, use a hosted/self-hosted larger planner, or point -LocalLlmBaseUrl at that endpoint.",
-    "Switch the production planner URL away from Qwen3-4B/small smoke models; keep -AllowSmallPlanner only for exploratory failure evidence.",
+    "Start the target ComfyUI server on the configured URL.",
+    "Install/link comfyui-custom-nodes/CustomCardTextComposer into ComfyUI/custom_nodes and restart ComfyUI.",
+    "Start the configured local/hosted OpenAI-compatible planner endpoint before running promotion evidence.",
+    "Run tools/start-local-card-planner.ps1 with 8192+ context and GPU/offload, use a hosted/self-hosted production planner, or point -LocalLlmBaseUrl at that endpoint.",
     "Run the full LLM-planned matrix with a production-suitable planner, manually grade every run, then aggregate."
   ],
   "reportDir": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current"

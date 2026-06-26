@@ -77,12 +77,14 @@ describe("production text rerun plan", () => {
       "Refresh readiness",
       "Run full production-text matrix",
       "Manually grade every run",
+      "Write manual grade checklist",
       "Aggregate production-text results",
       "Refresh tracked evidence index",
       "Run final promotion gate"
     ]);
     expect(plan.commands[3].command).toContain("-PlannerMaxTokens 3200");
     expect(plan.commands[3].command).not.toContain("-AllowSmallPlanner");
+    expect(plan.commands[5].command).toContain("production-text-manual-grade-checklist.mjs");
     expect(plan.acceptanceChecks).toContain("planner preflight is production-ready");
     expect(existsSync(join(outputDir, "production-text-rerun-plan.json"))).toBe(true);
     expect(existsSync(join(outputDir, "production-text-rerun-plan.md"))).toBe(true);

@@ -73,6 +73,24 @@ describe("production text evidence index", () => {
       liveComfyReachable: true,
       liveNodeAvailable: true
     });
+    writeJson(join(root, "production-text-manual-grade-checklist.json"), {
+      createdAtIso: "2026-06-26T04:25:00.000Z",
+      status: "blocked",
+      promotionReady: false,
+      benchmarkSummary: "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
+      summary: {
+        totalRuns: 3,
+        gradableRuns: 2,
+        gradedGeneratedRuns: 2,
+        gradedRuns: 3,
+        missingGrades: 0,
+        invalidGrades: 0,
+        blockedGrades: 3,
+        failedBeforeImageGeneration: 1
+      },
+      blockers: ["3 manual grade(s) are blocked or failed.", "1 run(s) failed before image generation."],
+      nextSteps: ["Rerun failed stories only after the planner preflight proves a production-floor model and output budget."]
+    });
     writeJson(join(root, "benchmark-aggregate.json"), {
       createdAtIso: "2026-06-26T04:30:00.000Z",
       totalRuns: 2,
@@ -147,6 +165,7 @@ describe("production text evidence index", () => {
     expect(report.rerunPlans).toHaveLength(1);
     expect(report.plannerPreflights).toHaveLength(1);
     expect(report.readinessReports).toHaveLength(1);
+    expect(report.manualGradeChecklists).toHaveLength(1);
     expect(report.plannerPreflights[0]).toMatchObject({
       activeModel: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
       classification: "smoke-only",
@@ -163,6 +182,14 @@ describe("production text evidence index", () => {
       bestScore: 38,
       promotionReady: false
     });
+    expect(report.manualGradeChecklists[0]).toMatchObject({
+      totalRuns: 3,
+      gradableRuns: 2,
+      gradedGeneratedRuns: 2,
+      gradedRuns: 3,
+      failedBeforeImageGeneration: 1,
+      promotionReady: false
+    });
     expect(report.benchmarkSummaries[0]).toMatchObject({
       totalRuns: 2,
       completedRuns: 1,
@@ -172,7 +199,9 @@ describe("production text evidence index", () => {
     });
     expect(report.findings.join("\n")).toContain("known-small smoke model");
     expect(report.findings.join("\n")).toContain("Latest planner preflight is blocked");
+    expect(report.findings.join("\n")).toContain("Latest manual grade checklist is blocked");
     expect(report.nextSteps.join("\n")).toContain("production-suitable planner endpoint");
     expect(report.nextSteps.join("\n")).toContain("planner preflight");
+    expect(report.nextSteps.join("\n")).toContain("manual grade checklist blockers");
   });
 });
