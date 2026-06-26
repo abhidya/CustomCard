@@ -156,7 +156,7 @@ export function buildCardCopyPrompt(input) {
   return JSON.stringify(
     {
       task:
-        "Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.",
+        "Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only. The LLM owns the creative concept; benchmark inputs and user interests are not finished themes.",
       required_schema: {
         theme_guide: {
           theme_title: "string",
@@ -186,7 +186,8 @@ export function buildCardCopyPrompt(input) {
         memory_citations: ["string"]
       },
       section_order: [
-        "Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.",
+        "Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels; do not copy a fixture, request label, or generic subject category as the final theme.",
+        "Name a specific creative concept that could only belong to this request, then make each panel a distinct expression of that concept.",
         "Write the panel copy so the card has an emotional arc from cover to interior to back.",
         "Write art_direction as layout notes for app-rendered typography and print-safe artwork.",
         "Write visual_cue as the specific image composition each panel should show.",
@@ -201,6 +202,7 @@ export function buildCardCopyPrompt(input) {
         "No order/payment claims.",
         "Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.",
         "Do not produce generic one-line cards unless the input is extremely thin.",
+        "Write original card copy for this recipient and occasion; never reuse benchmark/sample headlines, fixture copy, or generic category slogans.",
         "Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.",
         "Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.",
         "When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.",
@@ -218,6 +220,8 @@ export function buildCardCopyPrompt(input) {
         "Sympathy or quiet-support cards: keep language grounded and practical; avoid cliches, religious claims unless requested, bright celebration language, overdesigned ornament, and generic note-template stationery."
       ],
       layout_requirements: [
+        "The theme_guide must be LLM-decided from the user's request. For interests such as aquarium lover, koi fish lover, or dog lover, create a more specific visual genre than the literal noun alone.",
+        "Prefer distinctive greeting-card concepts over obvious wallpaper: e.g. ritual, habitat, movement, care, place, season, or object-system interpretations tied to the supplied details.",
         "theme_guide is binding, but reuse motifs with restraint: a panel should have one dominant composition idea, not a scattered wallpaper of every motif.",
         "art_direction must name the panel's composition archetype, layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.",
         "visual_cue is binding for the image prompt: make front, inside-left, inside-right, and back visually distinct while still coordinated.",
@@ -238,6 +242,7 @@ export function buildCardCopyPrompt(input) {
         "image_prompt is the exact prompt the image model will receive for that panel.",
         "image_prompt must describe one separate portrait 5x7 panel, not the whole four-panel set.",
         "image_prompt must be a concrete visual composition, not a restatement of form fields.",
+        "image_prompt must express the LLM-decided visual concept with a unique composition for that panel, not a generic subject collage or repeated motif field.",
         "image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.",
         "Do not ask the image model to render the headline or body. The app overlays typography after generation.",
         "Reserve clean text-safe space for the app overlay where the panel copy belongs.",

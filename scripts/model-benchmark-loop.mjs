@@ -85,175 +85,83 @@ export const typographyExperimentSpec = {
   }
 };
 
-export const productionTextBenchmarkSpecs = [
-  typographyExperimentSpec,
+export const productionTextCompositorFixtureSpec = typographyExperimentSpec;
+
+export const productionTextRequestFixtures = [
   {
     id: "aquarium-lover-birthday",
-    panelType: "Front Cover",
-    size: "5x7 portrait",
-    output: "Flat 2D print artwork",
-    style: "Premium greeting card",
-    palette: "deep teal, clear aqua, warm ivory, tiny coral accents",
-    motif: "minimal freshwater aquarium plants, soft bubbles, tiny fish silhouettes kept to the border",
-    mood: "warm, observant, quietly joyful",
-    headline: "Your Little Underwater World",
-    body: "Hope your day feels calm, bright, and beautifully alive.",
-    panels: {
-      front: {
-        id: "front",
-        panelType: "Front Cover",
-        role: "aquarium-lover cover with exact deterministic headline and short body",
-        headline: "Your Little Underwater World",
-        body: "Hope your day feels calm, bright, and beautifully alive.",
-        composition:
-          "deep teal stationery field, thin aqua border, sparse aquarium plant silhouettes at corners, tiny bubbles only at outer edges",
-        modeCHint:
-          "Leave a broad plain deep-teal central text-safe field. Keep fish, bubbles, plants, gravel, coral shapes, shimmer marks, and high-contrast details outside the field. Do not create an all-over aquarium scene; this is stationery, not a tank illustration."
-      },
-      "inside-left": {
-        id: "inside-left",
-        panelType: "Inside Left",
-        role: "left half of aquarium-themed interior spread",
-        headline: "A Calm Current",
-        body: "May the small things you care for bring you a little extra peace today.",
-        composition:
-          "warm ivory interior, thin aqua rule, one sparse aquatic plant accent along the outer-left edge, quiet writing area",
-        modeCHint:
-          "Make the center and upper-middle plain warm ivory for typography. Put aquarium plant detail only along the far outer-left edge. No fish, bubbles, gravel, or water texture behind the text-safe field."
-      },
-      "inside-right": {
-        id: "inside-right",
-        panelType: "Inside Right",
-        role: "right half of aquarium-themed interior spread",
-        headline: "Bright as Bubbles",
-        body: "Here is to another year of tiny wonders, steady care, and happy surprises.",
-        composition:
-          "matching warm ivory interior, thin aqua rule, tiny bubble accent along the outer-right edge, quiet writing area",
-        modeCHint:
-          "Keep the center and upper-middle plain warm ivory. Place only a few tiny bubbles or plant sprigs on the far outer-right edge, outside the text-safe field."
-      },
-      back: {
-        id: "back",
-        panelType: "Back Cover",
-        role: "coordinating no-text aquarium back panel",
-        composition:
-          "mostly plain deep teal negative space, one tiny aqua fish mark near lower edge, no copy",
-        modeCHint:
-          "Back cover must be at least 90% plain deep teal. Use one tiny simple aqua fish or bubble mark near the lower third only. No full aquarium scene, no water texture, no coral field, no text-like marks."
-      }
-    }
+    customer_type: "recipient-interest benchmark",
+    occasion: "birthday",
+    memory_load: "medium",
+    request: {
+      sender: "Riley",
+      recipient: "Nina",
+      relationship: "friend",
+      occasion: "birthday",
+      tone: "warm, observant, quietly joyful, polished",
+      style:
+        "premium folded greeting card for an aquarium lover; the LLM must choose the final visual concept, palette, motifs, panel copy, and four-panel layout",
+      language: "English",
+      personal_note:
+        "Make a birthday card for Nina, who relaxes by tending her freshwater aquarium. Avoid generic balloons or a busy full-tank scene; make it feel like elegant print stationery for someone who notices small aquatic details.",
+      memory_notes: [
+        "Nina loves freshwater aquariums, aquatic plants, tiny fish, and the calm ritual of keeping the tank healthy.",
+        "The card should feel like a birthday card first, not aquarium merchandise.",
+        "The final artwork should leave natural text-safe space because Comfy renders the exact copy after image generation."
+      ]
+    },
+    must_include: ["Nina", "birthday", "aquarium"],
+    must_avoid: ["lorem ipsum", "placeholder", "extra words", "fake lettering", "mockup", "generic balloons"]
   },
   {
     id: "koi-fish-lover-encouragement",
-    panelType: "Front Cover",
-    size: "5x7 portrait",
-    output: "Flat 2D print artwork",
-    style: "Premium greeting card",
-    palette: "warm ivory, ink wash charcoal, soft persimmon, muted pond green",
-    motif: "one or two abstract koi arcs and sparse ripples kept away from copy",
-    mood: "serene, resilient, encouraging",
-    headline: "Steady Through the Water",
-    body: "Wishing you patience, strength, and a little beauty along the way.",
-    panels: {
-      front: {
-        id: "front",
-        panelType: "Front Cover",
-        role: "koi-lover encouragement cover with exact deterministic copy",
-        headline: "Steady Through the Water",
-        body: "Wishing you patience, strength, and a little beauty along the way.",
-        composition:
-          "warm ivory stationery, charcoal ink-wash border, two small persimmon koi arcs near corners, broad plain center",
-        modeCHint:
-          "Leave a broad plain warm-ivory central text-safe field. Koi arcs, ripples, lotus leaves, brush texture, and contrast marks must stay outside the field. Do not draw a pond scene behind the copy."
-      },
-      "inside-left": {
-        id: "inside-left",
-        panelType: "Inside Left",
-        role: "left half of koi-themed encouragement spread",
-        headline: "One Gentle Ripple",
-        body: "Even small steps can carry real courage.",
-        composition:
-          "quiet ivory interior, one muted pond-green ripple accent near outer-left edge, generous plain center",
-        modeCHint:
-          "Keep the typography area plain ivory. Use only one or two pale ripple lines along the far outer-left edge, outside the text-safe field."
-      },
-      "inside-right": {
-        id: "inside-right",
-        panelType: "Inside Right",
-        role: "right half of koi-themed encouragement spread",
-        headline: "You Keep Moving",
-        body: "May today meet you with steadiness, room to breathe, and quiet hope.",
-        composition:
-          "matching quiet ivory interior, small persimmon koi tail accent near outer-right edge, generous plain center",
-        modeCHint:
-          "Keep the typography area plain ivory. Put only a tiny koi-tail or ripple accent near the far outer-right edge, outside the text-safe field."
-      },
-      back: {
-        id: "back",
-        panelType: "Back Cover",
-        role: "coordinating no-text koi back panel",
-        composition:
-          "mostly plain ink-wash charcoal negative space, one tiny persimmon koi mark near lower edge, no copy",
-        modeCHint:
-          "Back cover must be at least 90% plain charcoal. Use one tiny persimmon koi mark near the lower third only. No full pond scene, no repeated fish pattern, no brush lettering, no text-like marks."
-      }
-    }
+    customer_type: "recipient-interest benchmark",
+    occasion: "encouragement",
+    memory_load: "medium",
+    request: {
+      sender: "Mara",
+      recipient: "Uncle Ken",
+      relationship: "niece to uncle",
+      occasion: "encouragement card",
+      tone: "serene, resilient, sincere, not sentimental-heavy",
+      style:
+        "premium folded greeting card for a koi fish lover; the LLM must invent the finished visual system and panel-specific layouts from the request",
+      language: "English",
+      personal_note:
+        "Create an encouragement card for Uncle Ken, who loves his backyard koi pond and finds patience in watching the fish move through the water. Keep the message steady and hopeful without sounding like a motivational poster.",
+      memory_notes: [
+        "Uncle Ken loves koi fish, quiet pond ripples, and the patience of tending a backyard pond.",
+        "The card is for encouragement during a hard stretch, not a birthday or sympathy card.",
+        "The final artwork should use restrained visual symbolism and leave text-safe space for deterministic Comfy typography."
+      ]
+    },
+    must_include: ["Uncle Ken", "koi", "encouragement"],
+    must_avoid: ["lorem ipsum", "placeholder", "extra words", "fake lettering", "mockup", "birthday"]
   },
   {
     id: "dog-lover-thank-you",
-    panelType: "Front Cover",
-    size: "5x7 portrait",
-    output: "Flat 2D print artwork",
-    style: "Premium greeting card",
-    palette: "warm cream, soft sky blue, leash red, graphite ink",
-    motif: "minimal paw mark, simple collar tag, gentle park-path curve kept to borders",
-    mood: "grateful, loyal, lightly playful",
-    headline: "You Showed Up Big",
-    body: "Thank you for being the kind of person tails would wag for.",
-    panels: {
-      front: {
-        id: "front",
-        panelType: "Front Cover",
-        role: "dog-lover thank-you cover with exact deterministic copy",
-        headline: "You Showed Up Big",
-        body: "Thank you for being the kind of person tails would wag for.",
-        composition:
-          "warm cream stationery, thin sky-blue border, tiny leash-red collar tag and two small paw marks near corners",
-        modeCHint:
-          "Leave a broad plain warm-cream central text-safe field. Keep paw marks, collar tags, leash curves, dog silhouettes, park paths, and high-contrast details outside the field. Do not draw a dog portrait or full scene behind copy."
-      },
-      "inside-left": {
-        id: "inside-left",
-        panelType: "Inside Left",
-        role: "left half of dog-lover thank-you spread",
-        headline: "The Good Kind",
-        body: "You made the day easier in a way that really mattered.",
-        composition:
-          "warm cream interior, tiny graphite paw mark along outer-left edge, quiet writing area",
-        modeCHint:
-          "Keep the center plain warm cream. Use only one tiny paw mark or collar-tag accent along the far outer-left edge, outside the text-safe field."
-      },
-      "inside-right": {
-        id: "inside-right",
-        panelType: "Inside Right",
-        role: "right half of dog-lover thank-you spread",
-        headline: "So Very Grateful",
-        body: "Your kindness had a long reach, and I will remember it.",
-        composition:
-          "matching warm cream interior, slim sky-blue border, tiny leash-red accent at outer-right edge",
-        modeCHint:
-          "Keep the center plain warm cream. Place only a tiny leash-red accent or paw mark on the far outer-right edge, outside the text-safe field."
-      },
-      back: {
-        id: "back",
-        panelType: "Back Cover",
-        role: "coordinating no-text dog-lover back panel",
-        composition:
-          "mostly plain graphite negative space, one tiny cream paw mark near lower edge, no copy",
-        modeCHint:
-          "Back cover must be at least 90% plain graphite. Use one tiny cream paw mark near the lower third only. No dog portrait, no bone pattern, no full park scene, no text-like marks."
-      }
-    }
+    customer_type: "recipient-interest benchmark",
+    occasion: "thank-you",
+    memory_load: "medium",
+    request: {
+      sender: "Avery",
+      recipient: "Morgan",
+      relationship: "neighbor",
+      occasion: "thank-you card",
+      tone: "grateful, loyal, lightly playful, specific",
+      style:
+        "premium folded greeting card for a dog lover; the LLM must decide the creative theme, exact copy, palette, motifs, and layout",
+      language: "English",
+      personal_note:
+        "Thank Morgan for helping while Avery was away and for being the kind of dog-loving neighbor who notices what needs doing. It should be grateful and a little playful without turning into paw-print wallpaper.",
+      memory_notes: [
+        "Morgan loves dogs and often mentions how a good neighbor is the kind of person a dog trusts.",
+        "Morgan helped while Avery was away.",
+        "The final artwork should avoid dog portraits and keep a clean print-safe area for Comfy-rendered text."
+      ]
+    },
+    must_include: ["Morgan", "thank", "dog"],
+    must_avoid: ["lorem ipsum", "placeholder", "extra words", "fake lettering", "mockup", "paw-print wallpaper"]
   }
 ];
 
@@ -836,6 +744,15 @@ export function buildModelBenchmarkAdminCatalog(env = process.env) {
       mustInclude: story.must_include ?? [],
       mustAvoid: story.must_avoid ?? []
     })),
+    productionTextRequestFixtures: productionTextRequestFixtures.map((story) => ({
+      id: story.id,
+      customerType: story.customer_type,
+      occasion: story.occasion,
+      memoryLoad: story.memory_load,
+      brief: story.request.personal_note,
+      mustInclude: story.must_include,
+      mustAvoid: story.must_avoid
+    })),
     textCandidates: candidates.text,
     imageCandidates: candidates.image,
     executableAdapters: candidates.executableAdapters
@@ -902,7 +819,7 @@ export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false } =
 
   for (const run of plannedRuns) {
     summary.runs.push(
-      run.phase === "local-production-text"
+      run.phase === "local-production-text" && run.productionTextMode === "compositor-fixture"
         ? await runProductionTextWorkflowPanel({ run, phaseDir, providerHttp, env, fetchImpl })
         : run.phase === "typography" || run.phase === "local-typography"
           ? await runTypographyExperimentPanel({ run, phaseDir, providerHttp, env, fetchImpl })
@@ -1115,15 +1032,35 @@ export function localTypographyRuns(candidates) {
 export function localProductionTextRuns(candidates) {
   const image = firstConfigured(candidates.image, "image-local-comfyui");
   if (!image || image.id !== "image-local-comfyui") return [];
-  return productionTextBenchmarkSpecs.map((spec) => ({
+  const localText = firstConfigured(candidates.text || [], "text-local-openai-compatible");
+  const typographyMode = {
+    id: "customcard-production-text-composer",
+    label: "CustomCard production text composer",
+    strategy: "llm-planned-copy-comfy-deterministic-text"
+  };
+  if (localText?.id === "text-local-openai-compatible") {
+    return productionTextRequestFixtures.map((story) => ({
       phase: "local-production-text",
-      focus: "local-comfy-production-text-composer",
+      focus: "local-comfy-production-text-generated-copy",
+      storyId: story.id,
+      story,
+      text: localText,
+      image,
+      typographyMode,
+      productionTextMode: "llm-generated-copy"
+    }));
+  }
+  const spec = productionTextCompositorFixtureSpec;
+  return [
+    {
+      phase: "local-production-text",
+      focus: "local-comfy-production-text-compositor-fixture",
       storyId: spec.id,
       story: {
         id: spec.id,
-        customer_type: "fixture",
+        customer_type: "compositor calibration fixture",
         occasion: spec.mood || "benchmark",
-        memory_load: "fixed",
+        memory_load: "fixed-copy",
         request: productionTextBenchmarkRequest(spec),
         must_include: productionTextMustInclude(spec),
         must_avoid: ["lorem ipsum", "placeholder", "extra words", "fake lettering", "mockup"]
@@ -1136,12 +1073,13 @@ export function localProductionTextRuns(candidates) {
       },
       image,
       typographyMode: {
-        id: "customcard-production-text-composer",
-        label: "CustomCard production text composer",
-        strategy: "comfy-deterministic-text-composer"
+        ...typographyMode,
+        strategy: "comfy-deterministic-text-compositor-calibration"
       },
-      typographySpec: spec
-  }));
+      typographySpec: spec,
+      productionTextMode: "compositor-fixture"
+    }
+  ];
 }
 
 function buildTypographyTextPanels(spec = typographyExperimentSpec) {
@@ -1313,7 +1251,13 @@ async function runBenchmarkCard({ run, phaseDir, service, providerHttp, env, fet
     const payload = sanitize(response.payload, env);
     writeJson(resolve(runDir, "payload.json"), payload);
     writeJson(resolve(runDir, "provider-http.json"), sanitize(providerCalls, env));
-    const panelFiles = await materializePanels({ runDir, payload, fetchImpl, env });
+    const panelFiles = await materializePanels({
+      runDir,
+      payload,
+      fetchImpl,
+      env,
+      finalTextCompositedPanels: runUsesFinalComfyTextOutput(run)
+    });
     const effectiveProviderRequests = writeEffectiveProviderRequests({
       runDir,
       run,
@@ -2254,7 +2198,11 @@ async function fetchJsonProvider(fetchImpl, url, init = { method: "GET" }) {
   return data;
 }
 
-async function materializePanels({ runDir, payload, fetchImpl, env }) {
+function runUsesFinalComfyTextOutput(run) {
+  return run?.phase === "local-production-text" && run?.image?.adapterId === "local-comfyui-api-image";
+}
+
+async function materializePanels({ runDir, payload, fetchImpl, env, finalTextCompositedPanels = false }) {
   const imagesByPanel = new Map((payload.images || []).map((image) => [image.panel_id, image]));
   const panelFiles = [];
   for (const panelId of panelIds) {
@@ -2264,7 +2212,9 @@ async function materializePanels({ runDir, payload, fetchImpl, env }) {
     const file = resolve(runDir, `provider-${panelId}${decoded.ext}`);
     writeFileSync(file, decoded.buffer);
     const panelCopy = (payload.card_copy?.panels || []).find((panel) => panel.id === panelId) || {};
-    const previewBuffer = await renderPanelPreview({ imageBuffer: decoded.buffer, panelId, panelCopy, contentType: decoded.contentType });
+    const previewBuffer = finalTextCompositedPanels
+      ? await sharp(decoded.buffer).png().toBuffer()
+      : await renderPanelPreview({ imageBuffer: decoded.buffer, panelId, panelCopy, contentType: decoded.contentType });
     const previewFile = resolve(runDir, `preview-${panelId}.png`);
     writeFileSync(previewFile, previewBuffer);
     panelFiles.push({
@@ -2274,6 +2224,7 @@ async function materializePanels({ runDir, payload, fetchImpl, env }) {
       width: image.width,
       height: image.height,
       prompt: image.revised_prompt || "",
+      renderedByComfyTextComposer: finalTextCompositedPanels,
       sourceKind: decoded.sourceKind,
       contentType: decoded.contentType
     });
@@ -2673,12 +2624,16 @@ function autoGrade({ run, payload, panelFiles, providerCalls }) {
   const allPrompts = panelFiles.map((panel) => panel.prompt || "").join("\n");
   const missingMustInclude = run.story.must_include.filter((term) => !textContains(allText, term) && !textContains(allPrompts, term));
   const avoidedFailures = run.story.must_avoid.filter((term) => textContains(allText, term) || textContains(allPrompts, term));
+  const productionTextChecks = runUsesFinalComfyTextOutput(run)
+    ? productionTextGeneratedAutoChecks({ panels, panelFiles, providerCalls })
+    : {};
   const checks = {
     fourPanels: panelFiles.length === 4 && panels.length === 4,
     noProviderFailure: !payload.ai_flow?.card_copy?.provider_failure && !payload.ai_flow?.card_image?.provider_failure,
     mustIncludeCovered: missingMustInclude.length === 0,
     mustAvoidClean: avoidedFailures.length === 0,
-    providerCalls: providerCalls.length
+    providerCalls: providerCalls.length,
+    ...productionTextChecks
   };
   return {
     advisoryOnly: true,
@@ -2687,6 +2642,65 @@ function autoGrade({ run, payload, panelFiles, providerCalls }) {
     avoidedFailures,
     note: "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
   };
+}
+
+function productionTextGeneratedAutoChecks({ panels, panelFiles, providerCalls }) {
+  const metadataInputs = productionTextMetadataInputs(providerCalls);
+  const copyPanels = panels.filter((panel) => Boolean(panel?.id && (panel.headline || panel.body)));
+  const promptText = providerCalls
+    .filter((call) => String(call.url || "").includes("/prompt"))
+    .map((call) => providerRequestPrompt(providerCallBodyObject(call)) || "")
+    .join("\n");
+  const metadataIncludesExactGeneratedCopy =
+    metadataInputs.length >= copyPanels.length &&
+    copyPanels.every((panel) =>
+      metadataInputs.some(
+        (inputs) =>
+          inputs.panel_id === panel.id &&
+          inputs.headline_text === (panel.headline || "") &&
+          inputs.body_text === (panel.body || "")
+      )
+    );
+  const imagePromptsSuppressExactCopy = copyPanels.every(
+    (panel) =>
+      (!panel.headline || !promptText.includes(panel.headline)) &&
+      (!panel.body || !promptText.includes(panel.body))
+  );
+  return {
+    productionTextGeneratedCopy: true,
+    finalImagesRenderedByComfy: true,
+    benchmarkPreviewOverlayBypassed: panelFiles.every((file) => file.renderedByComfyTextComposer),
+    metadataIncludesExactGeneratedCopy,
+    metadataIncludesSafeBoxes:
+      metadataInputs.length >= copyPanels.length &&
+      metadataInputs.every((inputs) => inputs.headline_box?.width > 0 && inputs.body_box?.width > 0),
+    metadataIncludesArtworkGuards:
+      metadataInputs.length >= panelFiles.length &&
+      panelFiles.every((file) =>
+        metadataInputs.some(
+          (inputs) =>
+            inputs.panel_id === file.panelId &&
+            inputs.artwork_guard_style === "box" &&
+            Number(inputs.artwork_guard_opacity) > 0 &&
+            Number(inputs.artwork_guard_opacity) <= 1
+        )
+      ),
+    imagePromptsSuppressExactCopy
+  };
+}
+
+function productionTextMetadataInputs(providerCalls) {
+  return providerCalls
+    .filter((call) => String(call.url || "").includes("/prompt"))
+    .map((call) => providerCallBodyObject(call))
+    .filter(Boolean)
+    .map((body) => {
+      const customcard = body.extra_data?.customcard || {};
+      return {
+        ...customcard.inputs,
+        panel_id: customcard.panel_id || customcard.inputs?.panel_id
+      };
+    });
 }
 
 function typographyAutoChecks({ promptPlans, providerCalls, decodedFiles }) {
@@ -2842,6 +2856,7 @@ function plannedRunSummary(run) {
     phase: run.phase,
     focus: run.focus,
     storyId: run.storyId,
+    productionTextMode: run.productionTextMode,
     benchmarkInputId: run.typographySpec?.id,
     benchmarkInputMotif: run.typographySpec?.motif,
     textCandidateId: run.text.id,

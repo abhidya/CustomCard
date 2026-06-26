@@ -560,12 +560,14 @@ async function executeImageProviderBatchWithFallback({
         });
         const imageRecord = normalizeImageProviderResult(imageUrl);
         if (!imageRecord?.image_url) continue;
+        const renderingMode = imageRenderingModeForFlow(attempt.flow, env);
         images.push({
           panel_id: panelPrompt.panel_id,
           image_url: imageRecord.image_url,
           revised_prompt: panelPrompt.prompt,
           width: imageRecord.width ?? 1500,
-          height: imageRecord.height ?? 2100
+          height: imageRecord.height ?? 2100,
+          ...(renderingMode ? { rendering_mode: renderingMode } : {})
         });
       }
       if (images.length !== imagePromptPlan.length) {
@@ -749,6 +751,18 @@ async function executeOpenAiCompatibleTextProvider({ flow, fetchImpl, systemProm
 
 async function executeImageProvider(input) {
   return providerExecutionAdapter.executeImage(input);
+}
+
+function imageRenderingModeForFlow(flow, env) {
+  if (flow.primaryAdapterId !== "local-comfyui-api-image") return undefined;
+  const workflowSignal = [
+    localComfyWorkflowId(env),
+    firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_WORKFLOW_PATH", "COMFYUI_WORKFLOW_PATH"]),
+    firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_WORKFLOW_JSON", "COMFYUI_WORKFLOW_JSON"])
+  ].join(" ");
+  return /customcard-production-text-overlay|production-text-overlay|CustomCardTextComposer/i.test(workflowSignal)
+    ? "final-text-composited"
+    : undefined;
 }
 
 async function executeCloudflareWorkersAiImage({ flow, env, fetchImpl, panelId, prompt, negativePrompt }) {

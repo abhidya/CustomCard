@@ -7,7 +7,8 @@ import {
   localTypographyRuns,
   parseBenchmarkRequestBody,
   pipelineQualityRuns,
-  productionTextBenchmarkSpecs,
+  productionTextCompositorFixtureSpec,
+  productionTextRequestFixtures,
   productionTextAutoChecks,
   sanitizeBenchmarkValue,
   stories as benchmarkStories,
@@ -82,9 +83,17 @@ describe("model benchmark typography experiment", () => {
     expect(prompts[2].negativePrompt).toContain("ivory wave");
   });
 
-  it("plans production text runs for specific customer-interest benchmark inputs", () => {
+  it("plans production text runs from customer requests when a local LLM is configured", () => {
     const runs = localProductionTextRuns({
-      text: [],
+      text: [
+        {
+          id: "text-local-openai-compatible",
+          label: "Local OpenAI-compatible chat",
+          adapterId: "local-openai-compatible-chat",
+          model: "local-qwen-card-copy",
+          configured: true
+        }
+      ],
       image: [
         {
           id: "image-local-comfyui",
@@ -97,35 +106,49 @@ describe("model benchmark typography experiment", () => {
     });
     const storyIds = runs.map((run) => run.storyId);
 
-    expect(productionTextBenchmarkSpecs.map((spec) => spec.id)).toEqual([
-      "folded-card-sunburst-typography",
+    expect(productionTextRequestFixtures.map((story) => story.id)).toEqual([
       "aquarium-lover-birthday",
       "koi-fish-lover-encouragement",
       "dog-lover-thank-you"
     ]);
-    expect(storyIds).toEqual(productionTextBenchmarkSpecs.map((spec) => spec.id));
-    expect(runs.find((run) => run.storyId === "aquarium-lover-birthday")?.story.must_include).toContain(
-      "Your Little Underwater World"
+    expect(storyIds).toEqual(productionTextRequestFixtures.map((story) => story.id));
+    expect(runs.every((run) => run.productionTextMode === "llm-generated-copy")).toBe(true);
+    expect(runs.every((run) => run.text.adapterId === "local-openai-compatible-chat")).toBe(true);
+    expect(runs.find((run) => run.storyId === "aquarium-lover-birthday")?.story.request.personal_note).toContain(
+      "freshwater aquarium"
     );
-    expect(runs.find((run) => run.storyId === "koi-fish-lover-encouragement")?.story.request.style).toContain("koi");
-    expect(runs.find((run) => run.storyId === "dog-lover-thank-you")?.story.must_include).toContain(
-      "Thank you for being the kind of person tails would wag for."
+    expect(runs.find((run) => run.storyId === "koi-fish-lover-encouragement")?.story.request.style).toContain(
+      "LLM must invent"
+    );
+    expect(runs.find((run) => run.storyId === "dog-lover-thank-you")?.story.request.personal_note).not.toContain(
+      "You Showed Up Big"
     );
   });
 
-  it("builds themed production artwork prompts without leaking exact card copy", () => {
-    const aquarium = productionTextBenchmarkSpecs.find((spec) => spec.id === "aquarium-lover-birthday")!;
-    const front = buildTypographyExperimentPrompt("mode-c-hybrid-reserved-layout", aquarium, "front");
-    const back = buildTypographyExperimentPrompt("mode-c-hybrid-reserved-layout", aquarium, "back");
+  it("falls back to a single compositor fixture when no local LLM is configured", () => {
+    const runs = localProductionTextRuns({
+      text: [],
+      image: [
+        {
+          id: "image-local-comfyui",
+          label: "Local ComfyUI",
+          adapterId: "local-comfyui-api-image",
+          model: "sd_xl_turbo_1.0_fp16.safetensors",
+          configured: true
+        }
+      ]
+    });
 
-    expect(front.prompt).toContain("aquarium");
-    expect(front.prompt).toContain("Text-safe field requirement");
-    expect(front.prompt).toContain("Do not create an all-over aquarium scene");
-    expect(front.prompt).not.toContain(aquarium.panels.front.headline);
-    expect(front.prompt).not.toContain(aquarium.panels.front.body);
-    expect(back.renderTextInApp).toBe(false);
-    expect(back.prompt).toContain("one tiny simple aqua fish or bubble mark");
-    expect(back.prompt).not.toContain(aquarium.panels.front.headline);
+    expect(runs).toHaveLength(1);
+    expect(runs[0]).toMatchObject({
+      focus: "local-comfy-production-text-compositor-fixture",
+      productionTextMode: "compositor-fixture",
+      storyId: productionTextCompositorFixtureSpec.id,
+      text: {
+        adapterId: "fixture"
+      }
+    });
+    expect(runs[0].story.customer_type).toBe("compositor calibration fixture");
   });
 
   it("prompts inside-left and inside-right as text-bearing cohesive spread panels", () => {

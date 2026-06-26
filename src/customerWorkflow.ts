@@ -56,6 +56,7 @@ export type {
   CardImageFocus,
   CardImageFrame,
   CardImagePlacement,
+  CardImageRenderingMode,
   CardPanel,
   CardTextFormat,
   CardTextLayout,

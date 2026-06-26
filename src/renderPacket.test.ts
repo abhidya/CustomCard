@@ -29,6 +29,22 @@ describe("buildPanelSvg", () => {
     expect(svg).toContain('<image href="data:image/png;base64,iVBORw0KGgo="');
   });
 
+  it("does not add an SVG text layer to final text-composited AI panels", () => {
+    const svg = buildPanelSvg({
+      ...panel,
+      imageUrl: "data:image/png;base64,iVBORw0KGgo=",
+      imageRendering: "final-text-composited",
+      imagePlacement: { frame: "fit", focus: "center" }
+    });
+
+    expect(svg).toContain('data-customcard-rendering="final-text-composited"');
+    expect(svg).toContain('x="0" y="0" width="1500" height="2100"');
+    expect(svg).not.toContain('stroke="#d8d2c6"');
+    expect(svg).not.toContain("<text");
+    expect(svg).not.toContain("With Care");
+    expect(svg).not.toContain("A quiet note.");
+  });
+
   it("never renders art direction as recipient-visible text", () => {
     const svg = buildPanelSvg({ ...panel, artDirection: "SECRET-DESIGN-NOTE" });
     expect(svg).not.toContain("SECRET-DESIGN-NOTE");

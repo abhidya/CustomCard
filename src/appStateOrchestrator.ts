@@ -6,6 +6,7 @@ import {
   type CardDraft,
   type CardDraftInput,
   type CardOpportunity,
+  type CardImageRenderingMode,
   type CardPanel,
   type CardTextLayout,
   type CardValidation,
@@ -362,6 +363,7 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
             body: copy.body || panel.body,
             artDirection: copy.art_direction || panel.artDirection,
             textLayout: readAiTextLayout(copy) ?? panel.textLayout,
+            imageRendering: undefined,
             imageUrl: undefined
           };
         });
@@ -418,11 +420,12 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
               loadedPanelCount += 1;
               setAiDraft((current) => {
                 if (!current) return current;
+                const imageRendering = readAiImageRendering(image);
                 return {
                   ...current,
                   generatedBy: "ai-text-and-image",
                   panels: current.panels.map((candidate) =>
-                    candidate.id === panel.id ? { ...candidate, imageUrl: imageUrl } : candidate
+                    candidate.id === panel.id ? { ...candidate, imageUrl: imageUrl, imageRendering } : candidate
                   )
                 };
               });
@@ -455,10 +458,10 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
   const keepAiArtwork = useCallback(() => {
     setAiDraft((current) => {
       if (!current) return current;
-      const imageByPanel = new Map(current.panels.map((panel) => [panel.id, panel.imageUrl]));
+      const imageByPanel = new Map(current.panels.map((panel) => [panel.id, { imageUrl: panel.imageUrl, imageRendering: panel.imageRendering }]));
       return {
         ...draft,
-        panels: draft.panels.map((panel) => ({ ...panel, imageUrl: imageByPanel.get(panel.id) })),
+        panels: draft.panels.map((panel) => ({ ...panel, ...imageByPanel.get(panel.id) })),
         generatedBy: current.generatedBy
       };
     });
@@ -551,6 +554,13 @@ function readAiTextLayout(copy: AiGenerationApiPanel): CardTextLayout | undefine
   const scale = safeLayoutEnum(record.scale, ["compact", "standard", "large"]);
   if (!headlineZone || !bodyZone || !alignment || !fontPairing || !colorMode || !scale) return undefined;
   return { headlineZone, bodyZone, alignment, fontPairing, colorMode, scale };
+}
+
+function readAiImageRendering(image: AiGenerationApiImage | undefined): CardImageRenderingMode | undefined {
+  const mode = String(image?.rendering_mode ?? image?.image_rendering_mode ?? "").trim();
+  if (mode === "final-text-composited") return "final-text-composited";
+  if (mode === "artwork-layer") return "artwork-layer";
+  return image?.final_text_composited === true ? "final-text-composited" : undefined;
 }
 
 function safeLayoutEnum<T extends string>(value: unknown, allowed: readonly T[]): T | undefined {

@@ -126,6 +126,7 @@ export interface CardPanel {
   rtl: boolean;
   overflowRisk: boolean;
   imageUrl?: string;
+  imageRendering?: CardImageRenderingMode;
   imagePlacement?: CardImagePlacement;
   textLayout?: CardTextLayout;
   textFormat?: CardTextFormat;
@@ -139,6 +140,7 @@ export type TextColorMode = "dark-ink" | "light-ink" | "accent-ink" | "high-cont
 export type TextScale = "compact" | "standard" | "large";
 export type CardImageFrame = "fill" | "fit" | "photo-window";
 export type CardImageFocus = "center" | "top" | "bottom" | "left" | "right";
+export type CardImageRenderingMode = "artwork-layer" | "final-text-composited";
 
 export interface CardTextLayout {
   headlineZone: Exclude<TextZone, "bottom">;

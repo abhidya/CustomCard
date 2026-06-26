@@ -38,6 +38,9 @@ export interface AiGenerationApiTextLayout {
 export interface AiGenerationApiImage {
   panel_id?: string;
   image_url?: string;
+  rendering_mode?: string;
+  image_rendering_mode?: string;
+  final_text_composited?: boolean;
   image_artifact_uri?: string;
   image_object_key?: string;
   image_content_hash?: string;
@@ -116,6 +119,7 @@ export interface AiGenerationJobPanelEvidence {
   negativePrompt: string;
   revisedPrompt: string;
   imageUrl?: string;
+  renderingMode?: string;
   width: number;
   height: number;
   status: AiGenerationJobPanelStatus;
@@ -202,10 +206,17 @@ function buildPanelEvidence(
     negativePrompt: redactSensitiveText(copy?.image_negative_prompt || ""),
     revisedPrompt: redactSensitiveText(image?.revised_prompt || copy?.image_prompt || ""),
     imageUrl,
+    renderingMode: readImageRenderingMode(image),
     width: coercePositiveInt(image?.width, panel.width),
     height: coercePositiveInt(image?.height, panel.height),
     status: imageUrl ? "generated" : "missing"
   };
+}
+
+function readImageRenderingMode(image: AiGenerationApiImage | undefined): string | undefined {
+  const mode = String(image?.rendering_mode ?? image?.image_rendering_mode ?? "").trim();
+  if (mode) return mode;
+  return image?.final_text_composited === true ? "final-text-composited" : undefined;
 }
 
 function normalizeEvidenceTextLayout(value: AiGenerationApiTextLayout | CardTextLayout | undefined): CardTextLayout | undefined {

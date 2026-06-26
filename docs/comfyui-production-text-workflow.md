@@ -19,18 +19,22 @@ repeatable print output.
 - `customcard-production-text-overlay.json` is the production candidate. It adds
   the repo-owned `CustomCardTextComposer` node after `VAEDecode` and before
   `SaveImage`.
-- `local-production-text` is the benchmark phase for this candidate. It treats
-  Comfy output as the final text-composited panel and bypasses the app overlay.
+- `local-production-text` is the benchmark phase for this candidate. With a
+  configured local LLM, it runs fixed customer request fixtures through the real
+  card-copy planner, then treats Comfy output as the final text-composited panel
+  and bypasses the benchmark preview overlay. Without a local LLM, it falls back
+  to one sunburst compositor calibration fixture.
 - `buildImagePromptPlan` now carries `headline`, `body`, and normalized
   `text_layout` into image-provider execution as `panel_copy`.
 - `scripts/local-comfy-production-text.mjs` is the shared production text
   contract used by both the app generator and benchmark loop. Put template
   variables, safe-field geometry, artwork guards, and workflow-input metadata
   there first so the two execution paths do not drift.
-- `local-production-text` now plans deterministic production fixtures for the
-  original sunburst typography baseline plus aquarium lover, koi fish lover, and
-  dog lover requests. These fixtures exercise specific recipient interests while
-  keeping exact copy out of the artwork prompts.
+- `local-production-text` now plans request fixtures for aquarium lover, koi
+  fish lover, and dog lover scenarios. These are intentionally user inputs only:
+  the LLM decides the creative theme, palette, motifs, copy, text layout, and
+  panel-specific artwork prompts. The benchmark no longer hardcodes finished
+  panel copy or final themed artwork specs for those customer-interest cases.
 - `executeLocalComfyUiImage` now exposes text/layout variables to Comfy workflow
   templates:
   - `headline_text`, `body_text`
@@ -266,18 +270,25 @@ Comfy template variables exposed by the local adapter include:
 
 ## Production Benchmark Inputs
 
-The production-text phase uses fixed story fixtures so model/workflow changes
-can be compared without LLM prompt-writer variance:
+The production-text phase uses fixed customer requests so model/workflow changes
+can be compared against stable user intent while still testing the real LLM
+planner:
 
-- `folded-card-sunburst-typography`: original abstract sympathy/support
-  typography stress test.
-- `aquarium-lover-birthday`: aquarium plants, bubbles, tiny fish mark, and
-  birthday copy.
-- `koi-fish-lover-encouragement`: koi/ripple stationery for encouragement.
-- `dog-lover-thank-you`: paw/collar-tag stationery for a thank-you card.
+- `aquarium-lover-birthday`: a birthday request for Nina, who loves the calm
+  ritual of tending a freshwater aquarium.
+- `koi-fish-lover-encouragement`: an encouragement request for Uncle Ken, who
+  finds patience in his backyard koi pond.
+- `dog-lover-thank-you`: a thank-you request for Morgan, a dog-loving neighbor
+  who helped while Avery was away.
 
-Each fixture defines all four panels, exact front/interior copy, panel-specific
-artwork hints, and a sparse no-text back-cover contract.
+These fixtures do not define final palette, motifs, panel copy, or per-panel
+composition. The LLM must decide those. The image prompt remains artwork-only,
+and `panel_copy` carries the exact generated headline/body/text layout into
+Comfy for deterministic rendering.
+
+When no local LLM is configured, `local-production-text` runs only
+`folded-card-sunburst-typography` as a compositor calibration fixture. That
+fixture is for node/runtime validation, not customer-theme quality.
 
 ## Gates Before Production Default
 
@@ -311,10 +322,11 @@ every candidate as blocked after applying manual visual grades.
 - Keep soft text-hug safe fields and artwork guards, but tune per-panel
   typography scale and field merging so body copy stays readable without
   looking pasted on.
-- Run and manually grade the expanded production-text fixture matrix
-  (`folded-card-sunburst-typography`, `aquarium-lover-birthday`,
-  `koi-fish-lover-encouragement`, `dog-lover-thank-you`) before treating the
-  aggregate as representative of customer requests.
+- Run and manually grade the LLM-generated customer request matrix
+  (`aquarium-lover-birthday`, `koi-fish-lover-encouragement`,
+  `dog-lover-thank-you`) before treating the aggregate as representative of
+  customer requests. Keep the sunburst fixture separate as compositor
+  calibration evidence.
 - Test a flatter illustration/stationery checkpoint, masks, or stricter workflow
   controls so the surrounding artwork stays restrained instead of dense
   ornamental fill or object/mockup scenes.

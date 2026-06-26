@@ -145,10 +145,13 @@ Run a full-card benchmark through the production workflow:
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1
 ```
 
-The `local-production-text` phase now benchmarks four fixed production-text
-inputs: the sunburst typography baseline, aquarium lover birthday, koi fish
-lover encouragement, and dog lover thank-you. By default the helper writes to a
-timestamped
+The `local-production-text` phase benchmarks fixed customer request inputs when
+a local LLM and local ComfyUI are configured: aquarium lover birthday, koi fish
+lover encouragement, and dog lover thank-you. The LLM decides the final theme,
+copy, layout, and per-panel artwork prompts; Comfy renders the exact generated
+copy with `CustomCardTextComposer`. If a local LLM is not configured, the phase
+falls back to a single sunburst compositor calibration fixture. By default the
+helper writes to a timestamped
 `docs/evidence/generated-card-comparisons/production-text-workflow-YYYYMMDD-HHMMSS`
 directory. Pass `-OutputDir` only when you intentionally want a stable evidence
 path.
@@ -160,8 +163,9 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-producti
 ```
 
 This helper uses the benchmark `local-production-text` phase rather than
-`local-typography`, because the full card-generation path is what passes
-`panel_copy` and text safe-box variables into `scripts/ai-card-generator.mjs`.
+`local-typography`, because the full card-generation path is what lets the LLM
+decide `card_copy`, then passes `panel_copy` and text safe-box variables into
+`scripts/ai-card-generator.mjs`.
 
 Latest live evidence:
 

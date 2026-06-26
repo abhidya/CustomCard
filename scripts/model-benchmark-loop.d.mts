@@ -36,6 +36,18 @@ export interface LocalTypographyRun {
   typographyMode?: TypographyMode;
 }
 
+export interface LocalProductionTextRun {
+  phase: "local-production-text";
+  focus: "local-comfy-production-text-generated-copy" | "local-comfy-production-text-compositor-fixture";
+  storyId: string;
+  story: BenchmarkStory;
+  text: BenchmarkCandidate;
+  image: BenchmarkCandidate;
+  typographyMode: TypographyMode;
+  productionTextMode: "llm-generated-copy" | "compositor-fixture";
+  typographySpec?: TypographyExperimentSpec;
+}
+
 export interface PipelineQualityRun {
   phase: "pipeline-quality";
   focus: "full-card-quality";
@@ -177,6 +189,10 @@ export interface ProductionTextAutoChecks {
 
 export const typographyExperimentSpec: TypographyExperimentSpec;
 
+export const productionTextCompositorFixtureSpec: TypographyExperimentSpec;
+
+export const productionTextRequestFixtures: BenchmarkStory[];
+
 export const stories: Record<string, BenchmarkStory>;
 
 export function buildTypographyExperimentPrompt(
@@ -194,6 +210,11 @@ export function localTypographyRuns(candidates: {
   image: BenchmarkCandidate[];
   text?: BenchmarkCandidate[];
 }): LocalTypographyRun[];
+
+export function localProductionTextRuns(candidates: {
+  image: BenchmarkCandidate[];
+  text?: BenchmarkCandidate[];
+}): LocalProductionTextRun[];
 
 export function pipelineQualityRuns(candidates: {
   image?: BenchmarkCandidate[];

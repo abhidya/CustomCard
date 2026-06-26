@@ -290,16 +290,16 @@ describe("AI card generator service", () => {
           imageIndex += 1;
           const body = JSON.parse(String(init?.body));
           comfyPromptBodies.push(body);
-          expect(body.prompt["10"].inputs.workflow_id).toBe("birthday-card-v2");
+          expect(body.prompt["10"].inputs.workflow_id).toBe("customcard-production-text-overlay");
           expect(body.prompt["10"].inputs.panel_id).toMatch(/front|inside-left|inside-right|back/);
           expect(typeof body.prompt["10"].inputs.seed).toBe("number");
           expect(body.prompt["10"].inputs.width).toBe(640);
           expect(body.prompt["10"].inputs.height).toBe(896);
           expect(body.prompt["20"].inputs.filename_prefix).toMatch(/^customcard-/);
           expect(body.extra_data.customcard).toMatchObject({
-            workflow_id: "birthday-card-v2",
+            workflow_id: "customcard-production-text-overlay",
             inputs: {
-              workflow_id: "birthday-card-v2"
+              workflow_id: "customcard-production-text-overlay"
             }
           });
           return new Response(JSON.stringify({ prompt_id: `custom-workflow-${imageIndex}` }), {
@@ -337,7 +337,7 @@ describe("AI card generator service", () => {
           CUSTOMCARD_COMFYUI_IMAGE_WIDTH: "640",
           CUSTOMCARD_COMFYUI_IMAGE_HEIGHT: "896",
           CUSTOMCARD_COMFYUI_TIMEOUT_MS: "10000",
-          CUSTOMCARD_COMFYUI_WORKFLOW_ID: "birthday-card-v2",
+          CUSTOMCARD_COMFYUI_WORKFLOW_ID: "customcard-production-text-overlay",
           CUSTOMCARD_COMFYUI_WORKFLOW_PATH: workflowPath,
           CUSTOMCARD_COMFYUI_WORKFLOW_INPUTS_JSON: JSON.stringify({
             workflow_id: "{{workflow_id}}",
@@ -355,7 +355,10 @@ describe("AI card generator service", () => {
 
       expect(result.statusCode).toBe(200);
       expect(fetchImpl).toHaveBeenCalledWith("http://127.0.0.1:8188/prompt", expect.any(Object));
-      const payload = result.payload as { card_copy: { panels: Array<{ id: string; headline: string; body: string }> } };
+      const payload = result.payload as {
+        card_copy: { panels: Array<{ id: string; headline: string; body: string }> };
+        images: Array<{ rendering_mode?: string }>;
+      };
       expect(comfyPromptBodies).toHaveLength(4);
       for (const body of comfyPromptBodies) {
         const panelCopy = payload.card_copy.panels.find((panel) => panel.id === body.prompt["10"].inputs.panel_id);
@@ -389,6 +392,7 @@ describe("AI card generator service", () => {
           }
         }
       });
+      expect(payload.images.every((image) => image.rendering_mode === "final-text-composited")).toBe(true);
     } finally {
       rmSync(tempDir, { force: true, recursive: true });
     }
@@ -423,10 +427,15 @@ describe("AI card generator service", () => {
     expect(requestBody.model).toBe(cloudflareTextModel);
     expect(requestBody.max_tokens).toBe(2200);
     expect(requestBody.messages[0].content).toContain("theme, layout, and copy plan");
+    expect(userPrompt.task).toContain("The LLM owns the creative concept");
     expect(userPrompt.section_order).toEqual(
       expect.arrayContaining([
-        "Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels."
+        "Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels; do not copy a fixture, request label, or generic subject category as the final theme.",
+        "Name a specific creative concept that could only belong to this request, then make each panel a distinct expression of that concept."
       ])
+    );
+    expect(userPrompt.layout_requirements).toContain(
+      "The theme_guide must be LLM-decided from the user's request. For interests such as aquarium lover, koi fish lover, or dog lover, create a more specific visual genre than the literal noun alone."
     );
     expect(userPrompt.copy_requirements).toEqual(
       expect.arrayContaining([

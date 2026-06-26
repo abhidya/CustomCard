@@ -18,6 +18,11 @@ export function buildPanelSvg(panel: CardPanel): string {
   const accent = panel.id === "inside-right" ? "#c8553d" : panel.id === "inside-left" ? "#258477" : "#315b7d";
   const direction = panel.rtl ? "rtl" : "ltr";
   const layout = styleLayouts[styleId];
+  if (panel.imageUrl && panel.imageRendering === "final-text-composited") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${renderPacketTarget.widthPixels}" height="${renderPacketTarget.heightPixels}" viewBox="0 0 ${renderPacketTarget.widthPixels} ${renderPacketTarget.heightPixels}" role="img" aria-label="${escapeXml(panel.label)} panel" direction="${direction}" data-customcard-style="${styleId}" data-customcard-rendering="final-text-composited">
+${buildArtworkLayer(panel.imageUrl, panel.imagePlacement, { fullBleed: true })}
+</svg>`;
+  }
   const artworkLayer = panel.imageUrl ? buildArtworkLayer(panel.imageUrl, panel.imagePlacement) : layout.decoration(panel, accent);
   const textPlan = buildTextPlan(panel, layout, accent, styleId);
   const headlineLines = wrapSvgText(panel.headline, textPlan.headlineMaxChars).slice(0, textPlan.headlineMaxLines);
@@ -359,15 +364,20 @@ function escapeXml(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function buildArtworkLayer(imageUrl: string, placement?: CardImagePlacement): string {
-  const box = artworkBox(placement);
-  const preserveAspectRatio = preserveAspectRatioFor(placement);
+function buildArtworkLayer(
+  imageUrl: string,
+  placement?: CardImagePlacement,
+  { fullBleed = false }: { fullBleed?: boolean } = {}
+): string {
+  const box = fullBleed ? { x: 0, y: 0, width: renderPacketTarget.widthPixels, height: renderPacketTarget.heightPixels } : artworkBox(placement);
+  const preserveAspectRatio = fullBleed ? "xMidYMid slice" : preserveAspectRatioFor(placement);
+  const frameKind = fullBleed ? "fill" : imageFrame(placement);
   const backing =
-    imageFrame(placement) === "fit"
+    frameKind === "fit"
       ? `  <rect x="${box.x}" y="${box.y}" width="${box.width}" height="${box.height}" fill="#f8f3e8" stroke="#d8d2c6" stroke-width="6"/>`
       : "";
   const frame =
-    imageFrame(placement) === "photo-window"
+    frameKind === "photo-window"
       ? `  <rect x="${box.x}" y="${box.y}" width="${box.width}" height="${box.height}" fill="none" stroke="#d8d2c6" stroke-width="8"/>`
       : "";
   const inlineSvg = deterministicArtworkSvg(imageUrl);
