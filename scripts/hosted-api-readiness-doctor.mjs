@@ -35,10 +35,7 @@ const doctorManifest = defineDoctorManifest({
     verificationDocs: "docs/verification.md",
     vercel: "vercel.json",
     vercelApiHandler: "api/[...path].js",
-    vercelArtifactsHandler: "api/artifacts.js",
-    vercelArtifactHandler: "api/artifacts/[...path].js",
-    vercelAiCardGenerateHandler: "api/ai/card/generate.js",
-    vercelAiChatRespondHandler: "api/ai/chat/respond.js",
+    vercelRobotsHandler: "api/robots.js",
     envExample: "infra/env/.env.example",
     hostedReadinessData: "src/hostedApiReadinessData.mjs",
     apiContracts: "src/apiContracts.ts",
@@ -170,16 +167,18 @@ const checks = [
   checkDoctorSourceSignals(doctorManifest, contents, {
     lane: "vercel-source",
     id: "vercel-serverless-source-signals",
-    sourceKeys: ["vercel", "vercelApiHandler", "vercelArtifactsHandler", "vercelArtifactHandler", "vercelAiCardGenerateHandler", "vercelAiChatRespondHandler"],
+    sourceKeys: ["vercel", "vercelApiHandler", "vercelRobotsHandler"],
     signals: [
       '"buildCommand": "npm run build"',
+      '"api/[...path].js": { "maxDuration": 60 }',
       '"source": "/api/artifacts/(.*)"',
       '"destination": "/api/artifacts?objectKey=$1"',
       '"source": "/api/(.*)"',
       '"destination": "/api/$1"',
       '"source": "/oauth/callback"',
       '"destination": "/api/oauth/callback"',
-      "handleApiRequest"
+      "handleApiRequest",
+      "PRODUCTION_ROBOTS"
     ]
   }),
   checkDoctorSourceSignals(doctorManifest, contents, {

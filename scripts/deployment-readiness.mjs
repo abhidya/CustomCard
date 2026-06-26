@@ -8,10 +8,7 @@ const files = {
   envExample: "infra/env/.env.example",
   vercel: "vercel.json",
   vercelApiHandler: "api/[...path].js",
-  vercelArtifactsHandler: "api/artifacts.js",
-  vercelArtifactHandler: "api/artifacts/[...path].js",
-  vercelAiCardGenerateHandler: "api/ai/card/generate.js",
-  vercelAiChatRespondHandler: "api/ai/chat/respond.js",
+  vercelRobotsHandler: "api/robots.js",
   apiServer: "scripts/api-server.mjs",
   apiRuntime: "scripts/api-runtime.mjs",
   cloudArtifactMain: "infra/aws/artifact-store/main.tf",
@@ -148,8 +145,10 @@ const checks = [
     '"destination": "/api/oauth/callback"',
     '"destination": "/index.html"'
   ]),
-  checkIncludes("vercel", "vercel-serverless-api-handler", `${contents.vercelApiHandler}\n${contents.vercelArtifactsHandler}\n${contents.vercelArtifactHandler}\n${contents.vercelAiCardGenerateHandler}\n${contents.vercelAiChatRespondHandler}\n${contents.apiServer}\n${contents.apiRuntime}`, [
+  checkIncludes("vercel", "vercel-serverless-api-handler", `${contents.vercel}\n${contents.vercelApiHandler}\n${contents.vercelRobotsHandler}\n${contents.apiServer}\n${contents.apiRuntime}`, [
+    '"api/[...path].js": { "maxDuration": 60 }',
     "handleApiRequest",
+    "PRODUCTION_ROBOTS",
     "export async function handleApiRequest",
     "CUSTOMCARD_API_RUNTIME",
     "DATABASE_URL"

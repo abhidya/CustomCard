@@ -1,11 +1,20 @@
 import { execFileSync, type ExecFileSyncOptionsWithStringEncoding } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { join, relative } from "node:path";
 import { describe, expect, it } from "vitest";
-import { apiRouteContracts } from "../src/apiRouteContractsData.mjs";
 import { capacityProfiles, summarizeCapacityPlan, validateCapacityProfiles } from "../src/capacityPlan";
 
 function read(path: string): string {
   return readFileSync(path, "utf8").replace(/\r\n/g, "\n");
+}
+
+function listFiles(path: string, root = path): string[] {
+  return readdirSync(path, { withFileTypes: true }).flatMap((entry) => {
+    const entryPath = join(path, entry.name);
+    if (entry.isDirectory()) return listFiles(entryPath, root);
+    if (entry.isFile()) return [relative(root, entryPath).replace(/\\/g, "/")];
+    return [];
+  });
 }
 
 const shellDoctorTimeoutMs = 60_000;
@@ -621,29 +630,22 @@ describe("production infrastructure contract", () => {
   it("defines a Vercel static plus serverless API deployment contract", () => {
     const vercel = JSON.parse(read("vercel.json")) as {
       buildCommand: string;
+      functions: Record<string, { maxDuration: number }>;
       outputDirectory: string;
       rewrites: Array<{ source: string; destination: string }>;
     };
     const handler = read("api/[...path].js");
-    const artifactsHandler = read("api/artifacts.js");
-    const artifactHandler = read("api/artifacts/[...path].js");
-    const calendarStartHandler = read("api/calendar/connections/start.js");
-    const oauthCallbackHandler = read("api/oauth/callback.js");
-    const aiCardGenerateHandler = read("api/ai/card/generate.js");
-    const aiChatRespondHandler = read("api/ai/chat/respond.js");
-    const walgreensUploadHandler = read("api/walgreens/checkout/upload.js");
-    const walgreensSessionHandler = read("api/walgreens/checkout/session.js");
-    const walgreensCallbackHandler = read("api/walgreens/checkout/callback.js");
+    const robotsHandler = read("api/robots.js");
     const apiServer = read("scripts/api-server.mjs");
     const apiRuntime = read("scripts/api-runtime.mjs");
-    const nestedRouteHandlers = apiRouteContracts
-      .map((route) => route.path)
-      .filter((path) => path.split("/").length > 3)
-      .map((path) => `${path.slice(1).replace(/:([^/]+)/g, "[$1]")}.js`);
+    const vercelApiFiles = listFiles("api").map((path) => `api/${path}`).sort();
 
     expect(vercel).toMatchObject({
       buildCommand: "npm run build",
       outputDirectory: "dist"
+    });
+    expect(vercel.functions).toEqual({
+      "api/[...path].js": { maxDuration: 60 }
     });
     expect(vercel.rewrites).toEqual([
       { source: "/robots.txt", destination: "/api/robots" },
@@ -652,15 +654,9 @@ describe("production infrastructure contract", () => {
       { source: "/oauth/callback", destination: "/api/oauth/callback" },
       { source: "/((?!api/).*)", destination: "/index.html" }
     ]);
+    expect(vercelApiFiles).toEqual(["api/[...path].js", "api/robots.js"]);
     expect(handler).toContain("handleApiRequest");
-    expect(artifactsHandler).toContain("handleApiRequest");
-    expect(artifactHandler).toContain("handleApiRequest");
-    expect(`${calendarStartHandler}\n${oauthCallbackHandler}`).toContain("handleApiRequest");
-    expect(`${aiCardGenerateHandler}\n${aiChatRespondHandler}`).toContain("handleApiRequest");
-    expect(`${walgreensUploadHandler}\n${walgreensSessionHandler}\n${walgreensCallbackHandler}`).toContain("handleApiRequest");
-    for (const routeHandler of nestedRouteHandlers) {
-      expect(read(routeHandler), routeHandler).toContain("handleApiRequest");
-    }
+    expect(robotsHandler).toContain("PRODUCTION_ROBOTS");
     expect(apiServer).toContain("export async function handleApiRequest");
     expect(apiRuntime).toContain("CUSTOMCARD_API_RUNTIME");
     expect(apiRuntime).toContain("DATABASE_URL");
