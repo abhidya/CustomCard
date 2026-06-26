@@ -32,6 +32,7 @@ const doctorManifest = defineDoctorManifest({
     aiQueueData: "src/aiQueueOperationsData.mjs",
     aiQueueTest: "src/aiQueueOperations.test.ts",
     apiRuntime: "scripts/api-runtime.mjs",
+    apiMutationRuntime: "scripts/api-route-mutation-runtime.mjs",
     apiRoutes: "scripts/api-route-families.mjs",
     apiContracts: "src/apiContracts.ts",
     routeContracts: "src/apiRouteContractsData.mjs",
@@ -95,7 +96,7 @@ const checks = [
   checkDoctorSourceSignals(doctorManifest, contents, {
     lane: "api",
     id: "queue-admission-signals",
-    sourceKeys: ["apiRuntime", "apiRoutes", "routeContracts"],
+    sourceKeys: ["apiRuntime", "apiMutationRuntime", "apiRoutes", "routeContracts"],
     signals: [
       "publicQueuedJobAcceptance",
       "buildQueuedJobPayload",
