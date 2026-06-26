@@ -4,6 +4,13 @@ import { resolveImportPreviewMetadata } from "../src/importPreviewMetadata.mjs";
 import { normalizeCardCategory, publicCardCategories } from "../src/cardCategoriesData.mjs";
 import { missingRetailPrinterCouponPortalEvidenceFields } from "../src/retailPrinterCouponPortalEvidenceData.mjs";
 import { mutationBodyContractSpecs, persistedTablesForRouteId } from "../src/apiRouteContractsData.mjs";
+import { normalizeAdminSafetyControls, updateAdminSafetyControls } from "../src/adminSafetyControlsData.mjs";
+import {
+  adminAiFlowConfigReadUnavailablePayload,
+  adminRuntimeConfigKeys,
+  buildAdminAiFlowConfigPayload,
+  buildUpdatedAdminAiFlowConfigPayload
+} from "../src/adminRuntimeConfigData.mjs";
 import { createObjectStoreRuntime } from "./object-store-runtime.mjs";
 import { createPostgresRuntime, postgresPoolConfig } from "./postgres-runtime.mjs";
 import {
@@ -11,6 +18,11 @@ import {
   describeApiRuntimeModeAdapters,
   resolveApiRuntimeModeAdapter
 } from "./api-runtime-mode-adapters.mjs";
+import {
+  authorizeProviderToken,
+  createProviderJobRuntime,
+  providerRuntimeUnavailable
+} from "./provider-job-runtime.mjs";
 import { createRouteMutationRuntime } from "./api-route-mutation-runtime.mjs";
 import { hasStrongEnvSecret, isProductionRuntimeEnv } from "./runtime-env-contract.mjs";
 
@@ -47,7 +59,7 @@ export function createApiRuntime({ env = process.env, routes = [], postgresPoolF
   const adapter = resolveApiRuntimeModeAdapter({
     env,
     factories: {
-      contract: (input) => createContractApiRuntime({ routes: input.routes, objectStoreRuntime: input.objectStoreRuntime }),
+      contract: (input) => createContractApiRuntime({ env: input.env, routes: input.routes, objectStoreRuntime: input.objectStoreRuntime }),
       memory: (input) => createMemoryApiRuntime({ env: input.env, routes: input.routes, objectStoreRuntime: input.objectStoreRuntime }),
       postgres: (input) =>
         createPostgresApiRuntime({
@@ -81,7 +93,7 @@ export function requestHash(routeId, bodyText) {
   return createHash("sha256").update(`${routeId}:${bodyText || "{}"}`).digest("hex");
 }
 
-function createContractApiRuntime({ routes, objectStoreRuntime }) {
+function createContractApiRuntime({ env, routes, objectStoreRuntime }) {
   return {
     mode: "contract",
     describe() {
@@ -126,6 +138,7 @@ function createContractApiRuntime({ routes, objectStoreRuntime }) {
           }
         };
       }
+      if (route.auth === "provider-token") return authorizeProviderToken({ env, route, request });
       if (route.auth === "none") return anonymousAuthContext(route);
       if (route.externalNetworkCalls && !readBearerToken(request)) {
         return authError(401, "auth-required", route);
@@ -175,6 +188,15 @@ function createContractApiRuntime({ routes, objectStoreRuntime }) {
         statusCode: 404
       });
     },
+    async leaseProviderJobs() {
+      return providerRuntimeUnavailable("contract");
+    },
+    async readProviderJobStatus() {
+      return providerRuntimeUnavailable("contract");
+    },
+    async completeProviderJob() {
+      return providerRuntimeUnavailable("contract");
+    },
     async recordProviderCallEvents() {
       return { persisted: false, count: 0, runtimeMode: "contract" };
     },
@@ -207,6 +229,12 @@ function createContractApiRuntime({ routes, objectStoreRuntime }) {
     },
     async readCardGallery({ authContext }) {
       return buildCardGalleryReadPayload({ runtimeMode: "contract", authContext, entries: [], candidates: [] });
+    },
+    async readAdminAiFlowConfig() {
+      return buildAdminAiFlowConfigPayload({ env, runtimeMode: "contract" });
+    },
+    async readAdminSafetyControls() {
+      return normalizeAdminSafetyControls();
     },
     async close() {
       return undefined;
@@ -252,6 +280,15 @@ function createInvalidApiRuntime({ requestedMode, routes, objectStoreRuntime, va
     async persistGeneratedImageArtifacts() {
       return undefined;
     },
+    async leaseProviderJobs() {
+      return providerRuntimeUnavailable("invalid");
+    },
+    async readProviderJobStatus() {
+      return providerRuntimeUnavailable("invalid");
+    },
+    async completeProviderJob() {
+      return providerRuntimeUnavailable("invalid");
+    },
     async persistGoogleCalendarImport() {
       return { persisted: false, payload };
     },
@@ -285,6 +322,7 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
   const consentRecords = new Map();
   const dataRequests = new Map();
   const cardGalleryEntries = new Map();
+  const adminRuntimeConfigs = new Map();
 
   if (localAuthFallbacksEnabled(env)) {
     addSession(sessions, env.CUSTOMCARD_CUSTOMER_SESSION_TOKEN, "customer", "user-demo", env.AUTH_SESSION_SECRET);
@@ -315,6 +353,7 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
         orderEventRecords: orderEvents.size,
         consentRecords: consentRecords.size,
         dataRequestRecords: dataRequests.size,
+        adminRuntimeConfigRecords: adminRuntimeConfigs.size,
         statefulRoutes: routes.filter((route) => route.auth !== "none").length,
         artifactStore: objectStoreRuntime.describe()
       };
@@ -330,6 +369,7 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
       return blockers;
     },
     async authorize(route, request) {
+      if (route.auth === "provider-token") return authorizeProviderToken({ env, route, request });
       const sessionResult = authorizeFromSessions(route, request, sessions, env.AUTH_SESSION_SECRET);
       if (sessionResult.ok || sessionResult.statusCode !== 401) return sessionResult;
 
@@ -380,11 +420,13 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
           orderEvents,
           consentRecords,
           dataRequests,
-          cardGalleryEntries
+          cardGalleryEntries,
+          adminRuntimeConfigs
         },
         route,
         authContext,
         bodyText,
+        env,
         objectStoreRuntime
       });
       const payload = routeMutationRuntime.decorateMutationPayload({
@@ -429,6 +471,15 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
       const id = safeId(jobId, "");
       const job = queuedJobs.find((candidate) => candidate.id === id && candidate.userId === authContext.userId);
       return routeMutationRuntime.buildQueuedJobReadResult({ runtimeMode: "memory", authContext, job, statusCode: job ? 200 : 404 });
+    },
+    async leaseProviderJobs() {
+      return providerRuntimeUnavailable("memory");
+    },
+    async readProviderJobStatus() {
+      return providerRuntimeUnavailable("memory");
+    },
+    async completeProviderJob() {
+      return providerRuntimeUnavailable("memory");
     },
     async recordProviderCallEvents({ authContext, events = [] }) {
       const normalized = normalizeProviderCallEvents({ authContext, events });
@@ -509,6 +560,12 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
         candidates
       });
     },
+    async readAdminAiFlowConfig() {
+      return readAdminAiFlowConfigMemory(adminRuntimeConfigs, env);
+    },
+    async readAdminSafetyControls() {
+      return readAdminSafetyControlsMemory(adminRuntimeConfigs);
+    },
     async close() {
       return undefined;
     }
@@ -583,6 +640,14 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
     return postgresRuntime.getPool();
   }
 
+  const providerJobRuntime = createProviderJobRuntime({
+    env,
+    getPool,
+    postgresRuntime,
+    persistGeneratedImageArtifacts: ({ authContext, payload }) =>
+      persistGeneratedImageArtifacts({ objectStoreRuntime, authContext, payload })
+  });
+
   return {
     mode: "postgres",
     /** Shared pool access for the durable AI cost gate (provider_call_events). */
@@ -628,6 +693,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
       return blockers;
     },
     async authorize(route, request) {
+      if (route.auth === "provider-token") return authorizeProviderToken({ env, route, request });
       if (route.auth === "none") return anonymousAuthContext(route);
       const token = readBearerToken(request);
       if (!token) return authError(401, "auth-required", route);
@@ -716,6 +782,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
           route,
           authContext,
           bodyText,
+          env,
           objectStoreRuntime
         });
         const responseBody = routeMutationRuntime.decorateMutationPayload({
@@ -850,6 +917,15 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
           }
         : undefined;
       return routeMutationRuntime.buildQueuedJobReadResult({ runtimeMode: "postgres", authContext, job, statusCode: job ? 200 : 404 });
+    },
+    async leaseProviderJobs(input = {}) {
+      return providerJobRuntime.leaseJobs(input);
+    },
+    async readProviderJobStatus(input = {}) {
+      return providerJobRuntime.readStatus(input);
+    },
+    async completeProviderJob(input = {}) {
+      return providerJobRuntime.completeJob(input);
     },
     async listArtifacts(input) {
       return objectStoreRuntime.listBucketArtifacts(input);
@@ -1080,6 +1156,12 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
         readIssues
       });
     },
+    async readAdminAiFlowConfig() {
+      return readAdminAiFlowConfigPostgres({ getPool, env });
+    },
+    async readAdminSafetyControls() {
+      return readAdminSafetyControlsPostgres({ getPool });
+    },
     async close() {
       await postgresRuntime.close();
     }
@@ -1133,7 +1215,9 @@ function anonymousAuthContext(route) {
 }
 
 function requiredRoleForAuth(auth) {
-  return auth === "admin-session" ? "admin" : "customer";
+  if (auth === "admin-session") return "admin";
+  if (auth === "provider-token") return "provider";
+  return "customer";
 }
 
 const memoryRoutePersistenceAdapters = {
@@ -1144,7 +1228,9 @@ const memoryRoutePersistenceAdapters = {
   "render-packets": persistRenderPacketMemory,
   "manual-vendor-handoff": persistManualVendorHandoffMemory,
   "data-requests": persistDataRequestMemory,
-  "admin-card-gallery-save": persistCardGalleryMemory
+  "admin-card-gallery-save": persistCardGalleryMemory,
+  "admin-ai-flow-configs-save": persistAdminAiFlowConfigMemory,
+  "admin-safety-controls-save": persistAdminSafetyControlsMemory
 };
 
 const postgresRoutePersistenceAdapters = {
@@ -1155,7 +1241,9 @@ const postgresRoutePersistenceAdapters = {
   "render-packets": persistRenderPacketPostgres,
   "manual-vendor-handoff": persistManualVendorHandoffPostgres,
   "data-requests": persistDataRequestPostgres,
-  "admin-card-gallery-save": persistCardGalleryPostgres
+  "admin-card-gallery-save": persistCardGalleryPostgres,
+  "admin-ai-flow-configs-save": persistAdminAiFlowConfigPostgres,
+  "admin-safety-controls-save": persistAdminSafetyControlsPostgres
 };
 
 export function describeApiRoutePersistenceAdapters() {
@@ -1262,6 +1350,59 @@ function persistCardGalleryMemory({ repositories, authContext, bodyText }) {
   };
 }
 
+function readAdminAiFlowConfigMemory(adminRuntimeConfigs, env) {
+  const record = adminRuntimeConfigs.get(adminRuntimeConfigKeys.aiFlowConfigs);
+  return buildAdminAiFlowConfigPayload({
+    input: record?.payload,
+    env,
+    runtimeMode: "memory",
+    version: record?.version ?? 0,
+    updatedAtIso: record?.updatedAtIso ?? null,
+    updatedBy: record?.updatedBy ?? null
+  });
+}
+
+function persistAdminAiFlowConfigMemory({ repositories, authContext, bodyText, env }) {
+  const current = readAdminAiFlowConfigMemory(repositories.adminRuntimeConfigs, env);
+  const payload = buildUpdatedAdminAiFlowConfigPayload({
+    body: parseJsonBody(bodyText),
+    env,
+    authContext,
+    current,
+    runtimeMode: "memory"
+  });
+  repositories.adminRuntimeConfigs.set(adminRuntimeConfigKeys.aiFlowConfigs, {
+    payload,
+    version: payload.version,
+    updatedAtIso: payload.updatedAtIso,
+    updatedBy: payload.updatedBy
+  });
+  return {
+    persisted: true,
+    payload
+  };
+}
+
+function readAdminSafetyControlsMemory(adminRuntimeConfigs) {
+  const record = adminRuntimeConfigs.get(adminRuntimeConfigKeys.safetyControls);
+  return normalizeAdminSafetyControls(record?.payload);
+}
+
+function persistAdminSafetyControlsMemory({ repositories, authContext, bodyText }) {
+  const current = readAdminSafetyControlsMemory(repositories.adminRuntimeConfigs);
+  const payload = updateAdminSafetyControls(current, parseJsonBody(bodyText), { authContext });
+  repositories.adminRuntimeConfigs.set(adminRuntimeConfigKeys.safetyControls, {
+    payload,
+    version: Number(repositories.adminRuntimeConfigs.get(adminRuntimeConfigKeys.safetyControls)?.version ?? 0) + 1,
+    updatedAtIso: payload.updatedAtIso,
+    updatedBy: payload.updatedBy
+  });
+  return {
+    persisted: true,
+    payload
+  };
+}
+
 async function persistImportPreviewPostgres({ client, authContext, bodyText }) {
   const record = buildImportPreviewRecord({ authContext, bodyText });
   await client.query(
@@ -1361,7 +1502,7 @@ async function persistCardProjectPostgres({ client, authContext, bodyText }) {
 
 async function persistDraftStatePostgres({ client, authContext, bodyText }) {
   const record = buildDraftStateRecord({ authContext, bodyText });
-  await client.query(
+  const result = await client.query(
     `INSERT INTO draft_states
        (id, user_id, status, draft_input, opportunity_id, opportunity_decision, vendor_id, locale, raw_content_stored, updated_at)
      VALUES ($1, $2, $3, $4::jsonb, $5, $6, $7, $8, FALSE, $9::timestamptz)
@@ -1373,7 +1514,9 @@ async function persistDraftStatePostgres({ client, authContext, bodyText }) {
        vendor_id = EXCLUDED.vendor_id,
        locale = EXCLUDED.locale,
        raw_content_stored = FALSE,
-       updated_at = EXCLUDED.updated_at`,
+       updated_at = EXCLUDED.updated_at
+     WHERE draft_states.user_id = EXCLUDED.user_id
+     RETURNING id`,
     [
       record.id,
       authContext.userId,
@@ -1386,6 +1529,12 @@ async function persistDraftStatePostgres({ client, authContext, bodyText }) {
       record.updatedAtIso
     ]
   );
+  if (result.rowCount !== 1) {
+    return {
+      persisted: false,
+      payload: buildDraftStateConflictPayload(record, "postgres")
+    };
+  }
   return {
     persisted: true,
     payload: buildDraftStateRepositoryPayload(record, "postgres")
@@ -1631,6 +1780,114 @@ async function persistCardGalleryPostgres({ client, authContext, bodyText }) {
     ]
   );
   return { persisted: true, payload: buildCardGalleryRepositoryPayload(record, "postgres") };
+}
+
+async function readAdminRuntimeConfigPostgres({ getPool, key }) {
+  const pool = await getPool();
+  const result = await pool.query(
+    `SELECT key, payload, version, updated_by, updated_at
+     FROM admin_runtime_configs
+     WHERE key = $1
+     LIMIT 1`,
+    [key]
+  );
+  return result.rows[0];
+}
+
+async function readAdminAiFlowConfigPostgres({ getPool, env }) {
+  try {
+    const row = await readAdminRuntimeConfigPostgres({ getPool, key: adminRuntimeConfigKeys.aiFlowConfigs });
+    return buildAdminAiFlowConfigPayload({
+      input: normalizeJson(row?.payload ?? {}),
+      env,
+      runtimeMode: "postgres",
+      version: row?.version ?? 0,
+      updatedAtIso: row?.updated_at ? new Date(row.updated_at).toISOString() : null,
+      updatedBy: row?.updated_by ?? null
+    });
+  } catch (error) {
+    return adminAiFlowConfigReadUnavailablePayload({ env, runtimeMode: "postgres", error });
+  }
+}
+
+async function persistAdminAiFlowConfigPostgres({ client, authContext, bodyText, env }) {
+  const existing = await client.query(
+    `SELECT payload, version, updated_by, updated_at
+     FROM admin_runtime_configs
+     WHERE key = $1
+     FOR UPDATE`,
+    [adminRuntimeConfigKeys.aiFlowConfigs]
+  );
+  const currentRow = existing.rows[0];
+  const current = buildAdminAiFlowConfigPayload({
+    input: normalizeJson(currentRow?.payload ?? {}),
+    env,
+    runtimeMode: "postgres",
+    version: currentRow?.version ?? 0,
+    updatedAtIso: currentRow?.updated_at ? new Date(currentRow.updated_at).toISOString() : null,
+    updatedBy: currentRow?.updated_by ?? null
+  });
+  const payload = buildUpdatedAdminAiFlowConfigPayload({
+    body: parseJsonBody(bodyText),
+    env,
+    authContext,
+    current,
+    runtimeMode: "postgres"
+  });
+  await client.query(
+    `INSERT INTO admin_runtime_configs (key, payload, version, updated_by)
+     VALUES ($1, $2::jsonb, $3, $4)
+     ON CONFLICT (key) DO UPDATE SET
+       payload = EXCLUDED.payload,
+       version = EXCLUDED.version,
+       updated_by = EXCLUDED.updated_by,
+       updated_at = NOW()`,
+    [adminRuntimeConfigKeys.aiFlowConfigs, JSON.stringify(payload), payload.version, payload.updatedBy]
+  );
+  return {
+    persisted: true,
+    payload
+  };
+}
+
+async function readAdminSafetyControlsPostgres({ getPool }) {
+  try {
+    const row = await readAdminRuntimeConfigPostgres({ getPool, key: adminRuntimeConfigKeys.safetyControls });
+    return normalizeAdminSafetyControls(normalizeJson(row?.payload ?? {}));
+  } catch (error) {
+    return {
+      ...normalizeAdminSafetyControls(),
+      blockers: [`Admin safety controls store unavailable: ${error instanceof Error ? error.message : "unknown error"}`],
+      status: "fail-closed"
+    };
+  }
+}
+
+async function persistAdminSafetyControlsPostgres({ client, authContext, bodyText }) {
+  const existing = await client.query(
+    `SELECT payload, version
+     FROM admin_runtime_configs
+     WHERE key = $1
+     FOR UPDATE`,
+    [adminRuntimeConfigKeys.safetyControls]
+  );
+  const currentPayload = normalizeAdminSafetyControls(normalizeJson(existing.rows[0]?.payload ?? {}));
+  const payload = updateAdminSafetyControls(currentPayload, parseJsonBody(bodyText), { authContext });
+  const version = Number(existing.rows[0]?.version ?? 0) + 1;
+  await client.query(
+    `INSERT INTO admin_runtime_configs (key, payload, version, updated_by)
+     VALUES ($1, $2::jsonb, $3, $4)
+     ON CONFLICT (key) DO UPDATE SET
+       payload = EXCLUDED.payload,
+       version = EXCLUDED.version,
+       updated_by = EXCLUDED.updated_by,
+       updated_at = NOW()`,
+    [adminRuntimeConfigKeys.safetyControls, JSON.stringify(payload), version, payload.updatedBy]
+  );
+  return {
+    persisted: true,
+    payload
+  };
 }
 
 async function persistGoogleCalendarImportPostgres(client, authContext, record) {
@@ -2169,7 +2426,7 @@ function buildDraftStateRecord({ authContext, bodyText }) {
   const body = parseJsonBody(bodyText);
   const draftInput = sanitizeDraftInput(body.draftInput);
   const opportunityId = safeId(body.opportunityId, stableRuntimeId("opportunity", authContext.userId, draftInput.recipient, draftInput.occasion));
-  const id = safeId(body.draftStateId ?? body.id, stableRuntimeId("draft-state", authContext.userId));
+  const id = stableRuntimeId("draft-state", authContext.userId);
 
   return {
     id,
@@ -2181,6 +2438,21 @@ function buildDraftStateRecord({ authContext, bodyText }) {
     vendorId: safeVendorId(body.vendorId),
     localeCode: safeLocale(body.localeCode ?? body.locale),
     updatedAtIso: safeTimestamp(body.updatedAtIso, new Date().toISOString())
+  };
+}
+
+function buildDraftStateConflictPayload(record, runtimeMode) {
+  return {
+    draftStateId: record.id,
+    updatedAtIso: record.updatedAtIso,
+    repository: {
+      table: "draft_states",
+      runtimeMode,
+      persisted: false,
+      browserLocalState: false,
+      rawContentStored: false,
+      conflict: "draft-state-owned-by-another-user"
+    }
   };
 }
 

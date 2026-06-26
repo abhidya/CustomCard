@@ -1,0 +1,187 @@
+# CustomCard ComfyUI Workflows
+
+These files are API-format ComfyUI prompt graphs for `local-comfyui-api-image`.
+Set `CUSTOMCARD_COMFYUI_WORKFLOW_PATH` to one of these JSON files before running
+the local worker or benchmark loop.
+
+## Local SDXL Candidates
+
+- `customcard-production-text-overlay.json`
+  - Production candidate for Comfy-side deterministic text compositing.
+  - Requires the checked-in `CustomCardTextComposer` node from `comfyui-custom-nodes/CustomCardTextComposer`.
+  - The diffusion model still generates text-safe artwork only; exact card copy is rendered into explicit safe boxes before `SaveImage`.
+- `customcard-hybrid-reserved-layout.json`
+  - Production-leaning benchmark workflow for four greeting-card panels.
+  - The image model generates coordinated, text-safe artwork only; the model benchmark flattens exact greeting-card copy into the final `preview-*.png` panels with deterministic typography.
+  - Recommended with `--phase local-typography --typography-mode mode-c-hybrid-reserved-layout`.
+- `customcard-sdxl-checkpoint.json`
+  - SDXL base: `CUSTOMCARD_COMFYUI_CHECKPOINT=sd_xl_base_1.0.safetensors`
+  - SDXL Turbo: `CUSTOMCARD_COMFYUI_CHECKPOINT=sd_xl_turbo_1.0_fp16.safetensors`
+- `customcard-sdxl-lightning-lora.json`
+  - `CUSTOMCARD_COMFYUI_CHECKPOINT=sd_xl_base_1.0.safetensors`
+  - Uses `sdxl_lightning_4step_lora.safetensors`.
+
+Suggested benchmark settings:
+
+- SDXL base: `CUSTOMCARD_COMFYUI_STEPS=25`, `CUSTOMCARD_COMFYUI_CFG=6`, `CUSTOMCARD_COMFYUI_SAMPLER=dpmpp_2m`, `CUSTOMCARD_COMFYUI_SCHEDULER=karras`
+- SDXL Turbo: `CUSTOMCARD_COMFYUI_STEPS=2`, `CUSTOMCARD_COMFYUI_CFG=0`, `CUSTOMCARD_COMFYUI_SAMPLER=euler_ancestral`, `CUSTOMCARD_COMFYUI_SCHEDULER=sgm_uniform`
+- SDXL Lightning LoRA: `CUSTOMCARD_COMFYUI_STEPS=4`, `CUSTOMCARD_COMFYUI_CFG=1`, `CUSTOMCARD_COMFYUI_SAMPLER=euler`, `CUSTOMCARD_COMFYUI_SCHEDULER=sgm_uniform`
+
+## Permissive Quality Targets
+
+- `customcard-flux1-schnell.json`
+  - Gated Hugging Face download even though the model license is Apache 2.0.
+  - Best benchmarked on 16GB+ VRAM or a cloud ComfyUI runner.
+- `customcard-flux2-klein-4b.json`
+  - Uses `flux-2-klein-4b.safetensors`, `qwen_3_4b.safetensors`, and `flux2-vae.safetensors`.
+  - Best benchmarked on 16GB+ VRAM or a cloud ComfyUI runner.
+
+Suggested FLUX settings:
+
+- FLUX.1 Schnell: `CUSTOMCARD_COMFYUI_STEPS=4`, `CUSTOMCARD_COMFYUI_CFG=1`, `CUSTOMCARD_COMFYUI_SAMPLER=euler`, `CUSTOMCARD_COMFYUI_SCHEDULER=simple`
+- FLUX.2 Klein 4B: `CUSTOMCARD_COMFYUI_STEPS=4`, `CUSTOMCARD_COMFYUI_CFG=1`, `CUSTOMCARD_COMFYUI_SAMPLER=euler`
+
+## Research Branch
+
+- `customcard-z-image-turbo.json`
+  - Uses the already-present Comfy split files `z_image_turbo_bf16.safetensors`, `qwen_3_4b.safetensors`, and `ae.safetensors`.
+  - Suggested settings: `CUSTOMCARD_COMFYUI_STEPS=8`, `CUSTOMCARD_COMFYUI_CFG=1`, `CUSTOMCARD_COMFYUI_SAMPLER=res_multistep`, `CUSTOMCARD_COMFYUI_SCHEDULER=simple`
+- `customcard-qwen-image-research.json`
+  - Uses Qwen Image distilled fp8 split files.
+  - Keep this out of the production path. Our product overlays text outside the image model, so Qwen is only for prompt adherence/editing research.
+  - Suggested settings: `CUSTOMCARD_COMFYUI_STEPS=15`, `CUSTOMCARD_COMFYUI_CFG=1`, `CUSTOMCARD_COMFYUI_SAMPLER=euler`, `CUSTOMCARD_COMFYUI_SCHEDULER=simple`
+- Qwen Image Edit 2511
+  - `npm run comfy:models:setup -- --include-qwen` also includes optional edit-model assets.
+  - Use the official Comfy Qwen Image Edit template for manual/cloud edit tests because the current product worker graph does not pass source images into ComfyUI.
+
+## Setup
+
+Hydrate practical local/quality assets:
+
+```powershell
+npm run comfy:models:setup
+```
+
+Optional research-heavy Qwen files:
+
+```powershell
+npm run comfy:models:setup -- --include-qwen
+```
+
+Optional gated FLUX.1 Schnell files after accepting the Hugging Face terms:
+
+```powershell
+$env:HF_TOKEN = "hf_..."
+npm run comfy:models:setup -- --include-gated
+```
+
+## Local Typography Benchmark
+
+```powershell
+$env:CUSTOMCARD_COMFYUI_URL = "http://127.0.0.1:8188"
+$env:CUSTOMCARD_COMFYUI_WORKFLOW_PATH = "comfyui-workflows/customcard-hybrid-reserved-layout.json"
+$env:CUSTOMCARD_COMFYUI_WORKFLOW_ID = "customcard-hybrid-reserved-layout"
+$env:CUSTOMCARD_COMFYUI_IMAGE_WIDTH = "960"
+$env:CUSTOMCARD_COMFYUI_IMAGE_HEIGHT = "1344"
+npm run card:benchmark:local -- --phase local-typography --phase-dir local-typography-hybrid --output-dir docs/evidence/generated-card-comparisons/local-typography-hybrid
+```
+
+Agents can avoid PowerShell quoting issues by using the tracked helper:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-local-typography-benchmark.ps1
+```
+
+## Production Text Overlay Candidate
+
+The production candidate keeps deterministic text inside Comfy instead of the
+benchmark preview compositor:
+
+```powershell
+$env:CUSTOMCARD_COMFYUI_WORKFLOW_PATH = "comfyui-workflows/customcard-production-text-overlay.json"
+$env:CUSTOMCARD_COMFYUI_WORKFLOW_ID = "customcard-production-text-overlay"
+$env:CUSTOMCARD_COMFYUI_IMAGE_WIDTH = "960"
+$env:CUSTOMCARD_COMFYUI_IMAGE_HEIGHT = "1344"
+```
+
+Prerequisites:
+
+- Link the checked-in text composer into the ComfyUI `custom_nodes` directory:
+
+  ```powershell
+  rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/install-comfy-customcard-text-node.ps1 -ComfyRoot C:\path\to\ComfyUI
+  ```
+
+- Restart ComfyUI after installation.
+- Pin production font file names to match the adapter variables
+  (`georgia.ttf`, `arial.ttf`, `arialbd.ttf`) or update
+  `localComfyFontForPairing` in `scripts/ai-card-generator.mjs`.
+- Confirm `http://127.0.0.1:8188/object_info` contains
+  `CustomCardTextComposer` before running the production workflow.
+
+See `docs/comfyui-production-text-workflow.md` for research, production gates,
+and the remaining QA work.
+
+## Local Visual Quality Gate
+
+Use `customcard-local-visual-quality-gate.json` after a benchmark run to experiment
+with reviewing output through a local Qwen-VL model inside ComfyUI. The gate reads
+benchmark `contact-sheet.png` or `preview-*.png` artifacts and writes
+JSON/Markdown pass/fail evidence.
+
+Current test status on this 1080 Ti ComfyUI box:
+
+- JSON/workflow validation: passes.
+- Artifact discovery dry run: passes.
+- Real Comfy QwenVL review: not stable yet. Qwen3VL 8B GPU and Qwen3VL 4B GGUF reviewer attempts reset/crashed the local ComfyUI server.
+- Use the Comfy backend as experimental until a smaller reviewer model or separate reviewer server is stable.
+
+Automated reviewer path:
+
+```powershell
+npm run card:quality:auto -- --server koboldcpp --input docs/evidence/generated-card-comparisons/local-all-YYYYMMDD-HHMMSS --advisory
+```
+
+This starts a dedicated KoboldCPP vision reviewer on port `5002` when needed,
+waits until `/v1/models` reports the Qwen3VL model loaded, then runs
+`card:quality:local`. It intentionally avoids port `5001` because that port is
+often used by the local text-model KoboldCPP server.
+
+```powershell
+$env:CUSTOMCARD_LOCAL_QUALITY_BACKEND = "comfy"
+$env:CUSTOMCARD_COMFYUI_URL = "http://127.0.0.1:8188"
+$env:CUSTOMCARD_COMFYUI_REVIEW_MODEL = "Qwen3VL-4B-Instruct-Q4_K_M.gguf"
+npm run card:quality:local -- --input docs/evidence/generated-card-comparisons/local-all-YYYYMMDD-HHMMSS
+```
+
+Use `--advisory` while tuning if you want a report without a nonzero exit code.
+The script default is `--backend openai` so the reviewer can run in an isolated
+OpenAI-compatible local vision server such as KoboldCPP or LM Studio without
+taking down ComfyUI image generation. Use `--backend comfy` only when testing
+this workflow path, ideally against a separate review-only ComfyUI instance.
+The checked-in Comfy reviewer workflow pins GGUF inference to CPU (`gpu_layers=0`)
+because Qwen3VL 4B/8B GPU inference can destabilize this 1080 Ti Comfy process.
+Use Qwen3VL 8B only on a reviewer box where it does not destabilize ComfyUI.
+
+KoboldCPP/OpenAI-compatible review example:
+
+```powershell
+$env:CUSTOMCARD_LOCAL_QUALITY_BACKEND = "openai"
+$env:CUSTOMCARD_LOCAL_VISION_BASE_URL = "http://127.0.0.1:5002/v1"
+$env:CUSTOMCARD_LOCAL_VISION_MODEL = "Qwen3VL-8B-Instruct-Q4_K_M.gguf"
+npm run card:quality:local -- --input docs/evidence/generated-card-comparisons/local-all-YYYYMMDD-HHMMSS --advisory
+```
+
+That assumes KoboldCPP is already running with the vision GGUF and matching
+multimodal projector loaded, and that its OpenAI-compatible vision endpoint is
+enabled.
+
+LM Studio review example:
+
+```powershell
+npm run card:quality:auto -- --server lmstudio --model Qwen3VL-4B-Instruct-Q4_K_M.gguf --input docs/evidence/generated-card-comparisons/local-all-YYYYMMDD-HHMMSS --advisory
+```
+
+LM Studio must already be running, the Local Server must be enabled, and the
+vision model must be loaded into memory. The automation preflights `/v1/models`
+and fails fast with the loaded model ids if that is not true.

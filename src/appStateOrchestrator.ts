@@ -23,10 +23,9 @@ import { getSupportedLocale, summarizeLocalizationReadiness, type LocalizationRe
 import { buildCalendarConnectionStartPackets, type CalendarConnectionStartPacket } from "./onboardingCalendar";
 import { buildCardDraftSession, type CardDraftSession } from "./cardDraftSession";
 import {
-  buildBrowserAiFlowSummary,
-  loadBrowserAiFlowAdminConfigs,
+  buildDefaultAiFlowAdminConfigs,
   normalizeAiFlowAdminConfigs,
-  saveBrowserAiFlowAdminConfigs,
+  summarizeAiFlowConfigs,
   type AiFlowAdminConfig,
   type AiFlowConfigSummary
 } from "./aiFlowConfig";
@@ -204,7 +203,7 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
   const [aiCardGenStatus, setAiCardGenStatus] = useState("");
   const [aiPanelGenerationProgress, setAiPanelGenerationProgress] = useState<AiPanelGenerationProgress>({});
   const [aiGenerationJobs, setAiGenerationJobs] = useState<AiGenerationJobEvidence[]>([]);
-  const [aiFlowConfigs, setAiFlowConfigsState] = useState<AiFlowAdminConfig[]>(() => loadBrowserAiFlowAdminConfigs());
+  const [aiFlowConfigs, setAiFlowConfigsState] = useState<AiFlowAdminConfig[]>(() => buildDefaultAiFlowAdminConfigs());
 
   useEffect(() => {
     const opportunityChanged = syncedOpportunityId.current !== opportunity.id;
@@ -277,11 +276,10 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
     validation
   } = cardDraftSession;
   const calendarConnectionStartPackets = useMemo(() => buildCalendarConnectionStartPackets(), []);
-  const aiFlowSummary = useMemo(() => buildBrowserAiFlowSummary(aiFlowConfigs), [aiFlowConfigs]);
+  const aiFlowSummary = useMemo(() => summarizeAiFlowConfigs({}, aiFlowConfigs), [aiFlowConfigs]);
   const setAiFlowConfigs = useCallback((configs: AiFlowAdminConfig[]) => {
     const normalized = normalizeAiFlowAdminConfigs(configs);
     setAiFlowConfigsState(normalized);
-    saveBrowserAiFlowAdminConfigs(normalized);
   }, []);
 
   const triggerAiCardGen = useCallback((targetPanelId?: CardPanel["id"] | CardPanel["id"][]) => {

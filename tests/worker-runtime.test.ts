@@ -1,4 +1,9 @@
 import { describe, expect, it } from "vitest";
+import {
+  createLocalComfyWorkerRuntime,
+  describeLocalComfyWorkerReadiness,
+  resolveLocalComfyWorkerEnv
+} from "../scripts/local-comfy-worker.mjs";
 import { createWorkerRuntime, describeWorkerReadiness } from "../scripts/worker-runtime.mjs";
 
 const baseEnv = {
@@ -81,8 +86,43 @@ describe("worker runtime", () => {
       deadLettered: 0
     });
     expect(queries.some((query) => query.sql.includes("FOR UPDATE SKIP LOCKED"))).toBe(true);
+    expect(queries.some((query) => query.sql.includes("route_id = ANY($2::text[])"))).toBe(true);
+    expect(queries.some((query) => Array.isArray(query.params[1]) && query.params[1].includes("render-packets"))).toBe(true);
     expect(queries.some((query) => query.sql.includes("status = 'succeeded'"))).toBe(true);
     expect(queries.some((query) => query.params.includes("api.job.succeeded"))).toBe(true);
+  });
+
+  it("scopes the machine-local Comfy worker to card-generation image jobs", () => {
+    const env = resolveLocalComfyWorkerEnv({
+      ...baseEnv,
+      CUSTOMCARD_API_RUNTIME: "postgres",
+      CUSTOMCARD_LOCAL_LLM_BASE_URL: "http://127.0.0.1:1234/v1",
+      CUSTOMCARD_COMFYUI_WORKFLOW_ID: "birthday-card-v2",
+      CUSTOMCARD_COMFYUI_WORKFLOW_PATH: "D:/workflows/birthday-card-v2.json"
+    });
+    const runtime = createLocalComfyWorkerRuntime({
+      env,
+      postgresPoolFactory: () => createWorkerPool([])
+    });
+
+    expect(env).toMatchObject({
+      CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "local-openai-compatible-chat",
+      CUSTOMCARD_AI_CARD_COPY_FALLBACK_ADAPTER_ID: "local-openai-compatible-chat",
+      CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "local-comfyui-api-image",
+      CUSTOMCARD_AI_CARD_IMAGE_FALLBACK_ADAPTER_ID: "local-comfyui-api-image",
+      CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188"
+    });
+    expect(runtime.describe()).toMatchObject({
+      service: "customcard-worker",
+      queueBackedRoutes: ["ai-card-generate"],
+      workerId: expect.stringContaining("local-comfy:")
+    });
+    expect(describeLocalComfyWorkerReadiness({ env })).toMatchObject({
+      routeScope: "ai-card-generate",
+      imageAdapter: "local-comfyui-api-image",
+      workflowId: "birthday-card-v2",
+      workflowPath: "D:/workflows/birthday-card-v2.json"
+    });
   });
 
   it("leases only the requested queued job for inline status fallback", async () => {

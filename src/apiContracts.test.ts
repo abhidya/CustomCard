@@ -28,6 +28,9 @@ describe("api contracts", () => {
         "route-catalog",
         "ai-chat-respond",
         "ai-card-generate",
+        "provider-job-lease",
+        "provider-job-status",
+        "provider-job-complete",
         "customer-bootstrap",
         "customer-draft-state",
         "customer-draft-state-save",
@@ -35,6 +38,8 @@ describe("api contracts", () => {
         "admin-readiness",
         "admin-provider-catalog",
         "admin-provider-governance",
+        "admin-ai-flow-configs",
+        "admin-ai-flow-configs-save",
         "admin-safety-controls",
         "admin-safety-controls-save",
         "admin-persistence-readiness",
@@ -42,6 +47,7 @@ describe("api contracts", () => {
         "admin-model-benchmarks",
         "admin-model-benchmark-run",
         "admin-model-benchmark-grade",
+        "admin-local-ai-loop-run",
         "admin-demo-reset",
         "import-preview",
         "calendar-connection-start",
@@ -60,7 +66,9 @@ describe("api contracts", () => {
 
   it("keeps mutations idempotent and admin routes session-gated", () => {
     const mutations = apiRouteContracts.filter((route) => route.method === "POST");
-    const nonCheckoutMutations = mutations.filter((route) => !hostedCheckoutExemptRouteIds.has(route.id));
+    const nonCheckoutMutations = mutations.filter(
+      (route) => !hostedCheckoutExemptRouteIds.has(route.id) && route.audience !== "provider"
+    );
     const adminRoutes = apiRouteContracts.filter((route) => route.audience === "admin");
     const adminPersistenceReadiness = apiRouteContracts.find((route) => route.id === "admin-persistence-readiness");
     const adminArtifactBucket = apiRouteContracts.find((route) => route.id === "admin-artifact-bucket");
@@ -80,6 +88,10 @@ describe("api contracts", () => {
     const aiChatRespond = apiRouteContracts.find((route) => route.id === "ai-chat-respond");
     const aiCardGenerate = apiRouteContracts.find((route) => route.id === "ai-card-generate");
     const aiJobStatus = apiRouteContracts.find((route) => route.id === "ai-job-status");
+    const providerJobLease = apiRouteContracts.find((route) => route.id === "provider-job-lease");
+    const providerJobStatus = apiRouteContracts.find((route) => route.id === "provider-job-status");
+    const providerJobComplete = apiRouteContracts.find((route) => route.id === "provider-job-complete");
+    const adminLocalAiLoopRun = apiRouteContracts.find((route) => route.id === "admin-local-ai-loop-run");
 
     expect(mutations.length).toBeGreaterThanOrEqual(6);
     expect(nonCheckoutMutations.every((route) => route.idempotencyKeyRequired)).toBe(true);
@@ -104,6 +116,17 @@ describe("api contracts", () => {
     expect(adminArtifactBucket?.responseSchema).toEqual(
       expect.arrayContaining(["objectStore", "truncated", "nextCursor", "objects", "renderPackets", "blockers"])
     );
+    expect(adminLocalAiLoopRun).toMatchObject({
+      method: "POST",
+      path: "/api/admin/local-ai-loop/run",
+      audience: "admin",
+      auth: "admin-session",
+      externalNetworkCalls: false,
+      realOrdersEnabled: false
+    });
+    expect(adminLocalAiLoopRun?.requestSchema).toEqual(expect.arrayContaining(["X-Idempotency-Key", "mode", "stories"]));
+    expect(adminLocalAiLoopRun?.responseSchema).toEqual(expect.arrayContaining(["jobs", "queueResult", "workerResult", "humanReview"]));
+    expect(persistedTablesForRouteId("admin-local-ai-loop-run")).toEqual(expect.arrayContaining(["users", "api_jobs", "audit_log"]));
     expect(renderPackets?.responseSchema).toEqual(expect.arrayContaining(["artifactManifest", "signedArtifactUrls"]));
     expect(renderPackets?.backedBy).toContain("buildArtifactHandoffContract");
     expect(importPreview?.requestSchema).toEqual(
@@ -274,6 +297,37 @@ describe("api contracts", () => {
       externalNetworkCalls: false,
       realOrdersEnabled: false
     });
+    expect(providerJobLease).toMatchObject({
+      method: "POST",
+      path: "/api/provider/jobs/lease",
+      audience: "provider",
+      auth: "provider-token",
+      idempotencyKeyRequired: false,
+      externalNetworkCalls: false,
+      realOrdersEnabled: false
+    });
+    expect(providerJobLease?.responseSchema).toEqual(expect.arrayContaining(["lease_token", "payload", "artifact_upload"]));
+    expect(providerJobStatus).toMatchObject({
+      method: "GET",
+      path: "/api/provider/jobs/status",
+      audience: "provider",
+      auth: "provider-token",
+      idempotencyKeyRequired: false,
+      externalNetworkCalls: false
+    });
+    expect(providerJobStatus?.responseSchema).toEqual(
+      expect.arrayContaining(["queued_total", "running_total", "stale_running_total", "dead_lettered_total", "oldest_queued_age_seconds"])
+    );
+    expect(providerJobComplete).toMatchObject({
+      method: "POST",
+      path: "/api/provider/jobs/:id/complete",
+      audience: "provider",
+      auth: "provider-token",
+      idempotencyKeyRequired: false,
+      externalNetworkCalls: false,
+      realOrdersEnabled: false
+    });
+    expect(providerJobComplete?.responseSchema).toEqual(expect.arrayContaining(["queue_status", "artifact_persistence"]));
     expect(apiRouteContracts.find((route) => route.id === "mobile-bootstrap")?.responseSchema).toEqual(
       expect.arrayContaining(["queueItems", "approvalActions", "pricingPreviews", "syncState"])
     );

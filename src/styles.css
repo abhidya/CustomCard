@@ -604,13 +604,13 @@ h3 {
 
 .adminPortalSummaryGrid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
 .adminPortalTabs {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(126px, 1fr));
   gap: 8px;
 }
 
@@ -744,7 +744,8 @@ h3 {
   font-weight: 880;
 }
 
-.adminOrderQueue {
+.adminOrderQueue,
+.adminAiReviewQueue {
   display: grid;
   gap: 10px;
   min-width: 0;
@@ -769,7 +770,8 @@ h3 {
   font-size: 0.96rem;
 }
 
-.adminOrderRows {
+.adminOrderRows,
+.adminAiReviewRows {
   display: grid;
   gap: 8px;
   min-width: 0;
@@ -788,34 +790,56 @@ h3 {
   background: #f8fafb;
 }
 
+.adminAiReviewRow {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.1fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(100px, 0.7fr) minmax(100px, 0.7fr);
+  gap: 8px;
+  align-items: start;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #e0e7e9;
+  border-left: 4px solid #258477;
+  border-radius: 8px;
+  background: #f8fafb;
+}
+
 .adminOrderRow > div,
-.adminOrderRow p {
+.adminOrderRow p,
+.adminAiReviewRow > div,
+.adminAiReviewRow p {
   min-width: 0;
 }
 
 .adminOrderRow span,
 .adminOrderRow strong,
 .adminOrderRow em,
-.adminOrderRow p {
+.adminOrderRow p,
+.adminAiReviewRow span,
+.adminAiReviewRow strong,
+.adminAiReviewRow em,
+.adminAiReviewRow p {
   display: block;
   min-width: 0;
   overflow-wrap: anywhere;
 }
 
-.adminOrderRow span {
+.adminOrderRow span,
+.adminAiReviewRow span {
   color: #68777d;
   font-size: 0.68rem;
   font-weight: 790;
 }
 
-.adminOrderRow strong {
+.adminOrderRow strong,
+.adminAiReviewRow strong {
   margin-top: 2px;
   color: #203038;
   font-size: 0.78rem;
   font-weight: 860;
 }
 
-.adminOrderRow em {
+.adminOrderRow em,
+.adminAiReviewRow em {
   display: inline-flex;
   width: fit-content;
   max-width: 100%;
@@ -830,11 +854,13 @@ h3 {
 }
 
 .adminOrderRow p,
+.adminAiReviewRow p,
 .adminOrderEvidence {
   grid-column: 1 / -1;
 }
 
-.adminOrderRow p {
+.adminOrderRow p,
+.adminAiReviewRow p {
   margin: 0;
   color: #52636a;
   font-size: 0.78rem;
@@ -3607,7 +3633,8 @@ h3 {
   .adminOpsLaneGrid,
   .adminPortalSummaryGrid,
   .adminPortalTabs,
-  .adminOrderRow {
+  .adminOrderRow,
+  .adminAiReviewRow {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -3715,6 +3742,7 @@ h3 {
   .benchmarkNotes,
   .benchmarkToolbar,
   .adminOrderRow,
+  .adminAiReviewRow,
   .adminOpsOverview,
   .adminOpsLaneGrid,
   .adminOpsTaskList,

@@ -39,6 +39,7 @@ import { buildAdminOperationsWorkflow, type AdminOperationsWorkflow, type AdminO
 import {
   buildAdminPortalModel,
   filterAdminPortalRecords,
+  type AdminPortalAiReviewQueueItem,
   type AdminPortalArea,
   type AdminPortalModel,
   type AdminPortalOrderQueueItem,
@@ -880,6 +881,7 @@ function AdminPortalCommandCenter({
         <Metric label="User queues" value={`${summary.userQueues}`} />
         <Metric label="Asset queues" value={`${summary.assetQueues}`} />
         <Metric label="Provider queues" value={`${summary.providerQueues}`} />
+        <Metric label="AI review" value={`${summary.aiReviewQueues}`} />
         <Metric label="Live mutations" value={`${summary.liveMutationsEnabled}`} />
         <Metric label="Raw content" value={`${summary.rawContentExposed}`} />
       </div>
@@ -954,6 +956,7 @@ function AdminPortalCommandCenter({
       </div>
 
       <AdminPortalOrderQueue rows={area.orderQueue ?? []} />
+      <AdminPortalAiReviewQueue rows={area.aiReviewQueue ?? []} />
 
       <AdminPortalRecordGrid records={records} />
     </article>
@@ -1002,6 +1005,55 @@ function AdminPortalOrderQueue({ rows }: { rows: AdminPortalOrderQueueItem[] }) 
             <p>{row.nextAction}</p>
             <div className="adminOrderEvidence">
               <span>{row.source}</span>
+              {row.evidence.slice(0, 3).map((evidence) => (
+                <span key={`${row.id}-${evidence}`}>{evidence}</span>
+              ))}
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function AdminPortalAiReviewQueue({ rows }: { rows: AdminPortalAiReviewQueueItem[] }) {
+  if (rows.length === 0) return null;
+
+  return (
+    <section className="adminAiReviewQueue" aria-label="Local AI human review queue">
+      <div className="adminOrderQueueHeader">
+        <div>
+          <p className="eyebrow">AI review</p>
+          <h4>Local model loop</h4>
+        </div>
+        <StatusChip icon={WandSparkles} label={`${rows.length} rows`} tone="blue" />
+      </div>
+      <div className="adminAiReviewRows">
+        {rows.map((row) => (
+          <article className="adminAiReviewRow" key={row.id}>
+            <div className="adminOrderMain">
+              <strong>{row.id}</strong>
+              <span>{row.storyId}</span>
+            </div>
+            <div>
+              <span>Text model</span>
+              <strong>{row.textModel}</strong>
+            </div>
+            <div>
+              <span>Image model</span>
+              <strong>{row.imageModel}</strong>
+            </div>
+            <div>
+              <span>Status</span>
+              <em>{aiQueueStatusLabel(row.queueStatus)}</em>
+            </div>
+            <div>
+              <span>Review</span>
+              <em>{aiReviewStatusLabel(row.humanReview)}</em>
+            </div>
+            <p>{row.nextAction}</p>
+            <div className="adminOrderEvidence">
+              <span>{row.provider}</span>
               {row.evidence.slice(0, 3).map((evidence) => (
                 <span key={`${row.id}-${evidence}`}>{evidence}</span>
               ))}
@@ -1694,6 +1746,7 @@ function adminPortalIcon(section: AdminPortalSectionId): ReactNode {
   if (section === "users") return <UserRound {...props} />;
   if (section === "assets") return <Image {...props} />;
   if (section === "providers") return <Settings {...props} />;
+  if (section === "ai-loop") return <WandSparkles {...props} />;
   return <Lock {...props} />;
 }
 
@@ -1731,6 +1784,26 @@ function orderStatusLabel(status: AdminPortalOrderQueueItem["status"]): string {
     vendor_handoff_ready: "Handoff ready",
     vendor_rejected: "Vendor rejected",
     wrong_store: "Wrong store"
+  };
+  return labels[status];
+}
+
+function aiQueueStatusLabel(status: AdminPortalAiReviewQueueItem["queueStatus"]): string {
+  const labels: Record<AdminPortalAiReviewQueueItem["queueStatus"], string> = {
+    blocked: "Blocked",
+    planned: "Planned",
+    queued: "Queued",
+    ready: "Ready",
+    running: "Running"
+  };
+  return labels[status];
+}
+
+function aiReviewStatusLabel(status: AdminPortalAiReviewQueueItem["humanReview"]): string {
+  const labels: Record<AdminPortalAiReviewQueueItem["humanReview"], string> = {
+    approved: "Approved",
+    pending: "Pending",
+    rejected: "Rejected"
   };
   return labels[status];
 }

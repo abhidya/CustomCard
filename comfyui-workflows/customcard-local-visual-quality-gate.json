@@ -1,0 +1,46 @@
+{
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "{{image}}"
+    }
+  },
+  "2": {
+    "class_type": "AILab_QwenVL_GGUF_Advanced",
+    "inputs": {
+      "ctx": 4096,
+      "custom_prompt": "{{review_prompt}}",
+      "device": "cpu",
+      "frame_count": 1,
+      "gpu_layers": 0,
+      "image": [
+        "1",
+        0
+      ],
+      "image_max_tokens": 2048,
+      "keep_model_loaded": true,
+      "max_tokens": 900,
+      "model_name": "{{review_model}}",
+      "n_batch": 256,
+      "pool_size": 4194304,
+      "preset_prompt": "🖼️ Detailed Analysis",
+      "repetition_penalty": 1.1,
+      "seed": 1,
+      "temperature": 0.1,
+      "top_k": 0,
+      "top_p": 0.9
+    }
+  },
+  "3": {
+    "class_type": "SaveStringKJ",
+    "inputs": {
+      "file_extension": ".json",
+      "filename_prefix": "customcard-quality-{{workflow_id}}",
+      "output_folder": "customcard/quality-gate",
+      "string": [
+        "2",
+        0
+      ]
+    }
+  }
+}

@@ -12,10 +12,15 @@ import {
   RefreshCw,
   Save,
   ShieldAlert,
-  Users
+  Users,
+  WandSparkles
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { AiFlowAdminConfig, AiFlowConfigSummary } from "../../src/aiFlowConfig";
+import {
+  adminAiFlowConfigsRoute,
+  type AdminAiFlowConfigPayload
+} from "../../src/adminRuntimeConfigData.mjs";
 import type { AiGenerationJobEvidence } from "../../src/aiGenerationJobs";
 import { buildBrowserIdempotencyKey, fetchBrowser, requestBrowserJson } from "../../src/browserRequestAdapter";
 import { resolveCardGenerationEndpoint } from "../../src/browserGatePolicy";
@@ -150,6 +155,63 @@ interface ModelBenchmarkRunPayload {
   error?: string;
 }
 
+interface LocalAiLoopPayload {
+  service?: string;
+  status?: string;
+  mode?: LocalAiLoopMode;
+  dryRun?: boolean;
+  write?: boolean;
+  runWorker?: boolean;
+  localOnly?: {
+    llmBaseUrl?: string;
+    llmModel?: string;
+    comfyUrl?: string;
+    comfyCheckpoint?: string;
+    textAdapterId?: string;
+    imageAdapterId?: string;
+  };
+  blockers?: string[];
+  jobs?: Array<{
+    id: string;
+    routeId: string;
+    storyId: string;
+    status: string;
+    body?: {
+      sender?: string;
+      recipient?: string;
+      occasion?: string;
+    };
+  }>;
+  queueResult?: {
+    status?: string;
+    inserted?: number;
+    skipped?: number;
+    error?: string;
+  };
+  workerResult?: {
+    status?: string;
+    reports?: Array<{
+      status?: string;
+      processed?: number;
+      succeeded?: number;
+      failed?: number;
+      deadLettered?: number;
+    }>;
+  };
+  report?: {
+    jsonPath?: string;
+    markdownPath?: string;
+  };
+  humanReview?: {
+    required?: boolean;
+    status?: string;
+    nextSteps?: string[];
+  };
+  error?: string;
+}
+
+type LocalAiLoopMode = "plan" | "queue" | "queue-and-run";
+type LocalAiWorkerReports = NonNullable<LocalAiLoopPayload["workerResult"]>["reports"];
 type BucketSort = "lastModified" | "key";
 type BucketOrder = "asc" | "desc";
 
@@ -299,6 +361,12 @@ export function AdminView({
   const [benchmarkRunning, setBenchmarkRunning] = useState(false);
   const [benchmarkRunResult, setBenchmarkRunResult] = useState<ModelBenchmarkRunPayload | null>(null);
   const [benchmarkRunError, setBenchmarkRunError] = useState("");
+  const [localAiLoopMode, setLocalAiLoopMode] = useState<LocalAiLoopMode>("plan");
+  const [localAiLoopStory, setLocalAiLoopStory] = useState("botanical-birthday");
+  const [localAiLoopEnsureUser, setLocalAiLoopEnsureUser] = useState(true);
+  const [localAiLoopRunning, setLocalAiLoopRunning] = useState(false);
+  const [localAiLoopResult, setLocalAiLoopResult] = useState<LocalAiLoopPayload | null>(null);
+  const [localAiLoopError, setLocalAiLoopError] = useState("");
 
   const loadModelBenchmarkCatalog = useCallback(() => {
     setBenchmarkCatalogLoading(true);
@@ -329,9 +397,12 @@ export function AdminView({
     const imageCandidates = benchmarkCatalog?.imageCandidates ?? [];
     if (phases.length && !phases.includes(benchmarkPhase)) setBenchmarkPhase(phases[0]);
     if (stories.length && !stories.some((story) => story.id === benchmarkStory)) setBenchmarkStory(stories[0].id);
+    if (stories.length && !stories.some((story) => story.id === localAiLoopStory)) {
+      setLocalAiLoopStory(stories.some((story) => story.id === "botanical-birthday") ? "botanical-birthday" : stories[0].id);
+    }
     if (textCandidates.length && !textCandidates.some((candidate) => candidate.id === benchmarkText)) setBenchmarkText(textCandidates[0].id);
     if (imageCandidates.length && !imageCandidates.some((candidate) => candidate.id === benchmarkImage)) setBenchmarkImage(imageCandidates[0].id);
-  }, [benchmarkCatalog, benchmarkImage, benchmarkPhase, benchmarkStory, benchmarkText]);
+  }, [benchmarkCatalog, benchmarkImage, benchmarkPhase, benchmarkStory, benchmarkText, localAiLoopStory]);
 
   const runModelBenchmark = useCallback(() => {
     setBenchmarkRunning(true);
@@ -358,10 +429,87 @@ export function AdminView({
       .finally(() => setBenchmarkRunning(false));
   }, [benchmarkImage, benchmarkLiveRun, benchmarkPhase, benchmarkStory, benchmarkText, getAdminApiToken, loadModelBenchmarkCatalog]);
 
+  const runLocalAiLoop = useCallback(() => {
+    setLocalAiLoopRunning(true);
+    setLocalAiLoopError("");
+    requestBrowserJson<LocalAiLoopPayload>("/api/admin/local-ai-loop/run", {
+      body: {
+        mode: localAiLoopMode,
+        stories: localAiLoopStory,
+        ensureUser: localAiLoopEnsureUser
+      },
+      getToken: getAdminApiToken,
+      idempotencyKey: buildBrowserIdempotencyKey("/api/admin/local-ai-loop/run")
+    })
+      .then(({ payload, response }) => {
+        if (!response.ok) throw new Error(payload?.error || payload?.queueResult?.error || payload?.status || `Local AI loop returned HTTP ${response.status}`);
+        setLocalAiLoopResult(payload ?? null);
+      })
+      .catch((error: unknown) => {
+        setLocalAiLoopError(error instanceof Error ? error.message : "Local AI loop failed.");
+      })
+      .finally(() => setLocalAiLoopRunning(false));
+  }, [getAdminApiToken, localAiLoopEnsureUser, localAiLoopMode, localAiLoopStory]);
+
   /* ---------- provider policy edits ---------- */
+  const [aiFlowPayload, setAiFlowPayload] = useState<AdminAiFlowConfigPayload | null>(null);
+  const [aiFlowDraftConfigs, setAiFlowDraftConfigs] = useState<AiFlowAdminConfig[]>(aiFlowConfigs);
+  const [aiFlowLoading, setAiFlowLoading] = useState(false);
+  const [aiFlowSaving, setAiFlowSaving] = useState(false);
+  const [aiFlowError, setAiFlowError] = useState("");
+
+  const loadAiFlowConfigs = useCallback(() => {
+    setAiFlowLoading(true);
+    setAiFlowError("");
+    requestBrowserJson<AdminAiFlowConfigPayload>(adminAiFlowConfigsRoute, {
+      cache: "no-store",
+      getToken: getAdminApiToken
+    })
+      .then(({ payload, response }) => {
+        if (!response.ok) throw new Error(payload?.status || `Provider policy returned HTTP ${response.status}`);
+        if (!payload?.configs?.length) throw new Error("Provider policy response did not include flow configs.");
+        setAiFlowPayload(payload);
+        setAiFlowDraftConfigs(payload.configs);
+        onAiFlowConfigsChange(payload.configs);
+      })
+      .catch((error: unknown) => {
+        setAiFlowError(error instanceof Error ? error.message : "Provider policy is unavailable.");
+      })
+      .finally(() => setAiFlowLoading(false));
+  }, [getAdminApiToken, onAiFlowConfigsChange]);
+
+  useEffect(() => {
+    loadAiFlowConfigs();
+  }, [loadAiFlowConfigs]);
+
+  const saveAiFlowConfigs = useCallback(() => {
+    setAiFlowSaving(true);
+    setAiFlowError("");
+    requestBrowserJson<AdminAiFlowConfigPayload>(adminAiFlowConfigsRoute, {
+      body: { configs: aiFlowDraftConfigs },
+      getToken: getAdminApiToken,
+      idempotencyKey: buildBrowserIdempotencyKey(adminAiFlowConfigsRoute)
+    })
+      .then(({ payload, response }) => {
+        if (!response.ok) throw new Error(payload?.status || `Provider policy save returned HTTP ${response.status}`);
+        if (!payload?.configs?.length) throw new Error("Provider policy save did not return flow configs.");
+        setAiFlowPayload(payload);
+        setAiFlowDraftConfigs(payload.configs);
+        onAiFlowConfigsChange(payload.configs);
+      })
+      .catch((error: unknown) => {
+        setAiFlowError(error instanceof Error ? error.message : "Provider policy was not saved.");
+      })
+      .finally(() => setAiFlowSaving(false));
+  }, [aiFlowDraftConfigs, getAdminApiToken, onAiFlowConfigsChange]);
+
+  const effectiveAiFlowSummary = aiFlowPayload?.summary ?? aiFlowSummary;
+  const savedAiFlowConfigs = aiFlowPayload?.configs ?? aiFlowConfigs;
+  const aiFlowDirty = JSON.stringify(aiFlowDraftConfigs) !== JSON.stringify(savedAiFlowConfigs);
+
   function updateFlow(flowId: AiFlowAdminConfig["flowId"], patch: Partial<AiFlowAdminConfig>) {
-    onAiFlowConfigsChange(
-      aiFlowConfigs.map((config) => (config.flowId === flowId ? { ...config, ...patch } : config))
+    setAiFlowDraftConfigs((current) =>
+      current.map((config) => (config.flowId === flowId ? { ...config, ...patch } : config))
     );
   }
 
@@ -536,12 +684,12 @@ export function AdminView({
             <li>
               <span>AI flows ready for live calls</span>
               <strong>
-                {aiFlowSummary.readyForLiveCalls}/{aiFlowSummary.total}
+                {effectiveAiFlowSummary.readyForLiveCalls}/{effectiveAiFlowSummary.total}
               </strong>
             </li>
             <li>
               <span>Live provider calls enabled</span>
-              <strong>{aiFlowSummary.liveEnabled}</strong>
+              <strong>{effectiveAiFlowSummary.liveEnabled}</strong>
             </li>
             <li>
               <span>Retail orders &amp; payments</span>
@@ -792,6 +940,128 @@ export function AdminView({
               Refresh
             </button>
           </div>
+        </section>
+
+        {/* ---- Local AI admin loop ---- */}
+        <section className="panelcard opsCard opsCard-wide">
+          <div className="opsCardHead">
+            <h2>Local AI loop</h2>
+            <span className="opsStatus" data-ok={Boolean(localAiLoopResult && !localAiLoopError && localAiLoopResult.status !== "blocked")}>
+              <WandSparkles size={14} />
+              {localAiLoopRunning ? "Running" : localAiLoopResult?.status ? localAiLoopStatusLabel(localAiLoopResult.status) : "Admin gated"}
+            </span>
+          </div>
+          <ul className="opsFacts opsFacts-five">
+            <li>
+              <span>Queue table</span>
+              <strong>api_jobs</strong>
+            </li>
+            <li>
+              <span>Text provider</span>
+              <strong>{localAiLoopResult?.localOnly?.llmModel ?? "Local LLM"}</strong>
+            </li>
+            <li>
+              <span>Image provider</span>
+              <strong>{localAiLoopResult?.localOnly?.comfyCheckpoint ?? "Local ComfyUI"}</strong>
+            </li>
+            <li>
+              <span>Jobs</span>
+              <strong>{localAiLoopResult?.jobs?.length ?? 0}</strong>
+            </li>
+            <li>
+              <span>Human review</span>
+              <strong>{localAiLoopResult?.humanReview?.status ?? "required"}</strong>
+            </li>
+          </ul>
+          <div className="flowControls">
+            <label>
+              Story
+              <select onChange={(event) => setLocalAiLoopStory(event.target.value)} value={localAiLoopStory}>
+                {(benchmarkCatalog?.stories?.length ? benchmarkCatalog.stories : [{ id: "botanical-birthday", occasion: "birthday", customerType: "returning consumer", brief: "" }]).map((story) => (
+                  <option key={story.id} value={story.id}>
+                    {story.id}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Mode
+              <select onChange={(event) => setLocalAiLoopMode(event.target.value as LocalAiLoopMode)} value={localAiLoopMode}>
+                <option value="plan">Plan only</option>
+                <option value="queue">Queue</option>
+                <option value="queue-and-run">Queue + run worker</option>
+              </select>
+            </label>
+            <label>
+              <input checked={localAiLoopEnsureUser} onChange={(event) => setLocalAiLoopEnsureUser(event.target.checked)} type="checkbox" />
+              Ensure local admin user
+            </label>
+          </div>
+          {localAiLoopError || localAiLoopResult?.blockers?.length ? (
+            <div className="opsEmpty">
+              <Info size={16} />
+              <span>{localAiLoopError || localAiLoopResult?.blockers?.[0]}</span>
+            </div>
+          ) : null}
+          {localAiLoopResult ? (
+            <div className="opsLocalLoopResult">
+              <div className="opsQueueBoard" aria-label="Local AI loop result">
+                <article className="opsQueueLane" data-tone={localAiLoopResult.dryRun ? "idle" : "ok"}>
+                  <span>Plan</span>
+                  <strong>{localAiLoopResult.dryRun ? "Dry" : "Write"}</strong>
+                  <small>{localAiLoopResult.report?.markdownPath ?? "Report pending"}</small>
+                </article>
+                <article className="opsQueueLane" data-tone={localAiLoopResult.queueResult?.status === "queued" ? "ok" : localAiLoopResult.queueResult?.status === "blocked" ? "warn" : "idle"}>
+                  <span>Queue</span>
+                  <strong>{localAiLoopResult.queueResult?.status ?? "Not run"}</strong>
+                  <small>{localAiLoopResult.queueResult?.inserted ?? 0} inserted / {localAiLoopResult.queueResult?.skipped ?? 0} skipped</small>
+                </article>
+                <article className="opsQueueLane" data-tone={localAiLoopResult.workerResult?.status === "processed" ? "ok" : "idle"}>
+                  <span>Worker</span>
+                  <strong>{localAiLoopResult.workerResult?.status ?? "Skipped"}</strong>
+                  <small>{summarizeLocalWorkerReports(localAiLoopResult.workerResult?.reports)}</small>
+                </article>
+              </div>
+              <div className="opsJobList" aria-label="Local AI queued jobs">
+                {(localAiLoopResult.jobs ?? []).map((job) => (
+                  <section className="opsJob" key={job.id}>
+                    <div className="opsJobHead">
+                      <div>
+                        <strong>{job.id}</strong>
+                        <span>{job.routeId} / {job.storyId}</span>
+                      </div>
+                      <em>{job.status}</em>
+                    </div>
+                    <div className="opsJobMeta">
+                      <span>{job.body?.sender ?? "sender"} to {job.body?.recipient ?? "recipient"}</span>
+                      <span>{job.body?.occasion ?? "occasion"}</span>
+                      <span>{localAiLoopResult.localOnly?.llmBaseUrl ?? "local LLM URL not configured"}</span>
+                      <span>{localAiLoopResult.localOnly?.comfyUrl ?? "local ComfyUI URL not configured"}</span>
+                    </div>
+                  </section>
+                ))}
+              </div>
+              {localAiLoopResult.humanReview?.nextSteps?.length ? (
+                <ul className="opsFacts">
+                  {localAiLoopResult.humanReview.nextSteps.map((step) => (
+                    <li key={step}>
+                      <span>Review step</span>
+                      <strong>{step}</strong>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ) : null}
+          <div className="flowControls">
+            <button className="btn btn-primary btn-sm" disabled={localAiLoopRunning} onClick={runLocalAiLoop} type="button">
+              {localAiLoopRunning ? <RefreshCw size={14} /> : <Play size={14} />}
+              {localAiLoopModeLabel(localAiLoopMode)}
+            </button>
+          </div>
+          <small className="opsFoot">
+            Uses localhost-only LM Studio/KoboldCPP and ComfyUI. Queue and worker modes require the API server to run with Postgres.
+          </small>
         </section>
 
         {/* ---- AI generation jobs ---- */}
@@ -1056,13 +1326,35 @@ export function AdminView({
         <section className="panelcard opsCard opsCard-wide">
           <div className="opsCardHead">
             <h2>Providers</h2>
-            <span className="opsStatus" data-ok={aiFlowSummary.blocked === 0}>
-              {aiFlowSummary.blocked === 0 ? "All flows routable" : `${aiFlowSummary.blocked} in fallback`}
+            <span className="opsStatus" data-ok={effectiveAiFlowSummary.blocked === 0 && !aiFlowDirty}>
+              {aiFlowDirty
+                ? "Unsaved edits"
+                : effectiveAiFlowSummary.blocked === 0
+                  ? "All flows routable"
+                  : `${effectiveAiFlowSummary.blocked} in fallback`}
             </span>
           </div>
+          <div className="opsInlineActions">
+            <button className="btn btn-secondary btn-sm" disabled={aiFlowLoading || aiFlowSaving} onClick={loadAiFlowConfigs} type="button">
+              <RefreshCw size={14} />
+              Reload
+            </button>
+            <button className="btn btn-primary btn-sm" disabled={!aiFlowDirty || aiFlowLoading || aiFlowSaving} onClick={saveAiFlowConfigs} type="button">
+              <Save size={14} />
+              {aiFlowSaving ? "Saving" : "Save"}
+            </button>
+          </div>
+          {aiFlowError ? <p className="opsError">{aiFlowError}</p> : null}
+          {aiFlowPayload ? (
+            <small className="opsFoot">
+              Server policy v{aiFlowPayload.version || 0}
+              {aiFlowPayload.updatedAtIso ? ` saved ${new Date(aiFlowPayload.updatedAtIso).toLocaleString()}` : " from defaults"}
+              {aiFlowPayload.updatedBy ? ` by ${aiFlowPayload.updatedBy}` : ""}.
+            </small>
+          ) : null}
           <div className="flowList">
-            {aiFlowSummary.flows.map((flow) => {
-              const config = aiFlowConfigs.find((candidate) => candidate.flowId === flow.flowId);
+            {effectiveAiFlowSummary.flows.map((flow) => {
+              const config = aiFlowDraftConfigs.find((candidate) => candidate.flowId === flow.flowId);
               if (!config) return null;
               return (
                 <div className="flowRow" key={flow.flowId}>
@@ -1308,6 +1600,33 @@ function benchmarkPhaseLabel(phase: string): string {
     typography: "Typography"
   };
   return labels[phase] ?? phase;
+}
+
+function localAiLoopModeLabel(mode: LocalAiLoopMode): string {
+  const labels: Record<LocalAiLoopMode, string> = {
+    plan: "Plan local loop",
+    queue: "Queue local job",
+    "queue-and-run": "Queue and run"
+  };
+  return labels[mode];
+}
+
+function localAiLoopStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    blocked: "Blocked",
+    planned: "Planned",
+    processed: "Processed",
+    queued: "Queued"
+  };
+  return labels[status] ?? status;
+}
+
+function summarizeLocalWorkerReports(reports: LocalAiWorkerReports = []): string {
+  if (!reports.length) return "No worker run";
+  const processed = reports.reduce((total, report) => total + (report.processed ?? 0), 0);
+  const succeeded = reports.reduce((total, report) => total + (report.succeeded ?? 0), 0);
+  const failed = reports.reduce((total, report) => total + (report.failed ?? 0) + (report.deadLettered ?? 0), 0);
+  return `${processed} processed / ${succeeded} succeeded / ${failed} failed`;
 }
 
 function benchmarkCandidateLabel(candidate: ModelBenchmarkCandidate): string {

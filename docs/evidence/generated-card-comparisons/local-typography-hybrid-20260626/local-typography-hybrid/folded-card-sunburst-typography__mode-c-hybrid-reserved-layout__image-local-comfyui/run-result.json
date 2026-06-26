@@ -1,0 +1,94 @@
+{
+  "phase": "local-typography",
+  "focus": "local-comfy-hybrid-typography",
+  "storyId": "folded-card-sunburst-typography",
+  "textCandidateId": "text-none-direct-image-test",
+  "textAdapterId": "none",
+  "textModel": "",
+  "imageCandidateId": "image-local-comfyui",
+  "imageAdapterId": "local-comfyui-api-image",
+  "imageModel": "DreamShaper_8_pruned.safetensors",
+  "typographyModeId": "mode-c-hybrid-reserved-layout",
+  "typographyModeLabel": "Mode C - hybrid reserved layout",
+  "typographyStrategy": "reserved-layout-plus-app-overlay",
+  "runDir": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-typography-hybrid-20260626\\local-typography-hybrid\\folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-local-comfyui",
+  "startedAt": "2026-06-26T00:28:40.586Z",
+  "finishedAt": "2026-06-26T00:34:34.225Z",
+  "panelCount": 4,
+  "panelFiles": [
+    {
+      "panelId": "front",
+      "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-typography-hybrid-20260626\\local-typography-hybrid\\folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-local-comfyui\\provider-front.png",
+      "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-typography-hybrid-20260626\\local-typography-hybrid\\folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-local-comfyui\\preview-front.png",
+      "prompt": "Create one artwork-only 5x7 portrait Front Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: deep charcoal main field with warm gold and ivory accents kept outside the central text field\nMotif: edge-only warm-gold corner rays and thin border accents; no central radial sunburst, no halo, no medallion, no rays behind copy\nMood: Respectful, warm, sophisticated\nPanel Role: primary typography measurement panel\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nPlace a broad opaque plain deep-charcoal text-safe field in the central 60% of the panel. Treat this field as a real solid print area, not transparent negative space. Keep all rays, ornaments, bright marks, fake glyphs, and high-contrast details outside it. Put sunburst detail only as edge-only corner or margin ornaments; do not use a centered radial burst, halo, medallion, or rays crossing behind the field.\n\nPanel-specific composition: deep charcoal field, thin warm-gold border, small edge or corner rays only, and a plain central text-safe field; no central radial burst.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+      "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline",
+      "renderTextInApp": true,
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "inside-left",
+      "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-typography-hybrid-20260626\\local-typography-hybrid\\folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-local-comfyui\\provider-inside-left.png",
+      "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-typography-hybrid-20260626\\local-typography-hybrid\\folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-local-comfyui\\preview-inside-left.png",
+      "prompt": "Create one artwork-only 5x7 portrait Inside Left panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Left\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: left half of a coordinated interior spread with opening message text\nHeadline length: 3 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this an interior writing panel, not another cover. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-left edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-left edge accent only, quiet plain center, paired with inside-right.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+      "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior",
+      "renderTextInApp": true,
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "inside-right",
+      "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-typography-hybrid-20260626\\local-typography-hybrid\\folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-local-comfyui\\provider-inside-right.png",
+      "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-typography-hybrid-20260626\\local-typography-hybrid\\folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-local-comfyui\\preview-inside-right.png",
+      "prompt": "Create one artwork-only 5x7 portrait Inside Right panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Right\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: right half of a coordinated interior spread with main message text\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this the matching interior message panel. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-right edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-right edge accent only, quiet plain center, paired with inside-left.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+      "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior",
+      "renderTextInApp": true,
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "back",
+      "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-typography-hybrid-20260626\\local-typography-hybrid\\folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-local-comfyui\\provider-back.png",
+      "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-typography-hybrid-20260626\\local-typography-hybrid\\folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-local-comfyui\\preview-back.png",
+      "prompt": "Create one artwork-only 5x7 portrait Back Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Back Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: deep charcoal main field with one tiny warm-gold lower-edge mark only; no ivory panel, no cream wave, no large light area\nMotif: mostly plain deep-charcoal back cover with one tiny lower-edge gold sun mark; no centered or full-panel radial burst\nMood: Respectful, warm, sophisticated\nPanel Role: coordinating no-text back panel\nNo card copy belongs on this panel.\nReserve hierarchy for visual coordination only.\nUse mostly negative space plus one small coordinating back mark.\nBack cover must be at least 85% plain deep charcoal. Use only one tiny warm-gold sun mark near the lower third. Do not create a large radial halo, full-panel burst, centered sunburst, decorative typography, or any text-like marks.\nPanel-specific composition: mostly deep charcoal negative space, thin gold border echo, one small lower-edge sun mark, no card copy.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with only one small lower-edge sun mark on the back cover.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+      "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, large sunburst, full radial halo, full-page radial burst, rays across the whole panel, centered halo, busy back cover, ivory wave, cream lower half, large cream area, white panel",
+      "renderTextInApp": false,
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    }
+  ],
+  "contactSheet": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-typography-hybrid-20260626\\local-typography-hybrid\\folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-local-comfyui\\contact-sheet.png",
+  "effectiveProviderRequests": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-typography-hybrid-20260626\\local-typography-hybrid\\folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-local-comfyui\\effective-provider-requests.json",
+  "providerCallCount": 241,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": true,
+      "panelIds": [
+        "front",
+        "inside-left",
+        "inside-right",
+        "back"
+      ],
+      "providerCalls": 241,
+      "materializedImages": 4,
+      "allPanelsMaterialized": true,
+      "appRenderedTextOverlayPanels": [
+        "front",
+        "inside-left",
+        "inside-right"
+      ],
+      "copyPanelIds": [
+        "front",
+        "inside-left",
+        "inside-right"
+      ],
+      "copyPanelsExactTextInPrompt": false,
+      "copyPanelsTextSuppressedInPrompt": true,
+      "backHasNoTextContract": true,
+      "insideSpreadCohesionPrompted": true,
+      "noTextPanelsSuppressText": true
+    },
+    "note": "Automated checks only prove prompt contract and image materialization. Front/interior typography, back no-text discipline, and inside-spread cohesion require visual inspection."
+  }
+}

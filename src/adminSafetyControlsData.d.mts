@@ -28,6 +28,11 @@ export declare function createAdminSafetyControlStore(options?: {
 };
 
 export declare function normalizeAdminSafetyControls(input?: Partial<AdminSafetyControls>): AdminSafetyControls;
+export declare function updateAdminSafetyControls(
+  current?: Partial<AdminSafetyControls>,
+  patch?: Partial<AdminSafetyControls>,
+  context?: { authContext?: { userId?: string }; userId?: string; now?: () => Date }
+): AdminSafetyControls;
 export declare function walgreensCheckoutModeFromSafetyControls(
   controls?: Partial<AdminSafetyControls>
 ): "disabled_until_certified" | "sandbox" | "production";

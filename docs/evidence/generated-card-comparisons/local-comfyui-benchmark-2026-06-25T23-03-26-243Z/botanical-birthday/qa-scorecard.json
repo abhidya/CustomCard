@@ -1,0 +1,214 @@
+{
+  "fixtureId": "botanical-birthday",
+  "scorer": {
+    "type": "deterministic-rule-rubric",
+    "implementation": "scripts/card-generation-benchmark.mjs:evaluateBenchmarkQuality",
+    "humanVisualReviewRequired": true,
+    "limitations": [
+      "Keyword and marker checks catch regressions but do not fully judge taste, composition balance, or emotional quality.",
+      "Contact sheets still need human visual review against the reference bar.",
+      "A future vision-model judge should be calibrated against human ratings before replacing manual review."
+    ]
+  },
+  "referenceBar": "Elegant botanical stationery: side/corner foliage, quiet cream field, personal birthday copy, and no dense confetti or generic greeting-card filler.",
+  "passScore": 80,
+  "score": 100,
+  "status": "pass",
+  "passed": 24,
+  "total": 24,
+  "criticalFailures": [],
+  "checks": [
+    {
+      "id": "panels.count",
+      "category": "render",
+      "description": "All four folded-card panels rendered.",
+      "passed": true,
+      "evidence": "4/4 panels",
+      "critical": true
+    },
+    {
+      "id": "panel.front.copy-present",
+      "category": "copy",
+      "description": "front has headline and body copy.",
+      "passed": true,
+      "evidence": "Happy Birthday Sara / For green paths, good coffee, and tiny morning wonders.",
+      "critical": true
+    },
+    {
+      "id": "panel.front.prompt-present",
+      "category": "prompt",
+      "description": "front has an image prompt and generated asset.",
+      "passed": true,
+      "evidence": "Premium vertical greeting-card artwork layer for the front panel. botanical watercolor stationery, fern fronds, tiny trail flowers, soft morning light. corner border, generous bla…",
+      "critical": true
+    },
+    {
+      "id": "panel.inside-left.copy-present",
+      "category": "copy",
+      "description": "inside-left has headline and body copy.",
+      "passed": true,
+      "evidence": "Coffee And Green Trails / I hope the day opens gently, with coffee, green trails, and little things worth noticing.",
+      "critical": true
+    },
+    {
+      "id": "panel.inside-left.prompt-present",
+      "category": "prompt",
+      "description": "inside-left has an image prompt and generated asset.",
+      "passed": true,
+      "evidence": "Premium vertical greeting-card artwork layer for the inside-left panel. botanical watercolor stationery, fern fronds, tiny trail flowers, soft morning light. corner border, genero…",
+      "critical": true
+    },
+    {
+      "id": "panel.inside-right.copy-present",
+      "category": "copy",
+      "description": "inside-right has headline and body copy.",
+      "passed": true,
+      "evidence": "More Hikes, More Laughter / Wishing you more hikes, more laughter, and more quiet joy than the year can hold.",
+      "critical": true
+    },
+    {
+      "id": "panel.inside-right.prompt-present",
+      "category": "prompt",
+      "description": "inside-right has an image prompt and generated asset.",
+      "passed": true,
+      "evidence": "Premium vertical greeting-card artwork layer for the inside-right panel. botanical watercolor stationery, fern fronds, tiny trail flowers, soft morning light. corner border, gener…",
+      "critical": true
+    },
+    {
+      "id": "panel.back.copy-present",
+      "category": "copy",
+      "description": "back has headline and body copy.",
+      "passed": true,
+      "evidence": "Green Paths And Coffee / Made for a birthday full of green paths, good coffee, and tiny bright things.",
+      "critical": true
+    },
+    {
+      "id": "panel.back.prompt-present",
+      "category": "prompt",
+      "description": "back has an image prompt and generated asset.",
+      "passed": true,
+      "evidence": "Premium vertical greeting-card artwork layer for the back panel. botanical watercolor stationery, fern fronds, tiny trail flowers, soft morning light. corner border, generous blan…",
+      "critical": true
+    },
+    {
+      "id": "copy.unique-headlines",
+      "category": "copy",
+      "description": "At least 3 distinct panel headlines.",
+      "passed": true,
+      "evidence": "4 distinct headlines",
+      "critical": false
+    },
+    {
+      "id": "copy.front.required-terms",
+      "category": "copy",
+      "description": "front copy includes target-specific anchors.",
+      "passed": true,
+      "evidence": "matched: Birthday, Sara",
+      "critical": true
+    },
+    {
+      "id": "copy.inside-left.required-terms",
+      "category": "copy",
+      "description": "inside-left copy includes target-specific anchors.",
+      "passed": true,
+      "evidence": "matched: coffee, green trails",
+      "critical": true
+    },
+    {
+      "id": "copy.inside-right.required-terms",
+      "category": "copy",
+      "description": "inside-right copy includes target-specific anchors.",
+      "passed": true,
+      "evidence": "matched: hikes, laughter",
+      "critical": true
+    },
+    {
+      "id": "copy.back.required-terms",
+      "category": "copy",
+      "description": "back copy includes target-specific anchors.",
+      "passed": true,
+      "evidence": "matched: green paths, coffee",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.a-card-made-with-care",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: A card made with care",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.for-this-moment",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: For this moment",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.from-the-heart",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: From the heart",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.botanical",
+      "category": "prompt",
+      "description": "Image prompts include target term: botanical",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.corner-border",
+      "category": "prompt",
+      "description": "Image prompts include target term: corner border",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.generous-blank-field",
+      "category": "prompt",
+      "description": "Image prompts include target term: generous blank field",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.text-safe",
+      "category": "prompt",
+      "description": "Image prompts include target term: text-safe",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.forbidden.dense-confetti",
+      "category": "prompt",
+      "description": "Image prompts avoid forbidden pattern: dense confetti",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "prompt.forbidden.recipient-s-name",
+      "category": "prompt",
+      "description": "Image prompts avoid forbidden pattern: recipient['’]?s? name",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "prompt.forbidden.main-message",
+      "category": "prompt",
+      "description": "Image prompts avoid forbidden pattern: main message",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    }
+  ]
+}

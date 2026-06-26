@@ -1,0 +1,144 @@
+{
+  "service": "customcard-local-ai-job-queue",
+  "status": "dry-run",
+  "runId": "local-ai-loop-2030-01-01T00-00-00-000Z",
+  "dryRun": true,
+  "write": false,
+  "runWorker": false,
+  "ensureUser": false,
+  "outputDir": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-ai-job-queue-smoke",
+  "queuedAtIso": "2030-01-01T00:00:00.000Z",
+  "user": {
+    "id": "local-admin-human-loop",
+    "email": "local-admin@customcard.local",
+    "role": "admin",
+    "sessionId": "local-admin-human-loop-session"
+  },
+  "localOnly": {
+    "required": true,
+    "textAdapterId": "local-openai-compatible-chat",
+    "imageAdapterId": "local-comfyui-api-image",
+    "llmBaseUrl": "http://127.0.0.1:1234/v1",
+    "llmModel": "qwen3-8b-q4_k_m",
+    "comfyUrl": "http://127.0.0.1:8188",
+    "comfyCheckpoint": "DreamShaper_8_pruned.safetensors",
+    "comfyWorkflowId": "api-sdxl-checkpoint-card-v1",
+    "comfyWorkflowPath": "",
+    "codeVersion": "local-worktree"
+  },
+  "aggregateTracking": {
+    "benchmarkAggregate": "npm run card:benchmark:aggregate",
+    "modelCoverage": "npm run card:benchmark:model-coverage",
+    "trackedDimensions": [
+      "story_id",
+      "text_adapter_id",
+      "text_model",
+      "image_adapter_id",
+      "image_checkpoint",
+      "comfy_workflow",
+      "provider_endpoint",
+      "run_id",
+      "code_version",
+      "technique"
+    ]
+  },
+  "blockers": [],
+  "jobs": [
+    {
+      "id": "job_fe7e91c1e8db0113bbf3439c",
+      "userId": "local-admin-human-loop",
+      "routeId": "ai-card-generate",
+      "storyId": "botanical-birthday",
+      "status": "queued",
+      "payload": {
+        "routeId": "ai-card-generate",
+        "jobKind": "ai-flow",
+        "idempotencyKey": "local-ai-loop:local-ai-loop-2030-01-01T00-00-00-000Z:botanical-birthday:9f693fdd0116",
+        "requestContext": {
+          "rateKey": "local-admin-human-loop",
+          "idempotencyKey": "local-ai-loop:local-ai-loop-2030-01-01T00-00-00-000Z:botanical-birthday:9f693fdd0116",
+          "authContext": {
+            "userId": "local-admin-human-loop",
+            "sessionId": "local-admin-human-loop-session",
+            "role": "admin"
+          }
+        },
+        "security": {
+          "payloadMinimized": true,
+          "clientAiFlowConfigAccepted": false,
+          "credentialsPersisted": false,
+          "rawProviderContentStored": false,
+          "localOnlyModelCalls": true
+        },
+        "flowId": "card-generation",
+        "body": {
+          "sender": "Manny",
+          "recipient": "Sara",
+          "relationship": "friend",
+          "occasion": "birthday",
+          "tone": "warm, grateful, relaxed, quietly joyful",
+          "style": "botanical watercolor, morning light, cream paper, deep green accents",
+          "language": "English",
+          "personal_note": "She loves morning hikes, coffee, and the fern by her kitchen window.",
+          "memory_notes": [
+            "Sara keeps a fern by the kitchen window.",
+            "Sara loves morning hikes and tiny trail flowers.",
+            "The birthday card should feel personal without feeling overly sentimental."
+          ]
+        },
+        "localLoop": {
+          "source": "scripts/local-ai-job-queue.mjs",
+          "runId": "local-ai-loop-2030-01-01T00-00-00-000Z",
+          "queuedAtIso": "2030-01-01T00:00:00.000Z",
+          "benchmarkStoryId": "botanical-birthday",
+          "benchmarkStory": {
+            "customerType": "returning consumer",
+            "occasion": "personalized birthday",
+            "memoryLoad": "medium",
+            "mustInclude": [
+              "Sara",
+              "birthday",
+              "fern",
+              "morning",
+              "coffee"
+            ],
+            "mustAvoid": [
+              "generic flowers",
+              "fake travel memories",
+              "romantic tone",
+              "stock balloons"
+            ]
+          },
+          "providers": {
+            "textAdapterId": "local-openai-compatible-chat",
+            "textModel": "qwen3-8b-q4_k_m",
+            "textBaseUrl": "http://127.0.0.1:1234/v1",
+            "imageAdapterId": "local-comfyui-api-image",
+            "imageCheckpoint": "DreamShaper_8_pruned.safetensors",
+            "comfyUrl": "http://127.0.0.1:8188",
+            "comfyWorkflowId": "api-sdxl-checkpoint-card-v1",
+            "comfyWorkflowPath": ""
+          },
+          "humanReview": {
+            "required": true,
+            "role": "admin",
+            "status": "pending-admin-review",
+            "promotionGate": "benchmark score, rendered panels, and copy fidelity must be reviewed before model promotion."
+          },
+          "technique": [
+            "api_jobs queue",
+            "local OpenAI-compatible chat",
+            "local ComfyUI image generation",
+            "admin human-in-the-loop review"
+          ],
+          "codeVersion": "local-worktree"
+        }
+      }
+    }
+  ],
+  "queueResult": {
+    "status": "dry-run",
+    "inserted": 0,
+    "skipped": 0
+  }
+}

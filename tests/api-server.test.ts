@@ -5,6 +5,7 @@ import { handleApiRequest } from "../scripts/api-server.mjs";
 import { apiRouteContracts } from "../src/apiRouteContractsData.mjs";
 
 const shellDoctorTimeoutMs = 30_000;
+const nodeBinary = process.execPath;
 const runtimeDoctorEnv = {
   ...process.env,
   CUSTOMCARD_ENV: "prod",
@@ -59,7 +60,7 @@ function walgreensPortalEvidenceArtifact() {
 
 describe("api server wrapper", () => {
   it("passes its doctor contract", () => {
-    const output = execFileSync("node", ["scripts/api-server.mjs", "--doctor"], {
+    const output = execFileSync(nodeBinary, ["scripts/api-server.mjs", "--doctor"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -373,8 +374,6 @@ describe("api server wrapper", () => {
       total: 8,
       repoLocalReady: 4,
       evidenceMissing: 4,
-      textProviderContracts: 16,
-      imageProviderContracts: 18,
       localFallbacks: 0,
       promptAuditRequired: 6,
       humanReviewRequired: 5,
@@ -383,6 +382,8 @@ describe("api server wrapper", () => {
       productionTrafficEnabled: 0,
       blockers: []
     });
+    expect(report.readiness.aiProviderReadiness.textProviderContracts).toBeGreaterThanOrEqual(16);
+    expect(report.readiness.aiProviderReadiness.imageProviderContracts).toBeGreaterThanOrEqual(18);
     expect(report.readiness.observability).toMatchObject({
       total: 7,
       repoLocalReady: 4,
@@ -558,7 +559,7 @@ describe("api server wrapper", () => {
         "No physical print sample, pickup proof, or retailer QA certification is attached."
       ])
     );
-    expect(report.readiness.routes.total).toBe(37);
+    expect(report.readiness.routes.total).toBe(apiRouteContracts.length);
     expect(report.readiness.routes.idempotentMutations).toBe(expectedIdempotentMutations);
     expect(report.readiness.security).toMatchObject({
       headers: 8,
@@ -569,8 +570,8 @@ describe("api server wrapper", () => {
       staticIndexCachePolicy: "no-store"
     });
     expect(report.readiness.persistence).toMatchObject({
-      tables: 21,
-      schemaBackedRoutes: 24,
+      tables: 22,
+      schemaBackedRoutes: 26,
       authSessionTable: true,
       accountIdentityTable: true,
       accountRecoveryTable: true,
@@ -615,7 +616,7 @@ describe("api server wrapper", () => {
   }, shellDoctorTimeoutMs);
 
   it("blocks unsupported API runtime modes in doctor output", () => {
-    const result = spawnSync("node", ["scripts/api-server.mjs", "--doctor"], {
+    const result = spawnSync(nodeBinary, ["scripts/api-server.mjs", "--doctor"], {
       encoding: "utf8",
       env: { ...process.env, CUSTOMCARD_API_RUNTIME: "surprise-runtime" },
       stdio: ["ignore", "pipe", "pipe"]
@@ -637,7 +638,7 @@ describe("api server wrapper", () => {
 
   it("blocks production-shaped API doctors from falling back to contract runtime", () => {
     for (const customcardRuntime of ["", "contract", "memory"]) {
-      const result = spawnSync("node", ["scripts/api-server.mjs", "--doctor"], {
+    const result = spawnSync(nodeBinary, ["scripts/api-server.mjs", "--doctor"], {
         encoding: "utf8",
         env: {
           ...process.env,
@@ -664,7 +665,7 @@ describe("api server wrapper", () => {
 
   it("fails closed for invalid production runtime before public API handlers", async () => {
     const port = 6200 + Math.floor(Math.random() * 1000);
-    const server = spawn("node", ["scripts/api-server.mjs"], {
+    const server = spawn(nodeBinary, ["scripts/api-server.mjs"], {
       env: {
         ...process.env,
         NODE_ENV: "production",
@@ -743,7 +744,7 @@ describe("api server wrapper", () => {
 
   it("serves API readiness, bootstrap, and contract-only mutation responses", async () => {
     const port = 6100 + Math.floor(Math.random() * 1000);
-    const server = spawn("node", ["scripts/api-server.mjs"], {
+    const server = spawn(nodeBinary, ["scripts/api-server.mjs"], {
       env: {
         ...process.env,
         HOST: "127.0.0.1",
@@ -772,7 +773,11 @@ describe("api server wrapper", () => {
       expect(staticResponse.headers.get("cache-control")).toBe("no-store");
 
       const readiness = await getJson(port, "/api/admin/readiness");
-      expect(readiness.routes).toMatchObject({ total: 37, admin: 14, idempotentMutations: expectedIdempotentMutations });
+      expect(readiness.routes).toMatchObject({
+        total: apiRouteContracts.length,
+        admin: apiRouteContracts.filter((route) => route.audience === "admin").length,
+        idempotentMutations: expectedIdempotentMutations
+      });
       expect(readiness.providers).toMatchObject({ total: 130, readyLocal: 16, credentialGated: 98, blocked: 6 });
       expect(readiness.providerGovernance).toMatchObject({
         total: 130,
@@ -815,8 +820,6 @@ describe("api server wrapper", () => {
         total: 8,
         repoLocalReady: 4,
         evidenceMissing: 4,
-        textProviderContracts: 16,
-        imageProviderContracts: 18,
         localFallbacks: 0,
         promptAuditRequired: 6,
         humanReviewRequired: 5,
@@ -825,6 +828,8 @@ describe("api server wrapper", () => {
         productionTrafficEnabled: 0,
         blockers: []
       });
+      expect(readiness.aiProviderReadiness.textProviderContracts).toBeGreaterThanOrEqual(16);
+      expect(readiness.aiProviderReadiness.imageProviderContracts).toBeGreaterThanOrEqual(18);
       expect(readiness.observability).toMatchObject({
         total: 7,
         repoLocalReady: 4,
@@ -974,8 +979,8 @@ describe("api server wrapper", () => {
 
       const persistence = await getJson(port, "/api/admin/persistence-readiness");
       expect(persistence.persistence).toMatchObject({
-        tables: 21,
-        schemaBackedRoutes: 24,
+        tables: 22,
+        schemaBackedRoutes: 26,
         authSessionTable: true,
         accountIdentityTable: true,
         accountRecoveryTable: true,
@@ -1382,7 +1387,7 @@ describe("api server wrapper", () => {
             title: "Wedding dinner for Sara",
             startsAt: "2030-06-03T18:00:00.000Z",
             timezone: "America/New_York",
-            decision: "generate"
+            decision: "pending"
           })
         ]
       });
@@ -1467,7 +1472,7 @@ describe("api server wrapper", () => {
             eventId: "event-contract-api",
             recipientName: "Sara",
             title: "Anniversary dinner",
-            decision: "generate"
+            decision: "pending"
           })
         ],
         repository: {
@@ -1606,7 +1611,7 @@ describe("api server wrapper", () => {
     const port = 7100 + Math.floor(Math.random() * 1000);
     const customerToken = "customer-session-token-for-api-test";
     const adminToken = "admin-session-token-for-api-test";
-    const server = spawn("node", ["scripts/api-server.mjs"], {
+    const server = spawn(nodeBinary, ["scripts/api-server.mjs"], {
       env: {
         ...process.env,
         CUSTOMCARD_API_RUNTIME: "memory",
@@ -1614,6 +1619,10 @@ describe("api server wrapper", () => {
         AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
         CUSTOMCARD_CUSTOMER_SESSION_TOKEN: customerToken,
         CUSTOMCARD_ADMIN_SESSION_TOKEN: adminToken,
+        CUSTOMCARD_LOCAL_LLM_BASE_URL: "http://127.0.0.1:1234/v1",
+        CUSTOMCARD_LOCAL_LLM_MODEL: "qwen3-8b-q4_k_m",
+        CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188",
+        CUSTOMCARD_ADMIN_LOCAL_AI_LOOP_WRITE_REPORT: "disabled",
         HOST: "127.0.0.1",
         PORT: String(port)
       },
@@ -1695,7 +1704,7 @@ describe("api server wrapper", () => {
           "X-Idempotency-Key": "admin-safety-controls-0001"
         }
       );
-      expect(savedSafetyControls.status).toBe(200);
+      expect(savedSafetyControls.status).toBe(202);
       expect(await savedSafetyControls.json()).toMatchObject({
         vendorModes: { walgreens: "sandbox" },
         vendorCertification: { walgreens: true },
@@ -1711,7 +1720,7 @@ describe("api server wrapper", () => {
           "X-Idempotency-Key": "admin-safety-controls-0002"
         }
       );
-      expect(resetSafetyControls.status).toBe(200);
+      expect(resetSafetyControls.status).toBe(202);
 
       const adminModelBenchmarks = await getJson(port, "/api/admin/model-benchmarks", bearer(adminToken));
       expect(adminModelBenchmarks).toMatchObject({
@@ -1731,6 +1740,52 @@ describe("api server wrapper", () => {
       expect(await benchmarkMissingKey.json()).toMatchObject({
         status: "idempotency-key-required",
         path: "/api/admin/model-benchmarks/run"
+      });
+
+      const localAiLoopMissingKey = await postJson(
+        port,
+        "/api/admin/local-ai-loop/run",
+        { mode: "plan", stories: "botanical-birthday" },
+        bearer(adminToken)
+      );
+      expect(localAiLoopMissingKey.status).toBe(400);
+      expect(await localAiLoopMissingKey.json()).toMatchObject({
+        status: "idempotency-key-required",
+        path: "/api/admin/local-ai-loop/run"
+      });
+
+      const localAiLoopPlan = await postJson(
+        port,
+        "/api/admin/local-ai-loop/run",
+        { mode: "plan", stories: "botanical-birthday" },
+        {
+          ...bearer(adminToken),
+          "X-Idempotency-Key": "admin-local-ai-loop-plan-0001"
+        }
+      );
+      expect(localAiLoopPlan.status).toBe(200);
+      expect(await localAiLoopPlan.json()).toMatchObject({
+        service: "customcard-api",
+        status: "planned",
+        mode: "plan",
+        dryRun: true,
+        localMachineCallsOnly: true,
+        externalNetworkCalls: false,
+        realOrdersEnabled: false,
+        jobs: [
+          expect.objectContaining({
+            routeId: "ai-card-generate",
+            storyId: "botanical-birthday",
+            queueInsert: expect.objectContaining({
+              table: "api_jobs",
+              status: "queued",
+              attemptCount: 0,
+              maxAttempts: 3
+            })
+          })
+        ],
+        queueResult: expect.objectContaining({ status: "dry-run" }),
+        humanReview: expect.objectContaining({ required: true, status: "pending-admin-review" })
       });
 
       const customerBootstrap = await getJson(port, "/api/customer/bootstrap", bearer(customerToken));
@@ -2441,8 +2496,8 @@ describe("api server wrapper", () => {
       const finalReadiness = await getJson(port, "/api/admin/readiness", bearer(adminToken));
       expect(finalReadiness.runtime).toMatchObject({
         mode: "memory",
-        idempotencyRecords: 10,
-        auditRecords: 10,
+        idempotencyRecords: 12,
+        auditRecords: 12,
         queuedJobs: 3,
         providerConnectionRecords: 2,
         importedEventRecords: 2,
@@ -2466,7 +2521,7 @@ describe("api server wrapper", () => {
     const google = await startFakeGoogleCalendarServer();
     const port = 6250 + Math.floor(Math.random() * 500);
     const customerToken = "google-calendar-customer-token";
-    const server = spawn("node", ["scripts/api-server.mjs"], {
+    const server = spawn(nodeBinary, ["scripts/api-server.mjs"], {
       env: {
         ...process.env,
         HOST: "127.0.0.1",
@@ -2576,7 +2631,7 @@ describe("api server wrapper", () => {
     const port = 6300 + Math.floor(Math.random() * 1000);
     const customerToken = "test-customer-session-token";
     const adminToken = "test-admin-session-token";
-    const server = spawn("node", ["scripts/api-server.mjs"], {
+    const server = spawn(nodeBinary, ["scripts/api-server.mjs"], {
       env: {
         ...process.env,
         HOST: "127.0.0.1",

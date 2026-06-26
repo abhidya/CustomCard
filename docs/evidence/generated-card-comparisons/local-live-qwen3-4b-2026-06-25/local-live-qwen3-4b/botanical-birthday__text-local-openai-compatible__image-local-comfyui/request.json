@@ -1,0 +1,47 @@
+{
+  "sender": "Manny",
+  "recipient": "Sara",
+  "relationship": "friend",
+  "occasion": "birthday",
+  "tone": "warm, grateful, relaxed, quietly joyful",
+  "style": "botanical watercolor, morning light, cream paper, deep green accents",
+  "language": "English",
+  "personal_note": "She loves morning hikes, coffee, and the fern by her kitchen window.",
+  "memory_notes": [
+    "Sara keeps a fern by the kitchen window.",
+    "Sara loves morning hikes and tiny trail flowers.",
+    "The birthday card should feel personal without feeling overly sentimental."
+  ],
+  "aiFlowConfig": [
+    {
+      "flowId": "card-copy",
+      "primaryAdapterId": "local-openai-compatible-chat",
+      "fallbackAdapterId": "",
+      "model": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": false,
+      "rateLimitPerMinute": 4,
+      "monthlyBudgetCents": 5000,
+      "perRequestBudgetCents": 5,
+      "maxRetries": 1,
+      "maxTokens": 2200,
+      "temperature": 0.62
+    },
+    {
+      "flowId": "card-image",
+      "primaryAdapterId": "local-comfyui-api-image",
+      "fallbackAdapterId": "",
+      "model": "DreamShaper_8_pruned.safetensors",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": false,
+      "rateLimitPerMinute": 4,
+      "monthlyBudgetCents": 4000,
+      "perRequestBudgetCents": 1,
+      "maxRetries": 1,
+      "maxTokens": 0,
+      "temperature": 0
+    }
+  ]
+}

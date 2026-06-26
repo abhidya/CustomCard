@@ -248,6 +248,78 @@ export const apiRouteContracts = [
     backedBy: ["api_jobs", "customer-session auth"]
   },
   {
+    id: "provider-job-lease",
+    method: "POST",
+    path: "/api/provider/jobs/lease",
+    audience: "provider",
+    auth: "provider-token",
+    runtimeMode: "durable-api",
+    requestSchema: ["Authorization: Bearer provider token", "worker_id", "routes", "limit"],
+    responseSchema: [
+      "jobs",
+      "lease_token",
+      "lease_expires_at",
+      "route_id",
+      "payload",
+      "artifact_upload"
+    ],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Provider-token-protected workers can lease minimized queue payloads for explicitly allowed route ids; customer session tokens, provider credentials, and raw database credentials are never exposed.",
+    backedBy: ["api_jobs", "provider-token auth", "postgres lease lock"]
+  },
+  {
+    id: "provider-job-status",
+    method: "GET",
+    path: "/api/provider/jobs/status",
+    audience: "provider",
+    auth: "provider-token",
+    runtimeMode: "durable-api",
+    requestSchema: ["Authorization: Bearer provider token", "routes"],
+    responseSchema: [
+      "route_scope",
+      "lease_ttl_seconds",
+      "queued_total",
+      "running_total",
+      "stale_running_total",
+      "succeeded_total",
+      "dead_lettered_total",
+      "oldest_queued_age_seconds",
+      "artifact_upload"
+    ],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Provider-token-protected workers can read aggregate queue health only for explicitly allowed route ids; no customer payloads, provider credentials, database credentials, or object-store credentials are returned.",
+    backedBy: ["api_jobs", "provider-token auth", "postgres aggregate status"]
+  },
+  {
+    id: "provider-job-complete",
+    method: "POST",
+    path: "/api/provider/jobs/:id/complete",
+    audience: "provider",
+    auth: "provider-token",
+    runtimeMode: "durable-api",
+    requestSchema: ["Authorization: Bearer provider token", "worker_id", "lease_token", "status", "result", "error"],
+    responseSchema: [
+      "job_id",
+      "route_id",
+      "queue_status",
+      "result_available",
+      "retry_after_seconds",
+      "artifact_persistence"
+    ],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Provider-token-protected workers can complete only currently leased jobs by signed lease token; prod persists generated artifacts to object storage and exposes only signed artifact references to customers.",
+    backedBy: ["api_jobs", "provider-token auth", "object-store artifact persistence", "audit_log"]
+  },
+  {
     id: "admin-readiness",
     method: "GET",
     path: "/api/admin/readiness",
@@ -312,6 +384,61 @@ export const apiRouteContracts = [
     backedBy: ["summarizeProviderGovernance", "validateProviderGovernance"]
   },
   {
+    id: "admin-ai-flow-configs",
+    method: "GET",
+    path: "/api/admin/ai-flow-configs",
+    audience: "admin",
+    auth: "admin-session",
+    runtimeMode: "durable-api",
+    requestSchema: ["adminSession"],
+    responseSchema: [
+      "configs",
+      "summary",
+      "providerReadiness",
+      "version",
+      "updatedAtIso",
+      "updatedBy",
+      "blockers"
+    ],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy: "Admin-owned AI provider policy only; no customer content or provider credentials.",
+    backedBy: ["admin_runtime_configs", "server-side aiFlowConfig", "redacted provider readiness"]
+  },
+  {
+    id: "admin-ai-flow-configs-save",
+    method: "POST",
+    path: "/api/admin/ai-flow-configs",
+    audience: "admin",
+    auth: "admin-session",
+    runtimeMode: "durable-api",
+    requestSchema: [
+      "X-Idempotency-Key",
+      "configs",
+      "primaryAdapterId",
+      "fallbackAdapterId",
+      "model",
+      "budget",
+      "promptInstructions"
+    ],
+    responseSchema: [
+      "configs",
+      "summary",
+      "providerReadiness",
+      "version",
+      "updatedAtIso",
+      "updatedBy",
+      "idempotencyPersisted",
+      "repositoryPersisted"
+    ],
+    idempotencyKeyRequired: true,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy: "Admin-owned AI provider policy only; no customer content or provider credentials.",
+    backedBy: ["admin_runtime_configs", "admin-session auth", "idempotency key", "audit_log"]
+  },
+  {
     id: "admin-safety-controls",
     method: "GET",
     path: "/api/admin/safety-controls",
@@ -331,7 +458,7 @@ export const apiRouteContracts = [
     externalNetworkCalls: false,
     realOrdersEnabled: false,
     piiPolicy: "Admin-only safety gate state; no customer content or provider credentials.",
-    backedBy: ["adminSafetyControlsData", "admin-session auth", "fail-closed gate defaults"]
+    backedBy: ["admin_runtime_configs", "admin-session auth", "fail-closed gate defaults"]
   },
   {
     id: "admin-safety-controls-save",
@@ -362,7 +489,7 @@ export const apiRouteContracts = [
     externalNetworkCalls: false,
     realOrdersEnabled: false,
     piiPolicy: "Admin-only safety gate state; no customer content or provider credentials.",
-    backedBy: ["adminSafetyControlsData", "admin-session auth", "idempotency key", "fail-closed gate defaults"]
+    backedBy: ["admin_runtime_configs", "admin-session auth", "idempotency key", "fail-closed gate defaults", "audit_log"]
   },
   {
     id: "admin-persistence-readiness",
@@ -449,6 +576,37 @@ export const apiRouteContracts = [
     piiPolicy:
       "Admin-entered manual grade only; persisted to benchmark evidence files with no provider credentials or customer account data.",
     backedBy: ["manual-grade.md", "manual-grade.json", "admin-session auth", "idempotency key"]
+  },
+  {
+    id: "admin-local-ai-loop-run",
+    method: "POST",
+    path: "/api/admin/local-ai-loop/run",
+    audience: "admin",
+    auth: "admin-session",
+    runtimeMode: "durable-api",
+    requestSchema: [
+      "X-Idempotency-Key",
+      "mode",
+      "stories",
+      "ensureUser",
+      "outputDir"
+    ],
+    responseSchema: [
+      "mode",
+      "dryRun",
+      "localOnly",
+      "jobs",
+      "queueResult",
+      "workerResult",
+      "report",
+      "humanReview"
+    ],
+    idempotencyKeyRequired: true,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Admin-only local AI loop queues sanitized benchmark story fields into api_jobs; model calls are restricted to localhost LM Studio/KoboldCPP and local ComfyUI, and admin review is required before promotion.",
+    backedBy: ["scripts/local-ai-job-queue.mjs", "api_jobs", "audit_log", "local-openai-compatible-chat", "local-comfyui-api-image"]
   },
   {
     id: "admin-demo-reset",
@@ -892,6 +1050,14 @@ export const persistedTablesByRouteId = Object.freeze({
   "ai-chat-respond": ["auth_sessions", "idempotency_keys", "provider_call_events", "api_jobs", "audit_log"],
   "ai-card-generate": ["auth_sessions", "idempotency_keys", "provider_call_events", "api_jobs", "audit_log"],
   "ai-job-status": ["auth_sessions", "api_jobs"],
+  "provider-job-lease": ["api_jobs", "audit_log"],
+  "provider-job-status": ["api_jobs"],
+  "provider-job-complete": ["api_jobs", "audit_log"],
+  "admin-ai-flow-configs": ["auth_sessions", "admin_runtime_configs", "audit_log"],
+  "admin-ai-flow-configs-save": ["auth_sessions", "idempotency_keys", "admin_runtime_configs", "audit_log"],
+  "admin-safety-controls": ["auth_sessions", "admin_runtime_configs", "audit_log"],
+  "admin-safety-controls-save": ["auth_sessions", "idempotency_keys", "admin_runtime_configs", "audit_log"],
+  "admin-local-ai-loop-run": ["auth_sessions", "idempotency_keys", "users", "api_jobs", "audit_log"],
   "render-packets": [
     "auth_sessions",
     "idempotency_keys",

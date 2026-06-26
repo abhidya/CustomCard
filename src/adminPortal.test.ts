@@ -88,12 +88,13 @@ describe("admin portal", () => {
 
     expect(validateAdminPortalModel(portal)).toEqual([]);
     expect(portal.summary).toMatchObject({
-      sections: 6,
+      sections: 7,
       orderQueues: 4,
+      aiReviewQueues: 3,
       liveMutationsEnabled: 0,
       rawContentExposed: 0
     });
-    expect(portal.navigation.map((item) => item.id)).toEqual(["ops", "orders", "users", "assets", "providers", "launch"]);
+    expect(portal.navigation.map((item) => item.id)).toEqual(["ops", "orders", "users", "assets", "providers", "ai-loop", "launch"]);
     expect(portal.areas.orders.records.map((record) => record.label)).toEqual(
       expect.arrayContaining(["Manual handoff orders", "Order status state machine", "Vendor confirmation status"])
     );
@@ -121,6 +122,18 @@ describe("admin portal", () => {
     );
     expect(portal.areas.providers.metrics.map((metric) => metric.label)).toEqual(
       expect.arrayContaining(["Available", "Env configured", "Fallback queues", "Cost flows", "Budget month", "Spend est.", "Req capacity", "Provider sources", "Ledger-only", "Latency gates", "User env"])
+    );
+    expect(portal.areas["ai-loop"].records.map((record) => record.label)).toEqual(
+      expect.arrayContaining(["Local AI human review queue", "Production local Comfy worker", "Benchmark aggregate and rankings"])
+    );
+    expect(portal.areas["ai-loop"].aiReviewQueue).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "local-ai-queue-botanical-birthday",
+          queueStatus: "planned",
+          humanReview: "pending"
+        })
+      ])
     );
   });
 

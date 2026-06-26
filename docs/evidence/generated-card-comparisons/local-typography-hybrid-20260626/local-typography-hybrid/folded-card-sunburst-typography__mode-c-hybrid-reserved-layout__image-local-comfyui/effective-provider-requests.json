@@ -1,0 +1,496 @@
+{
+  "schemaVersion": 1,
+  "phase": "local-typography",
+  "storyId": "folded-card-sunburst-typography",
+  "textCandidateId": "text-none-direct-image-test",
+  "imageCandidateId": "image-local-comfyui",
+  "imageAdapterId": "local-comfyui-api-image",
+  "imageModel": "DreamShaper_8_pruned.safetensors",
+  "requestCount": 4,
+  "requests": [
+    {
+      "panelId": "front",
+      "url": "http://127.0.0.1:8188/prompt",
+      "method": "POST",
+      "requestBody": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "DreamShaper_8_pruned.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "Create one artwork-only 5x7 portrait Front Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: deep charcoal main field with warm gold and ivory accents kept outside the central text field\nMotif: edge-only warm-gold corner rays and thin border accents; no central radial sunburst, no halo, no medallion, no rays behind copy\nMood: Respectful, warm, sophisticated\nPanel Role: primary typography measurement panel\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nPlace a broad opaque plain deep-charcoal text-safe field in the central 60% of the panel. Treat this field as a real solid print area, not transparent negative space. Keep all rays, ornaments, bright marks, fake glyphs, and high-contrast details outside it. Put sunburst detail only as edge-only corner or margin ornaments; do not use a centered radial burst, halo, medallion, or rays crossing behind the field.\n\nPanel-specific composition: deep charcoal field, thin warm-gold border, small edge or corner rays only, and a plain central text-safe field; no central radial burst.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline"
+            }
+          },
+          "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {
+              "batch_size": 1,
+              "height": 1344,
+              "width": 960
+            }
+          },
+          "5": {
+            "class_type": "KSampler",
+            "inputs": {
+              "cfg": 6.5,
+              "denoise": 1,
+              "latent_image": [
+                "4",
+                0
+              ],
+              "model": [
+                "1",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "positive": [
+                "2",
+                0
+              ],
+              "sampler_name": "euler",
+              "scheduler": "normal",
+              "seed": 2900990777,
+              "steps": 18
+            }
+          },
+          "6": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "5",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            }
+          },
+          "7": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "filename_prefix": "customcard/customcard-hybrid-reserved-layout/front",
+              "images": [
+                "6",
+                0
+              ]
+            }
+          }
+        },
+        "client_id": "customcard-local-typography-benchmark",
+        "extra_data": {
+          "customcard": {
+            "workflow_id": "customcard-hybrid-reserved-layout",
+            "panel_id": "front",
+            "seed": 2900990777,
+            "inputs": {
+              "checkpoint": "DreamShaper_8_pruned.safetensors",
+              "width": 960,
+              "height": 1344,
+              "steps": 18,
+              "cfg": 6.5,
+              "sampler": "euler",
+              "scheduler": "normal",
+              "seed": 2900990777,
+              "prompt": "Create one artwork-only 5x7 portrait Front Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: deep charcoal main field with warm gold and ivory accents kept outside the central text field\nMotif: edge-only warm-gold corner rays and thin border accents; no central radial sunburst, no halo, no medallion, no rays behind copy\nMood: Respectful, warm, sophisticated\nPanel Role: primary typography measurement panel\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nPlace a broad opaque plain deep-charcoal text-safe field in the central 60% of the panel. Treat this field as a real solid print area, not transparent negative space. Keep all rays, ornaments, bright marks, fake glyphs, and high-contrast details outside it. Put sunburst detail only as edge-only corner or margin ornaments; do not use a centered radial burst, halo, medallion, or rays crossing behind the field.\n\nPanel-specific composition: deep charcoal field, thin warm-gold border, small edge or corner rays only, and a plain central text-safe field; no central radial burst.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+              "negative_prompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline"
+            }
+          }
+        }
+      },
+      "providerPrompt": "Create one artwork-only 5x7 portrait Front Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: deep charcoal main field with warm gold and ivory accents kept outside the central text field\nMotif: edge-only warm-gold corner rays and thin border accents; no central radial sunburst, no halo, no medallion, no rays behind copy\nMood: Respectful, warm, sophisticated\nPanel Role: primary typography measurement panel\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nPlace a broad opaque plain deep-charcoal text-safe field in the central 60% of the panel. Treat this field as a real solid print area, not transparent negative space. Keep all rays, ornaments, bright marks, fake glyphs, and high-contrast details outside it. Put sunburst detail only as edge-only corner or margin ornaments; do not use a centered radial burst, halo, medallion, or rays crossing behind the field.\n\nPanel-specific composition: deep charcoal field, thin warm-gold border, small edge or corner rays only, and a plain central text-safe field; no central radial burst.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+      "providerNegativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline",
+      "seed": 2900990777,
+      "width": 960,
+      "height": 1344,
+      "responseStatus": 200,
+      "responseOk": true,
+      "responseContentType": "application/json; charset=utf-8"
+    },
+    {
+      "panelId": "inside-left",
+      "url": "http://127.0.0.1:8188/prompt",
+      "method": "POST",
+      "requestBody": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "DreamShaper_8_pruned.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "Create one artwork-only 5x7 portrait Inside Left panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Left\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: left half of a coordinated interior spread with opening message text\nHeadline length: 3 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this an interior writing panel, not another cover. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-left edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-left edge accent only, quiet plain center, paired with inside-right.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior"
+            }
+          },
+          "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {
+              "batch_size": 1,
+              "height": 1344,
+              "width": 960
+            }
+          },
+          "5": {
+            "class_type": "KSampler",
+            "inputs": {
+              "cfg": 6.5,
+              "denoise": 1,
+              "latent_image": [
+                "4",
+                0
+              ],
+              "model": [
+                "1",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "positive": [
+                "2",
+                0
+              ],
+              "sampler_name": "euler",
+              "scheduler": "normal",
+              "seed": 1120486024,
+              "steps": 18
+            }
+          },
+          "6": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "5",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            }
+          },
+          "7": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "filename_prefix": "customcard/customcard-hybrid-reserved-layout/inside-left",
+              "images": [
+                "6",
+                0
+              ]
+            }
+          }
+        },
+        "client_id": "customcard-local-typography-benchmark",
+        "extra_data": {
+          "customcard": {
+            "workflow_id": "customcard-hybrid-reserved-layout",
+            "panel_id": "inside-left",
+            "seed": 1120486024,
+            "inputs": {
+              "checkpoint": "DreamShaper_8_pruned.safetensors",
+              "width": 960,
+              "height": 1344,
+              "steps": 18,
+              "cfg": 6.5,
+              "sampler": "euler",
+              "scheduler": "normal",
+              "seed": 1120486024,
+              "prompt": "Create one artwork-only 5x7 portrait Inside Left panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Left\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: left half of a coordinated interior spread with opening message text\nHeadline length: 3 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this an interior writing panel, not another cover. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-left edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-left edge accent only, quiet plain center, paired with inside-right.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+              "negative_prompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior"
+            }
+          }
+        }
+      },
+      "providerPrompt": "Create one artwork-only 5x7 portrait Inside Left panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Left\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: left half of a coordinated interior spread with opening message text\nHeadline length: 3 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this an interior writing panel, not another cover. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-left edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-left edge accent only, quiet plain center, paired with inside-right.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+      "providerNegativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior",
+      "seed": 1120486024,
+      "width": 960,
+      "height": 1344,
+      "responseStatus": 200,
+      "responseOk": true,
+      "responseContentType": "application/json; charset=utf-8"
+    },
+    {
+      "panelId": "inside-right",
+      "url": "http://127.0.0.1:8188/prompt",
+      "method": "POST",
+      "requestBody": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "DreamShaper_8_pruned.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "Create one artwork-only 5x7 portrait Inside Right panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Right\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: right half of a coordinated interior spread with main message text\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this the matching interior message panel. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-right edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-right edge accent only, quiet plain center, paired with inside-left.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior"
+            }
+          },
+          "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {
+              "batch_size": 1,
+              "height": 1344,
+              "width": 960
+            }
+          },
+          "5": {
+            "class_type": "KSampler",
+            "inputs": {
+              "cfg": 6.5,
+              "denoise": 1,
+              "latent_image": [
+                "4",
+                0
+              ],
+              "model": [
+                "1",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "positive": [
+                "2",
+                0
+              ],
+              "sampler_name": "euler",
+              "scheduler": "normal",
+              "seed": 1125312378,
+              "steps": 18
+            }
+          },
+          "6": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "5",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            }
+          },
+          "7": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "filename_prefix": "customcard/customcard-hybrid-reserved-layout/inside-right",
+              "images": [
+                "6",
+                0
+              ]
+            }
+          }
+        },
+        "client_id": "customcard-local-typography-benchmark",
+        "extra_data": {
+          "customcard": {
+            "workflow_id": "customcard-hybrid-reserved-layout",
+            "panel_id": "inside-right",
+            "seed": 1125312378,
+            "inputs": {
+              "checkpoint": "DreamShaper_8_pruned.safetensors",
+              "width": 960,
+              "height": 1344,
+              "steps": 18,
+              "cfg": 6.5,
+              "sampler": "euler",
+              "scheduler": "normal",
+              "seed": 1125312378,
+              "prompt": "Create one artwork-only 5x7 portrait Inside Right panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Right\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: right half of a coordinated interior spread with main message text\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this the matching interior message panel. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-right edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-right edge accent only, quiet plain center, paired with inside-left.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+              "negative_prompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior"
+            }
+          }
+        }
+      },
+      "providerPrompt": "Create one artwork-only 5x7 portrait Inside Right panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Right\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: right half of a coordinated interior spread with main message text\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this the matching interior message panel. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-right edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-right edge accent only, quiet plain center, paired with inside-left.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+      "providerNegativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior",
+      "seed": 1125312378,
+      "width": 960,
+      "height": 1344,
+      "responseStatus": 200,
+      "responseOk": true,
+      "responseContentType": "application/json; charset=utf-8"
+    },
+    {
+      "panelId": "back",
+      "url": "http://127.0.0.1:8188/prompt",
+      "method": "POST",
+      "requestBody": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "DreamShaper_8_pruned.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "Create one artwork-only 5x7 portrait Back Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Back Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: deep charcoal main field with one tiny warm-gold lower-edge mark only; no ivory panel, no cream wave, no large light area\nMotif: mostly plain deep-charcoal back cover with one tiny lower-edge gold sun mark; no centered or full-panel radial burst\nMood: Respectful, warm, sophisticated\nPanel Role: coordinating no-text back panel\nNo card copy belongs on this panel.\nReserve hierarchy for visual coordination only.\nUse mostly negative space plus one small coordinating back mark.\nBack cover must be at least 85% plain deep charcoal. Use only one tiny warm-gold sun mark near the lower third. Do not create a large radial halo, full-panel burst, centered sunburst, decorative typography, or any text-like marks.\nPanel-specific composition: mostly deep charcoal negative space, thin gold border echo, one small lower-edge sun mark, no card copy.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with only one small lower-edge sun mark on the back cover.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, large sunburst, full radial halo, full-page radial burst, rays across the whole panel, centered halo, busy back cover, ivory wave, cream lower half, large cream area, white panel"
+            }
+          },
+          "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {
+              "batch_size": 1,
+              "height": 1344,
+              "width": 960
+            }
+          },
+          "5": {
+            "class_type": "KSampler",
+            "inputs": {
+              "cfg": 6.5,
+              "denoise": 1,
+              "latent_image": [
+                "4",
+                0
+              ],
+              "model": [
+                "1",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "positive": [
+                "2",
+                0
+              ],
+              "sampler_name": "euler",
+              "scheduler": "normal",
+              "seed": 1556762951,
+              "steps": 18
+            }
+          },
+          "6": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "5",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            }
+          },
+          "7": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "filename_prefix": "customcard/customcard-hybrid-reserved-layout/back",
+              "images": [
+                "6",
+                0
+              ]
+            }
+          }
+        },
+        "client_id": "customcard-local-typography-benchmark",
+        "extra_data": {
+          "customcard": {
+            "workflow_id": "customcard-hybrid-reserved-layout",
+            "panel_id": "back",
+            "seed": 1556762951,
+            "inputs": {
+              "checkpoint": "DreamShaper_8_pruned.safetensors",
+              "width": 960,
+              "height": 1344,
+              "steps": 18,
+              "cfg": 6.5,
+              "sampler": "euler",
+              "scheduler": "normal",
+              "seed": 1556762951,
+              "prompt": "Create one artwork-only 5x7 portrait Back Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Back Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: deep charcoal main field with one tiny warm-gold lower-edge mark only; no ivory panel, no cream wave, no large light area\nMotif: mostly plain deep-charcoal back cover with one tiny lower-edge gold sun mark; no centered or full-panel radial burst\nMood: Respectful, warm, sophisticated\nPanel Role: coordinating no-text back panel\nNo card copy belongs on this panel.\nReserve hierarchy for visual coordination only.\nUse mostly negative space plus one small coordinating back mark.\nBack cover must be at least 85% plain deep charcoal. Use only one tiny warm-gold sun mark near the lower third. Do not create a large radial halo, full-panel burst, centered sunburst, decorative typography, or any text-like marks.\nPanel-specific composition: mostly deep charcoal negative space, thin gold border echo, one small lower-edge sun mark, no card copy.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with only one small lower-edge sun mark on the back cover.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+              "negative_prompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, large sunburst, full radial halo, full-page radial burst, rays across the whole panel, centered halo, busy back cover, ivory wave, cream lower half, large cream area, white panel"
+            }
+          }
+        }
+      },
+      "providerPrompt": "Create one artwork-only 5x7 portrait Back Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Back Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: deep charcoal main field with one tiny warm-gold lower-edge mark only; no ivory panel, no cream wave, no large light area\nMotif: mostly plain deep-charcoal back cover with one tiny lower-edge gold sun mark; no centered or full-panel radial burst\nMood: Respectful, warm, sophisticated\nPanel Role: coordinating no-text back panel\nNo card copy belongs on this panel.\nReserve hierarchy for visual coordination only.\nUse mostly negative space plus one small coordinating back mark.\nBack cover must be at least 85% plain deep charcoal. Use only one tiny warm-gold sun mark near the lower third. Do not create a large radial halo, full-panel burst, centered sunburst, decorative typography, or any text-like marks.\nPanel-specific composition: mostly deep charcoal negative space, thin gold border echo, one small lower-edge sun mark, no card copy.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with only one small lower-edge sun mark on the back cover.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+      "providerNegativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, large sunburst, full radial halo, full-page radial burst, rays across the whole panel, centered halo, busy back cover, ivory wave, cream lower half, large cream area, white panel",
+      "seed": 1556762951,
+      "width": 960,
+      "height": 1344,
+      "responseStatus": 200,
+      "responseOk": true,
+      "responseContentType": "application/json; charset=utf-8"
+    }
+  ]
+}

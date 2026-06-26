@@ -57,6 +57,7 @@ import {
   retailPrinterCouponPortalEvidenceRoute
 } from "./retailPrinterCouponPortalEvidenceData.mjs";
 import { normalizeAdminSafetyControls } from "./adminSafetyControlsData.mjs";
+import { buildAdminAiFlowConfigPayload } from "./adminRuntimeConfigData.mjs";
 import {
   buildAdminPanelModel,
   buildCustomerChatTranscript,
@@ -85,8 +86,8 @@ import {
 export { gatedProviderNetworkRouteIds, hostedCheckoutExemptRouteIds, requiredApiRouteIds };
 
 export type ApiMethod = "GET" | "POST";
-export type ApiAudience = "public" | "customer" | "admin";
-export type ApiAuth = "none" | "customer-session" | "admin-session";
+export type ApiAudience = "public" | "customer" | "admin" | "provider";
+export type ApiAuth = "none" | "customer-session" | "admin-session" | "provider-token";
 export type ApiRuntimeMode = "local-contract" | "durable-api" | "queue-backed";
 
 export interface ApiRouteContract {
@@ -355,6 +356,9 @@ export function resolveApiContractResponse(path: string) {
   if (path === "/api/admin/provider-governance") {
     return summarizeProviderGovernance();
   }
+  if (path === "/api/admin/ai-flow-configs") {
+    return buildAdminAiFlowConfigPayload();
+  }
   if (path === "/api/admin/safety-controls") {
     return normalizeAdminSafetyControls();
   }
@@ -429,14 +433,18 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
     if (route.audience === "admin" && route.auth !== "admin-session") {
       issues.push(`Admin route ${route.id} must require admin-session auth.`);
     }
+    if (route.audience === "provider" && route.auth !== "provider-token") {
+      issues.push(`Provider route ${route.id} must require provider-token auth.`);
+    }
     const anonymousHostedCheckout = hostedCheckoutExempt && route.auth === "none";
     if (route.audience === "customer" && route.auth !== "customer-session" && !anonymousHostedCheckout) {
       issues.push(`Customer route ${route.id} must require customer-session auth.`);
     }
-    if (route.method === "POST" && !route.idempotencyKeyRequired && !hostedCheckoutExempt) {
+    const providerMutation = route.audience === "provider";
+    if (route.method === "POST" && !route.idempotencyKeyRequired && !hostedCheckoutExempt && !providerMutation) {
       issues.push(`Mutation route ${route.id} must require an idempotency key.`);
     }
-    if (route.method === "POST" && !route.requestSchema.includes("X-Idempotency-Key") && !hostedCheckoutExempt) {
+    if (route.method === "POST" && !route.requestSchema.includes("X-Idempotency-Key") && !hostedCheckoutExempt && !providerMutation) {
       issues.push(`Mutation route ${route.id} must name X-Idempotency-Key in the request schema.`);
     }
     const gatedProviderNetworkRoute = gatedProviderNetworkRouteIds.has(route.id);

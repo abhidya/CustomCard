@@ -9,7 +9,14 @@ import {
   resolveAiFlowConfig
 } from "../src/aiFlowConfigData.mjs";
 import { createAiFlowCostGate } from "./ai-flow-cost-gate.mjs";
-import { createAiCardDraftPolicy } from "./ai-card-draft-policy.mjs";
+import {
+  buildCardCopyPrompt,
+  buildCardCopyResponseFormat,
+  createAiCardDraftPolicy,
+  panelDefaults,
+  requiredPanelIds,
+  textLayoutEnums
+} from "./ai-card-draft-policy.mjs";
 import {
   createAiProviderExecutionAdapter,
   openAiCompatibleTextAdapterIds
@@ -18,160 +25,10 @@ import {
 export const aiCardGenerateRoute = "/api/ai/card/generate";
 export const aiChatRespondRoute = "/api/ai/chat/respond";
 
-const requiredPanelIds = ["front", "inside-left", "inside-right", "back"];
 const maxMaterializedImageBytes = 8_000_000;
 const materializedImageFetchTimeoutMs = 15_000;
 const aiCardDraftPolicy = createAiCardDraftPolicy({ buildDraftId });
-const textLayoutEnums = {
-  headline_zone: ["top", "upper", "center", "lower"],
-  body_zone: ["upper", "center", "lower", "bottom"],
-  alignment: ["left", "center", "right"],
-  font_pairing: ["serif-sans", "bold-editorial", "minimal-sans", "soft-serif"],
-  color_mode: ["dark-ink", "light-ink", "accent-ink", "high-contrast"],
-  scale: ["compact", "standard", "large"]
-};
 const embeddedAssetDataUrlCache = new Map();
-const cardCopyJsonSchema = {
-  type: "object",
-  additionalProperties: false,
-  required: ["theme_guide", "panels", "memory_citations"],
-  properties: {
-    theme_guide: {
-      type: "object",
-      additionalProperties: false,
-      required: ["theme_title", "palette", "motifs", "border_style", "front_back_pairing", "interior_pairing"],
-      properties: {
-        theme_title: { type: "string", maxLength: 120 },
-        palette: {
-          type: "array",
-          minItems: 3,
-          maxItems: 6,
-          items: { type: "string", maxLength: 80 }
-        },
-        motifs: {
-          type: "array",
-          minItems: 3,
-          maxItems: 8,
-          items: { type: "string", maxLength: 80 }
-        },
-        border_style: { type: "string", maxLength: 180 },
-        front_back_pairing: { type: "string", maxLength: 220 },
-        interior_pairing: { type: "string", maxLength: 220 }
-      }
-    },
-    panels: {
-      type: "array",
-      minItems: 4,
-      maxItems: 4,
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["id", "headline", "body", "art_direction", "visual_cue", "text_layout", "image_prompt", "image_negative_prompt"],
-        properties: {
-          id: { type: "string", enum: requiredPanelIds },
-          headline: { type: "string", maxLength: 120 },
-          body: { type: "string", maxLength: 600 },
-          art_direction: { type: "string", maxLength: 500 },
-          visual_cue: { type: "string", maxLength: 360 },
-          text_layout: {
-            type: "object",
-            additionalProperties: false,
-            required: ["headline_zone", "body_zone", "alignment", "font_pairing", "color_mode", "scale"],
-            properties: {
-              headline_zone: { type: "string", enum: textLayoutEnums.headline_zone },
-              body_zone: { type: "string", enum: textLayoutEnums.body_zone },
-              alignment: { type: "string", enum: textLayoutEnums.alignment },
-              font_pairing: { type: "string", enum: textLayoutEnums.font_pairing },
-              color_mode: { type: "string", enum: textLayoutEnums.color_mode },
-              scale: { type: "string", enum: textLayoutEnums.scale }
-            }
-          },
-          image_prompt: { type: "string", maxLength: 1200 },
-          image_negative_prompt: { type: "string", maxLength: 500 }
-        }
-      }
-    },
-    memory_citations: {
-      type: "array",
-      maxItems: 4,
-      items: { type: "string" }
-    }
-  }
-};
-const panelDefaults = {
-  front: {
-    headline: "For you",
-    body: "A card made with care.",
-    art_direction: "Coordinated front cover artwork with safe margins.",
-    visual_cue: "One dominant front-cover symbol with a clean upper or lower text-safe area.",
-    text_layout: {
-      headline_zone: "upper",
-      body_zone: "lower",
-      alignment: "center",
-      font_pairing: "serif-sans",
-      color_mode: "dark-ink",
-      scale: "standard"
-    },
-    image_prompt:
-      "Full-bleed flat 2D artwork layer for a premium 5x7 vertical front print panel, one clear hero visual idea, disciplined negative space for app-added typography, restrained edge ornament, refined print stationery composition, no all-over wallpaper pattern, no words, no letters, no typography, no logos, no watermark.",
-    image_negative_prompt:
-      "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait"
-  },
-  "inside-left": {
-    headline: "Thinking of you",
-    body: "A note for this moment.",
-    art_direction: "Soft interior panel with room for a short message.",
-    visual_cue: "Quiet left-interior opening panel with border detail and a calm center for the first note.",
-    text_layout: {
-      headline_zone: "upper",
-      body_zone: "center",
-      alignment: "center",
-      font_pairing: "soft-serif",
-      color_mode: "dark-ink",
-      scale: "standard"
-    },
-    image_prompt:
-      "Full-bleed flat 2D artwork layer for a soft 5x7 vertical inside-left print panel, border-first stationery layout, thin refined frame, sparse corner or lower-edge motif, large quiet blank center for app-added typography, no all-over wallpaper pattern, no words, no letters, no typography, no logos, no watermark.",
-    image_negative_prompt:
-      "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait"
-  },
-  "inside-right": {
-    headline: "From the heart",
-    body: "With warm wishes.",
-    art_direction: "Main message panel with readable typography and generous margins.",
-    visual_cue: "Quiet right-interior message panel with matching border detail and generous open space for the main note.",
-    text_layout: {
-      headline_zone: "upper",
-      body_zone: "center",
-      alignment: "center",
-      font_pairing: "serif-sans",
-      color_mode: "dark-ink",
-      scale: "standard"
-    },
-    image_prompt:
-      "Full-bleed flat 2D artwork layer for a clean 5x7 vertical inside-right print panel, matching border-first stationery layout, thin refined frame, sparse corner or lower-edge motif, generous quiet text-safe center for app-added typography, no all-over wallpaper pattern, no words, no letters, no typography, no logos, no watermark.",
-    image_negative_prompt:
-      "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait"
-  },
-  back: {
-    headline: "CustomCard",
-    body: "Made with CustomCard. Printed locally.",
-    art_direction: "Clean coordinating back panel with minimal ornamentation.",
-    visual_cue: "Minimal back-cover echo with one small coordinating mark and a clean lower text-safe area.",
-    text_layout: {
-      headline_zone: "lower",
-      body_zone: "bottom",
-      alignment: "center",
-      font_pairing: "minimal-sans",
-      color_mode: "dark-ink",
-      scale: "compact"
-    },
-    image_prompt:
-      "Full-bleed flat 2D artwork layer for a minimal 5x7 vertical back print panel, mostly negative space, one small coordinating lower mark or border echo, refined print stationery finish, no all-over wallpaper pattern, no words, no letters, no typography, no logos, no watermark.",
-    image_negative_prompt:
-      "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait"
-  }
-};
 
 export function loadLocalAiEnvFiles({ cwd = process.cwd(), target = process.env } = {}) {
   for (const filePath of [".env.local", "infra/env/.env"]) {
@@ -190,12 +47,13 @@ export function createAiCardGenerationService({
   env = process.env,
   fetchImpl = globalThis.fetch,
   costGate = createAiFlowCostGate(),
-  aiFlowAdminConfig = []
+  aiFlowAdminConfig = [],
+  loadAiFlowAdminConfig
 } = {}) {
 
   return {
     async generateCard(body, requestContext = {}) {
-      const adminConfig = runtimeAiFlowConfig(body, env, requestContext, aiFlowAdminConfig);
+      const adminConfig = await runtimeAiFlowConfig(body, env, requestContext, aiFlowAdminConfig, loadAiFlowAdminConfig);
       const copyFlow = resolveAiFlowConfig("card-copy", env, adminConfig);
       const imageFlow = resolveAiFlowConfig("card-image", env, adminConfig);
       const draftInput = normalizeCardInput(body);
@@ -287,7 +145,7 @@ export function createAiCardGenerationService({
     },
 
     async respondChat(body, requestContext = {}) {
-      const adminConfig = runtimeAiFlowConfig(body, env, requestContext, aiFlowAdminConfig);
+      const adminConfig = await runtimeAiFlowConfig(body, env, requestContext, aiFlowAdminConfig, loadAiFlowAdminConfig);
       const flow = resolveAiFlowConfig("customer-chat", env, adminConfig);
 
       const input = normalizeChatInput(body);
@@ -434,13 +292,24 @@ function aiCostGateInput({ flow, requestContext, routeId, requestUnits, phase, m
   };
 }
 
-function runtimeAiFlowConfig(body, env, requestContext = {}, serviceAiFlowAdminConfig = []) {
+async function runtimeAiFlowConfig(body, env, requestContext = {}, serviceAiFlowAdminConfig = [], loadAiFlowAdminConfig) {
   return mergeAiFlowAdminConfigs(
     normalizeOptionalAiFlowAdminConfigs(serviceAiFlowAdminConfig, env),
-    normalizeOptionalAiFlowAdminConfigs(requestContext.aiFlowAdminConfig, env),
     serverScopedAiFlowConfig(env),
+    normalizeOptionalAiFlowAdminConfigs(await loadedAiFlowAdminConfig(loadAiFlowAdminConfig), env),
+    normalizeOptionalAiFlowAdminConfigs(requestContext.aiFlowAdminConfig, env),
     requestScopedAiFlowConfig(body, env, requestContext)
   );
+}
+
+async function loadedAiFlowAdminConfig(loadAiFlowAdminConfig) {
+  if (typeof loadAiFlowAdminConfig !== "function") return [];
+  try {
+    const loaded = await loadAiFlowAdminConfig();
+    return loaded?.configs ?? loaded?.aiFlowConfigs ?? loaded?.flows ?? loaded ?? [];
+  } catch {
+    return [];
+  }
 }
 
 function normalizeOptionalAiFlowAdminConfigs(input, env) {
@@ -476,7 +345,7 @@ function requestScopedAiFlowConfig(body, env, requestContext = {}) {
 }
 
 function isAiEnvKey(key) {
-  return /^(CUSTOMCARD_AI_|CUSTOMCARD_RUNCOMFY_|ANTHROPIC_|OPENAI_|CLOUDFLARE_|GOOGLE_|GEMINI_|HUGGINGFACE_|GROQ_|TOGETHER_|MISTRAL_|DEEPSEEK_|DEEPAI_|FIREWORKS_|PERPLEXITY_|XAI_|REPLICATE_|STABILITY_|FAL_|BFL_|RUNCOMFY_)/.test(key);
+  return /^(CUSTOMCARD_AI_|CUSTOMCARD_RUNCOMFY_|CUSTOMCARD_LOCAL_LLM_|CUSTOMCARD_COMFYUI_|ANTHROPIC_|OPENAI_|CLOUDFLARE_|COMFYUI_|GOOGLE_|GEMINI_|HUGGINGFACE_|GROQ_|TOGETHER_|MISTRAL_|DEEPSEEK_|DEEPAI_|FIREWORKS_|PERPLEXITY_|XAI_|REPLICATE_|STABILITY_|FAL_|BFL_|RUNCOMFY_|LMSTUDIO_|KOBOLDCPP_)/.test(key);
 }
 
 const textProviderExecutors = {
@@ -486,6 +355,7 @@ const textProviderExecutors = {
   "google-gemini-chat": executeGoogleGeminiChat
 };
 const imageProviderExecutors = {
+  "local-comfyui-api-image": executeLocalComfyUiImage,
   "cloudflare-workers-ai-image": executeCloudflareWorkersAiImage,
   "openai-images": executeOpenAiImages,
   "google-gemini-image": executeGoogleGeminiImage,
@@ -680,15 +550,17 @@ async function executeImageProviderBatchWithFallback({
           fetchImpl,
           panelId: panelPrompt.panel_id,
           prompt: panelPrompt.prompt,
-          negativePrompt: panelPrompt.negative_prompt
+          negativePrompt: panelPrompt.negative_prompt,
+          panelCopy: panelPrompt.panel_copy
         });
-        if (!imageUrl) continue;
+        const imageRecord = normalizeImageProviderResult(imageUrl);
+        if (!imageRecord?.image_url) continue;
         images.push({
           panel_id: panelPrompt.panel_id,
-          image_url: imageUrl,
+          image_url: imageRecord.image_url,
           revised_prompt: panelPrompt.prompt,
-          width: 1500,
-          height: 2100
+          width: imageRecord.width ?? 1500,
+          height: imageRecord.height ?? 2100
         });
       }
       if (images.length !== imagePromptPlan.length) {
@@ -856,14 +728,15 @@ async function executeGoogleGeminiChat({ flow, env, fetchImpl, systemPrompt, use
   return extractText(data);
 }
 
-async function executeOpenAiCompatibleTextProvider({ flow, fetchImpl, systemPrompt, userPrompt }, compatible) {
+async function executeOpenAiCompatibleTextProvider({ flow, fetchImpl, systemPrompt, userPrompt, responseFormat }, compatible) {
   const data = await postJson(fetchImpl, compatible.url, {
     headers: compatible.headers,
     body: {
       model: flow.model,
       messages: buildMessages(systemPrompt, userPrompt),
       max_tokens: flow.maxTokens || 700,
-      temperature: flow.temperature
+      temperature: flow.temperature,
+      ...(responseFormat ? { response_format: responseFormat } : {})
     }
   });
   return extractText(data);
@@ -956,6 +829,351 @@ async function executeHuggingFaceImage({ flow, env, fetchImpl, panelId, prompt, 
   }
   const data = await response.json().catch(() => undefined);
   return materializeGeneratedImageUrl(extractImageUrl(data, contentType || "image/png"), fetchImpl, env);
+}
+
+async function executeLocalComfyUiImage({ flow, env, fetchImpl, panelId, prompt, negativePrompt, panelCopy = {} }) {
+  const comfyUrl = localComfyUiBaseUrl(env);
+  const width = boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_IMAGE_WIDTH || env.COMFYUI_IMAGE_WIDTH, 256, 2048, 512);
+  const height = boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_IMAGE_HEIGHT || env.COMFYUI_IMAGE_HEIGHT, 256, 2048, 704);
+  const steps = boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_STEPS || env.COMFYUI_STEPS, 1, 80, 18);
+  const cfg = boundedNumberEnv(env.CUSTOMCARD_COMFYUI_CFG || env.COMFYUI_CFG, 1, 20, 6.5);
+  const sampler = String(env.CUSTOMCARD_COMFYUI_SAMPLER || env.COMFYUI_SAMPLER || "euler").trim() || "euler";
+  const scheduler = String(env.CUSTOMCARD_COMFYUI_SCHEDULER || env.COMFYUI_SCHEDULER || "normal").trim() || "normal";
+  const deterministicSeed = numericSeed(`${flow.model}:${panelId}:${prompt}`);
+  const seed = boundedIntegerEnv(
+    env.CUSTOMCARD_COMFYUI_SEED || env.COMFYUI_SEED || deterministicSeed,
+    0,
+    2 ** 32 - 1,
+    deterministicSeed
+  );
+  const variables = {
+    cfg,
+    checkpoint: flow.model || "DreamShaper_8_pruned.safetensors",
+    height,
+    negativePrompt,
+    panelId,
+    prompt,
+    sampler,
+    scheduler,
+    seed,
+    steps,
+    width,
+    workflowId: localComfyWorkflowId(env),
+    ...localComfyTypographyVariables({ panelId, panelCopy, width, height })
+  };
+  const workflow = buildLocalComfyWorkflow({ env, variables });
+  const promptResponse = await postJson(fetchImpl, localComfyUiApiUrl(comfyUrl, "/prompt"), {
+    body: buildLocalComfyPromptBody({ env, workflow, variables })
+  });
+  const promptId = String(promptResponse.prompt_id || "").trim();
+  if (!promptId) throw new Error("Local ComfyUI did not return a prompt_id.");
+  const output = await waitForLocalComfyImage(fetchImpl, comfyUrl, promptId, {
+    pollMs: boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_POLL_INTERVAL_MS || env.COMFYUI_POLL_INTERVAL_MS, 250, 30_000, 1500),
+    timeoutMs: boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_TIMEOUT_MS || env.COMFYUI_TIMEOUT_MS, 10_000, 900_000, 360_000)
+  });
+  const imageUrl = new URL(localComfyUiApiUrl(comfyUrl, "/view"));
+  imageUrl.searchParams.set("filename", output.filename);
+  imageUrl.searchParams.set("subfolder", output.subfolder || "");
+  imageUrl.searchParams.set("type", output.type || "output");
+  const response = await fetchImpl(imageUrl.toString(), { method: "GET" });
+  if (!response.ok) throw new Error(`Local ComfyUI image fetch failed with ${response.status}.`);
+  const contentType = response.headers?.get?.("content-type") || "image/png";
+  const buffer = Buffer.from(await response.arrayBuffer());
+  return {
+    image_url: `data:${contentType};base64,${buffer.toString("base64")}`,
+    width,
+    height
+  };
+}
+
+function buildLocalComfyWorkflow({ env, variables }) {
+  const workflowSource = firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_WORKFLOW_JSON", "COMFYUI_WORKFLOW_JSON"]);
+  const workflowPath = firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_WORKFLOW_PATH", "COMFYUI_WORKFLOW_PATH"]);
+  if (workflowSource || workflowPath) {
+    const rawWorkflow = workflowSource || readLocalComfyWorkflowFile(workflowPath);
+    try {
+      return interpolateLocalComfyTemplate(JSON.parse(rawWorkflow), variables);
+    } catch (error) {
+      throw new Error(`Local ComfyUI workflow template is invalid: ${errorMessage(error)}`);
+    }
+  }
+  return buildLocalComfyTxt2ImgWorkflow(variables);
+}
+
+function readLocalComfyWorkflowFile(workflowPath) {
+  const resolvedPath = resolve(String(workflowPath));
+  if (!existsSync(resolvedPath)) throw new Error(`Local ComfyUI workflow file not found: ${resolvedPath}`);
+  return readFileSync(resolvedPath, "utf8");
+}
+
+function buildLocalComfyPromptBody({ env, workflow, variables }) {
+  const workflowId = localComfyWorkflowId(env);
+  const workflowInputs = localComfyWorkflowInputs(env, variables);
+  const customcardExtraData = Object.fromEntries(
+    Object.entries({
+      workflow_id: workflowId,
+      panel_id: variables.panelId,
+      seed: variables.seed,
+      inputs: workflowInputs
+    }).filter(([, value]) => value !== undefined && value !== null && value !== "")
+  );
+  return {
+    prompt: workflow,
+    client_id: firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_CLIENT_ID", "COMFYUI_CLIENT_ID"]) || "customcard-local-comfyui-provider",
+    ...(Object.keys(customcardExtraData).length > 0
+      ? {
+          extra_data: {
+            customcard: customcardExtraData
+          }
+        }
+      : {})
+  };
+}
+
+function localComfyWorkflowId(env) {
+  return firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_WORKFLOW_ID", "COMFYUI_WORKFLOW_ID"]);
+}
+
+function localComfyWorkflowInputs(env, variables) {
+  const defaults = localComfyWorkflowInputSummary(variables);
+  const rawInputs = firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_WORKFLOW_INPUTS_JSON", "COMFYUI_WORKFLOW_INPUTS_JSON"]);
+  if (!rawInputs) return defaults;
+  try {
+    const configured = interpolateLocalComfyTemplate(JSON.parse(rawInputs), variables);
+    return configured && !Array.isArray(configured) && typeof configured === "object"
+      ? { ...defaults, ...configured }
+      : defaults;
+  } catch {
+    return defaults;
+  }
+}
+
+function localComfyWorkflowInputSummary(variables) {
+  return {
+    workflow_id: variables.workflowId || "",
+    panel_id: variables.panelId,
+    checkpoint: variables.checkpoint,
+    width: variables.width,
+    height: variables.height,
+    steps: variables.steps,
+    cfg: variables.cfg,
+    sampler: variables.sampler,
+    scheduler: variables.scheduler,
+    seed: variables.seed,
+    prompt: variables.prompt,
+    negative_prompt: variables.negativePrompt || "",
+    headline_text: variables.headlineText || "",
+    body_text: variables.bodyText || "",
+    headline_font_size: variables.headlineFontSize,
+    body_font_size: variables.bodyFontSize,
+    headline_box: {
+      x: variables.headlineBoxX,
+      y: variables.headlineBoxY,
+      width: variables.headlineBoxWidth,
+      height: variables.headlineBoxHeight
+    },
+    body_box: {
+      x: variables.bodyBoxX,
+      y: variables.bodyBoxY,
+      width: variables.bodyBoxWidth,
+      height: variables.bodyBoxHeight
+    },
+    text_alignment: variables.textAlignment,
+    min_font_size: variables.minFontSize
+  };
+}
+
+function localComfyTypographyVariables({ panelId, panelCopy = {}, width, height }) {
+  const layout = panelCopy.text_layout || panelCopy.textLayout || {};
+  const imageWidth = Math.max(1, Number(width || 960));
+  const imageHeight = Math.max(1, Number(height || 1344));
+  const scale = layout.scale === "large" ? 1.1 : layout.scale === "compact" ? 0.9 : 1;
+  const fontPairing = layout.font_pairing || layout.fontPairing || "classic-serif";
+  const lightInk = layout.color_mode === "light-ink" || layout.colorMode === "light-ink" || layout.color_mode === "high-contrast";
+  const headlineBase = panelId === "front" ? 72 : panelId === "back" ? 42 : 54;
+  const bodyBase = panelId === "front" ? 28 : panelId === "back" ? 22 : 26;
+  const alignment = localComfyTextAlignment(layout.alignment);
+  const headlineZone = layout.headline_zone || layout.headlineZone || (panelId === "front" ? "center" : "upper");
+  const bodyZone = layout.body_zone || layout.bodyZone || (panelId === "front" ? "lower" : "center");
+  const headlineBox = localComfyTextBox({ zone: headlineZone, role: "headline", width: imageWidth, height: imageHeight });
+  const bodyBox = localComfyTextBox({ zone: bodyZone, role: "body", width: imageWidth, height: imageHeight });
+  return {
+    bodyBoxHeight: bodyBox.height,
+    bodyBoxWidth: bodyBox.width,
+    bodyBoxX: bodyBox.x,
+    bodyBoxY: bodyBox.y,
+    bodyFont: localComfyFontForPairing(fontPairing, "body"),
+    bodyFontSize: Math.round(bodyBase * scale),
+    bodyHorizontalAlignment: alignment,
+    bodyLineSpacing: 6,
+    bodyPadding: Math.max(32, Math.round(imageWidth * 0.08)),
+    bodyStrokeColor: lightInk ? "#111715" : "#fff6df",
+    bodyStrokeThickness: lightInk ? 0.06 : 0.02,
+    bodyStrokeWidth: lightInk ? 2 : 1,
+    bodyText: cleanText(panelCopy.body || ""),
+    bodyVerticalAlignment: localComfyBoxVerticalAlignment(bodyZone),
+    bodyXShift: 0,
+    bodyYShift: localComfyYShift(bodyZone, "body"),
+    bodyFillColor: lightInk ? "#f4d77d" : "#4f432a",
+    headlineBoxHeight: headlineBox.height,
+    headlineBoxWidth: headlineBox.width,
+    headlineBoxX: headlineBox.x,
+    headlineBoxY: headlineBox.y,
+    headlineFont: localComfyFontForPairing(fontPairing, "headline"),
+    headlineFontSize: Math.round(headlineBase * scale),
+    headlineHorizontalAlignment: alignment,
+    headlineLineSpacing: 8,
+    headlinePadding: Math.max(32, Math.round(imageWidth * 0.08)),
+    headlineStrokeColor: lightInk ? "#111715" : "#fff6df",
+    headlineStrokeThickness: lightInk ? 0.08 : 0.03,
+    headlineStrokeWidth: lightInk ? 2 : 1,
+    headlineText: cleanText(panelCopy.headline || ""),
+    headlineVerticalAlignment: localComfyBoxVerticalAlignment(headlineZone),
+    headlineXShift: 0,
+    headlineYShift: localComfyYShift(headlineZone, "headline"),
+    headlineFillColor: lightInk ? "#fff7df" : "#282923",
+    minFontSize: panelId === "back" ? 14 : 16,
+    panelText: [cleanText(panelCopy.headline || ""), cleanText(panelCopy.body || "")].filter(Boolean).join("\n\n"),
+    textAlignment: alignment,
+    textCanvasHeight: imageHeight,
+    textDebugBoxes: layout.debug_boxes === true || layout.debugBoxes === true
+  };
+}
+
+function localComfyFontForPairing(pairing, role) {
+  if (pairing === "bold-editorial") return role === "headline" ? "arialbd.ttf" : "arial.ttf";
+  if (pairing === "minimal-sans") return "arial.ttf";
+  return "georgia.ttf";
+}
+
+function localComfyTextBox({ zone, role, width, height }) {
+  const normalizedZone = ["top", "upper", "center", "lower", "bottom"].includes(zone) ? zone : "center";
+  const marginX = Math.max(56, Math.round(Number(width) * (role === "body" ? 0.11 : 0.09)));
+  const boxWidth = Math.max(1, Number(width) - marginX * 2);
+  const specs =
+    role === "headline"
+      ? {
+          top: { y: 0.07, height: 0.18 },
+          upper: { y: 0.1, height: 0.2 },
+          center: { y: 0.28, height: 0.22 },
+          lower: { y: 0.6, height: 0.2 },
+          bottom: { y: 0.72, height: 0.17 }
+        }
+      : {
+          top: { y: 0.2, height: 0.36 },
+          upper: { y: 0.24, height: 0.34 },
+          center: { y: 0.37, height: 0.36 },
+          lower: { y: 0.58, height: 0.3 },
+          bottom: { y: 0.68, height: 0.22 }
+        };
+  const spec = specs[normalizedZone] || specs.center;
+  return {
+    x: marginX,
+    y: Math.max(0, Math.round(Number(height) * spec.y)),
+    width: boxWidth,
+    height: Math.max(1, Math.round(Number(height) * spec.height))
+  };
+}
+
+function localComfyTextAlignment(value) {
+  return ["left", "center", "right"].includes(value) ? value : "center";
+}
+
+function localComfyBoxVerticalAlignment(zone) {
+  if (zone === "top") return "top";
+  if (zone === "bottom") return "bottom";
+  return "middle";
+}
+
+function localComfyVerticalAlignment(zone) {
+  if (zone === "top" || zone === "upper") return "top";
+  if (zone === "lower" || zone === "bottom") return "bottom";
+  return "middle";
+}
+
+function localComfyYShift(zone, role) {
+  if (zone === "top") return 32;
+  if (zone === "upper") return role === "headline" ? 92 : 122;
+  if (zone === "lower") return role === "headline" ? -122 : -104;
+  if (zone === "bottom") return role === "headline" ? -92 : -56;
+  return role === "headline" ? -72 : 88;
+}
+
+function interpolateLocalComfyTemplate(value, variables) {
+  if (Array.isArray(value)) return value.map((item) => interpolateLocalComfyTemplate(item, variables));
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, nested]) => [key, interpolateLocalComfyTemplate(nested, variables)]));
+  }
+  if (typeof value !== "string") return value;
+  const exactMatch = value.match(/^\{\{\s*([a-zA-Z0-9_]+)\s*\}\}$/);
+  if (exactMatch) {
+    const exactValue = localComfyTemplateVariable(exactMatch[1], variables);
+    if (exactValue !== undefined) return exactValue;
+  }
+  return value.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_match, key) => {
+    const replacement = localComfyTemplateVariable(key, variables);
+    return replacement === undefined ? "" : String(replacement);
+  });
+}
+
+function localComfyTemplateVariable(key, variables) {
+  const values = {
+    cfg: variables.cfg,
+    checkpoint: variables.checkpoint,
+    height: variables.height,
+    negative_prompt: variables.negativePrompt || "",
+    negativePrompt: variables.negativePrompt || "",
+    panel_id: variables.panelId,
+    panelId: variables.panelId,
+    prompt: variables.prompt,
+    sampler: variables.sampler,
+    scheduler: variables.scheduler,
+    seed: variables.seed,
+    steps: variables.steps,
+    width: variables.width,
+    body_fill_color: variables.bodyFillColor,
+    body_font: variables.bodyFont,
+    body_font_size: variables.bodyFontSize,
+    body_horizontal_alignment: variables.bodyHorizontalAlignment,
+    body_line_spacing: variables.bodyLineSpacing,
+    body_padding: variables.bodyPadding,
+    body_stroke_color: variables.bodyStrokeColor,
+    body_stroke_thickness: variables.bodyStrokeThickness,
+    body_stroke_width: variables.bodyStrokeWidth,
+    body_text: variables.bodyText || "",
+    body_vertical_alignment: variables.bodyVerticalAlignment,
+    body_x_shift: variables.bodyXShift,
+    body_y_shift: variables.bodyYShift,
+    body_box_x: variables.bodyBoxX,
+    body_box_y: variables.bodyBoxY,
+    body_box_width: variables.bodyBoxWidth,
+    body_box_height: variables.bodyBoxHeight,
+    headline_fill_color: variables.headlineFillColor,
+    headline_font: variables.headlineFont,
+    headline_font_size: variables.headlineFontSize,
+    headline_horizontal_alignment: variables.headlineHorizontalAlignment,
+    headline_line_spacing: variables.headlineLineSpacing,
+    headline_padding: variables.headlinePadding,
+    headline_stroke_color: variables.headlineStrokeColor,
+    headline_stroke_thickness: variables.headlineStrokeThickness,
+    headline_stroke_width: variables.headlineStrokeWidth,
+    headline_text: variables.headlineText || "",
+    headline_vertical_alignment: variables.headlineVerticalAlignment,
+    headline_x_shift: variables.headlineXShift,
+    headline_y_shift: variables.headlineYShift,
+    headline_box_x: variables.headlineBoxX,
+    headline_box_y: variables.headlineBoxY,
+    headline_box_width: variables.headlineBoxWidth,
+    headline_box_height: variables.headlineBoxHeight,
+    min_font_size: variables.minFontSize,
+    panel_text: variables.panelText || "",
+    text_alignment: variables.textAlignment,
+    text_canvas_height: variables.textCanvasHeight,
+    text_debug_boxes: variables.textDebugBoxes,
+    workflow_id: variables.workflowId || "",
+    workflowId: variables.workflowId || ""
+  };
+  return values[key];
 }
 
 async function executeDeepAiText2ImgImage({ flow, env, fetchImpl, panelId, prompt, negativePrompt }) {
@@ -1320,9 +1538,159 @@ function interpolateRunComfyInput(value, variables) {
     .replace(/\{\{seed\}\}/g, String(variables.seed));
 }
 
+function buildLocalComfyTxt2ImgWorkflow({ cfg, checkpoint, height, negativePrompt, panelId, prompt, sampler, scheduler, seed, steps, width }) {
+  return {
+    "1": {
+      class_type: "CheckpointLoaderSimple",
+      inputs: { ckpt_name: checkpoint }
+    },
+    "2": {
+      class_type: "CLIPTextEncode",
+      inputs: { text: prompt, clip: ["1", 1] }
+    },
+    "3": {
+      class_type: "CLIPTextEncode",
+      inputs: { text: negativePrompt || "", clip: ["1", 1] }
+    },
+    "4": {
+      class_type: "EmptyLatentImage",
+      inputs: { width, height, batch_size: 1 }
+    },
+    "5": {
+      class_type: "KSampler",
+      inputs: {
+        seed,
+        steps,
+        cfg,
+        sampler_name: sampler,
+        scheduler,
+        denoise: 1,
+        model: ["1", 0],
+        positive: ["2", 0],
+        negative: ["3", 0],
+        latent_image: ["4", 0]
+      }
+    },
+    "6": {
+      class_type: "VAEDecode",
+      inputs: { samples: ["5", 0], vae: ["1", 2] }
+    },
+    "7": {
+      class_type: "SaveImage",
+      inputs: {
+        images: ["6", 0],
+        filename_prefix: `customcard-provider-${panelId}`
+      }
+    }
+  };
+}
+
+async function waitForLocalComfyImage(fetchImpl, comfyUrl, promptId, { pollMs, timeoutMs }) {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    const history = await fetchJsonProvider(fetchImpl, localComfyUiApiUrl(comfyUrl, `/history/${encodeURIComponent(promptId)}`));
+    const item = history[promptId];
+    if (item?.status?.completed === false && item?.status?.status_str === "error") {
+      throw new Error(`Local ComfyUI prompt failed: ${JSON.stringify(item.status)}`);
+    }
+    const images = Object.values(item?.outputs ?? {}).flatMap((output) => output.images ?? []);
+    if (images.length > 0) return images[0];
+    await sleep(pollMs);
+  }
+  throw new Error(`Local ComfyUI prompt ${promptId} timed out after ${timeoutMs}ms.`);
+}
+
+async function fetchJsonProvider(fetchImpl, url, init = { method: "GET" }) {
+  const response = await fetchImpl(url, init);
+  const text = await response.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(`Expected JSON from local provider, got ${text.slice(0, 200)}.`);
+  }
+  if (!response.ok) throw new Error(`Local provider returned ${response.status}: ${JSON.stringify(data).slice(0, 300)}.`);
+  return data;
+}
+
+function localOpenAiChatCompletionsUrl(env) {
+  const baseUrl = firstUsableEnv(env, ["CUSTOMCARD_LOCAL_LLM_BASE_URL", "LMSTUDIO_BASE_URL", "KOBOLDCPP_BASE_URL"]);
+  if (!baseUrl) throw new Error("Missing required provider env: CUSTOMCARD_LOCAL_LLM_BASE_URL or LMSTUDIO_BASE_URL or KOBOLDCPP_BASE_URL");
+  const parsed = assertLocalProviderBaseUrl(baseUrl, "Local LLM base URL");
+  const normalizedPath = parsed.pathname.replace(/\/+$/, "");
+  if (normalizedPath.endsWith("/chat/completions")) return parsed.toString();
+  parsed.pathname = normalizedPath.endsWith("/v1")
+    ? `${normalizedPath}/chat/completions`
+    : `${normalizedPath || ""}/v1/chat/completions`.replace(/\/{2,}/g, "/");
+  parsed.search = "";
+  parsed.hash = "";
+  return parsed.toString();
+}
+
+function localComfyUiBaseUrl(env) {
+  const baseUrl = firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_URL", "COMFYUI_URL"]) || "http://127.0.0.1:8188";
+  return assertLocalProviderBaseUrl(baseUrl, "Local ComfyUI URL").toString().replace(/\/+$/, "");
+}
+
+function localComfyUiApiUrl(comfyUrl, pathname) {
+  const url = new URL(pathname, `${comfyUrl.replace(/\/+$/, "")}/`);
+  assertLocalProviderBaseUrl(url.toString(), "Local ComfyUI API URL");
+  return url.toString();
+}
+
+function assertLocalProviderBaseUrl(value, label) {
+  let parsed;
+  try {
+    parsed = new URL(String(value));
+  } catch {
+    throw new Error(`${label} is invalid.`);
+  }
+  const host = parsed.hostname.toLowerCase();
+  const localHosts = new Set(["localhost", "127.0.0.1", "::1", "0.0.0.0"]);
+  if (parsed.protocol !== "http:" || !localHosts.has(host)) {
+    throw new Error(`${label} must use a localhost http URL for the local-only provider.`);
+  }
+  parsed.username = "";
+  parsed.password = "";
+  return parsed;
+}
+
+function firstUsableEnv(env, keys) {
+  for (const key of keys) {
+    const value = env[key];
+    if (!value) continue;
+    const normalized = String(value).trim();
+    if (!normalized || ["disabled", "example", "replace-me", "changeme", "dummy", "fake"].includes(normalized.toLowerCase())) continue;
+    return normalized;
+  }
+  return "";
+}
+
+function normalizeImageProviderResult(value) {
+  if (!value) return undefined;
+  if (typeof value === "string") return { image_url: value };
+  if (typeof value === "object") {
+    const imageUrl = value.image_url || value.imageUrl || value.url;
+    return imageUrl
+      ? {
+          image_url: String(imageUrl),
+          width: Number.isFinite(value.width) ? value.width : undefined,
+          height: Number.isFinite(value.height) ? value.height : undefined
+        }
+      : undefined;
+  }
+  return undefined;
+}
+
 function boundedIntegerEnv(value, min, max, fallback) {
   const parsed = Number(value);
   if (!Number.isInteger(parsed)) return fallback;
+  return Math.min(Math.max(parsed, min), max);
+}
+
+function boundedNumberEnv(value, min, max, fallback) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
   return Math.min(Math.max(parsed, min), max);
 }
 
@@ -1396,6 +1764,13 @@ function openAiCompatibleAdapter(adapterId, env) {
       headers: { authorization: `Bearer ${requiredEnv(env, "SELF_HOSTED_LLM_API_KEY")}` }
     };
   }
+  if (adapterId === "local-openai-compatible-chat") {
+    const apiKey = firstUsableEnv(env, ["CUSTOMCARD_LOCAL_LLM_API_KEY", "LMSTUDIO_API_KEY", "KOBOLDCPP_API_KEY"]);
+    return {
+      url: localOpenAiChatCompletionsUrl(env),
+      headers: apiKey ? { authorization: `Bearer ${apiKey}` } : {}
+    };
+  }
   const config = adapters[adapterId];
   if (!config) return undefined;
   return {
@@ -1464,132 +1839,6 @@ function buildMessages(systemPrompt, userPrompt) {
   ];
 }
 
-function buildCardCopyPrompt(input) {
-  return JSON.stringify(
-    {
-      task:
-        "Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.",
-      required_schema: {
-        theme_guide: {
-          theme_title: "string",
-          palette: ["string"],
-          motifs: ["string"],
-          border_style: "string",
-          front_back_pairing: "string",
-          interior_pairing: "string"
-        },
-        panels: requiredPanelIds.map((id) => ({
-          id,
-          headline: "string",
-          body: "string",
-          art_direction: "string",
-          visual_cue: "string",
-          text_layout: {
-            headline_zone: "top|upper|center|lower",
-            body_zone: "upper|center|lower|bottom",
-            alignment: "left|center|right",
-            font_pairing: "serif-sans|bold-editorial|minimal-sans|soft-serif",
-            color_mode: "dark-ink|light-ink|accent-ink|high-contrast",
-            scale: "compact|standard|large"
-          },
-          image_prompt: "string",
-          image_negative_prompt: "string"
-        })),
-        memory_citations: ["string"]
-      },
-      section_order: [
-        "Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.",
-        "Write the panel copy so the card has an emotional arc from cover to interior to back.",
-        "Write art_direction as layout notes for app-rendered typography and print-safe artwork.",
-        "Write visual_cue as the specific image composition each panel should show.",
-        "Write text_layout as a safe typography plan using only the enumerated zones, alignment, font_pairing, color_mode, and scale values.",
-        "Write each image_prompt as a separate one-panel visual request for the image provider."
-      ],
-      copy_requirements: [
-        "Exactly four panels.",
-        "Use each panel id exactly once in this order: front, inside-left, inside-right, back.",
-        "Use only provided memory_notes.",
-        "Preserve exact concrete facts from personal_note and memory_notes in final copy: names, relationships, dates, places, product names, CTA nouns, and practical support items. Do not replace literal requested items such as meals, rides, calls, silence, QR, dates, names, or business terms with generic summaries.",
-        "No order/payment claims.",
-        "Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.",
-        "Do not produce generic one-line cards unless the input is extremely thin.",
-        "Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.",
-        "Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.",
-        "When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.",
-        "front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short dedication.",
-        "inside-left body should be 120-320 characters and feel like an opening note, quote, blessing, or scene-setting message.",
-        "inside-right body should be 180-420 characters and carry the main personal message plus a natural sign-off when appropriate.",
-        "back body <= 160 characters and should feel quiet, polished, and optional.",
-        "All body text must fit a 5x7 card panel with generous margins."
-      ],
-      story_playbooks: [
-        "Low-context first-time cards: be useful and specific from the supplied occasion/style without inventing memories; use one gentle human detail and enough copy that the sender could approve it immediately.",
-        "High-memory get-well or recovery cards: weave only approved inside jokes into tender support, avoid medical advice, diagnosis, miracle-cure language, pity, or clownish meme overload.",
-        "B2B lifecycle or warranty cards: preserve exact customer, business, date, product, and CTA facts; make the CTA clear but calm; never invent discounts, legal terms, shipment status, or order/payment claims.",
-        "Wedding or distant-family cards: be respectful and warm without overclaiming closeness; use a short non-denominational blessing unless a religion is explicitly specified, and reserve handwriting space when requested.",
-        "Sympathy or quiet-support cards: keep language grounded and practical; avoid cliches, religious claims unless requested, bright celebration language, overdesigned ornament, and generic note-template stationery."
-      ],
-      layout_requirements: [
-        "theme_guide is binding, but reuse motifs with restraint: a panel should have one dominant composition idea, not a scattered wallpaper of every motif.",
-        "art_direction must name the panel's composition archetype, layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.",
-        "visual_cue is binding for the image prompt: make front, inside-left, inside-right, and back visually distinct while still coordinated.",
-        "visual_cue should describe concrete objects, light, palette, spacing, and text-safe negative space for that exact panel; do not mention final words, letters, signatures, or fake handwriting.",
-        "text_layout controls app-rendered typography only. Choose zones that match the clean text-safe area in visual_cue; never ask the image model to draw the text.",
-        "text_layout must use only these values: headline_zone top/upper/center/lower; body_zone upper/center/lower/bottom; alignment left/center/right; font_pairing serif-sans/bold-editorial/minimal-sans/soft-serif; color_mode dark-ink/light-ink/accent-ink/high-contrast; scale compact/standard/large.",
-        "front and back should visually match each other; the front carries the strongest hero idea and the back repeats a small quiet echo.",
-        "inside-left and inside-right should visually match each other and feel like the opened interior spread.",
-        "inside-left and inside-right must keep a calm blank/low-contrast center reserved for app-rendered text; use edge-led artwork, not a generic note-template.",
-        "Interior panels should usually be lighter, warmer, and more paper-like than the front/back covers; avoid using the same dark cover field on all four panels.",
-        "Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.",
-        "Never rely on a large opaque caption plaque, text box, label, banner, or card-within-card; text-safe space means natural negative space in the artwork.",
-        "Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, edge-led gallery illustration, lower-corner object cluster, or mostly blank back mark.",
-        "Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.",
-        "Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative."
-      ],
-      image_prompt_requirements: [
-        "image_prompt is the exact prompt the image model will receive for that panel.",
-        "image_prompt must describe one separate portrait 5x7 panel, not the whole four-panel set.",
-        "image_prompt must be a concrete visual composition, not a restatement of form fields.",
-        "image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.",
-        "Do not ask the image model to render the headline or body. The app overlays typography after generation.",
-        "Reserve clean text-safe space for the app overlay where the panel copy belongs.",
-        "Do not describe the app overlay as a recipient name, headline, body, quote, blessing, verse, poem, short message, personal message, or scene-setting message; say only clean text-safe area.",
-        "Do not create a caption plaque, inner card rectangle, blank label, sticky note, banner, or text box; text-safe must be integrated negative space, soft open field, or quiet blank center.",
-        "image_prompt must stay visual: concrete motifs, palette, border/frame treatment, background texture, ornament density, composition archetype, and hierarchy only.",
-        "For the front, explicitly choose one dominant hero composition or sparse line-art composition with a clean lower or central text-safe area.",
-        "For inside-left and inside-right, explicitly include: quiet center, clean text-safe area, generous margins, light low-contrast interior, and sparse edge/corner or lower-edge artwork.",
-        "For the back, explicitly include mostly negative space and one small coordinating lower mark or border echo.",
-        "Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.",
-        "Coordinate palette, border style, motifs, and spacing across all four image_prompt values.",
-        "For B2B CTA cards, reserve a clean app-overlay area for any QR code or account-manager CTA; do not ask the image model to draw QR codes, labels, or interface elements.",
-        "For cards requesting handwriting space, reserve an open note area but do not ask the image model to create handwriting, signatures, script, or fake personal notes.",
-        "For sympathy image_prompt values, avoid generic blank-message templates entirely: no framed blank page, no ruled sheet, no card-within-card, and no physical mockup.",
-        "For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, no people/no hands, no physical mockup, and no logos/no watermark/no readable text."
-      ],
-      safety_requirements: [
-        "Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.",
-        "Do not describe a physical paper card, folded card, envelope, tabletop, desk scene, product photo, mockup, shadowed card, framed card, or any object photographed in a scene.",
-        "Do not include words, letters, glyphs, calligraphy, handwriting, labels, signatures, fake text, pseudo text, or decorative script marks.",
-        "image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo.",
-        "Return JSON only, no markdown."
-      ],
-      input
-    },
-    null,
-    2
-  );
-}
-
-function buildCardCopyResponseFormat(flow) {
-  if (!["cloudflare-workers-ai-chat", "openai-responses-chat", "google-gemini-chat"].includes(flow.primaryAdapterId)) {
-    return undefined;
-  }
-  return {
-    type: "json_schema",
-    json_schema: cardCopyJsonSchema
-  };
-}
-
 function buildOpenAiResponsesTextFormat(responseFormat) {
   if (responseFormat?.type !== "json_schema" || !responseFormat.json_schema) return undefined;
   return {
@@ -1630,10 +1879,17 @@ function buildImagePromptPlan(input, cardCopy) {
   const panelsById = new Map((cardCopy.panels ?? []).map((panel) => [panel.id, panel]));
   return requiredPanelIds.map((panelId) => {
     const panel = panelsById.get(panelId) ?? panelDefaults[panelId];
+    const textLayout = normalizeTextLayout(panel.text_layout || panel.textLayout, panelId, input);
     return {
       panel_id: panelId,
       prompt: normalizeImagePrompt(panel.image_prompt || buildPanelImagePrompt(input, panelId, panel), panelId, input, panel),
-      negative_prompt: normalizePanelImageNegativePrompt(panel.image_negative_prompt, input)
+      negative_prompt: normalizePanelImageNegativePrompt(panel.image_negative_prompt, input),
+      panel_copy: {
+        id: panelId,
+        headline: cleanText(panel.headline || ""),
+        body: cleanText(panel.body || ""),
+        text_layout: textLayout
+      }
     };
   });
 }

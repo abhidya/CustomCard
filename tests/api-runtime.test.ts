@@ -5,8 +5,13 @@ import { createPostgresRuntime } from "../scripts/postgres-runtime.mjs";
 
 const renderPacketsRoute = apiRouteContracts.find((route) => route.id === "render-packets")!;
 const calendarConnectionStartRoute = apiRouteContracts.find((route) => route.id === "calendar-connection-start")!;
+const providerJobLeaseRoute = apiRouteContracts.find((route) => route.id === "provider-job-lease")!;
+const providerJobStatusRoute = apiRouteContracts.find((route) => route.id === "provider-job-status")!;
+const adminAiFlowConfigsSaveRoute = apiRouteContracts.find((route) => route.id === "admin-ai-flow-configs-save")!;
 const persistedMutationRouteIds = [
+  "admin-ai-flow-configs-save",
   "admin-card-gallery-save",
+  "admin-safety-controls-save",
   "card-projects",
   "customer-draft-state-save",
   "data-requests",
@@ -180,6 +185,77 @@ describe("api runtime safety", () => {
     });
   });
 
+  it("persists admin AI flow policy through the runtime instead of browser session drafts", async () => {
+    const runtime = createApiRuntime({
+      env: {
+        CUSTOMCARD_API_RUNTIME: "memory",
+        CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS: "enabled",
+        AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
+        CUSTOMCARD_CUSTOMER_SESSION_TOKEN: "test-customer-session-token",
+        CUSTOMCARD_ADMIN_SESSION_TOKEN: "test-admin-session-token",
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast"
+      },
+      routes: apiRouteContracts
+    });
+    const authContext = { ok: true, userId: "admin-demo", role: "admin", sessionId: "session-admin" };
+
+    const saved = await runtime.persistMutation({
+      route: adminAiFlowConfigsSaveRoute,
+      request: { headers: { "x-idempotency-key": "admin-ai-flow-configs-0001" } },
+      authContext,
+      bodyText: JSON.stringify({
+        configs: [
+          {
+            flowId: "card-copy",
+            primaryAdapterId: "cloudflare-workers-ai-chat",
+            fallbackAdapterId: "",
+            model: "@cf/meta/llama-3.1-8b-instruct-fast",
+            promptInstructions: "Use the saved admin policy.",
+            rateLimitPerMinute: 3,
+            monthlyBudgetCents: 1234,
+            perRequestBudgetCents: 2,
+            queueEnabled: false,
+            fallbackQueueEnabled: false,
+            liveProviderCallsEnabled: true,
+            maxRetries: 1,
+            maxTokens: 1200,
+            temperature: 0.4
+          }
+        ]
+      }),
+      responsePayload: { service: "customcard-api", status: "accepted" }
+    });
+
+    expect(saved.statusCode).toBe(202);
+    expect(saved.payload).toMatchObject({
+      service: "customcard-admin-ai-flow-configs",
+      version: 1,
+      updatedBy: "admin-demo",
+      repositoryPersisted: true,
+      idempotencyPersisted: true
+    });
+
+    await expect(runtime.readAdminAiFlowConfig()).resolves.toMatchObject({
+      version: 1,
+      configs: expect.arrayContaining([
+        expect.objectContaining({
+          flowId: "card-copy",
+          primaryAdapterId: "cloudflare-workers-ai-chat",
+          promptInstructions: "Use the saved admin policy.",
+          rateLimitPerMinute: 3
+        })
+      ]),
+      providerReadiness: {
+        "cloudflare-workers-ai-chat": expect.objectContaining({
+          configured: true,
+          credentialsExposed: false
+        })
+      }
+    });
+  });
+
   it("does not require real-order safety controls as runtime env vars", () => {
     const runtime = createApiRuntime({
       env: {
@@ -271,6 +347,161 @@ test-clerk-jwt-key
     });
   });
 
+  it("gates provider job leasing behind a scoped provider token", async () => {
+    const providerToken = "test-provider-worker-token-32-chars";
+    const runtime = createApiRuntime({
+      env: {
+        CUSTOMCARD_API_RUNTIME: "postgres",
+        DATABASE_URL: "postgres://customcard-db.internal/customcard",
+        AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
+        CUSTOMCARD_PROVIDER_WORKER_TOKEN: providerToken,
+        CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS: "ai-card-generate"
+      },
+      routes: apiRouteContracts,
+      postgresPoolFactory: () => createProviderPool([])
+    });
+
+    await expect(runtime.authorize(providerJobLeaseRoute, { headers: {} })).resolves.toMatchObject({
+      ok: false,
+      statusCode: 401,
+      payload: { status: "auth-required" }
+    });
+    await expect(
+      runtime.authorize(providerJobLeaseRoute, { headers: { authorization: "Bearer wrong-provider-token" } })
+    ).resolves.toMatchObject({
+      ok: false,
+      statusCode: 401,
+      payload: { status: "invalid-provider-token" }
+    });
+    await expect(
+      runtime.authorize(providerJobLeaseRoute, { headers: { authorization: `Bearer ${providerToken}` } })
+    ).resolves.toMatchObject({
+      ok: true,
+      role: "provider",
+      providerRouteIds: ["ai-card-generate"]
+    });
+    await expect(
+      runtime.authorize(providerJobStatusRoute, { headers: { authorization: `Bearer ${providerToken}` } })
+    ).resolves.toMatchObject({
+      ok: true,
+      role: "provider",
+      providerRouteIds: ["ai-card-generate"]
+    });
+  });
+
+  it("leases and completes provider jobs without exposing database or object-store credentials to the worker", async () => {
+    const providerToken = "test-provider-worker-token-32-chars";
+    const lockedAt = new Date().toISOString();
+    const queries: Array<{ sql: string; params: unknown[] }> = [];
+    const pool = createProviderPool(queries, [
+      {
+        id: "job-ai-provider-1",
+        user_id: "user-demo",
+        route_id: "ai-card-generate",
+        idempotency_key_id: "idem-ai-provider-1",
+        payload: {
+          routeId: "ai-card-generate",
+          body: { sender: "Manny", recipient: "Sara", occasion: "birthday" },
+          requestContext: {
+            rateKey: "user-demo",
+            idempotencyKey: "idem-ai-provider-1",
+            authContext: { userId: "user-demo", role: "customer", sessionId: "real-session-id" }
+          }
+        },
+        attempt_count: 1,
+        max_attempts: 3,
+        locked_at: lockedAt
+      }
+    ]);
+    const runtime = createApiRuntime({
+      env: {
+        CUSTOMCARD_API_RUNTIME: "postgres",
+        DATABASE_URL: "postgres://customcard-db.internal/customcard",
+        AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
+        CUSTOMCARD_PROVIDER_WORKER_TOKEN: providerToken,
+        CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS: "ai-card-generate"
+      },
+      routes: apiRouteContracts,
+      postgresPoolFactory: () => pool
+    });
+    const authContext = await runtime.authorize(providerJobLeaseRoute, {
+      headers: { authorization: `Bearer ${providerToken}` }
+    });
+
+    const lease = await runtime.leaseProviderJobs({
+      authContext,
+      workerId: "manny-comfy-01",
+      routeIds: ["ai-card-generate", "manual-vendor-handoff"],
+      limit: 1
+    });
+    const leasedJob = lease.payload.jobs[0];
+
+    expect(lease).toMatchObject({
+      statusCode: 200,
+      payload: {
+        leased: 1,
+        route_scope: ["ai-card-generate"],
+        artifact_upload: { r2CredentialsExposed: false }
+      }
+    });
+    expect(leasedJob.payload.requestContext.authContext.sessionId).toBe("provider-lease");
+    expect(leasedJob.lease_token).toMatch(/^[a-f0-9]{64}$/);
+    expect(queries.some((query) => query.sql.includes("FOR UPDATE SKIP LOCKED"))).toBe(true);
+
+    const status = await runtime.readProviderJobStatus({
+      authContext,
+      routeIds: ["ai-card-generate", "manual-vendor-handoff"]
+    });
+
+    expect(status).toMatchObject({
+      statusCode: 200,
+      payload: {
+        route_scope: ["ai-card-generate"],
+        metrics: {
+          queued_total: 2,
+          running_total: 1,
+          stale_running_total: 0,
+          dead_lettered_total: 0,
+          oldest_queued_age_seconds: 42
+        },
+        artifact_upload: { r2CredentialsExposed: false }
+      }
+    });
+    expect(JSON.stringify(status.payload)).not.toContain("real-session-id");
+
+    const complete = await runtime.completeProviderJob({
+      authContext,
+      jobId: leasedJob.job_id,
+      body: {
+        worker_id: "manny-comfy-01",
+        lease_token: leasedJob.lease_token,
+        status: "succeeded",
+        result: {
+          status: "ai-result-ready",
+          routeId: "ai-card-generate",
+          httpStatusCode: 200,
+          payload: {
+            draft_id: "draft-provider-1",
+            images: []
+          }
+        }
+      },
+      now: () => new Date("2030-01-01T00:00:00.000Z")
+    });
+
+    expect(complete).toMatchObject({
+      statusCode: 200,
+      payload: {
+        status: "completed",
+        job_id: "job-ai-provider-1",
+        queue_status: "succeeded",
+        result_available: true
+      }
+    });
+    expect(queries.some((query) => query.sql.includes("status = 'succeeded'"))).toBe(true);
+    expect(queries.some((query) => query.sql.includes("api.provider_job.succeeded"))).toBe(true);
+  });
+
   it("attaches the Postgres pool to the serverless lifecycle when enabled", async () => {
     const pool = {
       async query() {
@@ -311,3 +542,60 @@ test-clerk-jwt-key
     await runtime.close();
   });
 });
+
+function createProviderPool(queries: Array<{ sql: string; params: unknown[] }>, leasedRows: unknown[] = []) {
+  let leaseUsed = false;
+  const currentRows = leasedRows.map((row) => ({ ...(row as Record<string, unknown>), status: "running", locked_by: "manny-comfy-01" }));
+  const client = {
+    async query(sql: string, params: unknown[] = []) {
+      queries.push({ sql: compactSql(sql), params });
+      if (sql.includes("WITH scoped_jobs")) {
+        return {
+          rows: [
+            {
+              queued_total: 2,
+              running_total: 1,
+              stale_running_total: 0,
+              succeeded_total: 5,
+              dead_lettered_total: 0,
+              oldest_queued_age_seconds: 42,
+              max_active_attempt_count: 1,
+              max_attempts: 3,
+              last_succeeded_at: "2030-01-01T00:00:00.000Z",
+              last_dead_lettered_at: null
+            }
+          ],
+          rowCount: 1
+        };
+      }
+      if (sql.includes("locked_at < NOW()")) return { rows: [], rowCount: 0 };
+      if (sql.includes("FOR UPDATE SKIP LOCKED")) {
+        if (leaseUsed) return { rows: [], rowCount: 0 };
+        leaseUsed = true;
+        return { rows: leasedRows, rowCount: leasedRows.length };
+      }
+      if (sql.includes("FROM api_jobs") && sql.includes("WHERE id = $1")) {
+        return { rows: currentRows.filter((row) => row.id === params[0]), rowCount: 1 };
+      }
+      return { rows: [], rowCount: 1 };
+    },
+    release() {
+      return undefined;
+    }
+  };
+  return {
+    async query(sql: string, params: unknown[] = []) {
+      return client.query(sql, params);
+    },
+    async connect() {
+      return client;
+    },
+    async end() {
+      return undefined;
+    }
+  };
+}
+
+function compactSql(sql: string) {
+  return sql.replace(/\s+/g, " ").trim();
+}

@@ -78,7 +78,7 @@ export function createWorkerRuntime({
       }
 
       const expired = await requeueExpiredJobs({ postgresRuntime, leaseSeconds: workerLeaseSeconds(env) });
-      const jobs = await leaseJobs({ postgresRuntime, workerId, limit });
+      const jobs = await leaseJobs({ postgresRuntime, workerId, limit, routeIds: Array.from(routeIdSet) });
       const report = {
         service: "customcard-worker",
         status: "ready",
@@ -121,7 +121,7 @@ export function createWorkerRuntime({
       }
 
       const expired = await requeueExpiredJobs({ postgresRuntime, leaseSeconds: workerLeaseSeconds(env) });
-      const jobs = await leaseJobById({ postgresRuntime, workerId, jobId, userId });
+      const jobs = await leaseJobById({ postgresRuntime, workerId, jobId, userId, routeIds: Array.from(routeIdSet) });
       const report = {
         service: "customcard-worker",
         status: "ready",
@@ -211,40 +211,18 @@ export function validateWorkerEnv(env = process.env, { requirePostgres = false }
   return validateWorkerRuntimeEnv(env, { requirePostgres });
 }
 
-async function leaseJobs({ postgresRuntime, workerId, limit }) {
+async function leaseJobs({ postgresRuntime, workerId, limit, routeIds }) {
+  if (!Array.isArray(routeIds) || routeIds.length === 0) return [];
   const result = await postgresRuntime.query(
     `WITH next_jobs AS (
        SELECT id
        FROM api_jobs
        WHERE status = 'queued'
          AND run_after <= NOW()
+         AND route_id = ANY($2::text[])
        ORDER BY created_at ASC
        FOR UPDATE SKIP LOCKED
        LIMIT $1
-     )
-     UPDATE api_jobs
-     SET status = 'running',
-         locked_by = $2,
-         locked_at = NOW(),
-         attempt_count = attempt_count + 1,
-         updated_at = NOW()
-     WHERE id IN (SELECT id FROM next_jobs)
-     RETURNING id, user_id, route_id, idempotency_key_id, payload, attempt_count, max_attempts`,
-    [limit, workerId]
-  );
-  return result.rows.map(normalizeJobRow);
-}
-
-async function leaseJobById({ postgresRuntime, workerId, jobId, userId }) {
-  const result = await postgresRuntime.query(
-    `WITH selected_job AS (
-       SELECT id
-       FROM api_jobs
-       WHERE id = $1
-         AND user_id = $2
-         AND status = 'queued'
-         AND run_after <= NOW()
-       FOR UPDATE SKIP LOCKED
      )
      UPDATE api_jobs
      SET status = 'running',
@@ -252,9 +230,35 @@ async function leaseJobById({ postgresRuntime, workerId, jobId, userId }) {
          locked_at = NOW(),
          attempt_count = attempt_count + 1,
          updated_at = NOW()
+     WHERE id IN (SELECT id FROM next_jobs)
+     RETURNING id, user_id, route_id, idempotency_key_id, payload, attempt_count, max_attempts`,
+    [limit, routeIds, workerId]
+  );
+  return result.rows.map(normalizeJobRow);
+}
+
+async function leaseJobById({ postgresRuntime, workerId, jobId, userId, routeIds }) {
+  if (!Array.isArray(routeIds) || routeIds.length === 0) return [];
+  const result = await postgresRuntime.query(
+    `WITH selected_job AS (
+       SELECT id
+       FROM api_jobs
+       WHERE id = $1
+         AND user_id = $2
+         AND route_id = ANY($3::text[])
+         AND status = 'queued'
+         AND run_after <= NOW()
+       FOR UPDATE SKIP LOCKED
+     )
+     UPDATE api_jobs
+     SET status = 'running',
+         locked_by = $4,
+         locked_at = NOW(),
+         attempt_count = attempt_count + 1,
+         updated_at = NOW()
      WHERE id IN (SELECT id FROM selected_job)
      RETURNING id, user_id, route_id, idempotency_key_id, payload, attempt_count, max_attempts`,
-    [jobId, userId, workerId]
+    [jobId, userId, routeIds, workerId]
   );
   return result.rows.map(normalizeJobRow);
 }
@@ -393,6 +397,7 @@ function createDefaultJobHandlers({ env, postgresRuntime, fetchImpl, persistGene
   const aiService = createAiCardGenerationService({
     env,
     fetchImpl,
+    loadAiFlowAdminConfig: () => readWorkerAdminAiFlowConfig(postgresRuntime, env),
     costGate: createAiFlowCostGate({
       store: createPostgresAiFlowCostStore({ getPool: () => postgresRuntime.getPool() })
     })
@@ -420,6 +425,20 @@ function createDefaultJobHandlers({ env, postgresRuntime, fetchImpl, persistGene
       liveNetworkCalls: false
     })
   };
+}
+
+async function readWorkerAdminAiFlowConfig(postgresRuntime, env) {
+  try {
+    const result = await postgresRuntime.query(
+      `SELECT payload
+       FROM admin_runtime_configs
+       WHERE key = 'ai-flow-configs'
+       LIMIT 1`
+    );
+    return result.rows[0]?.payload?.configs ?? result.rows[0]?.payload?.aiFlowConfigs ?? [];
+  } catch {
+    return [];
+  }
 }
 
 async function runQueuedAiJob({ job, aiService, method, persistGeneratedImageArtifacts }) {

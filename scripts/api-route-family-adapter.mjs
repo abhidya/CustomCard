@@ -24,7 +24,6 @@ export { googleCalendarApiOAuthCallbackRoute, googleCalendarOAuthCallbackRoute }
 export const walgreensUploadBodyLimit = Math.ceil((WALGREENS_CHECKOUT_MAX_IMAGE_BYTES * 4) / 3) + 2_000_000;
 
 export function createApiRouteFamilyAdapter({
-  adminSafetyControls,
   aiGenerationService,
   apiRuntime,
   buildMutationContractPayload,
@@ -42,7 +41,6 @@ export function createApiRouteFamilyAdapter({
   walgreensRateLimited
 }) {
   return createApiRouteFamilies({
-    adminSafetyControls,
     aiCardGenerateRoute,
     aiChatRespondRoute,
     aiGenerationService,

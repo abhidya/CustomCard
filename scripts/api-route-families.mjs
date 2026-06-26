@@ -3,10 +3,10 @@ import {
   runAdminModelBenchmark,
   saveAdminModelBenchmarkGrade
 } from "./model-benchmark-admin.mjs";
+import { runAdminLocalAiLoop } from "./local-ai-loop-admin.mjs";
 
 export function createApiRouteFamilies(deps) {
   const {
-    adminSafetyControls,
     aiCardGenerateRoute,
     aiChatRespondRoute,
     aiGenerationService,
@@ -56,7 +56,8 @@ export function createApiRouteFamilies(deps) {
     async handlePostAuthRoute({ authContext, path, request, requestUrl, response, route }) {
       if (handleStaticContractRoute({ path, response })) return true;
       if (handlePublicGalleryRoute && (await handlePublicGalleryRoute({ path, request, response }))) return true;
-      if (await handleAdminRoute({ authContext, path, request, requestUrl, response })) return true;
+      if (await handleProviderJobRoute({ authContext, path, request, requestUrl, response })) return true;
+      if (await handleAdminRoute({ authContext, path, request, requestUrl, response, route })) return true;
       if (handleBootstrapRoute({ path, response })) return true;
       if (await handleCustomerStateRoute({ authContext, path, response })) return true;
       if (handleWalgreensCallbackRoute({ path, response })) return true;
@@ -118,7 +119,57 @@ export function createApiRouteFamilies(deps) {
     return false;
   }
 
-  async function handleAdminRoute({ authContext, path, request, requestUrl, response }) {
+  async function handleProviderJobRoute({ authContext, path, request, requestUrl, response }) {
+    if (path === "/api/provider/jobs/status") {
+      const routes = String(requestUrl?.searchParams?.get("routes") ?? "")
+        .split(/[,\s]+/)
+        .map((routeId) => routeId.trim())
+        .filter(Boolean);
+      const result = await apiRuntime.readProviderJobStatus({
+        authContext,
+        routeIds: routes.length > 0 ? routes : undefined
+      });
+      sendJson(response, result.statusCode, result.payload);
+      return true;
+    }
+
+    if (path === "/api/provider/jobs/lease") {
+      let body;
+      try {
+        body = parseStrictJsonBody(await readRequestBody(request, 64_000));
+      } catch {
+        sendJson(response, 400, { service: "customcard-api", status: "invalid-json", path });
+        return true;
+      }
+      const result = await apiRuntime.leaseProviderJobs({
+        authContext,
+        workerId: body.worker_id ?? body.workerId,
+        routeIds: body.routes ?? body.route_ids ?? body.routeIds,
+        limit: body.limit
+      });
+      sendJson(response, result.statusCode, result.payload);
+      return true;
+    }
+
+    const completeMatch = path.match(/^\/api\/provider\/jobs\/([^/]+)\/complete$/);
+    if (!completeMatch) return false;
+    let body;
+    try {
+      body = parseStrictJsonBody(await readRequestBody(request, providerCompleteBodyLimit()));
+    } catch {
+      sendJson(response, 400, { service: "customcard-api", status: "invalid-json", path });
+      return true;
+    }
+    const result = await apiRuntime.completeProviderJob({
+      authContext,
+      jobId: decodeURIComponent(completeMatch[1]),
+      body
+    });
+    sendJson(response, result.statusCode, result.payload);
+    return true;
+  }
+
+  async function handleAdminRoute({ authContext, path, request, requestUrl, response, route }) {
     if (path === "/api/admin/card-gallery" && request?.method === "GET") {
       const payload = await apiRuntime.readCardGallery({ authContext });
       sendJson(response, 200, payload);
@@ -156,16 +207,49 @@ export function createApiRouteFamilies(deps) {
       return true;
     }
 
+    if (path === "/api/admin/ai-flow-configs" && request?.method === "GET") {
+      sendJson(response, 200, await apiRuntime.readAdminAiFlowConfig());
+      return true;
+    }
+
+    if (path === "/api/admin/ai-flow-configs" && request?.method === "POST") {
+      if (!requireIdempotencyKey({ request, response, path })) return true;
+      const bodyText = await readValidatedJsonBodyText({ request, response, path });
+      if (!bodyText.ok) return true;
+      const result = await apiRuntime.persistMutation({
+        route,
+        request,
+        authContext,
+        bodyText: bodyText.value,
+        responsePayload: {
+          service: "customcard-api",
+          status: "admin-ai-flow-configs-save-accepted"
+        }
+      });
+      sendJson(response, result.statusCode, result.payload);
+      return true;
+    }
+
     if (path === "/api/admin/safety-controls" && request?.method === "GET") {
-      sendJson(response, 200, adminSafetyControls.read());
+      sendJson(response, 200, await apiRuntime.readAdminSafetyControls());
       return true;
     }
 
     if (path === "/api/admin/safety-controls" && request?.method === "POST") {
       if (!requireIdempotencyKey({ request, response, path })) return true;
-      const body = await readJsonBody({ request, response, path });
-      if (!body.ok) return true;
-      sendJson(response, 200, adminSafetyControls.update(body.value, { authContext }));
+      const bodyText = await readValidatedJsonBodyText({ request, response, path });
+      if (!bodyText.ok) return true;
+      const result = await apiRuntime.persistMutation({
+        route,
+        request,
+        authContext,
+        bodyText: bodyText.value,
+        responsePayload: {
+          service: "customcard-api",
+          status: "admin-safety-controls-save-accepted"
+        }
+      });
+      sendJson(response, result.statusCode, result.payload);
       return true;
     }
 
@@ -210,6 +294,18 @@ export function createApiRouteFamilies(deps) {
       return true;
     }
 
+    if (path === "/api/admin/local-ai-loop/run") {
+      if (!requireIdempotencyKey({ request, response, path })) return true;
+      const body = await readJsonBody({ request, response, path });
+      if (!body.ok) return true;
+      const result = await runAdminLocalAiLoop({
+        body: body.value,
+        writeReport: process.env.CUSTOMCARD_ADMIN_LOCAL_AI_LOOP_WRITE_REPORT !== "disabled"
+      });
+      sendJson(response, result.statusCode, result.payload);
+      return true;
+    }
+
     return false;
   }
 
@@ -230,6 +326,17 @@ export function createApiRouteFamilies(deps) {
     } catch {
       sendJson(response, 400, { service: "customcard-api", status: "invalid-json", path });
       return { ok: false };
+    }
+  }
+
+  async function readValidatedJsonBodyText({ request, response, path }) {
+    try {
+      const rawBody = await readRequestBody(request, 128_000);
+      if (rawBody) JSON.parse(rawBody);
+      return { ok: true, value: rawBody || "{}" };
+    } catch {
+      sendJson(response, 400, { service: "customcard-api", status: "invalid-json", path });
+      return { ok: false, value: "{}" };
     }
   }
 
@@ -441,6 +548,16 @@ export function createApiRouteFamilies(deps) {
       String(payload.route_id ?? "").startsWith("ai-") &&
       process.env.CUSTOMCARD_INLINE_QUEUE_WORKER !== "disabled"
     );
+  }
+
+  function providerCompleteBodyLimit() {
+    const parsed = Number.parseInt(String(process.env.CUSTOMCARD_PROVIDER_COMPLETE_BODY_LIMIT_BYTES ?? "12000000"), 10);
+    return Number.isFinite(parsed) ? Math.min(24_000_000, Math.max(256_000, parsed)) : 12_000_000;
+  }
+
+  function parseStrictJsonBody(bodyText) {
+    if (!bodyText) return {};
+    return JSON.parse(bodyText);
   }
 
   async function runInlineQueueWorkerForJob({ authContext, jobId }) {

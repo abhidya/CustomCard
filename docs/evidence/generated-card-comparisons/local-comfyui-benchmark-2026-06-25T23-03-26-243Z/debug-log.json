@@ -1,0 +1,103 @@
+{
+  "runId": "local-comfyui-benchmark-2026-06-25T23-03-26-243Z",
+  "createdAtIso": "2026-06-25T23:04:51.042Z",
+  "mode": "local-comfyui",
+  "comfyUrl": "http://127.0.0.1:8188",
+  "checkpoint": "DreamShaper_8_pruned.safetensors",
+  "dimensions": {
+    "width": 512,
+    "height": 704
+  },
+  "steps": 10,
+  "cfg": 6,
+  "sampler": "euler",
+  "scheduler": "normal",
+  "fixtureIds": [
+    "botanical-birthday"
+  ],
+  "systemStats": {
+    "system": {
+      "os": "win32",
+      "ram_total": 68572811264,
+      "ram_free": 51274534912,
+      "comfyui_version": "0.26.0",
+      "required_frontend_version": "1.45.19",
+      "installed_templates_version": "0.10.7",
+      "required_templates_version": "0.10.7",
+      "comfy_package_versions": [
+        {
+          "name": "comfyui-frontend-package",
+          "installed": "1.45.19",
+          "required": "1.45.19"
+        },
+        {
+          "name": "comfyui-workflow-templates",
+          "installed": "0.10.7",
+          "required": "0.10.7"
+        },
+        {
+          "name": "comfyui-embedded-docs",
+          "installed": "0.5.5",
+          "required": "0.5.5"
+        },
+        {
+          "name": "comfy-kitchen",
+          "installed": "0.2.10",
+          "required": "0.2.10"
+        },
+        {
+          "name": "comfy-aimdo",
+          "installed": "0.4.10",
+          "required": "0.4.10"
+        }
+      ],
+      "python_version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+      "pytorch_version": "2.9.1+cu126",
+      "embedded_python": true,
+      "deploy_environment": "local-git",
+      "argv": [
+        "ComfyUI\\main.py",
+        "--windows-standalone-build",
+        "--listen",
+        "127.0.0.1",
+        "--port",
+        "8188"
+      ]
+    },
+    "devices": [
+      {
+        "name": "cuda:0 NVIDIA GeForce GTX 1080 Ti : cudaMallocAsync",
+        "type": "cuda",
+        "index": 0,
+        "vram_total": 11810897920,
+        "vram_free": 10661789696,
+        "torch_vram_total": 33554432,
+        "torch_vram_free": 25034752
+      },
+      {
+        "name": "cuda:1 NVIDIA GeForce GTX 1080 : cudaMallocAsync",
+        "type": "cuda",
+        "index": 1,
+        "vram_total": 8589803520,
+        "vram_free": 7534018560,
+        "torch_vram_total": 0,
+        "torch_vram_free": 0
+      }
+    ]
+  },
+  "fixtures": [
+    {
+      "id": "botanical-birthday",
+      "outputDir": "docs/evidence/generated-card-comparisons/local-comfyui-benchmark-2026-06-25T23-03-26-243Z/botanical-birthday",
+      "panelCount": 4,
+      "contactSheet": "docs/evidence/generated-card-comparisons/local-comfyui-benchmark-2026-06-25T23-03-26-243Z/botanical-birthday/contact-sheet.png",
+      "quality": {
+        "status": "pass",
+        "score": 100,
+        "passed": 24,
+        "total": 24,
+        "scorecard": "docs/evidence/generated-card-comparisons/local-comfyui-benchmark-2026-06-25T23-03-26-243Z/botanical-birthday/qa-scorecard.md"
+      }
+    }
+  ]
+}

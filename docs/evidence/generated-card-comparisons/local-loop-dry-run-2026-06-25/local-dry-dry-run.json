@@ -1,0 +1,20 @@
+{
+  "phase": "local",
+  "phaseDir": "local-dry",
+  "outputDir": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-loop-dry-run-2026-06-25",
+  "dryRun": true,
+  "liveProviderCallsEnabled": false,
+  "plannedRuns": [
+    {
+      "phase": "local",
+      "focus": "local-only-full-card",
+      "storyId": "botanical-birthday",
+      "textCandidateId": "text-local-openai-compatible",
+      "textAdapterId": "local-openai-compatible-chat",
+      "textModel": "local-default",
+      "imageCandidateId": "image-local-comfyui",
+      "imageAdapterId": "local-comfyui-api-image",
+      "imageModel": "DreamShaper_8_pruned.safetensors"
+    }
+  ]
+}

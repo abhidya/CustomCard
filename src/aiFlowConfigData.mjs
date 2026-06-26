@@ -1,6 +1,7 @@
 export const aiFlowAdminConfigStorageKey = "customcard-ai-flow-admin-config-v1";
 
 const textProviderAdapterIds = [
+  "local-openai-compatible-chat",
   "huggingface-chat",
   "cloudflare-workers-ai-chat",
   "openai-responses-chat",
@@ -17,6 +18,7 @@ const textProviderAdapterIds = [
 ];
 
 const imageProviderAdapterIds = [
+  "local-comfyui-api-image",
   "deepai-text2img-image",
   "cloudflare-workers-ai-image",
   "openai-images",
@@ -134,6 +136,8 @@ export const aiProviderEnvRequirements = {
   "perplexity-sonar-chat": [["PERPLEXITY_API_KEY"]],
   "xai-chat": [["XAI_API_KEY"]],
   "self-hosted-openai-compatible-chat": [["SELF_HOSTED_LLM_BASE_URL"], ["SELF_HOSTED_LLM_API_KEY"]],
+  "local-openai-compatible-chat": [["CUSTOMCARD_LOCAL_LLM_BASE_URL", "LMSTUDIO_BASE_URL", "KOBOLDCPP_BASE_URL"]],
+  "local-comfyui-api-image": [["CUSTOMCARD_COMFYUI_URL", "COMFYUI_URL"]],
   "stability-stable-image": [["STABILITY_API_KEY"]],
   "replicate-image": [["REPLICATE_API_TOKEN"]],
   "fal-image": [["FAL_KEY"]],
@@ -161,6 +165,13 @@ const aiProviderModelEnvKeys = {
   "perplexity-sonar-chat": ["CUSTOMCARD_PERPLEXITY_TEXT_MODEL", "PERPLEXITY_MODEL"],
   "xai-chat": ["CUSTOMCARD_XAI_TEXT_MODEL", "XAI_MODEL"],
   "self-hosted-openai-compatible-chat": ["CUSTOMCARD_SELF_HOSTED_TEXT_MODEL", "SELF_HOSTED_LLM_MODEL"],
+  "local-openai-compatible-chat": [
+    "CUSTOMCARD_LOCAL_LLM_MODEL",
+    "LMSTUDIO_MODEL",
+    "KOBOLDCPP_MODEL",
+    "SELF_HOSTED_LLM_MODEL"
+  ],
+  "local-comfyui-api-image": ["CUSTOMCARD_COMFYUI_CHECKPOINT", "CUSTOMCARD_LOCAL_COMFYUI_CHECKPOINT", "COMFYUI_CHECKPOINT"],
   "stability-stable-image": ["CUSTOMCARD_STABILITY_IMAGE_MODEL", "STABILITY_IMAGE_MODEL"],
   "replicate-image": ["CUSTOMCARD_REPLICATE_IMAGE_MODEL", "REPLICATE_IMAGE_MODEL"],
   "fal-image": ["CUSTOMCARD_FAL_IMAGE_MODEL", "FAL_IMAGE_MODEL"],
@@ -187,6 +198,8 @@ const defaultModelsByAdapter = {
   "perplexity-sonar-chat": "sonar",
   "xai-chat": "grok-3-mini",
   "self-hosted-openai-compatible-chat": "local-default",
+  "local-openai-compatible-chat": "local-default",
+  "local-comfyui-api-image": "DreamShaper_8_pruned.safetensors",
   "stability-stable-image": "stable-image-core",
   "replicate-image": "black-forest-labs/flux-schnell",
   "fal-image": "fal-ai/flux/schnell",
@@ -195,6 +208,14 @@ const defaultModelsByAdapter = {
 };
 
 export const aiProviderModelPresets = {
+  "local-openai-compatible-chat": [
+    { id: "local-default", label: "Local OpenAI-compatible server default" },
+    { id: "qwen3-14b-instruct-q4", label: "Qwen3 14B Instruct Q4 local" },
+    { id: "qwen3-8b-instruct-q4", label: "Qwen3 8B Instruct Q4 local" }
+  ],
+  "local-comfyui-api-image": [
+    { id: "DreamShaper_8_pruned.safetensors", label: "Local ComfyUI DreamShaper 8" }
+  ],
   "runcomfy-model-api-image": [
     {
       id: "blackforestlabs/flux-2/dev/text-to-image",
@@ -259,64 +280,75 @@ export function resolveAiFlowConfigs(env = {}, adminOverrides = []) {
 
 export function resolveAiFlowConfig(flowId, env = {}, adminOverrides = []) {
   const definition = getAiFlowDefinition(flowId);
-  const override = normalizeAiFlowOverride(findFlowOverride(flowId, adminOverrides), definition, env);
+  const rawOverride = findFlowOverride(flowId, adminOverrides);
+  const hasAdminOverride = Boolean(rawOverride && typeof rawOverride === "object");
+  const override = normalizeAiFlowOverride(rawOverride, definition, env);
   const key = flowEnvKey(flowId);
   const primaryAdapterId =
-    readEnvString(env, `CUSTOMCARD_AI_${key}_ADAPTER_ID`) ||
-    readEnvString(env, `CUSTOMCARD_AI_${key}_PROVIDER`) ||
-    override.primaryAdapterId ||
+    (hasAdminOverride
+      ? override.primaryAdapterId ||
+        readEnvString(env, `CUSTOMCARD_AI_${key}_ADAPTER_ID`) ||
+        readEnvString(env, `CUSTOMCARD_AI_${key}_PROVIDER`)
+      : readEnvString(env, `CUSTOMCARD_AI_${key}_ADAPTER_ID`) ||
+        readEnvString(env, `CUSTOMCARD_AI_${key}_PROVIDER`) ||
+        override.primaryAdapterId) ||
     pickConfiguredAiAdapter(definition, env) ||
     definition.defaultPrimaryAdapterId;
   const fallbackAdapterId =
-    readEnvString(env, `CUSTOMCARD_AI_${key}_FALLBACK_ADAPTER_ID`) ||
-    override.fallbackAdapterId ||
+    (hasAdminOverride
+      ? override.fallbackAdapterId || readEnvString(env, `CUSTOMCARD_AI_${key}_FALLBACK_ADAPTER_ID`)
+      : readEnvString(env, `CUSTOMCARD_AI_${key}_FALLBACK_ADAPTER_ID`) || override.fallbackAdapterId) ||
     definition.defaultFallbackAdapterId;
   const promptInstructions =
-    readEnvString(env, `CUSTOMCARD_AI_${key}_PROMPT_INSTRUCTIONS`) ||
-    override.promptInstructions ||
+    (hasAdminOverride
+      ? override.promptInstructions || readEnvString(env, `CUSTOMCARD_AI_${key}_PROMPT_INSTRUCTIONS`)
+      : readEnvString(env, `CUSTOMCARD_AI_${key}_PROMPT_INSTRUCTIONS`) || override.promptInstructions) ||
     definition.promptInstructions;
   const model = modelForAiAdapter(
     primaryAdapterId,
     env,
-    readEnvString(env, `CUSTOMCARD_AI_${key}_MODEL`) || override.model
+    hasAdminOverride
+      ? override.model || readEnvString(env, `CUSTOMCARD_AI_${key}_MODEL`)
+      : readEnvString(env, `CUSTOMCARD_AI_${key}_MODEL`) || override.model
   );
-  const rateLimitPerMinute = readEnvNumber(
+  const envRateLimitPerMinute = readEnvNumber(
     env,
     `CUSTOMCARD_AI_${key}_RATE_LIMIT_PER_MINUTE`,
-    override.rateLimitPerMinute ?? definition.rateLimitPerMinute
+    definition.rateLimitPerMinute
   );
-  const monthlyBudgetCents = readEnvNumber(
+  const envMonthlyBudgetCents = readEnvNumber(
     env,
     `CUSTOMCARD_AI_${key}_MONTHLY_BUDGET_CENTS`,
-    override.monthlyBudgetCents ?? definition.monthlyBudgetCents
+    definition.monthlyBudgetCents
   );
-  const perRequestBudgetCents = readEnvNumber(
+  const envPerRequestBudgetCents = readEnvNumber(
     env,
     `CUSTOMCARD_AI_${key}_PER_REQUEST_BUDGET_CENTS`,
-    override.perRequestBudgetCents ?? definition.perRequestBudgetCents
+    definition.perRequestBudgetCents
   );
-  const queueEnabled = readEnvBoolean(
+  const envQueueEnabled = readEnvBoolean(
     env,
     `CUSTOMCARD_AI_${key}_QUEUE_ENABLED`,
-    override.queueEnabled ?? definition.queueDefault
+    definition.queueDefault
   );
-  const fallbackQueueEnabled = readEnvBoolean(
+  const envFallbackQueueEnabled = readEnvBoolean(
     env,
     `CUSTOMCARD_AI_${key}_FALLBACK_QUEUE_ENABLED`,
-    override.fallbackQueueEnabled ?? definition.fallbackQueueDefault
+    definition.fallbackQueueDefault
   );
+  const rateLimitPerMinute = hasAdminOverride ? override.rateLimitPerMinute : envRateLimitPerMinute;
+  const monthlyBudgetCents = hasAdminOverride ? override.monthlyBudgetCents : envMonthlyBudgetCents;
+  const perRequestBudgetCents = hasAdminOverride ? override.perRequestBudgetCents : envPerRequestBudgetCents;
+  const queueEnabled = hasAdminOverride ? override.queueEnabled : envQueueEnabled;
+  const fallbackQueueEnabled = hasAdminOverride ? override.fallbackQueueEnabled : envFallbackQueueEnabled;
   const liveDefault =
     definition.liveDefault === "auto"
       ? isAiAdapterConfigured(primaryAdapterId, env)
       : Boolean(definition.liveDefault);
-  const liveProviderCallsEnabled = Boolean(override.liveProviderCallsEnabled ?? liveDefault);
-  const maxRetries = readEnvNumber(env, `CUSTOMCARD_AI_${key}_MAX_RETRIES`, override.maxRetries ?? definition.maxRetries);
-  const maxTokens = readEnvNumber(env, `CUSTOMCARD_AI_${key}_MAX_TOKENS`, override.maxTokens ?? definition.maxTokens);
-  const temperature = readEnvNumber(
-    env,
-    `CUSTOMCARD_AI_${key}_TEMPERATURE`,
-    override.temperature ?? definition.temperature
-  );
+  const liveProviderCallsEnabled = hasAdminOverride ? Boolean(override.liveProviderCallsEnabled) : Boolean(override.liveProviderCallsEnabled ?? liveDefault);
+  const maxRetries = hasAdminOverride ? override.maxRetries : readEnvNumber(env, `CUSTOMCARD_AI_${key}_MAX_RETRIES`, definition.maxRetries);
+  const maxTokens = hasAdminOverride ? override.maxTokens : readEnvNumber(env, `CUSTOMCARD_AI_${key}_MAX_TOKENS`, definition.maxTokens);
+  const temperature = hasAdminOverride ? override.temperature : readEnvNumber(env, `CUSTOMCARD_AI_${key}_TEMPERATURE`, definition.temperature);
   const configuredAdapterIds = definition.allowedAdapterIds.filter((adapterId) => isAiAdapterConfigured(adapterId, env));
   const primaryMissingEnv = adapterMissingEnv(primaryAdapterId, env);
   const blockedReasons = [

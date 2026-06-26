@@ -1,3 +1,6 @@
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import {
   assertSafeGeneratedImageDownloadUrl,
@@ -40,6 +43,30 @@ function runComfyAiFlowConfig() {
         primaryAdapterId: "runcomfy-model-api-image",
         fallbackAdapterId: "runcomfy-model-api-image",
         model: runComfyImageModel,
+        liveProviderCallsEnabled: true
+      };
+    }
+    return config;
+  });
+}
+
+function localAiFlowConfig() {
+  return buildDefaultAiFlowAdminConfigs().map((config) => {
+    if (config.flowId === "card-copy") {
+      return {
+        ...config,
+        primaryAdapterId: "local-openai-compatible-chat",
+        fallbackAdapterId: "local-openai-compatible-chat",
+        model: "local-qwen-card-copy",
+        liveProviderCallsEnabled: true
+      };
+    }
+    if (config.flowId === "card-image") {
+      return {
+        ...config,
+        primaryAdapterId: "local-comfyui-api-image",
+        fallbackAdapterId: "local-comfyui-api-image",
+        model: "DreamShaper_8_pruned.safetensors",
         liveProviderCallsEnabled: true
       };
     }
@@ -104,6 +131,7 @@ describe("AI card generator service", () => {
         "google-gemini-chat",
         "groq-chat",
         "huggingface-chat",
+        "local-openai-compatible-chat",
         "mistral-chat",
         "openai-responses-chat",
         "perplexity-sonar-chat",
@@ -116,10 +144,254 @@ describe("AI card generator service", () => {
         "deepai-text2img-image",
         "google-gemini-image",
         "huggingface-image",
+        "local-comfyui-api-image",
         "openai-images",
         "runcomfy-model-api-image"
       ]
     });
+  });
+
+  it("can generate a full card through localhost-only LLM and ComfyUI adapters", async () => {
+    let imageIndex = 0;
+    const fetchImpl = vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
+      const requestUrl = String(url);
+      if (requestUrl === "http://127.0.0.1:1234/v1/chat/completions") {
+        const body = JSON.parse(String(init?.body));
+        expect(body.model).toBe("local-qwen-card-copy");
+        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      if (requestUrl === "http://127.0.0.1:8188/prompt") {
+        imageIndex += 1;
+        const body = JSON.parse(String(init?.body));
+        expect(body.prompt["1"].inputs.ckpt_name).toBe("DreamShaper_8_pruned.safetensors");
+        expect(body.prompt["5"].inputs.steps).toBe(4);
+        return new Response(JSON.stringify({ prompt_id: `local-comfy-${imageIndex}` }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      if (requestUrl.includes("http://127.0.0.1:8188/history/local-comfy-")) {
+        const panelNumber = requestUrl.match(/local-comfy-(\d+)/)?.[1] ?? "0";
+        return new Response(
+          JSON.stringify({
+            [`local-comfy-${panelNumber}`]: {
+              status: { completed: true },
+              outputs: {
+                "7": { images: [{ filename: `panel-${panelNumber}.png`, subfolder: "", type: "output" }] }
+              }
+            }
+          }),
+          { status: 200, headers: { "content-type": "application/json" } }
+        );
+      }
+      if (requestUrl.startsWith("http://127.0.0.1:8188/view?")) {
+        return new Response(new Uint8Array([9, 8, 7, imageIndex]), {
+          status: 200,
+          headers: { "content-type": "image/png" }
+        });
+      }
+      throw new Error(`Unexpected fetch ${requestUrl}`);
+    });
+    const service = createAiCardGenerationService({
+      env: {
+        CUSTOMCARD_LOCAL_LLM_BASE_URL: "http://127.0.0.1:1234/v1",
+        CUSTOMCARD_LOCAL_LLM_MODEL: "local-qwen-card-copy",
+        CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188",
+        CUSTOMCARD_COMFYUI_STEPS: "4",
+        CUSTOMCARD_COMFYUI_TIMEOUT_MS: "10000",
+        CUSTOMCARD_AI_FLOW_CONFIG_JSON: JSON.stringify({ flows: localAiFlowConfig() }),
+        CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "local-openai-compatible-chat",
+        CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "local-comfyui-api-image"
+      },
+      fetchImpl
+    });
+
+    const result = await service.generateCard(cardRequest, { rateKey: "test-local-ai-card" });
+    const payload = result.payload as {
+      images: Array<{ image_url: string; width: number; height: number }>;
+      ai_flow: {
+        card_copy: { adapter_id: string; model: string };
+        card_image: { adapter_id: string; model: string };
+      };
+    };
+
+    expect(result.statusCode).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(13);
+    expect(payload.ai_flow.card_copy).toMatchObject({
+      adapter_id: "local-openai-compatible-chat",
+      model: "local-qwen-card-copy"
+    });
+    expect(payload.ai_flow.card_image).toMatchObject({
+      adapter_id: "local-comfyui-api-image",
+      model: "DreamShaper_8_pruned.safetensors"
+    });
+    expect(payload.images).toHaveLength(4);
+    expect(payload.images.every((image) => image.image_url.startsWith("data:image/png;base64,"))).toBe(true);
+    expect(payload.images.every((image) => image.width === 512 && image.height === 704)).toBe(true);
+  });
+
+  it("passes trusted local Comfy workflow templates, ids, and input metadata from worker env", async () => {
+    const tempDir = mkdtempSync(join(tmpdir(), "customcard-comfy-workflow-"));
+    const workflowPath = join(tempDir, "workflow.json");
+    writeFileSync(
+      workflowPath,
+      JSON.stringify({
+        "10": {
+          class_type: "CustomCardWorkflowInput",
+          inputs: {
+            workflow_id: "{{workflow_id}}",
+            prompt: "{{prompt}}",
+            negative: "{{negative_prompt}}",
+            panel_id: "{{panel_id}}",
+            seed: "{{seed}}",
+            width: "{{width}}",
+            height: "{{height}}",
+            headline_text: "{{headline_text}}",
+            body_text: "{{body_text}}",
+            headline_font_size: "{{headline_font_size}}",
+            body_font_size: "{{body_font_size}}",
+            text_alignment: "{{text_alignment}}",
+            headline_box_x: "{{headline_box_x}}",
+            headline_box_y: "{{headline_box_y}}",
+            headline_box_width: "{{headline_box_width}}",
+            headline_box_height: "{{headline_box_height}}",
+            body_box_x: "{{body_box_x}}",
+            body_box_y: "{{body_box_y}}",
+            body_box_width: "{{body_box_width}}",
+            body_box_height: "{{body_box_height}}",
+            min_font_size: "{{min_font_size}}"
+          }
+        },
+        "20": {
+          class_type: "SaveImage",
+          inputs: {
+            images: ["10", 0],
+            filename_prefix: "customcard-{{panel_id}}"
+          }
+        }
+      })
+    );
+
+    try {
+      let imageIndex = 0;
+      const comfyPromptBodies: Array<Record<string, any>> = [];
+      const fetchImpl = vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
+        const requestUrl = String(url);
+        if (requestUrl === "http://127.0.0.1:1234/v1/chat/completions") {
+          return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
+            status: 200,
+            headers: { "content-type": "application/json" }
+          });
+        }
+        if (requestUrl === "http://127.0.0.1:8188/prompt") {
+          imageIndex += 1;
+          const body = JSON.parse(String(init?.body));
+          comfyPromptBodies.push(body);
+          expect(body.prompt["10"].inputs.workflow_id).toBe("birthday-card-v2");
+          expect(body.prompt["10"].inputs.panel_id).toMatch(/front|inside-left|inside-right|back/);
+          expect(typeof body.prompt["10"].inputs.seed).toBe("number");
+          expect(body.prompt["10"].inputs.width).toBe(640);
+          expect(body.prompt["10"].inputs.height).toBe(896);
+          expect(body.prompt["20"].inputs.filename_prefix).toMatch(/^customcard-/);
+          expect(body.extra_data.customcard).toMatchObject({
+            workflow_id: "birthday-card-v2",
+            inputs: {
+              workflow_id: "birthday-card-v2"
+            }
+          });
+          return new Response(JSON.stringify({ prompt_id: `custom-workflow-${imageIndex}` }), {
+            status: 200,
+            headers: { "content-type": "application/json" }
+          });
+        }
+        if (requestUrl.includes("http://127.0.0.1:8188/history/custom-workflow-")) {
+          const panelNumber = requestUrl.match(/custom-workflow-(\d+)/)?.[1] ?? "0";
+          return new Response(
+            JSON.stringify({
+              [`custom-workflow-${panelNumber}`]: {
+                status: { completed: true },
+                outputs: {
+                  "20": { images: [{ filename: `custom-panel-${panelNumber}.png`, subfolder: "", type: "output" }] }
+                }
+              }
+            }),
+            { status: 200, headers: { "content-type": "application/json" } }
+          );
+        }
+        if (requestUrl.startsWith("http://127.0.0.1:8188/view?")) {
+          return new Response(new Uint8Array([9, 8, 7, imageIndex]), {
+            status: 200,
+            headers: { "content-type": "image/png" }
+          });
+        }
+        throw new Error(`Unexpected fetch ${requestUrl}`);
+      });
+      const service = createAiCardGenerationService({
+        env: {
+          CUSTOMCARD_LOCAL_LLM_BASE_URL: "http://127.0.0.1:1234/v1",
+          CUSTOMCARD_LOCAL_LLM_MODEL: "local-qwen-card-copy",
+          CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188",
+          CUSTOMCARD_COMFYUI_IMAGE_WIDTH: "640",
+          CUSTOMCARD_COMFYUI_IMAGE_HEIGHT: "896",
+          CUSTOMCARD_COMFYUI_TIMEOUT_MS: "10000",
+          CUSTOMCARD_COMFYUI_WORKFLOW_ID: "birthday-card-v2",
+          CUSTOMCARD_COMFYUI_WORKFLOW_PATH: workflowPath,
+          CUSTOMCARD_COMFYUI_WORKFLOW_INPUTS_JSON: JSON.stringify({
+            workflow_id: "{{workflow_id}}",
+            panel_id: "{{panel_id}}",
+            seed: "{{seed}}"
+          }),
+          CUSTOMCARD_AI_FLOW_CONFIG_JSON: JSON.stringify({ flows: localAiFlowConfig() }),
+          CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "local-openai-compatible-chat",
+          CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "local-comfyui-api-image"
+        },
+        fetchImpl
+      });
+
+      const result = await service.generateCard(cardRequest, { rateKey: "test-local-comfy-workflow" });
+
+      expect(result.statusCode).toBe(200);
+      expect(fetchImpl).toHaveBeenCalledWith("http://127.0.0.1:8188/prompt", expect.any(Object));
+      const payload = result.payload as { card_copy: { panels: Array<{ id: string; headline: string; body: string }> } };
+      expect(comfyPromptBodies).toHaveLength(4);
+      for (const body of comfyPromptBodies) {
+        const panelCopy = payload.card_copy.panels.find((panel) => panel.id === body.prompt["10"].inputs.panel_id);
+        expect(body.prompt["10"].inputs.headline_text).toBe(panelCopy?.headline);
+        expect(body.prompt["10"].inputs.body_text).toBe(panelCopy?.body);
+        expect(typeof body.prompt["10"].inputs.headline_font_size).toBe("number");
+        expect(typeof body.prompt["10"].inputs.body_font_size).toBe("number");
+        expect(["left", "center", "right"]).toContain(body.prompt["10"].inputs.text_alignment);
+        expect(body.prompt["10"].inputs.headline_box_width).toBeGreaterThan(0);
+        expect(body.prompt["10"].inputs.headline_box_height).toBeGreaterThan(0);
+        expect(body.prompt["10"].inputs.body_box_width).toBeGreaterThan(0);
+        expect(body.prompt["10"].inputs.body_box_height).toBeGreaterThan(0);
+        expect(body.prompt["10"].inputs.min_font_size).toBeGreaterThan(0);
+        expect(body.extra_data.customcard.inputs).toMatchObject({
+          headline_text: panelCopy?.headline,
+          body_text: panelCopy?.body,
+          headline_box: {
+            width: expect.any(Number),
+            height: expect.any(Number)
+          },
+          body_box: {
+            width: expect.any(Number),
+            height: expect.any(Number)
+          }
+        });
+      }
+      expect(result.payload).toMatchObject({
+        ai_flow: {
+          card_image: {
+            adapter_id: "local-comfyui-api-image"
+          }
+        }
+      });
+    } finally {
+      rmSync(tempDir, { force: true, recursive: true });
+    }
   });
 
   it("uses Cloudflare JSON Mode for card copy without returning secrets", async () => {
@@ -1032,6 +1304,33 @@ describe("AI card generator service", () => {
       user_content_only: false
     });
     expect(result.payload).not.toHaveProperty("card_copy");
+    expect(JSON.stringify(result.payload)).toContain("Live provider calls disabled");
+  });
+
+  it("honors loaded durable admin AI flow policy over env bootstrap config", async () => {
+    const fetchImpl = vi.fn();
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
+        CUSTOMCARD_AI_FLOW_CONFIG_JSON: JSON.stringify({
+          flows: buildDefaultAiFlowAdminConfigs().map((config) =>
+            config.flowId === "card-copy" ? { ...config, liveProviderCallsEnabled: true } : config
+          )
+        })
+      },
+      fetchImpl,
+      loadAiFlowAdminConfig: async () =>
+        buildDefaultAiFlowAdminConfigs().map((config) =>
+          config.flowId === "card-copy" ? { ...config, liveProviderCallsEnabled: false } : config
+        )
+    });
+
+    const result = await service.generateCard(cardRequest, { rateKey: "test-loaded-admin-policy" });
+
+    expect(result.statusCode).toBe(503);
+    expect(fetchImpl).not.toHaveBeenCalled();
     expect(JSON.stringify(result.payload)).toContain("Live provider calls disabled");
   });
 

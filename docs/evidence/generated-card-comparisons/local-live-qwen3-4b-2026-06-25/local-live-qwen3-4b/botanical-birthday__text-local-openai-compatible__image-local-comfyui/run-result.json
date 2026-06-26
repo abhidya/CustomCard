@@ -1,0 +1,80 @@
+{
+  "phase": "local",
+  "focus": "local-only-full-card",
+  "storyId": "botanical-birthday",
+  "textCandidateId": "text-local-openai-compatible",
+  "textAdapterId": "local-openai-compatible-chat",
+  "textModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+  "imageCandidateId": "image-local-comfyui",
+  "imageAdapterId": "local-comfyui-api-image",
+  "imageModel": "DreamShaper_8_pruned.safetensors",
+  "runDir": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-live-qwen3-4b-2026-06-25\\local-live-qwen3-4b\\botanical-birthday__text-local-openai-compatible__image-local-comfyui",
+  "startedAt": "2026-06-25T23:51:32.435Z",
+  "finishedAt": "2026-06-25T23:52:18.981Z",
+  "statusCode": 200,
+  "generatedBy": "ai-text-and-image",
+  "cardCopyModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+  "providerFailures": {},
+  "panelCount": 4,
+  "panelFiles": [
+    {
+      "panelId": "front",
+      "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-live-qwen3-4b-2026-06-25\\local-live-qwen3-4b\\botanical-birthday__text-local-openai-compatible__image-local-comfyui\\provider-front.png",
+      "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-live-qwen3-4b-2026-06-25\\local-live-qwen3-4b\\botanical-birthday__text-local-openai-compatible__image-local-comfyui\\preview-front.png",
+      "width": 512,
+      "height": 704,
+      "prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Simple minimal thank-you cover with one small plant mark, clean white and warm ivory field, fine leaf-green rule, and lower text-safe space. Keep natural negative space for app-rendered typography in the upper and lower fields; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "inside-left",
+      "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-live-qwen3-4b-2026-06-25\\local-live-qwen3-4b\\botanical-birthday__text-local-openai-compatible__image-local-comfyui\\provider-inside-left.png",
+      "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-live-qwen3-4b-2026-06-25\\local-live-qwen3-4b\\botanical-birthday__text-local-openai-compatible__image-local-comfyui\\preview-inside-left.png",
+      "width": 512,
+      "height": 704,
+      "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Minimal left interior with a tiny water-drop mark, fine rule, generous blank center, and no floral pattern. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "inside-right",
+      "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-live-qwen3-4b-2026-06-25\\local-live-qwen3-4b\\botanical-birthday__text-local-openai-compatible__image-local-comfyui\\provider-inside-right.png",
+      "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-live-qwen3-4b-2026-06-25\\local-live-qwen3-4b\\botanical-birthday__text-local-openai-compatible__image-local-comfyui\\preview-inside-right.png",
+      "width": 512,
+      "height": 704,
+      "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Matching minimal right interior with one small plant-related mark near the lower edge and calm main-message space. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "back",
+      "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-live-qwen3-4b-2026-06-25\\local-live-qwen3-4b\\botanical-birthday__text-local-openai-compatible__image-local-comfyui\\provider-back.png",
+      "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-live-qwen3-4b-2026-06-25\\local-live-qwen3-4b\\botanical-birthday__text-local-openai-compatible__image-local-comfyui\\preview-back.png",
+      "width": 512,
+      "height": 704,
+      "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Clean back cover with a single plant mark and mostly white negative space. Keep natural negative space for app-rendered typography in the lower half; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    }
+  ],
+  "contactSheet": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-live-qwen3-4b-2026-06-25\\local-live-qwen3-4b\\botanical-birthday__text-local-openai-compatible__image-local-comfyui\\contact-sheet.png",
+  "effectiveProviderRequests": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\local-live-qwen3-4b-2026-06-25\\local-live-qwen3-4b\\botanical-birthday__text-local-openai-compatible__image-local-comfyui\\effective-provider-requests.json",
+  "providerCallCount": 29,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": true,
+      "noProviderFailure": true,
+      "mustIncludeCovered": false,
+      "mustAvoidClean": true,
+      "providerCalls": 29
+    },
+    "missingMustInclude": [
+      "Sara",
+      "fern"
+    ],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

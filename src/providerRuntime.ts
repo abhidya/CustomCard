@@ -980,6 +980,7 @@ function textModelEnvKeys(adapterId: string): string[] {
     "groq-chat": ["CUSTOMCARD_GROQ_TEXT_MODEL", "GROQ_MODEL"],
     "deepseek-chat": ["CUSTOMCARD_DEEPSEEK_TEXT_MODEL", "DEEPSEEK_MODEL"],
     "fireworks-chat": ["CUSTOMCARD_FIREWORKS_TEXT_MODEL", "FIREWORKS_TEXT_MODEL"],
+    "local-openai-compatible-chat": ["CUSTOMCARD_LOCAL_LLM_MODEL", "LMSTUDIO_MODEL", "KOBOLDCPP_MODEL"],
     "self-hosted-openai-compatible-chat": ["CUSTOMCARD_SELF_HOSTED_TEXT_MODEL", "SELF_HOSTED_LLM_MODEL"]
   };
   return envKeysByAdapter[adapterId] ?? [];
@@ -998,6 +999,7 @@ function imageModelEnvKeys(adapterId: string): string[] {
     "together-image": ["CUSTOMCARD_TOGETHER_IMAGE_MODEL", "TOGETHER_IMAGE_MODEL"],
     "fal-image": ["CUSTOMCARD_FAL_IMAGE_MODEL", "FAL_IMAGE_MODEL"],
     "bfl-flux-image": ["CUSTOMCARD_BFL_IMAGE_MODEL", "BFL_IMAGE_MODEL"],
+    "local-comfyui-api-image": ["CUSTOMCARD_COMFYUI_CHECKPOINT", "CUSTOMCARD_LOCAL_COMFYUI_CHECKPOINT", "COMFYUI_CHECKPOINT"],
     "runcomfy-model-api-image": [],
     "luma-image": ["CUSTOMCARD_LUMA_IMAGE_MODEL", "LUMA_IMAGE_MODEL"],
     "replicate-image": ["CUSTOMCARD_REPLICATE_IMAGE_MODEL", "REPLICATE_IMAGE_MODEL"]
@@ -1019,6 +1021,7 @@ function defaultTextModel(adapterId: string): string {
     "groq-chat": "llama-3.1-8b-instant",
     "deepseek-chat": "deepseek-chat",
     "fireworks-chat": "accounts/fireworks/models/llama-v3p1-8b-instruct",
+    "local-openai-compatible-chat": "local-default",
     "self-hosted-openai-compatible-chat": "local-default"
   };
   return defaults[adapterId] ?? "{CLOUDFLARE_WORKERS_AI_TEXT_MODEL}";
@@ -1035,6 +1038,7 @@ function defaultImageModel(adapterId: string): string {
     "together-image": "black-forest-labs/FLUX.1-schnell-Free",
     "fal-image": "fal-ai/flux/schnell",
     "bfl-flux-image": "flux-pro",
+    "local-comfyui-api-image": "DreamShaper_8_pruned.safetensors",
     "luma-image": "photon-1",
     "replicate-image": "black-forest-labs/flux-schnell"
   };
@@ -1338,6 +1342,16 @@ function buildTextChatRequest(
       max_tokens: maxTokens,
       temperature,
       metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
+    });
+  }
+
+  if (adapter.id === "local-openai-compatible-chat") {
+    return request(adapter, "POST", "{CUSTOMCARD_LOCAL_LLM_BASE_URL}/v1/chat/completions", ["CUSTOMCARD_LOCAL_LLM_BASE_URL"], {
+      model,
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: maxTokens,
+      temperature,
+      metadata: { redactions: sanitized.redactions, local_only: true }
     });
   }
 
@@ -1691,6 +1705,23 @@ function buildSinglePanelImageRequest(
       },
       [],
       { authorization: "Bearer {RUNCOMFY_API_TOKEN}" }
+    );
+  }
+
+  if (adapter.id === "local-comfyui-api-image") {
+    return request(
+      adapter,
+      "POST",
+      "{CUSTOMCARD_COMFYUI_URL}/prompt",
+      ["CUSTOMCARD_COMFYUI_URL"],
+      {
+        workflow: "customcard-local-txt2img-v1",
+        checkpoint: model,
+        prompt,
+        width: 512,
+        height: 704,
+        metadata: { ...metadata, local_only: true }
+      }
     );
   }
 

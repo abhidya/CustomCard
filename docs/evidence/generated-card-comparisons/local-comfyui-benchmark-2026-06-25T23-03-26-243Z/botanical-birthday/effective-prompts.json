@@ -1,0 +1,46 @@
+{
+  "fixture": "botanical-birthday",
+  "category": "Personalized botanical birthday card",
+  "requestBody": {
+    "sender": "Manny",
+    "recipient": "Sara",
+    "relationship": "friend",
+    "occasion": "birthday",
+    "tone": "warm, grateful, relaxed, quietly joyful",
+    "style": "botanical watercolor, morning light, cream paper, deep green accents",
+    "language": "English",
+    "personal_note": "She loves morning hikes, coffee, and the fern by her kitchen window.",
+    "memory_notes": [
+      "She keeps a fern by the kitchen window.",
+      "She loves morning hikes and tiny trail flowers.",
+      "The birthday card should feel personal without feeling overly sentimental."
+    ]
+  },
+  "imageModel": "DreamShaper_8_pruned.safetensors",
+  "panelPrompts": [
+    {
+      "panelId": "front",
+      "prompt": "Premium vertical greeting-card artwork layer for the front panel. botanical watercolor stationery, fern fronds, tiny trail flowers, soft morning light. corner border, generous blank field, text-safe open center, full-bleed printable 2D artwork. botanical corner border with a generous blank field. No readable text, no words, no letters, no numbers, no handwriting, no logo, no watermark.",
+      "negativePrompt": "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait, dense confetti, recipient name, main message",
+      "seed": 20260625
+    },
+    {
+      "panelId": "inside-left",
+      "prompt": "Premium vertical greeting-card artwork layer for the inside-left panel. botanical watercolor stationery, fern fronds, tiny trail flowers, soft morning light. corner border, generous blank field, text-safe open center, full-bleed printable 2D artwork. soft fern edge detail with open center. No readable text, no words, no letters, no numbers, no handwriting, no logo, no watermark.",
+      "negativePrompt": "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait, dense confetti, recipient name, main message",
+      "seed": 20260626
+    },
+    {
+      "panelId": "inside-right",
+      "prompt": "Premium vertical greeting-card artwork layer for the inside-right panel. botanical watercolor stationery, fern fronds, tiny trail flowers, soft morning light. corner border, generous blank field, text-safe open center, full-bleed printable 2D artwork. tiny trail flowers in two corners, text-safe middle. No readable text, no words, no letters, no numbers, no handwriting, no logo, no watermark.",
+      "negativePrompt": "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait, dense confetti, recipient name, main message",
+      "seed": 20260627
+    },
+    {
+      "panelId": "back",
+      "prompt": "Premium vertical greeting-card artwork layer for the back panel. botanical watercolor stationery, fern fronds, tiny trail flowers, soft morning light. corner border, generous blank field, text-safe open center, full-bleed printable 2D artwork. minimal botanical back mark near the lower corner. No readable text, no words, no letters, no numbers, no handwriting, no logo, no watermark.",
+      "negativePrompt": "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait, dense confetti, recipient name, main message",
+      "seed": 20260628
+    }
+  ]
+}

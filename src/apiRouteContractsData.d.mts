@@ -1,6 +1,6 @@
 export type ApiMethodData = "GET" | "POST";
-export type ApiAudienceData = "public" | "customer" | "admin";
-export type ApiAuthData = "none" | "customer-session" | "admin-session";
+export type ApiAudienceData = "public" | "customer" | "admin" | "provider";
+export type ApiAuthData = "none" | "customer-session" | "admin-session" | "provider-token";
 export type ApiRuntimeModeData = "local-contract" | "durable-api" | "queue-backed";
 
 export interface ApiRouteContractData {

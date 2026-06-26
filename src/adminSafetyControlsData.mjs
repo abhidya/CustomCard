@@ -32,23 +32,28 @@ export function createAdminSafetyControlStore({ initialControls, now = () => new
       return controls;
     },
     update(patch, context = {}) {
-      controls = normalizeAdminSafetyControls({
-        ...controls,
-        ...(isRecord(patch) ? patch : {}),
-        vendorModes: {
-          ...controls.vendorModes,
-          ...(isRecord(patch?.vendorModes) ? patch.vendorModes : {})
-        },
-        vendorCertification: {
-          ...controls.vendorCertification,
-          ...(isRecord(patch?.vendorCertification) ? patch.vendorCertification : {})
-        },
-        updatedAtIso: now().toISOString(),
-        updatedBy: safeActor(context.authContext?.userId ?? context.userId ?? controls.updatedBy)
-      });
+      controls = updateAdminSafetyControls(controls, patch, { ...context, now });
       return controls;
     }
   };
+}
+
+export function updateAdminSafetyControls(current, patch, context = {}) {
+  const controls = normalizeAdminSafetyControls(current);
+  return normalizeAdminSafetyControls({
+    ...controls,
+    ...(isRecord(patch) ? patch : {}),
+    vendorModes: {
+      ...controls.vendorModes,
+      ...(isRecord(patch?.vendorModes) ? patch.vendorModes : {})
+    },
+    vendorCertification: {
+      ...controls.vendorCertification,
+      ...(isRecord(patch?.vendorCertification) ? patch.vendorCertification : {})
+    },
+    updatedAtIso: (typeof context.now === "function" ? context.now() : new Date()).toISOString(),
+    updatedBy: safeActor(context.authContext?.userId ?? context.userId ?? controls.updatedBy)
+  });
 }
 
 export function normalizeAdminSafetyControls(input = {}) {

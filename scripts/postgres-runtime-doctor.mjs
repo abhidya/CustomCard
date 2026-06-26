@@ -242,12 +242,12 @@ await runCheck("persists repository-backed draft state mutations", async () => {
   expect(result.statusCode === 202, "draft-state mutation should be accepted");
   expect(result.payload.runtimeMode === "postgres", "draft-state mutation should report postgres runtime");
   expect(result.payload.repositoryPersisted, "draft-state mutation should persist through repository path");
-  expect(result.payload.draftStateId === "draft-state-postgres-contract", "draft-state response should include persisted id");
+  expect(/^rt_[a-f0-9]{16}$/.test(result.payload.draftStateId), "draft-state response should include server-owned persisted id");
   expect(result.payload.repository.browserLocalState === false, "draft-state repository must not use browser storage");
   expect(fakeDb.draftStates.length === 1, "draft_states row should be inserted");
 
   const read = await runtime.readDraftState({ authContext: customerAuth });
-  expect(read.draftState?.draftStateId === "draft-state-postgres-contract", "draft-state read should return latest saved state");
+  expect(read.draftState?.draftStateId === result.payload.draftStateId, "draft-state read should return latest saved state");
 });
 
 await runCheck("persists repository-backed card project mutations", async () => {

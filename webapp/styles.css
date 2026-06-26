@@ -509,6 +509,21 @@ a { color: inherit; }
   background: #e5f5ef;
 }
 
+.opsInlineActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.opsError {
+  margin: 0;
+  color: #9b1c1c;
+  font-size: 13px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
 .opsFacts,
 .opsProbes {
   display: grid;

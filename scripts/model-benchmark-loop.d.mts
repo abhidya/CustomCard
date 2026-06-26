@@ -22,6 +22,20 @@ export interface TypographyExperimentRun {
   typographyMode: TypographyMode;
 }
 
+export interface LocalTypographyRun {
+  phase: "local-typography";
+  focus: "local-comfy-hybrid-typography";
+  storyId: string;
+  story: {
+    id: string;
+    must_include: string[];
+    must_avoid: string[];
+  };
+  text: BenchmarkCandidate;
+  image: BenchmarkCandidate;
+  typographyMode?: TypographyMode;
+}
+
 export interface PipelineQualityRun {
   phase: "pipeline-quality";
   focus: "full-card-quality";
@@ -156,6 +170,11 @@ export function typographyExperimentRuns(candidates: {
   image: BenchmarkCandidate[];
   text?: BenchmarkCandidate[];
 }): TypographyExperimentRun[];
+
+export function localTypographyRuns(candidates: {
+  image: BenchmarkCandidate[];
+  text?: BenchmarkCandidate[];
+}): LocalTypographyRun[];
 
 export function pipelineQualityRuns(candidates: {
   image?: BenchmarkCandidate[];

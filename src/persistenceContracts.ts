@@ -27,6 +27,7 @@ export type PersistenceTableName =
   | "provider_call_events"
   | "api_jobs"
   | "card_gallery_entries"
+  | "admin_runtime_configs"
   | "audit_log";
 
 export type RoutePersistenceMode = "none" | "read-only" | "mutation";
@@ -98,6 +99,7 @@ export const requiredPersistenceTableNames: PersistenceTableName[] = [
   "provider_call_events",
   "api_jobs",
   "card_gallery_entries",
+  "admin_runtime_configs",
   "audit_log"
 ];
 
@@ -204,6 +206,12 @@ export const persistenceTableContracts: PersistenceTableContract[] = [
     ["idx_card_gallery_category_featured"],
     false
   ),
+  table(
+    "admin_runtime_configs",
+    ["key", "payload", "version", "updated_by", "updated_at", "pii_free", "raw_customer_content_stored", "credentials_stored"],
+    ["idx_admin_runtime_configs_updated"],
+    false
+  ),
   table("audit_log", ["id", "subject_type", "subject_id", "actor_id", "action", "metadata"], ["idx_audit_subject"], true, true)
 ];
 
@@ -234,11 +242,16 @@ export const apiPersistenceRouteContracts: ApiRoutePersistenceContract[] = [
     true
   ),
   routePersistence("ai-job-status", "read-only", "customer", ["auth_sessions", "api_jobs"], true, false, false),
+  routePersistence("provider-job-lease", "mutation", "provider", ["api_jobs", "audit_log"], false, false, false),
+  routePersistence("provider-job-status", "read-only", "provider", ["api_jobs"], false, false, false),
+  routePersistence("provider-job-complete", "mutation", "provider", ["api_jobs", "audit_log"], false, false, false),
   routePersistence("admin-readiness", "read-only", "admin", ["auth_sessions", "account_identities", "account_recovery_challenges", "provider_connections", "provider_call_events", "audit_log"], true, false, false),
   routePersistence("admin-provider-catalog", "read-only", "admin", ["auth_sessions", "provider_connections", "provider_call_events"], true, false, false),
   routePersistence("admin-provider-governance", "read-only", "admin", ["auth_sessions", "provider_connections", "provider_call_events", "audit_log"], true, false, false),
-  routePersistence("admin-safety-controls", "read-only", "admin", ["auth_sessions", "audit_log"], true, false, false),
-  routePersistence("admin-safety-controls-save", "mutation", "admin", ["auth_sessions", "idempotency_keys", "audit_log"], true, true, false),
+  routePersistence("admin-ai-flow-configs", "read-only", "admin", ["auth_sessions", "admin_runtime_configs", "audit_log"], true, false, false),
+  routePersistence("admin-ai-flow-configs-save", "mutation", "admin", ["auth_sessions", "idempotency_keys", "admin_runtime_configs", "audit_log"], true, true, false),
+  routePersistence("admin-safety-controls", "read-only", "admin", ["auth_sessions", "admin_runtime_configs", "audit_log"], true, false, false),
+  routePersistence("admin-safety-controls-save", "mutation", "admin", ["auth_sessions", "idempotency_keys", "admin_runtime_configs", "audit_log"], true, true, false),
   routePersistence("admin-persistence-readiness", "read-only", "admin", ["auth_sessions", "idempotency_keys", "api_jobs", "audit_log"], true, false, false),
   routePersistence("admin-artifact-bucket", "read-only", "admin", ["auth_sessions", "render_packets", "audit_log"], true, false, false),
   routePersistence("admin-model-benchmarks", "read-only", "admin", ["auth_sessions", "provider_call_events", "api_jobs", "audit_log"], true, false, false),
@@ -252,6 +265,15 @@ export const apiPersistenceRouteContracts: ApiRoutePersistenceContract[] = [
     true
   ),
   routePersistence("admin-model-benchmark-grade", "mutation", "admin", ["auth_sessions", "idempotency_keys", "audit_log"], true, true, false),
+  routePersistence(
+    "admin-local-ai-loop-run",
+    "mutation",
+    "admin",
+    ["auth_sessions", "idempotency_keys", "users", "api_jobs", "audit_log"],
+    true,
+    true,
+    false
+  ),
   routePersistence(
     "admin-demo-reset",
     "mutation",
@@ -349,7 +371,11 @@ export const migrationRequiredSignals = [
   "signed_url_expires_at TIMESTAMPTZ NOT NULL",
   "external_share_approval_required BOOLEAN NOT NULL DEFAULT TRUE",
   "real_orders_enabled BOOLEAN NOT NULL DEFAULT FALSE",
-  "CHECK (real_orders_enabled = FALSE)"
+  "CHECK (real_orders_enabled = FALSE)",
+  "CREATE TABLE IF NOT EXISTS admin_runtime_configs",
+  "raw_customer_content_stored BOOLEAN NOT NULL DEFAULT FALSE CHECK (raw_customer_content_stored = FALSE)",
+  "credentials_stored BOOLEAN NOT NULL DEFAULT FALSE CHECK (credentials_stored = FALSE)",
+  "CREATE INDEX idx_admin_runtime_configs_updated"
 ];
 
 export function buildPersistenceReadinessSummary(
@@ -359,7 +385,9 @@ export function buildPersistenceReadinessSummary(
 ): PersistenceReadinessSummary {
   const blockers = validatePersistenceContracts(routes, tables, routeContracts);
   const schemaBackedRoutes = routeContracts.filter((contract) => contract.persistedTables.length > 0);
-  const mutations = routes.filter((route) => route.method === "POST" && !hostedCheckoutExemptRouteIds.has(route.id));
+  const mutations = routes.filter(
+    (route) => route.method === "POST" && !hostedCheckoutExemptRouteIds.has(route.id) && route.audience !== "provider"
+  );
 
   return {
     service: "customcard-persistence",
@@ -465,6 +493,11 @@ export function validatePersistenceContracts(
         if (!tableContract.indexes.includes(index)) issues.push("api_jobs must include worker lease indexes.");
       }
     }
+    if (tableContract.name === "admin_runtime_configs") {
+      for (const column of ["key", "payload", "version", "updated_by", "pii_free", "raw_customer_content_stored", "credentials_stored"]) {
+        if (!tableContract.requiredColumns.includes(column)) issues.push("admin_runtime_configs must include admin config safety columns.");
+      }
+    }
   }
 
   for (const route of routes) {
@@ -477,13 +510,13 @@ export function validatePersistenceContracts(
     if (contract.requiredRole !== route.audience) {
       issues.push(`Route ${route.id} persistence role must match API audience.`);
     }
-    if (route.audience !== "public" && !contract.sessionRequired && !hostedCheckoutExempt) {
+    if (route.audience !== "public" && route.audience !== "provider" && !contract.sessionRequired && !hostedCheckoutExempt) {
       issues.push(`Route ${route.id} must require durable auth session persistence.`);
     }
     for (const tableName of contract.persistedTables) {
       if (!tableNames.has(tableName)) issues.push(`Route ${route.id} references missing table ${tableName}.`);
     }
-    if (route.method === "POST" && !hostedCheckoutExempt) {
+    if (route.method === "POST" && !hostedCheckoutExempt && route.audience !== "provider") {
       if (contract.mode !== "mutation") issues.push(`Mutation route ${route.id} must be marked as persistence mutation.`);
       if (!contract.idempotencyReplayRequired) issues.push(`Mutation route ${route.id} must persist idempotency replay state.`);
       if (!contract.persistedTables.includes("idempotency_keys")) issues.push(`Mutation route ${route.id} must use idempotency_keys.`);

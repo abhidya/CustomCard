@@ -546,6 +546,14 @@ export const stories = {
 
 const textCandidates = [
   {
+    id: "text-local-openai-compatible",
+    label: "Local LM Studio/KoboldCPP OpenAI-compatible card-copy",
+    adapterId: "local-openai-compatible-chat",
+    model: "local-default",
+    modelFromEnv: "CUSTOMCARD_LOCAL_LLM_MODEL",
+    requiredEnv: [["CUSTOMCARD_LOCAL_LLM_BASE_URL", "LMSTUDIO_BASE_URL", "KOBOLDCPP_BASE_URL"]]
+  },
+  {
     id: "text-cloudflare-baseline",
     label: "Current Cloudflare text baseline",
     adapterId: "cloudflare-workers-ai-chat",
@@ -597,6 +605,14 @@ const textCandidates = [
 ];
 
 const imageCandidates = [
+  {
+    id: "image-local-comfyui",
+    label: "Local ComfyUI checkpoint",
+    adapterId: "local-comfyui-api-image",
+    model: "DreamShaper_8_pruned.safetensors",
+    modelFromEnv: "CUSTOMCARD_COMFYUI_CHECKPOINT",
+    requiredEnv: [["CUSTOMCARD_COMFYUI_URL", "COMFYUI_URL"]]
+  },
   {
     id: "image-cloudflare-sdxl-lightning",
     label: "Current Cloudflare SDXL Lightning baseline",
@@ -686,7 +702,7 @@ async function main() {
 export function buildModelBenchmarkAdminCatalog(env = process.env) {
   const candidates = buildCandidateCatalog(env);
   return {
-    phases: ["smoke", "full", "pipeline-quality", "typography"],
+    phases: ["smoke", "full", "pipeline-quality", "typography", "local", "local-typography"],
     stories: Object.values(stories).map((story) => ({
       id: story.id,
       customerType: story.request?.relationship ?? "customer",
@@ -708,6 +724,12 @@ export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false } =
   const phaseDirName = args["phase-dir"] || phase;
   const live = args.live === true || args.live === "true" || String(process.env.CUSTOMCARD_BENCHMARK_LIVE || "").toLowerCase() === "enabled";
   const env = loadBenchmarkEnv();
+  const localOnly =
+    args["local-only"] === true ||
+    args["local-only"] === "true" ||
+    phase === "local" ||
+    phase === "local-only" ||
+    phase === "local-typography";
   mkdirSync(outputDir, { recursive: true });
 
   const candidates = buildCandidateCatalog(env);
@@ -731,7 +753,7 @@ export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false } =
   }
 
   const providerHttp = [];
-  const fetchImpl = createLoggingFetch(providerHttp, env);
+  const fetchImpl = createLoggingFetch(providerHttp, env, { localOnly });
   const service = createAiCardGenerationService({ env, fetchImpl });
   const phaseDir = resolve(outputDir, phaseDirName);
   mkdirSync(phaseDir, { recursive: true });
@@ -741,6 +763,7 @@ export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false } =
     phaseDir: phaseDirName,
     createdAtIso: new Date().toISOString(),
     liveProviderCallsEnabled: true,
+    localOnlyNetworkGuard: localOnly,
     outputDir: relativePath(outputDir),
     envRouting: {
       aiEnvSources: [".env.local", "infra/env/.env"].filter((filePath) => existsSync(resolve(repoRoot, filePath))),
@@ -754,7 +777,7 @@ export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false } =
 
   for (const run of plannedRuns) {
     summary.runs.push(
-      run.phase === "typography"
+      run.phase === "typography" || run.phase === "local-typography"
         ? await runTypographyExperimentPanel({ run, phaseDir, providerHttp, env, fetchImpl })
         : await runBenchmarkCard({ run, phaseDir, service, providerHttp, env, fetchImpl })
     );
@@ -796,7 +819,7 @@ function withAvailability(candidate, env) {
   const missingEnv = missingEnvGroups(candidate.requiredEnv || [], env);
   return {
     ...candidate,
-    model: candidate.model || env[candidate.modelFromEnv] || "",
+    model: candidate.modelFromEnv && env[candidate.modelFromEnv] ? env[candidate.modelFromEnv] : candidate.model || "",
     configured: missingEnv.length === 0,
     missingEnv
   };
@@ -814,12 +837,31 @@ function hasUsableEnvValue(value) {
 }
 
 function plannedRunsForPhase(phase, candidates) {
+  if (phase === "local" || phase === "local-only") return localOnlyRuns(candidates);
+  if (phase === "local-typography") return localTypographyRuns(candidates);
   if (phase === "smoke") return smokeRuns(candidates);
   if (phase === "full") return fullRuns(candidates);
   if (phase === "typography") return typographyExperimentRuns(candidates);
   if (phase === "pipeline-quality" || phase === "quality") return pipelineQualityRuns(candidates);
   if (phase === "all") return [...smokeRuns(candidates), ...fullRuns(candidates)];
   throw new Error(`Unknown benchmark phase: ${phase}`);
+}
+
+function localOnlyRuns(candidates) {
+  const story = stories["botanical-birthday"] || stories[pipelineQualityStoryId];
+  const text = firstConfigured(candidates.text, "text-local-openai-compatible");
+  const image = firstConfigured(candidates.image, "image-local-comfyui");
+  if (!story || !text || !image || text.id !== "text-local-openai-compatible" || image.id !== "image-local-comfyui") return [];
+  return [
+    {
+      phase: "local",
+      storyId: story.id,
+      story,
+      text,
+      image,
+      focus: "local-only-full-card"
+    }
+  ];
 }
 
 function applyRunFilters(runs, args) {
@@ -915,6 +957,31 @@ export function typographyExperimentRuns(candidates) {
     image,
     typographyMode: mode
   }));
+}
+
+export function localTypographyRuns(candidates) {
+  const image = firstConfigured(candidates.image, "image-local-comfyui");
+  if (!image || image.id !== "image-local-comfyui") return [];
+  return [
+    {
+      phase: "local-typography",
+      focus: "local-comfy-hybrid-typography",
+      storyId: typographyExperimentSpec.id,
+      story: {
+        id: typographyExperimentSpec.id,
+        must_include: [typographyExperimentSpec.headline, typographyExperimentSpec.body],
+        must_avoid: ["lorem ipsum", "placeholder", "extra words", "fake lettering", "mockup"]
+      },
+      text: {
+        id: "text-none-direct-image-test",
+        label: "Direct image typography test",
+        adapterId: "none",
+        model: ""
+      },
+      image,
+      typographyMode: typographyModes.find((mode) => mode.id === "mode-c-hybrid-reserved-layout")
+    }
+  ];
 }
 
 export function pipelineQualityRuns(candidates) {
@@ -1198,14 +1265,27 @@ function isImageGenerationProviderCall(call) {
     /\/ai\/run\/@cf\//.test(url) ||
     /api\.openai\.com\/v1\/images\/generations/.test(url) ||
     /router\.huggingface\.co\/(?:hf-inference|fal-ai|replicate)\//.test(url) ||
-    /generativelanguage\.googleapis\.com\/v1\/models\/.+:generateContent/.test(url)
+    /generativelanguage\.googleapis\.com\/v1\/models\/.+:generateContent/.test(url) ||
+    isLocalComfyPromptUrl(url)
   );
+}
+
+function isLocalComfyPromptUrl(value) {
+  try {
+    const parsed = new URL(String(value));
+    const host = parsed.hostname.toLowerCase();
+    const localHosts = new Set(["localhost", "127.0.0.1", "::1", "0.0.0.0"]);
+    return parsed.protocol === "http:" && localHosts.has(host) && parsed.pathname.replace(/\/+$/, "") === "/prompt";
+  } catch {
+    return false;
+  }
 }
 
 function providerRequestPanelId({ body, index, requestPanelIds }) {
   return (
     providerRequestFields(body)?.panel_id ||
     body?.metadata?.customcard?.panel_id ||
+    body?.extra_data?.customcard?.panel_id ||
     body?.customcard?.panel_id ||
     requestPanelIds[index] ||
     `panel-${index + 1}`
@@ -1216,6 +1296,7 @@ function providerRequestPrompt(body) {
   const fields = providerRequestFields(body);
   return (
     fields?.text ||
+    body?.extra_data?.customcard?.inputs?.prompt ||
     body?.prompt ||
     body?.inputs ||
     body?.contents?.[0]?.parts?.find?.((part) => part?.text)?.text
@@ -1224,12 +1305,19 @@ function providerRequestPrompt(body) {
 
 function providerRequestNegativePrompt(body) {
   const fields = providerRequestFields(body);
-  return fields?.negative_prompt || body?.negative_prompt || body?.parameters?.negative_prompt;
+  return fields?.negative_prompt || body?.extra_data?.customcard?.inputs?.negative_prompt || body?.negative_prompt || body?.parameters?.negative_prompt;
 }
 
 function providerRequestValue(body, key) {
   const fields = providerRequestFields(body);
-  return fields?.[key] ?? body?.[key] ?? body?.parameters?.[key] ?? body?.image_size?.[key];
+  return (
+    fields?.[key] ??
+    body?.extra_data?.customcard?.inputs?.[key] ??
+    body?.extra_data?.customcard?.[key] ??
+    body?.[key] ??
+    body?.parameters?.[key] ??
+    body?.image_size?.[key]
+  );
 }
 
 function providerRequestFields(body) {
@@ -1437,7 +1525,10 @@ export function buildTypographyExperimentPrompt(modeId, spec = typographyExperim
       modeId === "mode-a-current-overlay" && hasPanelText ? panelPairingInstruction(panel) : "",
       typographySystemInstruction(modeId, panel, hasPanelText),
       "Keep generous safe margins and a clear, uncluttered type-safe area.",
+      "Render flat abstract stationery artwork only, not a photographed object scene.",
       "Do not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.",
+      "Do not add tiny decorative strokes that resemble glyphs or a signature.",
+      "No people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.",
       "No mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
     ].join("\n"),
     negativePrompt: typographyNegativePrompt(modeId, panel)
@@ -1484,7 +1575,7 @@ function typographySystemInstruction(modeId, panel, hasPanelText) {
 
 function typographyNegativePrompt(modeId, panel) {
   const base =
-    "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo";
+    "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene";
   if (modeId !== "mode-c-hybrid-reserved-layout") return base;
   const shared =
     "central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center";
@@ -1525,6 +1616,10 @@ function countSentences(value) {
 }
 
 async function executeTypographyImageProvider({ image, panelId, prompt, negativePrompt, env, fetchImpl }) {
+  if (image.adapterId === "local-comfyui-api-image") {
+    return executeLocalComfyTypographyImage({ image, panelId, prompt, negativePrompt, env, fetchImpl });
+  }
+
   if (image.adapterId === "deepai-text2img-image") {
     const body = new FormData();
     body.set("text", truncateText(prompt, 2048));
@@ -1623,6 +1718,248 @@ async function executeTypographyImageProvider({ image, panelId, prompt, negative
   }
 
   throw new Error(`Image adapter ${image.adapterId} is configured but not executable in typography experiment yet.`);
+}
+
+async function executeLocalComfyTypographyImage({ image, panelId, prompt, negativePrompt, env, fetchImpl }) {
+  const comfyUrl = localComfyUiBaseUrl(env);
+  const width = boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_IMAGE_WIDTH || env.COMFYUI_IMAGE_WIDTH, 256, 2048, 960);
+  const height = boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_IMAGE_HEIGHT || env.COMFYUI_IMAGE_HEIGHT, 256, 2048, 1344);
+  const steps = boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_STEPS || env.COMFYUI_STEPS, 1, 80, 18);
+  const cfg = boundedNumberEnv(env.CUSTOMCARD_COMFYUI_CFG || env.COMFYUI_CFG, 0, 30, 6.5);
+  const sampler = String(env.CUSTOMCARD_COMFYUI_SAMPLER || env.COMFYUI_SAMPLER || "euler").trim() || "euler";
+  const scheduler = String(env.CUSTOMCARD_COMFYUI_SCHEDULER || env.COMFYUI_SCHEDULER || "normal").trim() || "normal";
+  const checkpoint =
+    firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_CHECKPOINT", "CUSTOMCARD_LOCAL_COMFYUI_CHECKPOINT", "COMFYUI_CHECKPOINT"]) ||
+    image.model ||
+    "DreamShaper_8_pruned.safetensors";
+  const deterministicSeed = numericSeed(`${checkpoint}:${panelId}:${prompt}`);
+  const seed = boundedIntegerEnv(
+    env.CUSTOMCARD_COMFYUI_SEED || env.COMFYUI_SEED || deterministicSeed,
+    0,
+    2 ** 32 - 1,
+    deterministicSeed
+  );
+  const variables = {
+    cfg,
+    checkpoint,
+    height,
+    negativePrompt,
+    panelId,
+    prompt,
+    sampler,
+    scheduler,
+    seed,
+    steps,
+    width,
+    workflowId: localComfyWorkflowId(env)
+  };
+  const workflow = buildLocalComfyWorkflow({ env, variables });
+  const promptResponse = await postJson(fetchImpl, localComfyUiApiUrl(comfyUrl, "/prompt"), {
+    body: buildLocalComfyPromptBody({ env, workflow, variables })
+  });
+  const promptId = String(promptResponse.prompt_id || "").trim();
+  if (!promptId) throw new Error("Local ComfyUI did not return a prompt_id.");
+  const output = await waitForLocalComfyImage(fetchImpl, comfyUrl, promptId, {
+    pollMs: boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_POLL_INTERVAL_MS || env.COMFYUI_POLL_INTERVAL_MS, 250, 30_000, 1500),
+    timeoutMs: boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_TIMEOUT_MS || env.COMFYUI_TIMEOUT_MS, 10_000, 900_000, 360_000)
+  });
+  const imageUrl = new URL(localComfyUiApiUrl(comfyUrl, "/view"));
+  imageUrl.searchParams.set("filename", output.filename);
+  imageUrl.searchParams.set("subfolder", output.subfolder || "");
+  imageUrl.searchParams.set("type", output.type || "output");
+  const response = await fetchImpl(imageUrl.toString(), { method: "GET" });
+  if (!response.ok) throw new Error(`Local ComfyUI image fetch failed with ${response.status}.`);
+  const contentType = response.headers?.get?.("content-type") || "image/png";
+  const buffer = Buffer.from(await response.arrayBuffer());
+  return `data:${contentType};base64,${buffer.toString("base64")}`;
+}
+
+function buildLocalComfyWorkflow({ env, variables }) {
+  const workflowSource = firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_WORKFLOW_JSON", "COMFYUI_WORKFLOW_JSON"]);
+  const workflowPath = firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_WORKFLOW_PATH", "COMFYUI_WORKFLOW_PATH"]);
+  if (workflowSource || workflowPath) {
+    const rawWorkflow = workflowSource || readLocalComfyWorkflowFile(workflowPath);
+    try {
+      return interpolateLocalComfyTemplate(JSON.parse(rawWorkflow), variables);
+    } catch (error) {
+      throw new Error(`Local ComfyUI workflow template is invalid: ${errorMessage(error)}`);
+    }
+  }
+  return buildLocalComfyTxt2ImgWorkflow(variables);
+}
+
+function readLocalComfyWorkflowFile(workflowPath) {
+  const resolvedPath = resolve(String(workflowPath));
+  if (!existsSync(resolvedPath)) throw new Error(`Local ComfyUI workflow file not found: ${resolvedPath}`);
+  return readFileSync(resolvedPath, "utf8");
+}
+
+function buildLocalComfyPromptBody({ env, workflow, variables }) {
+  const workflowInputs = localComfyWorkflowInputsForMetadata(env, variables);
+  return {
+    prompt: workflow,
+    client_id: firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_CLIENT_ID", "COMFYUI_CLIENT_ID"]) || "customcard-local-typography-benchmark",
+    extra_data: {
+      customcard: {
+        workflow_id: variables.workflowId,
+        panel_id: variables.panelId,
+        seed: variables.seed,
+        inputs: workflowInputs
+      }
+    }
+  };
+}
+
+function localComfyWorkflowInputsForMetadata(env, variables) {
+  const defaults = localComfyWorkflowInputSummary(variables);
+  const configured = localComfyWorkflowInputs(env, variables);
+  if (!configured || Array.isArray(configured) || typeof configured !== "object") return defaults;
+  return {
+    ...defaults,
+    ...configured
+  };
+}
+
+function localComfyWorkflowInputSummary(variables) {
+  return {
+    checkpoint: variables.checkpoint,
+    width: variables.width,
+    height: variables.height,
+    steps: variables.steps,
+    cfg: variables.cfg,
+    sampler: variables.sampler,
+    scheduler: variables.scheduler,
+    seed: variables.seed,
+    prompt: variables.prompt,
+    negative_prompt: variables.negativePrompt || ""
+  };
+}
+
+function localComfyWorkflowInputs(env, variables) {
+  const rawInputs = firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_WORKFLOW_INPUTS_JSON", "COMFYUI_WORKFLOW_INPUTS_JSON"]);
+  if (!rawInputs) return undefined;
+  try {
+    return interpolateLocalComfyTemplate(JSON.parse(rawInputs), variables);
+  } catch {
+    return undefined;
+  }
+}
+
+function localComfyWorkflowId(env) {
+  return firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_WORKFLOW_ID", "COMFYUI_WORKFLOW_ID"]) || "customcard-hybrid-reserved-layout";
+}
+
+function interpolateLocalComfyTemplate(value, variables) {
+  if (Array.isArray(value)) return value.map((item) => interpolateLocalComfyTemplate(item, variables));
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, nested]) => [key, interpolateLocalComfyTemplate(nested, variables)]));
+  }
+  if (typeof value !== "string") return value;
+  const exactMatch = value.match(/^\{\{\s*([a-zA-Z0-9_]+)\s*\}\}$/);
+  if (exactMatch) {
+    const exactValue = localComfyTemplateVariable(exactMatch[1], variables);
+    if (exactValue !== undefined) return exactValue;
+  }
+  return value.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_match, key) => {
+    const replacement = localComfyTemplateVariable(key, variables);
+    return replacement === undefined ? "" : String(replacement);
+  });
+}
+
+function localComfyTemplateVariable(key, variables) {
+  const values = {
+    cfg: variables.cfg,
+    checkpoint: variables.checkpoint,
+    height: variables.height,
+    negative_prompt: variables.negativePrompt || "",
+    negativePrompt: variables.negativePrompt || "",
+    panel_id: variables.panelId,
+    panelId: variables.panelId,
+    prompt: variables.prompt,
+    sampler: variables.sampler,
+    scheduler: variables.scheduler,
+    seed: variables.seed,
+    steps: variables.steps,
+    width: variables.width,
+    workflow_id: variables.workflowId || "",
+    workflowId: variables.workflowId || ""
+  };
+  return values[key];
+}
+
+function buildLocalComfyTxt2ImgWorkflow({ cfg, checkpoint, height, negativePrompt, panelId, prompt, sampler, scheduler, seed, steps, width, workflowId }) {
+  return {
+    "1": {
+      class_type: "CheckpointLoaderSimple",
+      inputs: { ckpt_name: checkpoint }
+    },
+    "2": {
+      class_type: "CLIPTextEncode",
+      inputs: { text: prompt, clip: ["1", 1] }
+    },
+    "3": {
+      class_type: "CLIPTextEncode",
+      inputs: { text: negativePrompt || "", clip: ["1", 1] }
+    },
+    "4": {
+      class_type: "EmptyLatentImage",
+      inputs: { width, height, batch_size: 1 }
+    },
+    "5": {
+      class_type: "KSampler",
+      inputs: {
+        seed,
+        steps,
+        cfg,
+        sampler_name: sampler,
+        scheduler,
+        denoise: 1,
+        model: ["1", 0],
+        positive: ["2", 0],
+        negative: ["3", 0],
+        latent_image: ["4", 0]
+      }
+    },
+    "6": {
+      class_type: "VAEDecode",
+      inputs: { samples: ["5", 0], vae: ["1", 2] }
+    },
+    "7": {
+      class_type: "SaveImage",
+      inputs: {
+        images: ["6", 0],
+        filename_prefix: `customcard/${workflowId}/${panelId}`
+      }
+    }
+  };
+}
+
+async function waitForLocalComfyImage(fetchImpl, comfyUrl, promptId, { pollMs, timeoutMs }) {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    const history = await fetchJsonProvider(fetchImpl, localComfyUiApiUrl(comfyUrl, `/history/${encodeURIComponent(promptId)}`));
+    const item = history[promptId];
+    if (item?.status?.completed === false && item?.status?.status_str === "error") {
+      throw new Error(`Local ComfyUI prompt failed: ${JSON.stringify(item.status)}`);
+    }
+    const images = Object.values(item?.outputs ?? {}).flatMap((output) => output.images ?? []);
+    if (images.length > 0) return images[0];
+    await sleep(pollMs);
+  }
+  throw new Error(`Local ComfyUI prompt ${promptId} timed out after ${timeoutMs}ms.`);
+}
+
+async function fetchJsonProvider(fetchImpl, url, init = { method: "GET" }) {
+  const response = await fetchImpl(url, init);
+  const text = await response.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(`Expected JSON from local provider, got ${text.slice(0, 200)}.`);
+  }
+  if (!response.ok) throw new Error(`Local provider returned ${response.status}: ${JSON.stringify(data).slice(0, 300)}.`);
+  return data;
 }
 
 async function materializePanels({ runDir, payload, fetchImpl, env }) {
@@ -2287,8 +2624,9 @@ function loadBenchmarkEnv() {
   return target;
 }
 
-function createLoggingFetch(logs, env) {
+function createLoggingFetch(logs, env, { localOnly = false } = {}) {
   return async function loggingFetch(url, options = {}) {
+    if (localOnly) assertLocalBenchmarkUrl(url);
     const started = Date.now();
     const response = await fetch(url, options);
     const buffer = Buffer.from(await response.arrayBuffer());
@@ -2311,6 +2649,20 @@ function createLoggingFetch(logs, env) {
     });
     return new Response(buffer, { status: response.status, statusText: response.statusText, headers: response.headers });
   };
+}
+
+function assertLocalBenchmarkUrl(value) {
+  let parsed;
+  try {
+    parsed = new URL(String(value));
+  } catch {
+    throw new Error(`Local-only benchmark blocked invalid URL: ${value}`);
+  }
+  const host = parsed.hostname.toLowerCase();
+  const allowedHosts = new Set(["localhost", "127.0.0.1", "::1", "0.0.0.0"]);
+  if (parsed.protocol !== "http:" || !allowedHosts.has(host)) {
+    throw new Error(`Local-only benchmark blocked non-local provider URL: ${parsed.origin}`);
+  }
 }
 
 async function postJson(fetchImpl, url, { headers = {}, body }) {
@@ -2411,6 +2763,61 @@ function requiredEnv(env, key) {
     throw new Error(`Missing required provider env: ${key}`);
   }
   return String(value).trim();
+}
+
+function localComfyUiBaseUrl(env) {
+  const baseUrl = firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_URL", "COMFYUI_URL"]) || "http://127.0.0.1:8188";
+  return assertLocalProviderBaseUrl(baseUrl, "Local ComfyUI URL").toString().replace(/\/+$/, "");
+}
+
+function localComfyUiApiUrl(comfyUrl, pathname) {
+  const url = new URL(pathname, `${comfyUrl.replace(/\/+$/, "")}/`);
+  assertLocalProviderBaseUrl(url.toString(), "Local ComfyUI API URL");
+  return url.toString();
+}
+
+function assertLocalProviderBaseUrl(value, label) {
+  let parsed;
+  try {
+    parsed = new URL(String(value));
+  } catch {
+    throw new Error(`${label} is invalid.`);
+  }
+  const host = parsed.hostname.toLowerCase();
+  const localHosts = new Set(["localhost", "127.0.0.1", "::1", "0.0.0.0"]);
+  if (parsed.protocol !== "http:" || !localHosts.has(host)) {
+    throw new Error(`${label} must use a localhost http URL for the local-only provider.`);
+  }
+  parsed.username = "";
+  parsed.password = "";
+  return parsed;
+}
+
+function firstUsableEnv(env, keys) {
+  for (const key of keys) {
+    const value = env[key];
+    if (!value) continue;
+    const normalized = String(value).trim();
+    if (!normalized || ["disabled", "example", "replace-me", "changeme", "dummy", "fake"].includes(normalized.toLowerCase())) continue;
+    return normalized;
+  }
+  return "";
+}
+
+function boundedIntegerEnv(value, min, max, fallback) {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed)) return fallback;
+  return Math.min(Math.max(parsed, min), max);
+}
+
+function boundedNumberEnv(value, min, max, fallback) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(Math.max(parsed, min), max);
+}
+
+function errorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
 }
 
 function isCloudflareFluxModel(model) {
@@ -2532,7 +2939,7 @@ function isRedactableEnvValue(value) {
 
 
 function isSafeConfiguredKey(key) {
-  return /^(CUSTOMCARD_AI_|CLOUDFLARE_|GOOGLE_|GEMINI_|HUGGINGFACE_|DEEPAI_|OPENAI_|ANTHROPIC_)/.test(key);
+  return /^(CUSTOMCARD_AI_|CUSTOMCARD_LOCAL_LLM_|CUSTOMCARD_COMFYUI_|CLOUDFLARE_|COMFYUI_|GOOGLE_|GEMINI_|HUGGINGFACE_|DEEPAI_|OPENAI_|ANTHROPIC_|LMSTUDIO_|KOBOLDCPP_)/.test(key);
 }
 
 function textContains(value, term) {

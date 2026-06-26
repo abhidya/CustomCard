@@ -4,7 +4,7 @@ Source of truth: `src/aiQueueOperationsData.mjs`. Gate: `npm run ai:queue:doctor
 
 ## Design contract
 
-All customer-facing AI flows enter through the API, write a minimized job into `api_jobs`, and return `202 queued` with `job_id`, `job_status_url`, and `retry_after_seconds`. The request path does not call live AI providers. The worker runs as a polling process with `npm run worker`, leases jobs from Postgres with `FOR UPDATE SKIP LOCKED`, uses server-owned provider config, records provider spend events, and writes compact results back to `api_jobs.result`.
+All customer-facing AI flows enter through the API, write a minimized job into `api_jobs`, and return `202 queued` with `job_id`, `job_status_url`, and `retry_after_seconds`. The request path does not call live AI providers. The default worker runs as a polling process with `npm run worker`, leases jobs from Postgres with `FOR UPDATE SKIP LOCKED`, uses server-owned provider config, records provider spend events, and writes compact results back to `api_jobs.result`. Machine-local providers should use `npm run provider:setup`, `npm run provider:status`, and `npm run provider:start` so the local box holds only a scoped provider token instead of production database or object-store credentials.
 
 Security invariants:
 
@@ -27,8 +27,17 @@ Availability invariants:
 Run modes:
 
 - `npm run worker` starts the long-running polling worker.
+- `npm run worker:comfy` starts the machine-local ComfyUI worker scoped to `ai-card-generate` jobs only.
+- `npm run provider:setup` bootstraps `.env.provider.local`, generates the local raw provider token if needed, and stores only the SHA-256 token hash in Vercel when missing.
+- `npm run provider:status` checks local readiness and reads aggregate provider queue metrics through `GET /api/provider/jobs/status` without leasing work.
+- `npm run provider:start` starts the machine-local provider worker that leases/completes jobs through `/api/provider/jobs/*` with a scoped bearer token.
+- `npm run worker:provider:http` remains the lower-level worker entrypoint for debugging.
 - `node scripts/worker.mjs --once` leases and processes one batch, then exits.
+- `node scripts/local-comfy-worker.mjs --once` leases and processes one local Comfy card-generation batch, then exits.
+- `npm run provider:once` leases and processes one provider-token HTTP job, then exits.
 - `node scripts/worker.mjs --describe` prints readiness and exits without leasing work.
+- `node scripts/local-comfy-worker.mjs --describe` prints local Comfy worker readiness and exits without leasing work.
+- `npm run provider:doctor` prints provider HTTP worker readiness, production endpoint status, and queue metric availability without leasing work.
 
 Environment:
 
@@ -39,10 +48,24 @@ Environment:
 - `CUSTOMCARD_WORKER_RETRY_BACKOFF_SECONDS` controls retry delay after failure; default `60`, range `5..3600`.
 - `CUSTOMCARD_WORKER_POLL_INTERVAL_MS` controls idle poll interval; default `5000`, range `250..60000`.
 - `CUSTOMCARD_WORKER_ID` may pin a stable worker name; otherwise host and process id are used.
+- Direct Postgres workers require `DATABASE_URL` and shared object-store env.
+- Provider HTTP workers require `CUSTOMCARD_PROVIDER_API_BASE_URL`, `CUSTOMCARD_PROVIDER_WORKER_TOKEN`, and local provider env only. They must not need `DATABASE_URL` or R2 writer credentials.
+- Hosted API provider routes accept `CUSTOMCARD_PROVIDER_WORKER_TOKEN_SHA256` or `CUSTOMCARD_PROVIDER_WORKER_TOKEN`, and route scope is restricted with `CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS` such as `ai-card-generate`.
 
 Provider fallback configuration:
 
 - Flow config lives in `src/aiFlowConfigData.mjs` and is resolved server-side from provider credentials plus trusted Admin provider controls.
+- The local Comfy worker forces `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=local-comfyui-api-image`, defaults `CUSTOMCARD_COMFYUI_URL` to `http://127.0.0.1:8188`, and keeps customer queue payloads free of Comfy credentials or workflow JSON.
+- Local Comfy workflows can be supplied with `CUSTOMCARD_COMFYUI_WORKFLOW_PATH` or `CUSTOMCARD_COMFYUI_WORKFLOW_JSON`; `CUSTOMCARD_COMFYUI_WORKFLOW_ID` and `CUSTOMCARD_COMFYUI_WORKFLOW_INPUTS_JSON` are attached as trusted worker-side metadata.
+- Workflow templates may use `{{prompt}}`, `{{negative_prompt}}`, `{{panel_id}}`, `{{seed}}`, `{{width}}`, `{{height}}`, `{{steps}}`, `{{cfg}}`, `{{sampler}}`, `{{scheduler}}`, `{{checkpoint}}`, and `{{workflow_id}}`.
+- Checked-in Comfy API workflows live under `comfyui-workflows/`. Run `npm run comfy:models:setup` to hydrate the practical SDXL, Z-Image, and FLUX.2 Klein assets into the configured ComfyUI `models/` folder. Add `-- --include-qwen` only for the Qwen Image/Edit research branch, and `-- --include-gated` only after accepting FLUX.1 Schnell terms and setting `HF_TOKEN`.
+- Current local benchmark candidates:
+  - SDXL base: `CUSTOMCARD_COMFYUI_WORKFLOW_PATH=comfyui-workflows/customcard-sdxl-checkpoint.json`, `CUSTOMCARD_COMFYUI_CHECKPOINT=sd_xl_base_1.0.safetensors`, `CUSTOMCARD_COMFYUI_STEPS=25`, `CUSTOMCARD_COMFYUI_CFG=6`, `CUSTOMCARD_COMFYUI_SAMPLER=dpmpp_2m`, `CUSTOMCARD_COMFYUI_SCHEDULER=karras`.
+  - SDXL Turbo: same checkpoint workflow with `CUSTOMCARD_COMFYUI_CHECKPOINT=sd_xl_turbo_1.0_fp16.safetensors`, `CUSTOMCARD_COMFYUI_STEPS=2`, `CUSTOMCARD_COMFYUI_CFG=0`, `CUSTOMCARD_COMFYUI_SAMPLER=euler_ancestral`, `CUSTOMCARD_COMFYUI_SCHEDULER=sgm_uniform`.
+  - SDXL Lightning LoRA: `CUSTOMCARD_COMFYUI_WORKFLOW_PATH=comfyui-workflows/customcard-sdxl-lightning-lora.json`, `CUSTOMCARD_COMFYUI_CHECKPOINT=sd_xl_base_1.0.safetensors`, `CUSTOMCARD_COMFYUI_STEPS=4`, `CUSTOMCARD_COMFYUI_CFG=1`, `CUSTOMCARD_COMFYUI_SAMPLER=euler`, `CUSTOMCARD_COMFYUI_SCHEDULER=sgm_uniform`.
+  - Z-Image Turbo research: `CUSTOMCARD_COMFYUI_WORKFLOW_PATH=comfyui-workflows/customcard-z-image-turbo.json`, `CUSTOMCARD_COMFYUI_STEPS=8`, `CUSTOMCARD_COMFYUI_CFG=1`, `CUSTOMCARD_COMFYUI_SAMPLER=res_multistep`, `CUSTOMCARD_COMFYUI_SCHEDULER=simple`.
+  - FLUX.2 Klein 4B quality target: `CUSTOMCARD_COMFYUI_WORKFLOW_PATH=comfyui-workflows/customcard-flux2-klein-4b.json`, `CUSTOMCARD_COMFYUI_STEPS=4`, `CUSTOMCARD_COMFYUI_CFG=1`, `CUSTOMCARD_COMFYUI_SAMPLER=euler`. Run this on a 16GB+ GPU or cloud ComfyUI runner for fair scoring.
+- A direct Postgres local worker process needs an object store shared with the API process, such as local MinIO over `http://127.0.0.1:9000`; `memory://` is process-local and is suitable only for single-process tests or inline execution. The provider HTTP worker instead sends generated image results to the hosted API, and the hosted API persists artifacts to R2/object storage.
 - Live calls require an Admin-enabled flow, allowed adapter, required credentials, positive rate limit, and non-negative budget.
 - If card-copy provider config is missing, disabled, rate-limited, over budget, or fails during execution, the service returns user-content-only card fields and no images.
 - If card-image provider config is missing, disabled, rate-limited, over budget, or fails after provider copy succeeds, the service returns provider-generated text-only card output with no local image substitute.
@@ -56,6 +79,7 @@ Provider control plane:
 - `ai_route_policies.customer_error_policy` must remain `generic-status-only`; provider messages stay in admin evidence and never become customer-facing failure copy.
 - `ai_route_policies.queue_required` must remain true for image-generation policies.
 - `ai_benchmark_grades` is the promotion source of truth. DeepAI `text2img` standard currently has 66/100 product and 94/100 contract evidence, so it remains below the customer promotion gate even though the provider request contract is fixed.
+- Local image benchmark promotion should include the local visual quality gate: `npm run card:quality:local -- --input <benchmark-output-dir>`. Use `--advisory` while tuning and omit it for a blocking gate only after reviewer calibration. The safe default is an isolated local OpenAI-compatible vision server such as KoboldCPP or LM Studio; the ComfyUI Qwen-VL workflow `comfyui-workflows/customcard-local-visual-quality-gate.json` exists but is experimental on this 1080 Ti box because real QwenVL review attempts reset/crashed the local ComfyUI server. If using Comfy for review, prefer a separate review-only ComfyUI instance instead of the generation server.
 - Run `npm run ai:control-plane:doctor` after provider catalog, prompt profile, route policy, benchmark grade, or promotion-gate edits.
 
 ## Metrics
@@ -115,6 +139,8 @@ Warn but do not page when user-content-only fallback succeeds and customer keeps
 
 - `npm run ai:queue:doctor` validates this runbook, the source contract, API queue admission, worker retry/DLQ code, package script, and CI gate.
 - `npm run worker` processes queued work with Postgres leases.
+- `npm run worker:comfy` processes card-generation jobs through this machine's local ComfyUI instance and writes compact results back to `api_jobs.result`.
+- `npm run provider:start` processes card-generation jobs through this machine while leasing/completing over HTTPS with a scoped provider token.
 - `npm run api:doctor:postgres:live` verifies hosted Postgres migration/runtime integration when credentials are present.
 - `npm run test -- --run src/aiQueueOperations.test.ts tests/worker-runtime.test.ts tests/api-server.test.ts` verifies queue contract behavior.
 

@@ -1,0 +1,28 @@
+{
+  "createdAtIso": "2026-06-26T00:55:05.428Z",
+  "inputDir": "docs/evidence/generated-card-comparisons/local-typography-hybrid-20260626",
+  "outputDir": "docs/evidence/generated-card-comparisons/local-quality-gate-dry-run-after-comfy",
+  "backend": "comfy",
+  "comfyUrl": "http://127.0.0.1:8188",
+  "comfyWorkflowPath": "comfyui-workflows/customcard-local-visual-quality-gate.json",
+  "model": "Qwen3VL-4B-Instruct-Q4_K_M.gguf",
+  "minScore": 80,
+  "totalRuns": 1,
+  "passedRuns": 0,
+  "blockedRuns": 0,
+  "reviewRuns": 0,
+  "errorRuns": 0,
+  "reviews": [
+    {
+      "runDir": "docs/evidence/generated-card-comparisons/local-typography-hybrid-20260626/local-typography-hybrid/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-local-comfyui",
+      "images": [
+        "docs/evidence/generated-card-comparisons/local-typography-hybrid-20260626/local-typography-hybrid/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-local-comfyui/contact-sheet.png"
+      ],
+      "model": "Qwen3VL-4B-Instruct-Q4_K_M.gguf",
+      "minScore": 80,
+      "status": "dry-run",
+      "passed": false,
+      "blockingFailures": []
+    }
+  ]
+}

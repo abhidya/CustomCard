@@ -7,7 +7,7 @@ import type { ProductionReadinessSummary } from "./productionReadiness";
 import type { ReadinessSummary } from "./readinessSummary";
 import type { OrderStatus } from "./serviceKernel";
 
-export type AdminPortalSectionId = "ops" | "orders" | "users" | "assets" | "providers" | "launch";
+export type AdminPortalSectionId = "ops" | "orders" | "users" | "assets" | "providers" | "ai-loop" | "launch";
 export type AdminPortalStatus = "ready" | "attention" | "blocked";
 export type AdminPortalRisk = "low" | "medium" | "high";
 
@@ -47,6 +47,7 @@ export interface AdminPortalArea {
   controls: AdminPortalControl[];
   records: AdminPortalRecord[];
   orderQueue?: AdminPortalOrderQueueItem[];
+  aiReviewQueue?: AdminPortalAiReviewQueueItem[];
 }
 
 export interface AdminPortalOrderQueueItem {
@@ -58,6 +59,18 @@ export interface AdminPortalOrderQueueItem {
   source: string;
   quote: string;
   pickup: string;
+  nextAction: string;
+  evidence: string[];
+}
+
+export interface AdminPortalAiReviewQueueItem {
+  id: string;
+  storyId: string;
+  textModel: string;
+  imageModel: string;
+  provider: string;
+  queueStatus: "planned" | "queued" | "running" | "ready" | "blocked";
+  humanReview: "pending" | "approved" | "rejected";
   nextAction: string;
   evidence: string[];
 }
@@ -76,6 +89,7 @@ export interface AdminPortalSummary {
   userQueues: number;
   assetQueues: number;
   providerQueues: number;
+  aiReviewQueues: number;
   launchGates: number;
   liveMutationsEnabled: number;
   rawContentExposed: number;
@@ -112,8 +126,9 @@ export function buildAdminPortalModel(input: AdminPortalModelInput): AdminPortal
   const users = buildUsersArea(input);
   const assets = buildAssetsArea(input);
   const providers = buildProvidersArea(input, runtimeBlocked, runtimeReady);
+  const aiLoop = buildAiLoopArea(input, runtimeBlocked, runtimeReady);
   const launch = buildLaunchArea(input);
-  const areas = { ops, orders, users, assets, providers, launch };
+  const areas = { ops, orders, users, assets, providers, "ai-loop": aiLoop, launch };
   const records = Object.values(areas).flatMap((area) => area.records);
   const summary: AdminPortalSummary = {
     sections: Object.keys(areas).length,
@@ -122,6 +137,7 @@ export function buildAdminPortalModel(input: AdminPortalModelInput): AdminPortal
     userQueues: users.records.length,
     assetQueues: assets.records.length,
     providerQueues: input.providerOps.summary.fallbackQueues,
+    aiReviewQueues: aiLoop.aiReviewQueue?.length ?? 0,
     launchGates: launch.records.length,
     liveMutationsEnabled: records.filter((record) => record.liveMutationEnabled).length,
     rawContentExposed: records.filter((record) => record.rawContentExposed).length
@@ -171,7 +187,7 @@ export function filterAdminPortalRecords(records: AdminPortalRecord[], filter: A
 
 export function validateAdminPortalModel(portal: AdminPortalModel): string[] {
   const issues: string[] = [];
-  const requiredSections: AdminPortalSectionId[] = ["ops", "orders", "users", "assets", "providers", "launch"];
+  const requiredSections: AdminPortalSectionId[] = ["ops", "orders", "users", "assets", "providers", "ai-loop", "launch"];
   const records = Object.values(portal.areas).flatMap((area) => area.records);
 
   for (const section of requiredSections) {
@@ -689,6 +705,133 @@ function providerOpsRecord(provider: ProviderOpsProvider): AdminPortalRecord {
       : "Attach missing env, safety gates, fallback queue, and ORR evidence before live use.",
     evidence: [...evidence, provider.metricSource.label].slice(0, 4)
   });
+}
+
+function buildAiLoopArea(input: AdminPortalModelInput, runtimeBlocked: number, runtimeReady: number): AdminPortalArea {
+  const localTextRuntime = input.runtimeReadiness.get("local-openai-compatible-chat");
+  const localImageRuntime = input.runtimeReadiness.get("local-comfyui-api-image");
+  const localTextReady = localTextRuntime?.mode === "local-result";
+  const localImageReady = localImageRuntime?.mode === "local-result";
+  const aiReviewQueue: AdminPortalAiReviewQueueItem[] = [
+    {
+      id: "local-ai-queue-botanical-birthday",
+      storyId: "botanical-birthday",
+      textModel: "Qwen3 local chat via LM Studio or KoboldCPP",
+      imageModel: "DreamShaper, SDXL, or FLUX checkpoint via ComfyUI",
+      provider: "local-openai-compatible-chat + local-comfyui-api-image",
+      queueStatus: "planned",
+      humanReview: "pending",
+      nextAction: "Use POST /api/admin/local-ai-loop/run with mode=queue-and-run, or npm run card:queue:local for CLI fallback.",
+      evidence: ["admin-local-ai-loop-run", "api_jobs.payload.localLoop", "audit_log.local_ai_loop.job_queued"]
+    },
+    {
+      id: "local-ai-benchmark-aggregate",
+      storyId: "all local benchmark stories",
+      textModel: "tracked per run",
+      imageModel: "tracked per run",
+      provider: "local benchmark aggregate",
+      queueStatus: "ready",
+      humanReview: "pending",
+      nextAction: "npm run card:benchmark:aggregate",
+      evidence: ["model ranking score", "inputs", "code version", "provider adapter ids"]
+    },
+    {
+      id: "local-ai-model-coverage",
+      storyId: "local model inventory",
+      textModel: "D:/models GGUF inventory",
+      imageModel: "ComfyUI model folders",
+      provider: "local model coverage",
+      queueStatus: "ready",
+      humanReview: "pending",
+      nextAction: "npm run card:benchmark:model-coverage",
+      evidence: ["local-model-coverage.json", "missing models list", "download placement plan"]
+    }
+  ];
+
+  return {
+    id: "ai-loop",
+    label: "AI Loop",
+    eyebrow: "Local model loop",
+    summary: "Queue-backed local LLM and ComfyUI generation with admin review before benchmark promotion or model distillation.",
+    metrics: [
+      { label: "Queue backend", value: "api_jobs" },
+      { label: "Review rows", value: `${aiReviewQueue.length}` },
+      { label: "Text local", value: localTextReady ? "ready" : "configured by script" },
+      { label: "Image local", value: localImageReady ? "ready" : "configured by worker" },
+      { label: "Runtime ready", value: `${runtimeReady}` },
+      { label: "Runtime blocked", value: `${runtimeBlocked}` },
+      { label: "Aggregate", value: "rankings" },
+      { label: "Network AI", value: "0" }
+    ],
+    controls: [
+      offControl("ai-loop-local-queue-write", "Queue local AI jobs", "Admin uses the local AI loop route after reviewing planned payloads."),
+      offControl("ai-loop-worker-run", "Run local Comfy worker", "Worker execution remains a local machine process behind explicit admin approval."),
+      offControl("ai-loop-promote-model", "Promote benchmark champion", "Requires admin grade, aggregate score, artifact proof, and rollback path.")
+    ],
+    records: [
+      record({
+        id: "ai-loop-human-review-queue",
+        label: "Local AI human review queue",
+        domain: "AI job queue",
+        owner: "Admin reviewer",
+        source: "/api/admin/local-ai-loop/run",
+        status: "attention",
+        risk: "medium",
+        detail: "Benchmark stories can be converted into sanitized ai-card-generate api_jobs with local provider metadata and pending admin review.",
+        action: "Run plan mode first, then queue or queue-and-run from the admin route and inspect rendered panels before promoting a model.",
+        evidence: ["admin-local-ai-loop-run", "planned-jobs.json", "api_jobs", "audit_log"]
+      }),
+      record({
+        id: "ai-loop-local-comfy-worker",
+        label: "Production local Comfy worker",
+        domain: "Image generation",
+        owner: "Provider integrations",
+        source: "scripts/local-comfy-worker.mjs",
+        status: localImageReady ? "ready" : "attention",
+        risk: "medium",
+        detail: "The local worker scopes route execution to ai-card-generate and forces local-comfyui-api-image for generated card panels.",
+        action: "Keep ComfyUI running locally, verify checkpoint/workflow metadata, and process only admin-approved queued jobs.",
+        evidence: ["worker:comfy", "local-comfyui-api-image", "CUSTOMCARD_COMFYUI_URL"]
+      }),
+      record({
+        id: "ai-loop-local-llm-provider",
+        label: "Local LLM provider",
+        domain: "Text generation",
+        owner: "Provider integrations",
+        source: "local-openai-compatible-chat",
+        status: localTextReady ? "ready" : "attention",
+        risk: "medium",
+        detail: "LM Studio or KoboldCPP can provide the OpenAI-compatible chat endpoint used for copy, prompts, and benchmark improvement turns.",
+        action: "Point CUSTOMCARD_LOCAL_LLM_BASE_URL, LMSTUDIO_BASE_URL, or KOBOLDCPP_BASE_URL at localhost before queue writes.",
+        evidence: ["D:/models", "local-openai-compatible-chat", "CUSTOMCARD_LOCAL_LLM_MODEL"]
+      }),
+      record({
+        id: "ai-loop-benchmark-rankings",
+        label: "Benchmark aggregate and rankings",
+        domain: "Model evaluation",
+        owner: "Admin reviewer",
+        source: "scripts/model-benchmark-aggregate.mjs",
+        status: "attention",
+        risk: "medium",
+        detail: "Aggregate ranking tracks story inputs, model IDs, provider adapters, code version, generated artifacts, score, and quality notes.",
+        action: "Review aggregate rankings and failure notes before selecting a candidate for production default or distillation data.",
+        evidence: ["card:benchmark:aggregate", "card:benchmark:model-coverage", "generated-card-comparisons"]
+      }),
+      record({
+        id: "ai-loop-distillation-design",
+        label: "Custom distilled model design",
+        domain: "Model improvement",
+        owner: "Provider integrations",
+        source: "docs/evidence/local-model-improvement-design.md",
+        status: "attention",
+        risk: "high",
+        detail: "Distilled image models should be trained from approved prompt/artifact pairs and evaluated against the same aggregate before use.",
+        action: "Keep distillation as a design-and-dataset stage until consent, licensing, eval, and rollback evidence are attached.",
+        evidence: ["approved artifacts", "training dataset manifest", "holdout benchmark"]
+      })
+    ],
+    aiReviewQueue
+  };
 }
 
 function buildLaunchArea(input: AdminPortalModelInput): AdminPortalArea {

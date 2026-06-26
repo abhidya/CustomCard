@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import {
   apiRouteContracts,
   apiRoutePathById,
@@ -20,13 +20,17 @@ const files = {
   localPersistenceAudit: "src/localPersistenceAudit.ts",
   postgresApiHttpDoctor: "scripts/postgres-api-http-doctor.mjs",
   postgresIntegrationDoctor: "scripts/postgres-integration-doctor.mjs",
-  postgresRuntimeDoctor: "scripts/postgres-runtime-doctor.mjs",
-  migration: "infra/migrations/001_initial_schema.sql"
+  postgresRuntimeDoctor: "scripts/postgres-runtime-doctor.mjs"
 };
 
 const contents = Object.fromEntries(
   Object.entries(files).map(([key, path]) => [key, readFileSync(path, "utf8")])
 );
+contents.migration = readdirSync("infra/migrations")
+  .filter((file) => /^\d+_.+\.sql$/.test(file))
+  .sort()
+  .map((file) => readFileSync(`infra/migrations/${file}`, "utf8"))
+  .join("\n");
 const repositoryBackedCustomerRoutePaths = repositoryBackedCustomerRouteIds.map((routeId) => apiRoutePathById[routeId]);
 const schemaBackedRouteCount = apiRouteContracts.filter(
   (route) => route.id !== "health" && route.id !== "route-catalog" && !hostedCheckoutExemptRouteIds.has(route.id)
@@ -55,6 +59,7 @@ const requiredTables = [
   "idempotency_keys",
   "provider_call_events",
   "api_jobs",
+  "admin_runtime_configs",
   "audit_log"
 ];
 
@@ -109,7 +114,11 @@ const migrationSignals = [
   "signed_url_expires_at TIMESTAMPTZ NOT NULL",
   "external_share_approval_required BOOLEAN NOT NULL DEFAULT TRUE",
   "real_orders_enabled BOOLEAN NOT NULL DEFAULT FALSE",
-  "CHECK (real_orders_enabled = FALSE)"
+  "CHECK (real_orders_enabled = FALSE)",
+  "CREATE TABLE IF NOT EXISTS admin_runtime_configs",
+  "raw_customer_content_stored BOOLEAN NOT NULL DEFAULT FALSE CHECK (raw_customer_content_stored = FALSE)",
+  "credentials_stored BOOLEAN NOT NULL DEFAULT FALSE CHECK (credentials_stored = FALSE)",
+  "CREATE INDEX IF NOT EXISTS idx_admin_runtime_configs_updated"
 ];
 
 const apiSignals = [
@@ -191,6 +200,7 @@ const postgresRuntimeSignals = [
   "INSERT INTO order_events",
   "INSERT INTO consent_records",
   "INSERT INTO data_requests",
+  "admin_runtime_configs",
   "INSERT INTO idempotency_keys",
   "INSERT INTO provider_call_events",
   "INSERT INTO audit_log",

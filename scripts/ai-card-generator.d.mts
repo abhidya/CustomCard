@@ -33,6 +33,7 @@ export function createAiCardGenerationService(options?: {
   fetchImpl?: typeof fetch;
   costGate?: unknown;
   aiFlowAdminConfig?: unknown;
+  loadAiFlowAdminConfig?: () => unknown | Promise<unknown>;
 }): AiService;
 
 export function describeAiCardGenerationAdapters(): {

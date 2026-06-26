@@ -17,6 +17,7 @@ describe("AI provider execution adapter", () => {
         "fireworks-chat",
         "groq-chat",
         "huggingface-chat",
+        "local-openai-compatible-chat",
         "mistral-chat",
         "perplexity-sonar-chat",
         "self-hosted-openai-compatible-chat",

@@ -1210,6 +1210,21 @@ export const providerCatalog: ProviderAdapter[] = [
     detail: "Keeps a cheap local or private model path available without bundling a runtime."
   },
   {
+    id: "local-openai-compatible-chat",
+    label: "Local OpenAI-compatible chat",
+    provider: "LM Studio / KoboldCPP",
+    capability: "text-chat",
+    lane: "Self-hosted",
+    status: "contract-only",
+    cost: "self-hosted",
+    credentials: ["CUSTOMCARD_LOCAL_LLM_BASE_URL"],
+    safetyGates: ["Localhost network guard", "Prompt audit", "Model quality review"],
+    roleSurface: ["admin"],
+    priority: 49.2,
+    detail: "Local-only OpenAI-compatible card-copy adapter for LM Studio, KoboldCPP, or llama.cpp-style localhost servers.",
+    docsUrl: "https://lmstudio.ai/docs/developer/openai-compat"
+  },
+  {
     id: "openai-images",
     label: "OpenAI Images",
     provider: "OpenAI",
@@ -1433,6 +1448,21 @@ export const providerCatalog: ProviderAdapter[] = [
     priority: 57.5,
     detail: "Optional RunComfy Model API adapter for queued hosted image model runs; submits one request per card panel and fetches hosted result URLs after completion.",
     docsUrl: "https://docs.runcomfy.com/model-apis/quickstart"
+  },
+  {
+    id: "local-comfyui-api-image",
+    label: "Local ComfyUI image",
+    provider: "ComfyUI",
+    capability: "image-generation",
+    lane: "Self-hosted",
+    status: "contract-only",
+    cost: "self-hosted",
+    credentials: ["CUSTOMCARD_COMFYUI_URL"],
+    safetyGates: ["Localhost network guard", "Workflow allowlist", "Human approval before print"],
+    roleSurface: ["admin"],
+    priority: 57.55,
+    detail: "Local-only ComfyUI REST adapter for one-panel-at-a-time card artwork generation with app-rendered typography.",
+    docsUrl: "https://docs.comfy.org/"
   },
   {
     id: "adobe-firefly-image",

@@ -344,7 +344,7 @@ function defaultUuid() {
  *   fetchImpl: (url: string, init?: RequestInit) => Promise<Response>,
  *   now?: () => number,
  *   uuid?: () => string,
- *   safetyControls?: Partial<import("./adminSafetyControlsData.mjs").AdminSafetyControls> | (() => Partial<import("./adminSafetyControlsData.mjs").AdminSafetyControls>)
+ *   safetyControls?: Partial<import("./adminSafetyControlsData.mjs").AdminSafetyControls> | (() => Partial<import("./adminSafetyControlsData.mjs").AdminSafetyControls> | Promise<Partial<import("./adminSafetyControlsData.mjs").AdminSafetyControls>>)
  * }} options
  */
 export function createWalgreensHostedCheckoutService({
@@ -357,8 +357,8 @@ export function createWalgreensHostedCheckoutService({
   const upstreamTimeoutMs = 15_000;
   const readSafetyControls = typeof safetyControls === "function" ? safetyControls : () => safetyControls;
 
-  function currentConfig() {
-    return resolveWalgreensCheckoutConfig(env, readSafetyControls());
+  async function currentConfig() {
+    return resolveWalgreensCheckoutConfig(env, await readSafetyControls());
   }
 
   async function postJson(path, body, config) {
@@ -417,7 +417,7 @@ export function createWalgreensHostedCheckoutService({
 
   return {
     get config() {
-      return currentConfig();
+      return resolveWalgreensCheckoutConfig(env, undefined);
     },
 
     /**
@@ -425,7 +425,7 @@ export function createWalgreensHostedCheckoutService({
      * credentials before the browser renders panels and attempts uploads.
      */
     async checkReadiness() {
-      const config = currentConfig();
+      const config = await currentConfig();
       if (!config.enabled) {
         return {
           ok: false,
@@ -463,7 +463,7 @@ export function createWalgreensHostedCheckoutService({
 
     /** Step 1+2: fetch SAS credentials and push one JPEG into Walgreens storage. */
     async uploadCardImage(imageBase64) {
-      const config = currentConfig();
+      const config = await currentConfig();
       if (!config.enabled) {
         return { ok: false, statusCode: 503, error: "Walgreens checkout is not enabled.", blockers: config.blockers };
       }
@@ -516,7 +516,7 @@ export function createWalgreensHostedCheckoutService({
 
     /** Step 3: exchange uploaded image URLs + customer info for a hosted checkout URL. */
     async createCheckoutSession(input) {
-      const config = currentConfig();
+      const config = await currentConfig();
       if (!config.enabled) {
         return { ok: false, statusCode: 503, error: "Walgreens checkout is not enabled.", blockers: config.blockers };
       }

@@ -1,0 +1,143 @@
+{
+  "status": "succeeded",
+  "generated_by": "local-comfyui",
+  "draft_id": "local-comfyui-botanical-birthday",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "Morning Fern Birthday",
+      "palette": [
+        "cream",
+        "fern green",
+        "soft moss",
+        "coffee brown"
+      ],
+      "motifs": [
+        "fern fronds",
+        "tiny trail flowers",
+        "morning coffee",
+        "quiet path"
+      ],
+      "border_style": "botanical corner border with generous blank field",
+      "front_back_pairing": "front carries a brighter botanical corner; back echoes it softly",
+      "interior_pairing": "inside panels keep the field quiet for readable app-set copy"
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "Happy Birthday Sara",
+        "body": "For green paths, good coffee, and tiny morning wonders.",
+        "art_direction": "botanical corner border with a generous blank field; keep the composition calm enough for app-rendered typography.",
+        "visual_cue": "botanical corner border with a generous blank field",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "center",
+          "alignment": "center",
+          "font_pairing": "soft-serif",
+          "color_mode": "dark-ink",
+          "scale": "standard"
+        },
+        "image_prompt": "Premium vertical greeting-card artwork layer for the front panel. botanical watercolor stationery, fern fronds, tiny trail flowers, soft morning light. corner border, generous blank field, text-safe open center, full-bleed printable 2D artwork. botanical corner border with a generous blank field. No readable text, no words, no letters, no numbers, no handwriting, no logo, no watermark.",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait, dense confetti, recipient name, main message"
+      },
+      {
+        "id": "inside-left",
+        "headline": "Coffee And Green Trails",
+        "body": "I hope the day opens gently, with coffee, green trails, and little things worth noticing.",
+        "art_direction": "soft fern edge detail with open center; keep the composition calm enough for app-rendered typography.",
+        "visual_cue": "soft fern edge detail with open center",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "center",
+          "alignment": "center",
+          "font_pairing": "soft-serif",
+          "color_mode": "dark-ink",
+          "scale": "standard"
+        },
+        "image_prompt": "Premium vertical greeting-card artwork layer for the inside-left panel. botanical watercolor stationery, fern fronds, tiny trail flowers, soft morning light. corner border, generous blank field, text-safe open center, full-bleed printable 2D artwork. soft fern edge detail with open center. No readable text, no words, no letters, no numbers, no handwriting, no logo, no watermark.",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait, dense confetti, recipient name, main message"
+      },
+      {
+        "id": "inside-right",
+        "headline": "More Hikes, More Laughter",
+        "body": "Wishing you more hikes, more laughter, and more quiet joy than the year can hold.",
+        "art_direction": "tiny trail flowers in two corners, text-safe middle; keep the composition calm enough for app-rendered typography.",
+        "visual_cue": "tiny trail flowers in two corners, text-safe middle",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "center",
+          "alignment": "center",
+          "font_pairing": "soft-serif",
+          "color_mode": "dark-ink",
+          "scale": "standard"
+        },
+        "image_prompt": "Premium vertical greeting-card artwork layer for the inside-right panel. botanical watercolor stationery, fern fronds, tiny trail flowers, soft morning light. corner border, generous blank field, text-safe open center, full-bleed printable 2D artwork. tiny trail flowers in two corners, text-safe middle. No readable text, no words, no letters, no numbers, no handwriting, no logo, no watermark.",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait, dense confetti, recipient name, main message"
+      },
+      {
+        "id": "back",
+        "headline": "Green Paths And Coffee",
+        "body": "Made for a birthday full of green paths, good coffee, and tiny bright things.",
+        "art_direction": "minimal botanical back mark near the lower corner; keep the composition calm enough for app-rendered typography.",
+        "visual_cue": "minimal botanical back mark near the lower corner",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "bottom",
+          "alignment": "center",
+          "font_pairing": "soft-serif",
+          "color_mode": "dark-ink",
+          "scale": "compact"
+        },
+        "image_prompt": "Premium vertical greeting-card artwork layer for the back panel. botanical watercolor stationery, fern fronds, tiny trail flowers, soft morning light. corner border, generous blank field, text-safe open center, full-bleed printable 2D artwork. minimal botanical back mark near the lower corner. No readable text, no words, no letters, no numbers, no handwriting, no logo, no watermark.",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait, dense confetti, recipient name, main message"
+      }
+    ],
+    "memory_citations": [
+      "fixture:botanical-birthday"
+    ]
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "docs/evidence/generated-card-comparisons/local-comfyui-benchmark-2026-06-25T23-19-09-193Z/botanical-birthday/provider-front.png",
+      "revised_prompt": "Premium vertical greeting-card artwork layer for the front panel. botanical watercolor stationery, fern fronds, tiny trail flowers, soft morning light. corner border, generous blank field, text-safe open center, full-bleed printable 2D artwork. botanical corner border with a generous blank field. No readable text, no words, no letters, no numbers, no handwriting, no logo, no watermark.",
+      "width": 512,
+      "height": 704
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "docs/evidence/generated-card-comparisons/local-comfyui-benchmark-2026-06-25T23-19-09-193Z/botanical-birthday/provider-inside-left.png",
+      "revised_prompt": "Premium vertical greeting-card artwork layer for the inside-left panel. botanical watercolor stationery, fern fronds, tiny trail flowers, soft morning light. corner border, generous blank field, text-safe open center, full-bleed printable 2D artwork. soft fern edge detail with open center. No readable text, no words, no letters, no numbers, no handwriting, no logo, no watermark.",
+      "width": 512,
+      "height": 704
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "docs/evidence/generated-card-comparisons/local-comfyui-benchmark-2026-06-25T23-19-09-193Z/botanical-birthday/provider-inside-right.png",
+      "revised_prompt": "Premium vertical greeting-card artwork layer for the inside-right panel. botanical watercolor stationery, fern fronds, tiny trail flowers, soft morning light. corner border, generous blank field, text-safe open center, full-bleed printable 2D artwork. tiny trail flowers in two corners, text-safe middle. No readable text, no words, no letters, no numbers, no handwriting, no logo, no watermark.",
+      "width": 512,
+      "height": 704
+    },
+    {
+      "panel_id": "back",
+      "image_url": "docs/evidence/generated-card-comparisons/local-comfyui-benchmark-2026-06-25T23-19-09-193Z/botanical-birthday/provider-back.png",
+      "revised_prompt": "Premium vertical greeting-card artwork layer for the back panel. botanical watercolor stationery, fern fronds, tiny trail flowers, soft morning light. corner border, generous blank field, text-safe open center, full-bleed printable 2D artwork. minimal botanical back mark near the lower corner. No readable text, no words, no letters, no numbers, no handwriting, no logo, no watermark.",
+      "width": 512,
+      "height": 704
+    }
+  ],
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "primary_adapter_id": "deterministic-local-copy",
+      "model": "fixture-specific-local-copy",
+      "live_provider_calls_enabled": false
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "primary_adapter_id": "local-comfyui-api",
+      "model": "DreamShaper_8_pruned.safetensors",
+      "live_provider_calls_enabled": true,
+      "provider_failure": ""
+    }
+  }
+}

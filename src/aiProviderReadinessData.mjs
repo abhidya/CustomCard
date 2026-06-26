@@ -12,6 +12,7 @@ const requiredAiReadinessIds = [
 ];
 
 const requiredTextAdapterIds = [
+  "local-openai-compatible-chat",
   "openai-responses-chat",
   "azure-openai-chat",
   "aws-bedrock-converse-chat",
@@ -31,6 +32,7 @@ const requiredTextAdapterIds = [
 ];
 
 const requiredImageAdapterIds = [
+  "local-comfyui-api-image",
   "openai-images",
   "azure-openai-image",
   "aws-bedrock-image",

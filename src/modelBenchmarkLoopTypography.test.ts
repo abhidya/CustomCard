@@ -3,6 +3,7 @@ import {
   buildEffectiveProviderRequests,
   buildPhaseReadme,
   buildTypographyExperimentPrompt,
+  localTypographyRuns,
   parseBenchmarkRequestBody,
   pipelineQualityRuns,
   sanitizeBenchmarkValue,
@@ -102,11 +103,13 @@ describe("model benchmark typography experiment", () => {
       expect(prompt.prompt).toContain("one continuous opaque plain field");
       expect(prompt.prompt).toContain("Do not place sunburst rays");
       expect(prompt.prompt).toContain("outer-edge or corner sunburst echoes");
+      expect(prompt.prompt).toContain("No people, faces, bodies, hands, portraits, characters");
       expect(prompt.prompt).toMatch(/no central radial/i);
       expect(prompt.prompt).not.toContain("Motif: Elegant radial sunburst");
       expect(prompt.negativePrompt).toContain("central starburst behind text");
       expect(prompt.negativePrompt).toContain("dense ornament in text area");
       expect(prompt.negativePrompt).toContain("rays crossing center");
+      expect(prompt.negativePrompt).toContain("portrait");
     }
     expect(front.prompt).toContain("broad opaque plain deep-charcoal text-safe field");
     expect(left.prompt).toContain("interior writing panel");
@@ -174,6 +177,31 @@ describe("model benchmark typography experiment", () => {
       "mode-c-hybrid-reserved-layout"
     ]);
     expect(new Set(runs.map((run) => run.image.id))).toEqual(new Set(["image-deepai-text2img"]));
+  });
+
+  it("plans local Comfy typography as the hybrid reserved-layout benchmark", () => {
+    const runs = localTypographyRuns({
+      image: [
+        {
+          id: "image-local-comfyui",
+          label: "Local ComfyUI checkpoint",
+          adapterId: "local-comfyui-api-image",
+          model: "sd_xl_base_1.0.safetensors",
+          configured: true,
+          missingEnv: []
+        }
+      ],
+      text: []
+    });
+
+    expect(runs).toHaveLength(1);
+    expect(runs[0]).toMatchObject({
+      phase: "local-typography",
+      focus: "local-comfy-hybrid-typography",
+      image: { id: "image-local-comfyui", adapterId: "local-comfyui-api-image" },
+      text: { id: "text-none-direct-image-test", adapterId: "none" },
+      typographyMode: { id: "mode-c-hybrid-reserved-layout" }
+    });
   });
 
   it("plans product-quality benchmarks through the full card generation pipeline with fixed story input", () => {
@@ -358,6 +386,67 @@ describe("model benchmark typography experiment", () => {
       providerNegativePrompt: "no fake text",
       width: "768",
       height: "1024"
+    });
+  });
+
+  it("extracts local ComfyUI prompt metadata for effective provider request artifacts", () => {
+    const effective = buildEffectiveProviderRequests({
+      run: {
+        phase: "local-typography",
+        storyId: typographyExperimentSpec.id,
+        text: { id: "text-none-direct-image-test" },
+        image: {
+          id: "image-local-comfyui",
+          adapterId: "local-comfyui-api-image",
+          model: "sd_xl_base_1.0.safetensors"
+        }
+      },
+      requestPanelIds: ["front"],
+      providerCalls: [
+        {
+          url: "http://127.0.0.1:8188/prompt",
+          method: "POST",
+          request: {
+            body: {
+              prompt: {
+                "2": { class_type: "CLIPTextEncode", inputs: { text: "workflow prompt text" } }
+              },
+              extra_data: {
+                customcard: {
+                  workflow_id: "customcard-hybrid-reserved-layout",
+                  panel_id: "inside-right",
+                  seed: 42,
+                  inputs: {
+                    prompt: "inside-right typography-safe artwork prompt",
+                    negative_prompt: "readable text",
+                    width: 960,
+                    height: 1344
+                  }
+                }
+              }
+            }
+          },
+          response: { status: 200, ok: true, contentType: "application/json" }
+        },
+        {
+          url: "http://127.0.0.1:8188/history/example",
+          method: "GET",
+          request: {},
+          response: { status: 200, ok: true, contentType: "application/json" }
+        }
+      ]
+    });
+
+    expect(effective.requestCount).toBe(1);
+    expect(effective.requests[0]).toMatchObject({
+      panelId: "inside-right",
+      providerPrompt: "inside-right typography-safe artwork prompt",
+      providerNegativePrompt: "readable text",
+      seed: 42,
+      width: 960,
+      height: 1344,
+      responseStatus: 200,
+      responseOk: true
     });
   });
 });
