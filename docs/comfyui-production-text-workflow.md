@@ -81,11 +81,23 @@ quality.
   `docs/evidence/generated-card-comparisons/production-text-research-findings-2026-06-26.md`
   - Current code now treats aquarium/koi/dog as fixed customer requests, not
     hardcoded finished themes.
-  - Dry-run with local Comfy + local LLM env plans the three
-    `llm-generated-copy` runs.
-  - Current live gate is blocked by missing local LLM runtime on
-    `127.0.0.1:1234`, not by the benchmark contract. The wrapper now probes
-    `/v1/models` before spending a live Comfy run.
+  - Live run with KoboldCPP Qwen3-4B on `127.0.0.1:5001` and local Comfy
+    scheduled the full aquarium/koi/dog matrix.
+  - Manual grades block promotion: aquarium 38/100, dog 34/100, koi 0/100.
+    The architecture ran, but Qwen3-4B missed customer themes and failed JSON
+    once at the current prompt/token budget.
+  - Follow-up code keeps the full planner prompt, passes benchmark
+    `must_include`/`must_avoid` terms into card-copy input, validates and
+    retries card-copy output before Comfy, preserves useful loose LLM JSON
+    shapes, and blocks known-small planners such as Qwen3-4B for production
+    evidence unless `-AllowSmallPlanner` is explicit.
+  - `tools/start-local-card-planner.ps1` starts the installed Gemma 31B
+    KoboldCPP planner with 8k context. It loaded on this machine, but CPU
+    decoding did not finish the first benchmark planner response in a practical
+    window; promotion evidence needs GPU/offload or a hosted/self-hosted larger
+    planner.
+  - Aggregate:
+    `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-rankings.md`
 - Soft safe-field proof:
   `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-soft-fields`
   - `CustomCardTextComposer` rendered exact copy plus text-hug rounded
@@ -101,11 +113,13 @@ quality.
 
 The current best run proves the Comfy text architecture and improves visual
 polish with soft text-hug safe fields plus deterministic artwork guards, but it
-still does not prove production card quality. Visual blockers are dense
-ornamental centers, a back panel that becomes a full dark pattern rather than a
-small coordinating mark, and weak artwork-layer control. The node update proves
-a stronger architecture: Comfy can own deterministic text and deterministic
-readability fields, while the image model only supplies surrounding art.
+still does not prove production card quality. The live LLM-planned matrix proves
+the runtime can reach local text plus local Comfy, but it exposes planner
+blockers: missing required customer-theme terms, invented unrelated plant motifs,
+one invalid JSON response, and back panels that still carry visible copy. The
+node update proves a stronger architecture: Comfy can own deterministic text and
+deterministic readability fields, while the image model only supplies
+surrounding art. The planner contract now needs the next repair.
 
 ## Research Summary
 
@@ -278,8 +292,14 @@ Comfy template variables exposed by the local adapter include:
   - Accepts `-LocalLlmBaseUrl`, `-LocalLlmModel`, and `-LocalLlmApiKey` so the
     LLM-planned customer request matrix can be run without brittle shell env
     setup.
-  - Accepts either a root local LLM URL (`http://127.0.0.1:1234`) or a `/v1`
-    URL (`http://127.0.0.1:1234/v1`) and probes `/v1/models` before live runs.
+  - Accepts either a root local LLM URL such as `http://127.0.0.1:5001` or a
+    `/v1` URL such as `http://127.0.0.1:5001/v1`, then probes `/v1/models`
+    before live runs.
+  - Accepts `-PlannerMaxTokens` for the completion cap while keeping the full
+    planner prompt. Use lower caps only to bound slow local decoding, not to
+    shrink the creative contract.
+  - Rejects known-small local planners such as Qwen3-4B for production
+    evidence. Use `-AllowSmallPlanner` only for exploratory failure evidence.
   - Fails fast when no local LLM is configured. Use
     `-AllowCompositorFixtureFallback` only for the one-run structural
     compositor fixture.
@@ -331,27 +351,33 @@ customer-theme quality.
 6. Promote only after aggregate benchmark evidence beats the current
    app-compositor baseline.
 
-Current status: gates 1 and 3 have passing evidence for the local Comfy runtime
-used on 2026-06-26. Gate 4 has structural compositor evidence and dry-run proof
-that the aquarium/koi/dog customer-request matrix schedules through the LLM
-planner, but it does not yet have a live LLM-planned matrix with manual grades.
-Gate 5 still blocks promotion, but the best manual grade moved from 47/100 to
-65/100 after deterministic safe-field backgrounds were added, then to 68/100
-after rounded text-hug safe fields were added to `CustomCardTextComposer`, then
-to 72/100 after deterministic artwork guards were added. Gate 6 is not
-satisfied because the production-text aggregate still ranks every candidate as
-blocked after applying manual visual grades.
+Current status: gates 1, 3, and 4 have current local evidence for the
+2026-06-26 runtime. Gate 4's live LLM-planned matrix ran through KoboldCPP
+Qwen3-4B and local Comfy, then failed quality review: aquarium scored 38/100,
+dog scored 34/100, and koi failed before image generation because the local LLM
+returned truncated invalid JSON. The code now keeps full prompt quality and
+requires a stronger planner plus validated card-copy output before spending
+Comfy image work. Gate 5 still blocks promotion, and gate 6 is
+not satisfied because both the production-text candidate aggregate and the new
+LLM-planner aggregate rank every candidate as blocked after applying manual
+visual grades. The best structural compositor grade remains 72/100, but the
+customer-request matrix shows the planner/model contract is weaker than the
+text compositor.
 
 ## Open Engineering Work
 
 - Keep soft text-hug safe fields and artwork guards, but tune per-panel
   typography scale and field merging so body copy stays readable without
   looking pasted on.
-- Run and manually grade the LLM-generated customer request matrix
-  (`aquarium-lover-birthday`, `koi-fish-lover-encouragement`,
-  `dog-lover-thank-you`) before treating the aggregate as representative of
-  customer requests. Keep the sunburst fixture separate as compositor
-  calibration evidence.
+- Use a correct planner runtime for the full contract: keep theme/palette/motif
+  and panel-layout decisions with the LLM, keep the full prompt quality rather
+  than shrinking the creative brief for a small model, run promotion evidence
+  through Gemma 31B with GPU/offload or a hosted larger planner, and use Qwen3-4B
+  only for smoke/failure evidence with `-AllowSmallPlanner`.
+- Continue tightening planner output handling: preserve `must_include` terms in
+  copy/theme/prompt output, reject or retry omissions before Comfy image
+  generation, preserve useful loose JSON shapes instead of falling back to
+  generic themes, and add JSON repair only as a post-response guard.
 - Test a flatter illustration/stationery checkpoint, masks, or stricter workflow
   controls so the surrounding artwork stays restrained instead of dense
   ornamental fill or object/mockup scenes.

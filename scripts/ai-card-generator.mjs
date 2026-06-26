@@ -64,7 +64,7 @@ export function createAiCardGenerationService({
       const draftInput = normalizeCardInput(body);
       const providerCallEvents = [];
 
-      const textResult = await executeTextProviderWithFallback({
+      const copyResult = await generateValidatedCardCopy({
         flow: copyFlow,
         env,
         fetchImpl,
@@ -72,23 +72,23 @@ export function createAiCardGenerationService({
         requestContext,
         providerCallEvents,
         systemPrompt: copyFlow.promptInstructions,
-        userPrompt: buildCardCopyPrompt(draftInput),
+        draftInput,
         responseFormat: buildCardCopyResponseFormat(copyFlow)
       });
-      if (!textResult.ok) {
+      if (!copyResult.ok) {
         return providerUnavailableResponse({
-          statusCode: textResult.statusCode,
+          statusCode: copyResult.statusCode,
           flowKey: "card_copy",
           flow: copyFlow,
-          adapterId: textResult.adapterId,
-          providerFailure: textResult.providerFailure,
+          adapterId: copyResult.adapterId,
+          providerFailure: copyResult.providerFailure,
           providerCallEvents,
-          fallbackQueued: textResult.fallbackQueued,
-          extraPayload: textResult.extraPayload
+          fallbackQueued: copyResult.fallbackQueued,
+          extraPayload: copyResult.extraPayload
         });
       }
 
-      const cardCopy = normalizeCardCopy(parseJsonFromText(textResult.text), draftInput);
+      const cardCopy = copyResult.cardCopy;
 
       const imagePromptPlan = buildImagePromptPlan(draftInput, cardCopy);
       const imageResult = await executeImageProviderBatchWithFallback({
@@ -100,7 +100,7 @@ export function createAiCardGenerationService({
         providerCallEvents,
         imagePromptPlan
       });
-      const fallbackQueued = textResult.fallbackQueued || imageResult.fallbackQueued;
+      const fallbackQueued = copyResult.fallbackQueued || imageResult.fallbackQueued;
       if (!imageResult.ok) {
         if (!imageResult.madeLiveAttempt && !imageResult.madeReservationAttempt) {
           return buildCardGenerationPayload({
@@ -108,7 +108,7 @@ export function createAiCardGenerationService({
             cardCopy,
             images: [],
             copyFlow,
-            copyProvider: textResult.adapterId,
+            copyProvider: copyResult.adapterId,
             imageFlow,
             imageProvider: "",
             imageProviderFailure: imageResult.providerFailure,
@@ -130,7 +130,7 @@ export function createAiCardGenerationService({
             card_copy: cardCopy,
             images: [],
             ai_flow: {
-              card_copy: publicFlowState(copyFlow, textResult.adapterId, "")
+              card_copy: publicFlowState(copyFlow, copyResult.adapterId, "")
             }
           }
         });
@@ -141,7 +141,7 @@ export function createAiCardGenerationService({
         cardCopy,
         images: imageResult.images,
         copyFlow,
-        copyProvider: textResult.adapterId,
+        copyProvider: copyResult.adapterId,
         imageFlow,
         imageProvider: imageResult.adapterId,
         providerCallEvents,
@@ -487,6 +487,72 @@ async function executeTextProviderWithFallback({
     providerFailure: lastFailure,
     fallbackQueued,
     extraPayload: lastExtraPayload
+  };
+}
+
+async function generateValidatedCardCopy({
+  flow,
+  env,
+  fetchImpl,
+  costGate,
+  requestContext,
+  providerCallEvents,
+  systemPrompt,
+  draftInput,
+  responseFormat
+}) {
+  let lastResult;
+  let lastFailure = "";
+  let repairIssues = [];
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const retryInput = attempt === 0
+      ? draftInput
+      : {
+          ...draftInput,
+          planner_retry: {
+            reason: "Previous card-copy output failed validation. Return the same full schema with all required facts preserved.",
+            issues: repairIssues
+          }
+        };
+    const textResult = await executeTextProviderWithFallback({
+      flow,
+      env,
+      fetchImpl,
+      costGate,
+      requestContext,
+      providerCallEvents,
+      systemPrompt,
+      userPrompt: buildCardCopyPrompt(retryInput),
+      responseFormat
+    });
+    lastResult = textResult;
+    if (!textResult.ok) return textResult;
+
+    try {
+      const cardCopy = normalizeCardCopy(parseJsonFromText(textResult.text), draftInput);
+      const validation = validateCardCopyContract(cardCopy, draftInput);
+      if (validation.ok) {
+        return {
+          ...textResult,
+          cardCopy
+        };
+      }
+      repairIssues = validation.issues;
+      lastFailure = validation.issues.join("; ");
+    } catch (error) {
+      lastFailure = errorMessage(error);
+      repairIssues = [`Card-copy JSON parse failed: ${lastFailure}`];
+    }
+  }
+
+  return {
+    ok: false,
+    statusCode: 502,
+    adapterId: lastResult?.adapterId ?? (flow.readyForLiveCalls ? flow.primaryAdapterId : ""),
+    providerFailure: `AI text provider returned invalid card-copy output after retry: ${lastFailure || "unknown validation failure"}.`,
+    fallbackQueued: Boolean(lastResult?.fallbackQueued),
+    extraPayload: {}
   };
 }
 
@@ -2057,6 +2123,16 @@ function normalizeCardInput(body) {
       ? body.memory_notes.map(cleanText).filter(Boolean).slice(0, 6)
       : Array.isArray(body.memoryNotes)
         ? body.memoryNotes.map(cleanText).filter(Boolean).slice(0, 6)
+        : [],
+    must_include: Array.isArray(body.must_include)
+      ? body.must_include.map(cleanText).filter(Boolean).slice(0, 12)
+      : Array.isArray(body.mustInclude)
+        ? body.mustInclude.map(cleanText).filter(Boolean).slice(0, 12)
+        : [],
+    must_avoid: Array.isArray(body.must_avoid)
+      ? body.must_avoid.map(cleanText).filter(Boolean).slice(0, 12)
+      : Array.isArray(body.mustAvoid)
+        ? body.mustAvoid.map(cleanText).filter(Boolean).slice(0, 12)
         : []
   };
 }
@@ -2077,6 +2153,12 @@ function normalizeChatInput(body) {
 
 function normalizeThemeGuide(rawThemeGuide, input) {
   const fallback = buildThemeGuide(input);
+  if (typeof rawThemeGuide === "string") {
+    return {
+      ...fallback,
+      theme_title: truncate(cleanText(rawThemeGuide), 120)
+    };
+  }
   const raw = rawThemeGuide && typeof rawThemeGuide === "object" ? rawThemeGuide : {};
   const palette = Array.isArray(raw.palette)
     ? raw.palette.map(cleanText).filter(isSafeThemePaletteValue).slice(0, 6)
@@ -2544,6 +2626,45 @@ function textContains(value, term) {
   return haystack.includes(needle);
 }
 
+function validateCardCopyContract(cardCopy, input) {
+  const issues = [];
+  const panels = Array.isArray(cardCopy?.panels) ? cardCopy.panels : [];
+  const ids = panels.map((panel) => panel?.id).filter(Boolean);
+  if (panels.length !== requiredPanelIds.length) {
+    issues.push(`Expected ${requiredPanelIds.length} panels, got ${panels.length}.`);
+  }
+  for (const panelId of requiredPanelIds) {
+    if (!ids.includes(panelId)) issues.push(`Missing panel ${panelId}.`);
+  }
+  const serialized = cardCopyValidationText(cardCopy);
+  for (const term of input.must_include || []) {
+    if (!textContains(serialized, term)) issues.push(`Missing required term: ${term}`);
+  }
+  return {
+    ok: issues.length === 0,
+    issues
+  };
+}
+
+function cardCopyValidationText(cardCopy) {
+  return [
+    cardCopy?.theme_guide?.theme_title,
+    ...(cardCopy?.theme_guide?.palette || []),
+    ...(cardCopy?.theme_guide?.motifs || []),
+    cardCopy?.theme_guide?.border_style,
+    cardCopy?.theme_guide?.front_back_pairing,
+    cardCopy?.theme_guide?.interior_pairing,
+    ...(cardCopy?.panels || []).flatMap((panel) => [
+      panel.headline,
+      panel.body,
+      panel.art_direction,
+      panel.visual_cue,
+      panel.image_prompt,
+      panel.image_negative_prompt
+    ])
+  ].join(" ");
+}
+
 function textSafeCueForLayout(layout) {
   const headline = layout?.headline_zone || "upper";
   const body = layout?.body_zone || "center";
@@ -2571,11 +2692,7 @@ function stringSharesEnoughTerms(left, right, minimum) {
 
 function normalizeCardCopy(parsed, input) {
   const rawThemeGuide = parsed?.theme_guide || parsed?.themeGuide || parsed?.card_copy?.theme_guide || parsed?.cardCopy?.themeGuide;
-  const rawPanels = Array.isArray(parsed?.panels)
-    ? parsed.panels
-    : Array.isArray(parsed?.card_copy?.panels)
-      ? parsed.card_copy.panels
-      : [];
+  const rawPanels = extractRawCardCopyPanels(parsed);
   const themeGuide = normalizeThemeGuide(rawThemeGuide, input);
   const panels = requiredPanelIds.map((id) => {
     const raw = rawPanels.find((panel) => panel?.id === id) ?? {};
@@ -2621,6 +2738,89 @@ function normalizeCardCopy(parsed, input) {
     theme_guide: themeGuide,
     panels: repairCardCopyPanels(panels, input, themeGuide),
     memory_citations: memoryCitations.map(cleanText).filter(Boolean).slice(0, 4)
+  };
+}
+
+function extractRawCardCopyPanels(parsed) {
+  if (Array.isArray(parsed?.panels)) return parsed.panels;
+  if (Array.isArray(parsed?.card_copy?.panels)) return parsed.card_copy.panels;
+  if (Array.isArray(parsed?.cardCopy?.panels)) return parsed.cardCopy.panels;
+  return requiredPanelIds.map((panelId) => coerceLooseRawPanel(parsed, panelId));
+}
+
+function coerceLooseRawPanel(parsed, panelId) {
+  const panelKey = panelId.replace(/-/g, "_");
+  const raw = parsed?.[panelId] || parsed?.[panelKey] || {};
+  const copy = parsed?.copy && typeof parsed.copy === "object" ? parsed.copy : {};
+  const headlineKey = `${panelKey}_headline`;
+  const bodyKey = `${panelKey}_body`;
+  const visualCue = looseKeyedValue(parsed?.visual_cue || parsed?.visualCue, panelId);
+  const imagePrompt = looseKeyedValue(parsed?.image_prompt || parsed?.imagePrompt, panelId);
+  const artDirection = looseKeyedValue(parsed?.art_direction || parsed?.artDirection, panelId);
+  const textLayout =
+    raw.text_layout ||
+    raw.textLayout ||
+    looseKeyedValue(parsed?.text_layout || parsed?.textLayout, panelId) ||
+    copy[`${panelKey}_text_layout`] ||
+    {};
+  return {
+    id: panelId,
+    headline: raw.headline || raw[headlineKey] || copy[headlineKey] || looseCopyHeadline(copy, panelId),
+    body: raw.body || raw[bodyKey] || copy[bodyKey] || looseCopyBody(copy, panelId),
+    art_direction: raw.art_direction || raw.artDirection || summarizeLooseArtDirection(artDirection),
+    visual_cue: raw.visual_cue || raw.visualCue || summarizeLooseArtDirection(visualCue),
+    text_layout: coerceLooseTextLayout(textLayout, panelId),
+    image_prompt: raw.image_prompt || raw.imagePrompt || summarizeLooseArtDirection(imagePrompt),
+    image_negative_prompt:
+      raw.image_negative_prompt ||
+      raw.imageNegativePrompt ||
+      looseKeyedValue(parsed?.image_negative_prompt || parsed?.imageNegativePrompt, panelId) ||
+      parsed?.image_negative_prompt ||
+      parsed?.imageNegativePrompt
+  };
+}
+
+function looseKeyedValue(container, panelId) {
+  if (!container || typeof container !== "object") return undefined;
+  const panelKey = panelId.replace(/-/g, "_");
+  return container[panelId] || container[panelKey];
+}
+
+function looseCopyHeadline(copy, panelId) {
+  if (panelId === "front") return copy.front_headline;
+  if (panelId === "back") return copy.back_headline;
+  return copy[`${panelId.replace(/-/g, "_")}_headline`];
+}
+
+function looseCopyBody(copy, panelId) {
+  if (panelId === "front") return copy.front_body;
+  if (panelId === "back") return copy.back_body;
+  return copy[`${panelId.replace(/-/g, "_")}_body`];
+}
+
+function summarizeLooseArtDirection(value) {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  if (typeof value !== "object") return cleanText(value);
+  return Object.values(value)
+    .flatMap((item) => {
+      if (typeof item === "string") return [item];
+      if (Array.isArray(item)) return item.filter((entry) => typeof entry === "string");
+      return [];
+    })
+    .map(cleanText)
+    .filter(Boolean)
+    .join("; ");
+}
+
+function coerceLooseTextLayout(value, panelId) {
+  if (!value || typeof value !== "object") return value;
+  const zone = cleanText(value.zone).toLowerCase();
+  if (!zone) return value;
+  return {
+    ...value,
+    ...(panelId === "front" ? { headline_zone: value.headline_zone || zone } : {}),
+    body_zone: value.body_zone || zone
   };
 }
 
@@ -3185,6 +3385,10 @@ function inferImageContentType(image, contentType) {
   if (text.startsWith("iVBOR")) return "image/png";
   if (text.startsWith("UklGR")) return "image/webp";
   return "image/png";
+}
+
+function errorMessage(error) {
+  return error instanceof Error ? error.message : String(error ?? "unknown error");
 }
 
 function requiredEnv(env, key) {

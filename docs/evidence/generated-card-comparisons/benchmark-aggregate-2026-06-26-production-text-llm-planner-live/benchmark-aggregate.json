@@ -1,0 +1,128 @@
+{
+  "createdAtIso": "2026-06-26T04:36:01.116Z",
+  "inputDir": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15",
+  "outputDir": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live",
+  "phaseFilter": [
+    "local-production-text"
+  ],
+  "totalRuns": 3,
+  "ranked": [
+    {
+      "rank": 1,
+      "benchmarkKind": "model-benchmark-loop",
+      "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
+      "runId": "production-text-workflow:aquarium-lover-birthday:text-local-openai-compatible:image-local-comfyui",
+      "phase": "local-production-text",
+      "createdAtIso": "2026-06-26T04:25:00.648Z",
+      "fixtureId": "aquarium-lover-birthday",
+      "textAdapterId": "local-openai-compatible-chat",
+      "textModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+      "imageAdapterId": "local-comfyui-api-image",
+      "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+      "provider": "local-comfyui-api-image",
+      "technique": "llm-planned-copy-comfy-deterministic-text",
+      "score": 38,
+      "status": "blocked",
+      "passed": 9,
+      "total": 11,
+      "autoScore": 82,
+      "manualVisualGrade": {
+        "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow/aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui/manual-visual-grade.json",
+        "score": 38,
+        "status": "blocked",
+        "passed": false,
+        "recommendation": "do-not-promote",
+        "blockingFailures": [
+          "Planner missed required recipient/name/theme terms: Nina and aquarium are absent.",
+          "Artwork and copy drifted into botanical birthday stationery instead of aquarium-lover stationery.",
+          "Back panel is too dark, contains visible text, and does not behave as a sparse no-copy back cover."
+        ]
+      },
+      "panelCount": 4,
+      "providerCallCount": 133,
+      "contactSheet": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow/aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui/contact-sheet.png",
+      "settings": {
+        "phase": "local-production-text",
+        "phaseDir": "production-text-workflow",
+        "localOnlyNetworkGuard": true
+      }
+    },
+    {
+      "rank": 2,
+      "benchmarkKind": "model-benchmark-loop",
+      "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
+      "runId": "production-text-workflow:dog-lover-thank-you:text-local-openai-compatible:image-local-comfyui",
+      "phase": "local-production-text",
+      "createdAtIso": "2026-06-26T04:28:53.687Z",
+      "fixtureId": "dog-lover-thank-you",
+      "textAdapterId": "local-openai-compatible-chat",
+      "textModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+      "imageAdapterId": "local-comfyui-api-image",
+      "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+      "provider": "local-comfyui-api-image",
+      "technique": "llm-planned-copy-comfy-deterministic-text",
+      "score": 34,
+      "status": "blocked",
+      "passed": 9,
+      "total": 11,
+      "autoScore": 82,
+      "manualVisualGrade": {
+        "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow/dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui/manual-visual-grade.json",
+        "score": 34,
+        "status": "blocked",
+        "passed": false,
+        "recommendation": "do-not-promote",
+        "blockingFailures": [
+          "Planner missed required recipient/name/theme terms: Morgan and dog are absent.",
+          "Copy invents plant-watering context and says the plants are grateful, which contradicts the dog-lover thank-you request.",
+          "Back panel is too dark, contains visible text, and does not behave as a sparse no-copy back cover."
+        ]
+      },
+      "panelCount": 4,
+      "providerCallCount": 123,
+      "contactSheet": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow/dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui/contact-sheet.png",
+      "settings": {
+        "phase": "local-production-text",
+        "phaseDir": "production-text-workflow",
+        "localOnlyNetworkGuard": true
+      }
+    },
+    {
+      "rank": 3,
+      "benchmarkKind": "model-benchmark-loop",
+      "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
+      "runId": "production-text-workflow:koi-fish-lover-encouragement:text-local-openai-compatible:image-local-comfyui",
+      "phase": "local-production-text",
+      "createdAtIso": "2026-06-26T04:25:39.935Z",
+      "fixtureId": "koi-fish-lover-encouragement",
+      "textAdapterId": "local-openai-compatible-chat",
+      "textModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+      "imageAdapterId": "local-comfyui-api-image",
+      "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+      "provider": "local-comfyui-api-image",
+      "technique": "llm-planned-copy-comfy-deterministic-text",
+      "score": 0,
+      "status": "failed",
+      "passed": 0,
+      "total": 0,
+      "manualVisualGrade": {
+        "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow/koi-fish-lover-encouragement__text-local-openai-compatible__image-local-comfyui/manual-visual-grade.json",
+        "score": 0,
+        "status": "failed",
+        "passed": false,
+        "recommendation": "do-not-promote",
+        "blockingFailures": [
+          "Local Qwen3-4B planner returned invalid JSON.",
+          "The LLM response hit the 2200-token completion cap with finish_reason length.",
+          "No image panels were generated for the koi encouragement request."
+        ]
+      },
+      "providerCallCount": 1,
+      "settings": {
+        "phase": "local-production-text",
+        "phaseDir": "production-text-workflow",
+        "localOnlyNetworkGuard": true
+      }
+    }
+  ]
+}

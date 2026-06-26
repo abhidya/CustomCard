@@ -1,0 +1,3762 @@
+[
+  {
+    "url": "http://127.0.0.1:5001/v1/chat/completions",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json"
+      },
+      "body": {
+        "model": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan, panel-specific visual cues, and safe text-layout plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, visual_cue composition notes, text_layout enum choices, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+          },
+          {
+            "role": "user",
+            "content": "{\n  \"task\": \"Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only. The LLM owns the creative concept; benchmark inputs and user interests are not finished themes.\",\n  \"required_schema\": {\n    \"theme_guide\": {\n      \"theme_title\": \"string\",\n      \"palette\": [\n        \"string\"\n      ],\n      \"motifs\": [\n        \"string\"\n      ],\n      \"border_style\": \"string\",\n      \"front_back_pairing\": \"string\",\n      \"interior_pairing\": \"string\"\n    },\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"section_order\": [\n    \"Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels; do not copy a fixture, request label, or generic subject category as the final theme.\",\n    \"Name a specific creative concept that could only belong to this request, then make each panel a distinct expression of that concept.\",\n    \"Write the panel copy so the card has an emotional arc from cover to interior to back.\",\n    \"Write art_direction as layout notes for app-rendered typography and print-safe artwork.\",\n    \"Write visual_cue as the specific image composition each panel should show.\",\n    \"Write text_layout as a safe typography plan using only the enumerated zones, alignment, font_pairing, color_mode, and scale values.\",\n    \"Write each image_prompt as a separate one-panel visual request for the image provider.\"\n  ],\n  \"copy_requirements\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"Preserve exact concrete facts from personal_note and memory_notes in final copy: names, relationships, dates, places, product names, CTA nouns, and practical support items. Do not replace literal requested items such as meals, rides, calls, silence, QR, dates, names, or business terms with generic summaries.\",\n    \"No order/payment claims.\",\n    \"Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.\",\n    \"Do not produce generic one-line cards unless the input is extremely thin.\",\n    \"Write original card copy for this recipient and occasion; never reuse benchmark/sample headlines, fixture copy, or generic category slogans.\",\n    \"Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.\",\n    \"Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.\",\n    \"When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.\",\n    \"front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short dedication.\",\n    \"inside-left body should be 120-320 characters and feel like an opening note, quote, blessing, or scene-setting message.\",\n    \"inside-right body should be 180-420 characters and carry the main personal message plus a natural sign-off when appropriate.\",\n    \"back body <= 160 characters and should feel quiet, polished, and optional.\",\n    \"All body text must fit a 5x7 card panel with generous margins.\"\n  ],\n  \"story_playbooks\": [\n    \"Low-context first-time cards: be useful and specific from the supplied occasion/style without inventing memories; use one gentle human detail and enough copy that the sender could approve it immediately.\",\n    \"High-memory get-well or recovery cards: weave only approved inside jokes into tender support, avoid medical advice, diagnosis, miracle-cure language, pity, or clownish meme overload.\",\n    \"B2B lifecycle or warranty cards: preserve exact customer, business, date, product, and CTA facts; make the CTA clear but calm; never invent discounts, legal terms, shipment status, or order/payment claims.\",\n    \"Wedding or distant-family cards: be respectful and warm without overclaiming closeness; use a short non-denominational blessing unless a religion is explicitly specified, and reserve handwriting space when requested.\",\n    \"Sympathy or quiet-support cards: keep language grounded and practical; avoid cliches, religious claims unless requested, bright celebration language, overdesigned ornament, and generic note-template stationery.\"\n  ],\n  \"layout_requirements\": [\n    \"The theme_guide must be LLM-decided from the user's request. For interests such as aquarium lover, koi fish lover, or dog lover, create a more specific visual genre than the literal noun alone.\",\n    \"Prefer distinctive greeting-card concepts over obvious wallpaper: e.g. ritual, habitat, movement, care, place, season, or object-system interpretations tied to the supplied details.\",\n    \"theme_guide is binding, but reuse motifs with restraint: a panel should have one dominant composition idea, not a scattered wallpaper of every motif.\",\n    \"art_direction must name the panel's composition archetype, layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.\",\n    \"visual_cue is binding for the image prompt: make front, inside-left, inside-right, and back visually distinct while still coordinated.\",\n    \"visual_cue should describe concrete objects, light, palette, spacing, and text-safe negative space for that exact panel; do not mention final words, letters, signatures, or fake handwriting.\",\n    \"text_layout controls app-rendered typography only. Choose zones that match the clean text-safe area in visual_cue; never ask the image model to draw the text.\",\n    \"text_layout must use only these values: headline_zone top/upper/center/lower; body_zone upper/center/lower/bottom; alignment left/center/right; font_pairing serif-sans/bold-editorial/minimal-sans/soft-serif; color_mode dark-ink/light-ink/accent-ink/high-contrast; scale compact/standard/large.\",\n    \"front and back should visually match each other; the front carries the strongest hero idea and the back repeats a small quiet echo.\",\n    \"inside-left and inside-right should visually match each other and feel like the opened interior spread.\",\n    \"inside-left and inside-right must keep a calm blank/low-contrast center reserved for app-rendered text; use edge-led artwork, not a generic note-template.\",\n    \"Interior panels should usually be lighter, warmer, and more paper-like than the front/back covers; avoid using the same dark cover field on all four panels.\",\n    \"Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.\",\n    \"Never rely on a large opaque caption plaque, text box, label, banner, or card-within-card; text-safe space means natural negative space in the artwork.\",\n    \"Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, edge-led gallery illustration, lower-corner object cluster, or mostly blank back mark.\",\n    \"Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.\",\n    \"Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative.\"\n  ],\n  \"image_prompt_requirements\": [\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must describe one separate portrait 5x7 panel, not the whole four-panel set.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must express the LLM-decided visual concept with a unique composition for that panel, not a generic subject collage or repeated motif field.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Reserve clean text-safe space for the app overlay where the panel copy belongs.\",\n    \"Do not describe the app overlay as a recipient name, headline, body, quote, blessing, verse, poem, short message, personal message, or scene-setting message; say only clean text-safe area.\",\n    \"Do not create a caption plaque, inner card rectangle, blank label, sticky note, banner, or text box; text-safe must be integrated negative space, soft open field, or quiet blank center.\",\n    \"image_prompt must stay visual: concrete motifs, palette, border/frame treatment, background texture, ornament density, composition archetype, and hierarchy only.\",\n    \"For the front, explicitly choose one dominant hero composition or sparse line-art composition with a clean lower or central text-safe area.\",\n    \"For inside-left and inside-right, explicitly include: quiet center, clean text-safe area, generous margins, light low-contrast interior, and sparse edge/corner or lower-edge artwork.\",\n    \"For the back, explicitly include mostly negative space and one small coordinating lower mark or border echo.\",\n    \"Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.\",\n    \"Coordinate palette, border style, motifs, and spacing across all four image_prompt values.\",\n    \"For B2B CTA cards, reserve a clean app-overlay area for any QR code or account-manager CTA; do not ask the image model to draw QR codes, labels, or interface elements.\",\n    \"For cards requesting handwriting space, reserve an open note area but do not ask the image model to create handwriting, signatures, script, or fake personal notes.\",\n    \"For sympathy image_prompt values, avoid generic blank-message templates entirely: no framed blank page, no ruled sheet, no card-within-card, and no physical mockup.\",\n    \"For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, no people/no hands, no physical mockup, and no logos/no watermark/no readable text.\"\n  ],\n  \"safety_requirements\": [\n    \"Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.\",\n    \"Do not describe a physical paper card, folded card, envelope, tabletop, desk scene, product photo, mockup, shadowed card, framed card, or any object photographed in a scene.\",\n    \"Do not include words, letters, glyphs, calligraphy, handwriting, labels, signatures, fake text, pseudo text, or decorative script marks.\",\n    \"image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"Avery\",\n    \"recipient\": \"Morgan\",\n    \"relationship\": \"neighbor\",\n    \"occasion\": \"thank-you card\",\n    \"tone\": \"grateful, loyal, lightly playful, specific\",\n    \"style\": \"premium folded greeting card for a dog lover; the LLM must decide the creative theme, exact copy, palette, motifs, and layout\",\n    \"language\": \"English\",\n    \"personal_note\": \"Thank Morgan for helping while Avery was away and for being the kind of dog-loving neighbor who notices what needs doing. It should be grateful and a little playful without turning into paw-print wallpaper.\",\n    \"memory_notes\": [\n      \"Morgan loves dogs and often mentions how a good neighbor is the kind of person a dog trusts.\",\n      \"Morgan helped while Avery was away.\",\n      \"The final artwork should avoid dog portraits and keep a clean print-safe area for Comfy-rendered text.\"\n    ]\n  }\n}"
+          }
+        ],
+        "max_tokens": 2200,
+        "temperature": 0.62
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 6292,
+      "body": {
+        "id": "chatcmpl-A959528",
+        "object": "chat.completion",
+        "created": 1782447965,
+        "model": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+        "usage": {
+          "prompt_tokens": 1896,
+          "completion_tokens": 1324,
+          "total_tokens": 3220
+        },
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\n  \"theme_guide\": \"Dog-neighbor harmony: a quiet, grounded urban ecosystem where trust and shared care grow like grass between sidewalk cracks.\",\n  \"copy\": {\n    \"front_headline\": \"Thanks for the paw-some help, Morgan!\",\n    \"inside_left_body\": \"You’re the kind of neighbor a dog would trust—quiet, steady, and always ready to help when things need a little wagging.\",\n    \"inside_right_body\": \"I didn’t just appreciate the help while I was away—I saw it as proof that good neighborliness has real, furry roots.\",\n    \"back_body\": \"Just a quiet note from a grateful dog lover.\"\n  },\n  \"art_direction\": {\n    \"front\": {\n      \"composition_archetype\": \"cinematic single-object cover\",\n      \"layout_purpose\": \"hero moment of shared neighborhood trust\",\n      \"typography_area\": \"center lower text-safe zone\",\n      \"safe_margin_plan\": \"generous margins, top and bottom 20% clear\",\n      \"palette\": \"soft earth tones: warm beige, terracotta, sage green\",\n      \"border_or_ornament\": \"thin, weathered line along top and bottom edges, mimicking sidewalk cracks\",\n      \"relationship_to_matching_panel\": \"mirrors back’s quiet echo with a single grounded object\"\n    },\n    \"inside_left\": {\n      \"composition_archetype\": \"edge-led gallery illustration\",\n      \"layout_purpose\": \"showcase neighborly care with subtle environmental detail\",\n      \"typography_area\": \"centered clean text-safe area, left-aligned\",\n      \"safe_margin_plan\": \"margins extend to edges, with quiet corner texture\",\n      \"palette\": \"light gray, warm white, muted green\",\n      \"border_or_ornament\": \"light horizontal line at lower edge, like a shadow on pavement\",\n      \"relationship_to_matching_panel\": \"mirrors inside-right’s shared care motif\"\n    },\n    \"inside_right\": {\n      \"composition_archetype\": \"edge-led gallery illustration\",\n      \"layout_purpose\": \"showcase neighborly care with subtle environmental detail\",\n      \"typography_area\": \"centered clean text-safe area, right-aligned\",\n      \"safe_margin_plan\": \"margins extend to edges, with quiet corner texture\",\n      \"palette\": \"light gray, warm white, muted green\",\n      \"border_or_ornament\": \"light horizontal line at lower edge, like a shadow on pavement\",\n      \"relationship_to_matching_panel\": \"mirrors inside-left’s shared care motif\"\n    },\n    \"back\": {\n      \"composition_archetype\": \"mostly blank back mark\",\n      \"layout_purpose\": \"quiet echo of front’s urban ecosystem\",\n      \"typography_area\": \"none\",\n      \"safe_margin_plan\": \"full margin, soft negative space\",\n      \"palette\": \"off-white with a thin, faded terracotta border at bottom\",\n      \"border_or_ornament\": \"faint terracotta line at lower edge, echoing front’s crack motif\",\n      \"relationship_to_matching_panel\": \"repeats the crack motif in a soft, diminished form\"\n    }\n  },\n  \"text_layout\": {\n    \"front_headline\": {\n      \"zone\": \"upper\",\n      \"alignment\": \"center\",\n      \"font_pairing\": \"soft-serif / minimal-sans\",\n      \"color_mode\": \"light-ink\",\n      \"scale\": \"large\"\n    },\n    \"inside_left_body\": {\n      \"zone\": \"center\",\n      \"alignment\": \"left\",\n      \"font_pairing\": \"minimal-sans / soft-serif\",\n      \"color_mode\": \"dark-ink\",\n      \"scale\": \"standard\"\n    },\n    \"inside_right_body\": {\n      \"zone\": \"center\",\n      \"alignment\": \"right\",\n      \"font_pairing\": \"minimal-sans / soft-serif\",\n      \"color_mode\": \"dark-ink\",\n      \"scale\": \"standard\"\n    },\n    \"back_body\": {\n      \"zone\": \"bottom\",\n      \"alignment\": \"center\",\n      \"font_pairing\": \"minimal-sans\",\n      \"color_mode\": \"accent-ink\",\n      \"scale\": \"compact\"\n    }\n  },\n  \"image_prompt\": {\n    \"front\": \"A premium 5x7 vertical flat print panel showing a single, clean sidewalk crack running diagonally from top-left to bottom-right, filled with soft, dry grass and a few scattered leaves; warm beige background with terracotta and sage green accents; thin weathered line mimics sidewalk cracks; clean lower-center text-safe area with soft negative space; no people, no hands, no portraits; full-bleed 2D digital illustration quality, no logos, no watermark, no readable text.\",\n    \"inside_left\": \"A premium 5x7 vertical flat print panel with a soft, light gray background and a single small dog-shaped shadow (abstract, not a portrait) at the lower-left corner; faint green leaf texture along the bottom edge; clean text-safe area in center-left; generous margins; warm white and muted green palette; no people, no hands, no text, no faces; full-bleed 2D digital illustration quality.\",\n    \"inside_right\": \"A premium 5x7 vertical flat print panel with a soft, light gray background and a single small dog-shaped shadow (abstract, not a portrait) at the lower-right corner; faint green leaf texture along the bottom edge; clean text-safe area in center-right; generous margins; warm white and muted green palette; no people, no hands, no text, no faces; full-bleed 2D digital illustration quality.\",\n    \"back\": \"A premium 5x7 vertical flat print panel with mostly negative space; a thin, faded terracotta line at the very bottom edge; off-white background; no people, no hands, no text, no faces; full-bleed 2D digital illustration quality, no logos, no watermark, no readable text.\"\n  },\n  \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, dog portrait, dog face, dog hands, handwriting, signature, script, labels, captions, banners, text boxes, ruled lines, physical object, shadowed card, framed card, envelope, greeting card scene\"\n}",
+              "tool_calls": []
+            },
+            "finish_reason": "stop",
+            "logprobs": null
+          }
+        ]
+      }
+    },
+    "durationMs": 25117
+  },
+  {
+    "url": "http://127.0.0.1:8188/prompt",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Simple minimal thank-you cover with one small plant mark, clean white and warm ivory field, fine leaf-green rule, and lower text-safe space. Keep natural negative space for app-rendered typography in the upper and lower fields; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark."
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene"
+            }
+          },
+          "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {
+              "batch_size": 1,
+              "height": 1344,
+              "width": 960
+            }
+          },
+          "5": {
+            "class_type": "KSampler",
+            "inputs": {
+              "cfg": 1.5,
+              "denoise": 1,
+              "latent_image": [
+                "4",
+                0
+              ],
+              "model": [
+                "1",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "positive": [
+                "2",
+                0
+              ],
+              "sampler_name": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 552767006,
+              "steps": 2
+            }
+          },
+          "6": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "5",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            }
+          },
+          "7": {
+            "class_type": "CustomCardTextComposer",
+            "inputs": {
+              "alignment": "center",
+              "artwork_guard_color": "#fff6df",
+              "artwork_guard_height": 860,
+              "artwork_guard_opacity": 0.66,
+              "artwork_guard_radius": 43,
+              "artwork_guard_style": "box",
+              "artwork_guard_width": 806,
+              "artwork_guard_x": 77,
+              "artwork_guard_y": 269,
+              "body": "For showing up in a simple way that mattered.",
+              "body_box_height": 403,
+              "body_box_background_color": "#fff6df",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "body_box_width": 748,
+              "body_box_x": 106,
+              "body_box_y": 780,
+              "body_fill_color": "#4f432a",
+              "body_font": "georgia.ttf",
+              "body_font_size": 28,
+              "body_line_spacing": 6,
+              "body_stroke_color": "#fff6df",
+              "body_stroke_width": 1,
+              "body_vertical_alignment": "middle",
+              "debug_boxes": false,
+              "headline": "For you",
+              "headline_box_height": 269,
+              "headline_box_background_color": "#fff6df",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "headline_box_width": 788,
+              "headline_box_x": 86,
+              "headline_box_y": 134,
+              "headline_fill_color": "#282923",
+              "headline_font": "georgia.ttf",
+              "headline_font_size": 72,
+              "headline_line_spacing": 8,
+              "headline_stroke_color": "#fff6df",
+              "headline_stroke_width": 1,
+              "headline_vertical_alignment": "middle",
+              "image": [
+                "6",
+                0
+              ],
+              "min_font_size": 16
+            }
+          },
+          "9": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "filename_prefix": "customcard/customcard-production-text-overlay/front",
+              "images": [
+                "7",
+                0
+              ]
+            }
+          }
+        },
+        "client_id": "customcard-local-comfyui-provider",
+        "extra_data": {
+          "customcard": {
+            "workflow_id": "customcard-production-text-overlay",
+            "panel_id": "front",
+            "seed": 552767006,
+            "inputs": {
+              "workflow_id": "customcard-production-text-overlay",
+              "panel_id": "front",
+              "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+              "width": 960,
+              "height": 1344,
+              "steps": 2,
+              "cfg": 1.5,
+              "sampler": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 552767006,
+              "prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Simple minimal thank-you cover with one small plant mark, clean white and warm ivory field, fine leaf-green rule, and lower text-safe space. Keep natural negative space for app-rendered typography in the upper and lower fields; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+              "negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene",
+              "artwork_guard": {
+                "x": 77,
+                "y": 269,
+                "width": 806,
+                "height": 860
+              },
+              "artwork_guard_color": "#fff6df",
+              "artwork_guard_opacity": 0.66,
+              "artwork_guard_radius": 43,
+              "artwork_guard_style": "box",
+              "headline_text": "For you",
+              "body_text": "For showing up in a simple way that mattered.",
+              "headline_font_size": 72,
+              "body_font_size": 28,
+              "headline_box": {
+                "x": 86,
+                "y": 134,
+                "width": 788,
+                "height": 269
+              },
+              "headline_box_background_color": "#fff6df",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "body_box": {
+                "x": 106,
+                "y": 780,
+                "width": 748,
+                "height": 403
+              },
+              "body_box_background_color": "#fff6df",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "text_alignment": "center",
+              "min_font_size": 16
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 86,
+      "body": {
+        "prompt_id": "a2a51422-6463-4612-901d-4e6850ef1293",
+        "number": 28,
+        "node_errors": {}
+      }
+    },
+    "durationMs": 9
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 3
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 19
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 19
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 19
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 5
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 21
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 5
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 11
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 7
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 3
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 5
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 25
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 1
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 6
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 20
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a2a51422-6463-4612-901d-4e6850ef1293",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 8516,
+      "body": {
+        "a2a51422-6463-4612-901d-4e6850ef1293": {
+          "prompt": [
+            28,
+            "a2a51422-6463-4612-901d-4e6850ef1293",
+            {
+              "1": {
+                "class_type": "CheckpointLoaderSimple",
+                "inputs": {
+                  "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+                }
+              },
+              "2": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Simple minimal thank-you cover with one small plant mark, clean white and warm ivory field, fine leaf-green rule, and lower text-safe space. Keep natural negative space for app-rendered typography in the upper and lower fields; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark."
+                }
+              },
+              "3": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene"
+                }
+              },
+              "4": {
+                "class_type": "EmptyLatentImage",
+                "inputs": {
+                  "batch_size": 1,
+                  "height": 1344,
+                  "width": 960
+                }
+              },
+              "5": {
+                "class_type": "KSampler",
+                "inputs": {
+                  "cfg": 1.5,
+                  "denoise": 1,
+                  "latent_image": [
+                    "4",
+                    0
+                  ],
+                  "model": [
+                    "1",
+                    0
+                  ],
+                  "negative": [
+                    "3",
+                    0
+                  ],
+                  "positive": [
+                    "2",
+                    0
+                  ],
+                  "sampler_name": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 552767006,
+                  "steps": 2
+                }
+              },
+              "6": {
+                "class_type": "VAEDecode",
+                "inputs": {
+                  "samples": [
+                    "5",
+                    0
+                  ],
+                  "vae": [
+                    "1",
+                    2
+                  ]
+                }
+              },
+              "7": {
+                "class_type": "CustomCardTextComposer",
+                "inputs": {
+                  "alignment": "center",
+                  "artwork_guard_color": "#fff6df",
+                  "artwork_guard_height": 860,
+                  "artwork_guard_opacity": 0.66,
+                  "artwork_guard_radius": 43,
+                  "artwork_guard_style": "box",
+                  "artwork_guard_width": 806,
+                  "artwork_guard_x": 77,
+                  "artwork_guard_y": 269,
+                  "body": "For showing up in a simple way that mattered.",
+                  "body_box_height": 403,
+                  "body_box_background_color": "#fff6df",
+                  "body_box_background_padding": 24,
+                  "body_box_background_radius": 34,
+                  "body_box_background_opacity": 0.96,
+                  "body_box_background_style": "text-hug",
+                  "body_box_width": 748,
+                  "body_box_x": 106,
+                  "body_box_y": 780,
+                  "body_fill_color": "#4f432a",
+                  "body_font": "georgia.ttf",
+                  "body_font_size": 28,
+                  "body_line_spacing": 6,
+                  "body_stroke_color": "#fff6df",
+                  "body_stroke_width": 1,
+                  "body_vertical_alignment": "middle",
+                  "debug_boxes": false,
+                  "headline": "For you",
+                  "headline_box_height": 269,
+                  "headline_box_background_color": "#fff6df",
+                  "headline_box_background_padding": 24,
+                  "headline_box_background_radius": 34,
+                  "headline_box_background_opacity": 0.96,
+                  "headline_box_background_style": "text-hug",
+                  "headline_box_width": 788,
+                  "headline_box_x": 86,
+                  "headline_box_y": 134,
+                  "headline_fill_color": "#282923",
+                  "headline_font": "georgia.ttf",
+                  "headline_font_size": 72,
+                  "headline_line_spacing": 8,
+                  "headline_stroke_color": "#fff6df",
+                  "headline_stroke_width": 1,
+                  "headline_vertical_alignment": "middle",
+                  "image": [
+                    "6",
+                    0
+                  ],
+                  "min_font_size": 16
+                }
+              },
+              "9": {
+                "class_type": "SaveImage",
+                "inputs": {
+                  "filename_prefix": "customcard/customcard-production-text-overlay/front",
+                  "images": [
+                    "7",
+                    0
+                  ]
+                }
+              }
+            },
+            {
+              "customcard": {
+                "workflow_id": "customcard-production-text-overlay",
+                "panel_id": "front",
+                "seed": 552767006,
+                "inputs": {
+                  "workflow_id": "customcard-production-text-overlay",
+                  "panel_id": "front",
+                  "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+                  "width": 960,
+                  "height": 1344,
+                  "steps": 2,
+                  "cfg": 1.5,
+                  "sampler": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 552767006,
+                  "prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Simple minimal thank-you cover with one small plant mark, clean white and warm ivory field, fine leaf-green rule, and lower text-safe space. Keep natural negative space for app-rendered typography in the upper and lower fields; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+                  "negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene",
+                  "artwork_guard": {
+                    "x": 77,
+                    "y": 269,
+                    "width": 806,
+                    "height": 860
+                  },
+                  "artwork_guard_color": "#fff6df",
+                  "artwork_guard_opacity": 0.66,
+                  "artwork_guard_radius": 43,
+                  "artwork_guard_style": "box",
+                  "headline_text": "For you",
+                  "body_text": "For showing up in a simple way that mattered.",
+                  "headline_font_size": 72,
+                  "body_font_size": 28,
+                  "headline_box": {
+                    "x": 86,
+                    "y": 134,
+                    "width": 788,
+                    "height": 269
+                  },
+                  "headline_box_background_color": "#fff6df",
+                  "headline_box_background_padding": 24,
+                  "headline_box_background_radius": 34,
+                  "headline_box_background_opacity": 0.96,
+                  "headline_box_background_style": "text-hug",
+                  "body_box": {
+                    "x": 106,
+                    "y": 780,
+                    "width": 748,
+                    "height": 403
+                  },
+                  "body_box_background_color": "#fff6df",
+                  "body_box_background_padding": 24,
+                  "body_box_background_radius": 34,
+                  "body_box_background_opacity": 0.96,
+                  "body_box_background_style": "text-hug",
+                  "text_alignment": "center",
+                  "min_font_size": 16
+                }
+              },
+              "client_id": "customcard-local-comfyui-provider",
+              "create_time": 1782447965078
+            },
+            [
+              "9"
+            ]
+          ],
+          "outputs": {
+            "9": {
+              "images": [
+                {
+                  "filename": "front_00015_.png",
+                  "subfolder": "customcard\\customcard-production-text-overlay",
+                  "type": "output"
+                }
+              ]
+            }
+          },
+          "status": {
+            "status_str": "success",
+            "completed": true,
+            "messages": [
+              [
+                "execution_start",
+                {
+                  "prompt_id": "a2a51422-6463-4612-901d-4e6850ef1293",
+                  "timestamp": 1782447965078
+                }
+              ],
+              [
+                "execution_cached",
+                {
+                  "nodes": [
+                    "1",
+                    "3",
+                    "4"
+                  ],
+                  "prompt_id": "a2a51422-6463-4612-901d-4e6850ef1293",
+                  "timestamp": 1782447965078
+                }
+              ],
+              [
+                "execution_success",
+                {
+                  "prompt_id": "a2a51422-6463-4612-901d-4e6850ef1293",
+                  "timestamp": 1782448024666
+                }
+              ]
+            ]
+          },
+          "meta": {
+            "9": {
+              "node_id": "9",
+              "display_node": "9",
+              "parent_node": null,
+              "real_node_id": "9"
+            }
+          }
+        }
+      }
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/view?filename=front_00015_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "byteLength": 2071263
+    },
+    "durationMs": 7
+  },
+  {
+    "url": "http://127.0.0.1:8188/prompt",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Minimal left interior with a tiny water-drop mark, fine rule, generous blank center, and no floral pattern. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark."
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene"
+            }
+          },
+          "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {
+              "batch_size": 1,
+              "height": 1344,
+              "width": 960
+            }
+          },
+          "5": {
+            "class_type": "KSampler",
+            "inputs": {
+              "cfg": 1.5,
+              "denoise": 1,
+              "latent_image": [
+                "4",
+                0
+              ],
+              "model": [
+                "1",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "positive": [
+                "2",
+                0
+              ],
+              "sampler_name": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 4204449297,
+              "steps": 2
+            }
+          },
+          "6": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "5",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            }
+          },
+          "7": {
+            "class_type": "CustomCardTextComposer",
+            "inputs": {
+              "alignment": "center",
+              "artwork_guard_color": "#fff6df",
+              "artwork_guard_height": 968,
+              "artwork_guard_opacity": 0.74,
+              "artwork_guard_radius": 53,
+              "artwork_guard_style": "box",
+              "artwork_guard_width": 787,
+              "artwork_guard_x": 86,
+              "artwork_guard_y": 188,
+              "body": "Thank you for watering the plants while I was away. It was a small practical kindness, but it made coming home easier and reminded me what a good neighbor feels like.",
+              "body_box_height": 484,
+              "body_box_background_color": "#fff6df",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "body_box_width": 748,
+              "body_box_x": 106,
+              "body_box_y": 497,
+              "body_fill_color": "#4f432a",
+              "body_font": "georgia.ttf",
+              "body_font_size": 26,
+              "body_line_spacing": 6,
+              "body_stroke_color": "#fff6df",
+              "body_stroke_width": 1,
+              "body_vertical_alignment": "middle",
+              "debug_boxes": false,
+              "headline": "Thinking of you",
+              "headline_box_height": 269,
+              "headline_box_background_color": "#fff6df",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "headline_box_width": 788,
+              "headline_box_x": 86,
+              "headline_box_y": 134,
+              "headline_fill_color": "#282923",
+              "headline_font": "georgia.ttf",
+              "headline_font_size": 54,
+              "headline_line_spacing": 8,
+              "headline_stroke_color": "#fff6df",
+              "headline_stroke_width": 1,
+              "headline_vertical_alignment": "middle",
+              "image": [
+                "6",
+                0
+              ],
+              "min_font_size": 16
+            }
+          },
+          "9": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "filename_prefix": "customcard/customcard-production-text-overlay/inside-left",
+              "images": [
+                "7",
+                0
+              ]
+            }
+          }
+        },
+        "client_id": "customcard-local-comfyui-provider",
+        "extra_data": {
+          "customcard": {
+            "workflow_id": "customcard-production-text-overlay",
+            "panel_id": "inside-left",
+            "seed": 4204449297,
+            "inputs": {
+              "workflow_id": "customcard-production-text-overlay",
+              "panel_id": "inside-left",
+              "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+              "width": 960,
+              "height": 1344,
+              "steps": 2,
+              "cfg": 1.5,
+              "sampler": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 4204449297,
+              "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Minimal left interior with a tiny water-drop mark, fine rule, generous blank center, and no floral pattern. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+              "negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene",
+              "artwork_guard": {
+                "x": 86,
+                "y": 188,
+                "width": 787,
+                "height": 968
+              },
+              "artwork_guard_color": "#fff6df",
+              "artwork_guard_opacity": 0.74,
+              "artwork_guard_radius": 53,
+              "artwork_guard_style": "box",
+              "headline_text": "Thinking of you",
+              "body_text": "Thank you for watering the plants while I was away. It was a small practical kindness, but it made coming home easier and reminded me what a good neighbor feels like.",
+              "headline_font_size": 54,
+              "body_font_size": 26,
+              "headline_box": {
+                "x": 86,
+                "y": 134,
+                "width": 788,
+                "height": 269
+              },
+              "headline_box_background_color": "#fff6df",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "body_box": {
+                "x": 106,
+                "y": 497,
+                "width": 748,
+                "height": 484
+              },
+              "body_box_background_color": "#fff6df",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "text_alignment": "center",
+              "min_font_size": 16
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 86,
+      "body": {
+        "prompt_id": "24f2e63b-62c6-460e-8043-3285e989cf29",
+        "number": 29,
+        "node_errors": {}
+      }
+    },
+    "durationMs": 5
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 14
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 6
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 19
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 1
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 27
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 37
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 19
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 3
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 3
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 20
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 5
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 10
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 21
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 21
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/24f2e63b-62c6-460e-8043-3285e989cf29",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 8819,
+      "body": {
+        "24f2e63b-62c6-460e-8043-3285e989cf29": {
+          "prompt": [
+            29,
+            "24f2e63b-62c6-460e-8043-3285e989cf29",
+            {
+              "1": {
+                "class_type": "CheckpointLoaderSimple",
+                "inputs": {
+                  "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+                }
+              },
+              "2": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Minimal left interior with a tiny water-drop mark, fine rule, generous blank center, and no floral pattern. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark."
+                }
+              },
+              "3": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene"
+                }
+              },
+              "4": {
+                "class_type": "EmptyLatentImage",
+                "inputs": {
+                  "batch_size": 1,
+                  "height": 1344,
+                  "width": 960
+                }
+              },
+              "5": {
+                "class_type": "KSampler",
+                "inputs": {
+                  "cfg": 1.5,
+                  "denoise": 1,
+                  "latent_image": [
+                    "4",
+                    0
+                  ],
+                  "model": [
+                    "1",
+                    0
+                  ],
+                  "negative": [
+                    "3",
+                    0
+                  ],
+                  "positive": [
+                    "2",
+                    0
+                  ],
+                  "sampler_name": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 4204449297,
+                  "steps": 2
+                }
+              },
+              "6": {
+                "class_type": "VAEDecode",
+                "inputs": {
+                  "samples": [
+                    "5",
+                    0
+                  ],
+                  "vae": [
+                    "1",
+                    2
+                  ]
+                }
+              },
+              "7": {
+                "class_type": "CustomCardTextComposer",
+                "inputs": {
+                  "alignment": "center",
+                  "artwork_guard_color": "#fff6df",
+                  "artwork_guard_height": 968,
+                  "artwork_guard_opacity": 0.74,
+                  "artwork_guard_radius": 53,
+                  "artwork_guard_style": "box",
+                  "artwork_guard_width": 787,
+                  "artwork_guard_x": 86,
+                  "artwork_guard_y": 188,
+                  "body": "Thank you for watering the plants while I was away. It was a small practical kindness, but it made coming home easier and reminded me what a good neighbor feels like.",
+                  "body_box_height": 484,
+                  "body_box_background_color": "#fff6df",
+                  "body_box_background_padding": 24,
+                  "body_box_background_radius": 34,
+                  "body_box_background_opacity": 0.96,
+                  "body_box_background_style": "text-hug",
+                  "body_box_width": 748,
+                  "body_box_x": 106,
+                  "body_box_y": 497,
+                  "body_fill_color": "#4f432a",
+                  "body_font": "georgia.ttf",
+                  "body_font_size": 26,
+                  "body_line_spacing": 6,
+                  "body_stroke_color": "#fff6df",
+                  "body_stroke_width": 1,
+                  "body_vertical_alignment": "middle",
+                  "debug_boxes": false,
+                  "headline": "Thinking of you",
+                  "headline_box_height": 269,
+                  "headline_box_background_color": "#fff6df",
+                  "headline_box_background_padding": 24,
+                  "headline_box_background_radius": 34,
+                  "headline_box_background_opacity": 0.96,
+                  "headline_box_background_style": "text-hug",
+                  "headline_box_width": 788,
+                  "headline_box_x": 86,
+                  "headline_box_y": 134,
+                  "headline_fill_color": "#282923",
+                  "headline_font": "georgia.ttf",
+                  "headline_font_size": 54,
+                  "headline_line_spacing": 8,
+                  "headline_stroke_color": "#fff6df",
+                  "headline_stroke_width": 1,
+                  "headline_vertical_alignment": "middle",
+                  "image": [
+                    "6",
+                    0
+                  ],
+                  "min_font_size": 16
+                }
+              },
+              "9": {
+                "class_type": "SaveImage",
+                "inputs": {
+                  "filename_prefix": "customcard/customcard-production-text-overlay/inside-left",
+                  "images": [
+                    "7",
+                    0
+                  ]
+                }
+              }
+            },
+            {
+              "customcard": {
+                "workflow_id": "customcard-production-text-overlay",
+                "panel_id": "inside-left",
+                "seed": 4204449297,
+                "inputs": {
+                  "workflow_id": "customcard-production-text-overlay",
+                  "panel_id": "inside-left",
+                  "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+                  "width": 960,
+                  "height": 1344,
+                  "steps": 2,
+                  "cfg": 1.5,
+                  "sampler": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 4204449297,
+                  "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Minimal left interior with a tiny water-drop mark, fine rule, generous blank center, and no floral pattern. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+                  "negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene",
+                  "artwork_guard": {
+                    "x": 86,
+                    "y": 188,
+                    "width": 787,
+                    "height": 968
+                  },
+                  "artwork_guard_color": "#fff6df",
+                  "artwork_guard_opacity": 0.74,
+                  "artwork_guard_radius": 53,
+                  "artwork_guard_style": "box",
+                  "headline_text": "Thinking of you",
+                  "body_text": "Thank you for watering the plants while I was away. It was a small practical kindness, but it made coming home easier and reminded me what a good neighbor feels like.",
+                  "headline_font_size": 54,
+                  "body_font_size": 26,
+                  "headline_box": {
+                    "x": 86,
+                    "y": 134,
+                    "width": 788,
+                    "height": 269
+                  },
+                  "headline_box_background_color": "#fff6df",
+                  "headline_box_background_padding": 24,
+                  "headline_box_background_radius": 34,
+                  "headline_box_background_opacity": 0.96,
+                  "headline_box_background_style": "text-hug",
+                  "body_box": {
+                    "x": 106,
+                    "y": 497,
+                    "width": 748,
+                    "height": 484
+                  },
+                  "body_box_background_color": "#fff6df",
+                  "body_box_background_padding": 24,
+                  "body_box_background_radius": 34,
+                  "body_box_background_opacity": 0.96,
+                  "body_box_background_style": "text-hug",
+                  "text_alignment": "center",
+                  "min_font_size": 16
+                }
+              },
+              "client_id": "customcard-local-comfyui-provider",
+              "create_time": 1782448026036
+            },
+            [
+              "9"
+            ]
+          ],
+          "outputs": {
+            "9": {
+              "images": [
+                {
+                  "filename": "inside-left_00015_.png",
+                  "subfolder": "customcard\\customcard-production-text-overlay",
+                  "type": "output"
+                }
+              ]
+            }
+          },
+          "status": {
+            "status_str": "success",
+            "completed": true,
+            "messages": [
+              [
+                "execution_start",
+                {
+                  "prompt_id": "24f2e63b-62c6-460e-8043-3285e989cf29",
+                  "timestamp": 1782448026038
+                }
+              ],
+              [
+                "execution_cached",
+                {
+                  "nodes": [
+                    "1",
+                    "3",
+                    "4"
+                  ],
+                  "prompt_id": "24f2e63b-62c6-460e-8043-3285e989cf29",
+                  "timestamp": 1782448026040
+                }
+              ],
+              [
+                "execution_success",
+                {
+                  "prompt_id": "24f2e63b-62c6-460e-8043-3285e989cf29",
+                  "timestamp": 1782448073152
+                }
+              ]
+            ]
+          },
+          "meta": {
+            "9": {
+              "node_id": "9",
+              "display_node": "9",
+              "parent_node": null,
+              "real_node_id": "9"
+            }
+          }
+        }
+      }
+    },
+    "durationMs": 154
+  },
+  {
+    "url": "http://127.0.0.1:8188/view?filename=inside-left_00015_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "byteLength": 2046480
+    },
+    "durationMs": 7
+  },
+  {
+    "url": "http://127.0.0.1:8188/prompt",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Matching minimal right interior with one small plant-related mark near the lower edge and calm main-message space. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark."
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene"
+            }
+          },
+          "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {
+              "batch_size": 1,
+              "height": 1344,
+              "width": 960
+            }
+          },
+          "5": {
+            "class_type": "KSampler",
+            "inputs": {
+              "cfg": 1.5,
+              "denoise": 1,
+              "latent_image": [
+                "4",
+                0
+              ],
+              "model": [
+                "1",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "positive": [
+                "2",
+                0
+              ],
+              "sampler_name": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 1774541907,
+              "steps": 2
+            }
+          },
+          "6": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "5",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            }
+          },
+          "7": {
+            "class_type": "CustomCardTextComposer",
+            "inputs": {
+              "alignment": "center",
+              "artwork_guard_color": "#fff6df",
+              "artwork_guard_height": 968,
+              "artwork_guard_opacity": 0.74,
+              "artwork_guard_radius": 53,
+              "artwork_guard_style": "box",
+              "artwork_guard_width": 787,
+              "artwork_guard_x": 86,
+              "artwork_guard_y": 188,
+              "body": "I appreciate the time and care you gave so freely. No big speech, just real gratitude: you helped, it mattered, and I am glad to have a neighbor I can trust. The plants and I are both grateful. With thanks, Avery.",
+              "body_box_height": 484,
+              "body_box_background_color": "#fff6df",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "body_box_width": 748,
+              "body_box_x": 106,
+              "body_box_y": 497,
+              "body_fill_color": "#4f432a",
+              "body_font": "georgia.ttf",
+              "body_font_size": 26,
+              "body_line_spacing": 6,
+              "body_stroke_color": "#fff6df",
+              "body_stroke_width": 1,
+              "body_vertical_alignment": "middle",
+              "debug_boxes": false,
+              "headline": "From the heart",
+              "headline_box_height": 269,
+              "headline_box_background_color": "#fff6df",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "headline_box_width": 788,
+              "headline_box_x": 86,
+              "headline_box_y": 134,
+              "headline_fill_color": "#282923",
+              "headline_font": "georgia.ttf",
+              "headline_font_size": 54,
+              "headline_line_spacing": 8,
+              "headline_stroke_color": "#fff6df",
+              "headline_stroke_width": 1,
+              "headline_vertical_alignment": "middle",
+              "image": [
+                "6",
+                0
+              ],
+              "min_font_size": 16
+            }
+          },
+          "9": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "filename_prefix": "customcard/customcard-production-text-overlay/inside-right",
+              "images": [
+                "7",
+                0
+              ]
+            }
+          }
+        },
+        "client_id": "customcard-local-comfyui-provider",
+        "extra_data": {
+          "customcard": {
+            "workflow_id": "customcard-production-text-overlay",
+            "panel_id": "inside-right",
+            "seed": 1774541907,
+            "inputs": {
+              "workflow_id": "customcard-production-text-overlay",
+              "panel_id": "inside-right",
+              "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+              "width": 960,
+              "height": 1344,
+              "steps": 2,
+              "cfg": 1.5,
+              "sampler": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 1774541907,
+              "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Matching minimal right interior with one small plant-related mark near the lower edge and calm main-message space. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+              "negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene",
+              "artwork_guard": {
+                "x": 86,
+                "y": 188,
+                "width": 787,
+                "height": 968
+              },
+              "artwork_guard_color": "#fff6df",
+              "artwork_guard_opacity": 0.74,
+              "artwork_guard_radius": 53,
+              "artwork_guard_style": "box",
+              "headline_text": "From the heart",
+              "body_text": "I appreciate the time and care you gave so freely. No big speech, just real gratitude: you helped, it mattered, and I am glad to have a neighbor I can trust. The plants and I are both grateful. With thanks, Avery.",
+              "headline_font_size": 54,
+              "body_font_size": 26,
+              "headline_box": {
+                "x": 86,
+                "y": 134,
+                "width": 788,
+                "height": 269
+              },
+              "headline_box_background_color": "#fff6df",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "body_box": {
+                "x": 106,
+                "y": 497,
+                "width": 748,
+                "height": 484
+              },
+              "body_box_background_color": "#fff6df",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "text_alignment": "center",
+              "min_font_size": 16
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 86,
+      "body": {
+        "prompt_id": "e6256b64-74df-4a6a-b3c2-2ac86f1889f1",
+        "number": 30,
+        "node_errors": {}
+      }
+    },
+    "durationMs": 6
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/e6256b64-74df-4a6a-b3c2-2ac86f1889f1",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 9
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/e6256b64-74df-4a6a-b3c2-2ac86f1889f1",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/e6256b64-74df-4a6a-b3c2-2ac86f1889f1",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/e6256b64-74df-4a6a-b3c2-2ac86f1889f1",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/e6256b64-74df-4a6a-b3c2-2ac86f1889f1",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 21
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/e6256b64-74df-4a6a-b3c2-2ac86f1889f1",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 12
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/e6256b64-74df-4a6a-b3c2-2ac86f1889f1",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 29
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/e6256b64-74df-4a6a-b3c2-2ac86f1889f1",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 22
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/e6256b64-74df-4a6a-b3c2-2ac86f1889f1",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/e6256b64-74df-4a6a-b3c2-2ac86f1889f1",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 21
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/e6256b64-74df-4a6a-b3c2-2ac86f1889f1",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 8949,
+      "body": {
+        "e6256b64-74df-4a6a-b3c2-2ac86f1889f1": {
+          "prompt": [
+            30,
+            "e6256b64-74df-4a6a-b3c2-2ac86f1889f1",
+            {
+              "1": {
+                "class_type": "CheckpointLoaderSimple",
+                "inputs": {
+                  "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+                }
+              },
+              "2": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Matching minimal right interior with one small plant-related mark near the lower edge and calm main-message space. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark."
+                }
+              },
+              "3": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene"
+                }
+              },
+              "4": {
+                "class_type": "EmptyLatentImage",
+                "inputs": {
+                  "batch_size": 1,
+                  "height": 1344,
+                  "width": 960
+                }
+              },
+              "5": {
+                "class_type": "KSampler",
+                "inputs": {
+                  "cfg": 1.5,
+                  "denoise": 1,
+                  "latent_image": [
+                    "4",
+                    0
+                  ],
+                  "model": [
+                    "1",
+                    0
+                  ],
+                  "negative": [
+                    "3",
+                    0
+                  ],
+                  "positive": [
+                    "2",
+                    0
+                  ],
+                  "sampler_name": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 1774541907,
+                  "steps": 2
+                }
+              },
+              "6": {
+                "class_type": "VAEDecode",
+                "inputs": {
+                  "samples": [
+                    "5",
+                    0
+                  ],
+                  "vae": [
+                    "1",
+                    2
+                  ]
+                }
+              },
+              "7": {
+                "class_type": "CustomCardTextComposer",
+                "inputs": {
+                  "alignment": "center",
+                  "artwork_guard_color": "#fff6df",
+                  "artwork_guard_height": 968,
+                  "artwork_guard_opacity": 0.74,
+                  "artwork_guard_radius": 53,
+                  "artwork_guard_style": "box",
+                  "artwork_guard_width": 787,
+                  "artwork_guard_x": 86,
+                  "artwork_guard_y": 188,
+                  "body": "I appreciate the time and care you gave so freely. No big speech, just real gratitude: you helped, it mattered, and I am glad to have a neighbor I can trust. The plants and I are both grateful. With thanks, Avery.",
+                  "body_box_height": 484,
+                  "body_box_background_color": "#fff6df",
+                  "body_box_background_padding": 24,
+                  "body_box_background_radius": 34,
+                  "body_box_background_opacity": 0.96,
+                  "body_box_background_style": "text-hug",
+                  "body_box_width": 748,
+                  "body_box_x": 106,
+                  "body_box_y": 497,
+                  "body_fill_color": "#4f432a",
+                  "body_font": "georgia.ttf",
+                  "body_font_size": 26,
+                  "body_line_spacing": 6,
+                  "body_stroke_color": "#fff6df",
+                  "body_stroke_width": 1,
+                  "body_vertical_alignment": "middle",
+                  "debug_boxes": false,
+                  "headline": "From the heart",
+                  "headline_box_height": 269,
+                  "headline_box_background_color": "#fff6df",
+                  "headline_box_background_padding": 24,
+                  "headline_box_background_radius": 34,
+                  "headline_box_background_opacity": 0.96,
+                  "headline_box_background_style": "text-hug",
+                  "headline_box_width": 788,
+                  "headline_box_x": 86,
+                  "headline_box_y": 134,
+                  "headline_fill_color": "#282923",
+                  "headline_font": "georgia.ttf",
+                  "headline_font_size": 54,
+                  "headline_line_spacing": 8,
+                  "headline_stroke_color": "#fff6df",
+                  "headline_stroke_width": 1,
+                  "headline_vertical_alignment": "middle",
+                  "image": [
+                    "6",
+                    0
+                  ],
+                  "min_font_size": 16
+                }
+              },
+              "9": {
+                "class_type": "SaveImage",
+                "inputs": {
+                  "filename_prefix": "customcard/customcard-production-text-overlay/inside-right",
+                  "images": [
+                    "7",
+                    0
+                  ]
+                }
+              }
+            },
+            {
+              "customcard": {
+                "workflow_id": "customcard-production-text-overlay",
+                "panel_id": "inside-right",
+                "seed": 1774541907,
+                "inputs": {
+                  "workflow_id": "customcard-production-text-overlay",
+                  "panel_id": "inside-right",
+                  "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+                  "width": 960,
+                  "height": 1344,
+                  "steps": 2,
+                  "cfg": 1.5,
+                  "sampler": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 1774541907,
+                  "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Matching minimal right interior with one small plant-related mark near the lower edge and calm main-message space. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+                  "negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene",
+                  "artwork_guard": {
+                    "x": 86,
+                    "y": 188,
+                    "width": 787,
+                    "height": 968
+                  },
+                  "artwork_guard_color": "#fff6df",
+                  "artwork_guard_opacity": 0.74,
+                  "artwork_guard_radius": 53,
+                  "artwork_guard_style": "box",
+                  "headline_text": "From the heart",
+                  "body_text": "I appreciate the time and care you gave so freely. No big speech, just real gratitude: you helped, it mattered, and I am glad to have a neighbor I can trust. The plants and I are both grateful. With thanks, Avery.",
+                  "headline_font_size": 54,
+                  "body_font_size": 26,
+                  "headline_box": {
+                    "x": 86,
+                    "y": 134,
+                    "width": 788,
+                    "height": 269
+                  },
+                  "headline_box_background_color": "#fff6df",
+                  "headline_box_background_padding": 24,
+                  "headline_box_background_radius": 34,
+                  "headline_box_background_opacity": 0.96,
+                  "headline_box_background_style": "text-hug",
+                  "body_box": {
+                    "x": 106,
+                    "y": 497,
+                    "width": 748,
+                    "height": 484
+                  },
+                  "body_box_background_color": "#fff6df",
+                  "body_box_background_padding": 24,
+                  "body_box_background_radius": 34,
+                  "body_box_background_opacity": 0.96,
+                  "body_box_background_style": "text-hug",
+                  "text_alignment": "center",
+                  "min_font_size": 16
+                }
+              },
+              "client_id": "customcard-local-comfyui-provider",
+              "create_time": 1782448073486
+            },
+            [
+              "9"
+            ]
+          ],
+          "outputs": {
+            "9": {
+              "images": [
+                {
+                  "filename": "inside-right_00015_.png",
+                  "subfolder": "customcard\\customcard-production-text-overlay",
+                  "type": "output"
+                }
+              ]
+            }
+          },
+          "status": {
+            "status_str": "success",
+            "completed": true,
+            "messages": [
+              [
+                "execution_start",
+                {
+                  "prompt_id": "e6256b64-74df-4a6a-b3c2-2ac86f1889f1",
+                  "timestamp": 1782448073488
+                }
+              ],
+              [
+                "execution_cached",
+                {
+                  "nodes": [
+                    "1",
+                    "3",
+                    "4"
+                  ],
+                  "prompt_id": "e6256b64-74df-4a6a-b3c2-2ac86f1889f1",
+                  "timestamp": 1782448073488
+                }
+              ],
+              [
+                "execution_success",
+                {
+                  "prompt_id": "e6256b64-74df-4a6a-b3c2-2ac86f1889f1",
+                  "timestamp": 1782448088560
+                }
+              ]
+            ]
+          },
+          "meta": {
+            "9": {
+              "node_id": "9",
+              "display_node": "9",
+              "parent_node": null,
+              "real_node_id": "9"
+            }
+          }
+        }
+      }
+    },
+    "durationMs": 125
+  },
+  {
+    "url": "http://127.0.0.1:8188/view?filename=inside-right_00015_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "byteLength": 1892306
+    },
+    "durationMs": 7
+  },
+  {
+    "url": "http://127.0.0.1:8188/prompt",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Clean back cover with a single plant mark and mostly white negative space. Keep natural negative space for app-rendered typography in the lower half; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark."
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene"
+            }
+          },
+          "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {
+              "batch_size": 1,
+              "height": 1344,
+              "width": 960
+            }
+          },
+          "5": {
+            "class_type": "KSampler",
+            "inputs": {
+              "cfg": 1.5,
+              "denoise": 1,
+              "latent_image": [
+                "4",
+                0
+              ],
+              "model": [
+                "1",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "positive": [
+                "2",
+                0
+              ],
+              "sampler_name": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 2774289699,
+              "steps": 2
+            }
+          },
+          "6": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "5",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            }
+          },
+          "7": {
+            "class_type": "CustomCardTextComposer",
+            "inputs": {
+              "alignment": "center",
+              "artwork_guard_color": "#111715",
+              "artwork_guard_height": 1344,
+              "artwork_guard_opacity": 0.94,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "box",
+              "artwork_guard_width": 960,
+              "artwork_guard_x": 0,
+              "artwork_guard_y": 0,
+              "body": "For a neighborly kindness that did not go unnoticed.",
+              "body_box_height": 296,
+              "body_box_background_color": "",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "body_box_width": 748,
+              "body_box_x": 106,
+              "body_box_y": 914,
+              "body_fill_color": "#4f432a",
+              "body_font": "arial.ttf",
+              "body_font_size": 20,
+              "body_line_spacing": 6,
+              "body_stroke_color": "#fff6df",
+              "body_stroke_width": 1,
+              "body_vertical_alignment": "bottom",
+              "debug_boxes": false,
+              "headline": "With Thanks",
+              "headline_box_height": 269,
+              "headline_box_background_color": "",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "headline_box_width": 788,
+              "headline_box_x": 86,
+              "headline_box_y": 806,
+              "headline_fill_color": "#282923",
+              "headline_font": "arial.ttf",
+              "headline_font_size": 38,
+              "headline_line_spacing": 8,
+              "headline_stroke_color": "#fff6df",
+              "headline_stroke_width": 1,
+              "headline_vertical_alignment": "middle",
+              "image": [
+                "6",
+                0
+              ],
+              "min_font_size": 14
+            }
+          },
+          "9": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "filename_prefix": "customcard/customcard-production-text-overlay/back",
+              "images": [
+                "7",
+                0
+              ]
+            }
+          }
+        },
+        "client_id": "customcard-local-comfyui-provider",
+        "extra_data": {
+          "customcard": {
+            "workflow_id": "customcard-production-text-overlay",
+            "panel_id": "back",
+            "seed": 2774289699,
+            "inputs": {
+              "workflow_id": "customcard-production-text-overlay",
+              "panel_id": "back",
+              "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+              "width": 960,
+              "height": 1344,
+              "steps": 2,
+              "cfg": 1.5,
+              "sampler": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 2774289699,
+              "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Clean back cover with a single plant mark and mostly white negative space. Keep natural negative space for app-rendered typography in the lower half; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+              "negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene",
+              "artwork_guard": {
+                "x": 0,
+                "y": 0,
+                "width": 960,
+                "height": 1344
+              },
+              "artwork_guard_color": "#111715",
+              "artwork_guard_opacity": 0.94,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "box",
+              "headline_text": "With Thanks",
+              "body_text": "For a neighborly kindness that did not go unnoticed.",
+              "headline_font_size": 38,
+              "body_font_size": 20,
+              "headline_box": {
+                "x": 86,
+                "y": 806,
+                "width": 788,
+                "height": 269
+              },
+              "headline_box_background_color": "",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "body_box": {
+                "x": 106,
+                "y": 914,
+                "width": 748,
+                "height": 296
+              },
+              "body_box_background_color": "",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "text_alignment": "center",
+              "min_font_size": 14
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 86,
+      "body": {
+        "prompt_id": "fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+        "number": 31,
+        "node_errors": {}
+      }
+    },
+    "durationMs": 6
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 3
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 1
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 4
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 2
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 4
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 23
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 15
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 21
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 8173,
+      "body": {
+        "fd4f81b1-10a1-437a-8bcf-d3a9a61328d9": {
+          "prompt": [
+            31,
+            "fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+            {
+              "1": {
+                "class_type": "CheckpointLoaderSimple",
+                "inputs": {
+                  "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+                }
+              },
+              "2": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Clean back cover with a single plant mark and mostly white negative space. Keep natural negative space for app-rendered typography in the lower half; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark."
+                }
+              },
+              "3": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene"
+                }
+              },
+              "4": {
+                "class_type": "EmptyLatentImage",
+                "inputs": {
+                  "batch_size": 1,
+                  "height": 1344,
+                  "width": 960
+                }
+              },
+              "5": {
+                "class_type": "KSampler",
+                "inputs": {
+                  "cfg": 1.5,
+                  "denoise": 1,
+                  "latent_image": [
+                    "4",
+                    0
+                  ],
+                  "model": [
+                    "1",
+                    0
+                  ],
+                  "negative": [
+                    "3",
+                    0
+                  ],
+                  "positive": [
+                    "2",
+                    0
+                  ],
+                  "sampler_name": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 2774289699,
+                  "steps": 2
+                }
+              },
+              "6": {
+                "class_type": "VAEDecode",
+                "inputs": {
+                  "samples": [
+                    "5",
+                    0
+                  ],
+                  "vae": [
+                    "1",
+                    2
+                  ]
+                }
+              },
+              "7": {
+                "class_type": "CustomCardTextComposer",
+                "inputs": {
+                  "alignment": "center",
+                  "artwork_guard_color": "#111715",
+                  "artwork_guard_height": 1344,
+                  "artwork_guard_opacity": 0.94,
+                  "artwork_guard_radius": 0,
+                  "artwork_guard_style": "box",
+                  "artwork_guard_width": 960,
+                  "artwork_guard_x": 0,
+                  "artwork_guard_y": 0,
+                  "body": "For a neighborly kindness that did not go unnoticed.",
+                  "body_box_height": 296,
+                  "body_box_background_color": "",
+                  "body_box_background_padding": 24,
+                  "body_box_background_radius": 34,
+                  "body_box_background_opacity": 0.96,
+                  "body_box_background_style": "text-hug",
+                  "body_box_width": 748,
+                  "body_box_x": 106,
+                  "body_box_y": 914,
+                  "body_fill_color": "#4f432a",
+                  "body_font": "arial.ttf",
+                  "body_font_size": 20,
+                  "body_line_spacing": 6,
+                  "body_stroke_color": "#fff6df",
+                  "body_stroke_width": 1,
+                  "body_vertical_alignment": "bottom",
+                  "debug_boxes": false,
+                  "headline": "With Thanks",
+                  "headline_box_height": 269,
+                  "headline_box_background_color": "",
+                  "headline_box_background_padding": 24,
+                  "headline_box_background_radius": 34,
+                  "headline_box_background_opacity": 0.96,
+                  "headline_box_background_style": "text-hug",
+                  "headline_box_width": 788,
+                  "headline_box_x": 86,
+                  "headline_box_y": 806,
+                  "headline_fill_color": "#282923",
+                  "headline_font": "arial.ttf",
+                  "headline_font_size": 38,
+                  "headline_line_spacing": 8,
+                  "headline_stroke_color": "#fff6df",
+                  "headline_stroke_width": 1,
+                  "headline_vertical_alignment": "middle",
+                  "image": [
+                    "6",
+                    0
+                  ],
+                  "min_font_size": 14
+                }
+              },
+              "9": {
+                "class_type": "SaveImage",
+                "inputs": {
+                  "filename_prefix": "customcard/customcard-production-text-overlay/back",
+                  "images": [
+                    "7",
+                    0
+                  ]
+                }
+              }
+            },
+            {
+              "customcard": {
+                "workflow_id": "customcard-production-text-overlay",
+                "panel_id": "back",
+                "seed": 2774289699,
+                "inputs": {
+                  "workflow_id": "customcard-production-text-overlay",
+                  "panel_id": "back",
+                  "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+                  "width": 960,
+                  "height": 1344,
+                  "steps": 2,
+                  "cfg": 1.5,
+                  "sampler": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 2774289699,
+                  "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Clean back cover with a single plant mark and mostly white negative space. Keep natural negative space for app-rendered typography in the lower half; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+                  "negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene",
+                  "artwork_guard": {
+                    "x": 0,
+                    "y": 0,
+                    "width": 960,
+                    "height": 1344
+                  },
+                  "artwork_guard_color": "#111715",
+                  "artwork_guard_opacity": 0.94,
+                  "artwork_guard_radius": 0,
+                  "artwork_guard_style": "box",
+                  "headline_text": "With Thanks",
+                  "body_text": "For a neighborly kindness that did not go unnoticed.",
+                  "headline_font_size": 38,
+                  "body_font_size": 20,
+                  "headline_box": {
+                    "x": 86,
+                    "y": 806,
+                    "width": 788,
+                    "height": 269
+                  },
+                  "headline_box_background_color": "",
+                  "headline_box_background_padding": 24,
+                  "headline_box_background_radius": 34,
+                  "headline_box_background_opacity": 0.96,
+                  "headline_box_background_style": "text-hug",
+                  "body_box": {
+                    "x": 106,
+                    "y": 914,
+                    "width": 748,
+                    "height": 296
+                  },
+                  "body_box_background_color": "",
+                  "body_box_background_padding": 24,
+                  "body_box_background_radius": 34,
+                  "body_box_background_opacity": 0.96,
+                  "body_box_background_style": "text-hug",
+                  "text_alignment": "center",
+                  "min_font_size": 14
+                }
+              },
+              "client_id": "customcard-local-comfyui-provider",
+              "create_time": 1782448088905
+            },
+            [
+              "9"
+            ]
+          ],
+          "outputs": {
+            "9": {
+              "images": [
+                {
+                  "filename": "back_00015_.png",
+                  "subfolder": "customcard\\customcard-production-text-overlay",
+                  "type": "output"
+                }
+              ]
+            }
+          },
+          "status": {
+            "status_str": "success",
+            "completed": true,
+            "messages": [
+              [
+                "execution_start",
+                {
+                  "prompt_id": "fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+                  "timestamp": 1782448088910
+                }
+              ],
+              [
+                "execution_cached",
+                {
+                  "nodes": [
+                    "1",
+                    "3",
+                    "4"
+                  ],
+                  "prompt_id": "fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+                  "timestamp": 1782448088914
+                }
+              ],
+              [
+                "execution_success",
+                {
+                  "prompt_id": "fd4f81b1-10a1-437a-8bcf-d3a9a61328d9",
+                  "timestamp": 1782448131615
+                }
+              ]
+            ]
+          },
+          "meta": {
+            "9": {
+              "node_id": "9",
+              "display_node": "9",
+              "parent_node": null,
+              "real_node_id": "9"
+            }
+          }
+        }
+      }
+    },
+    "durationMs": 2
+  },
+  {
+    "url": "http://127.0.0.1:8188/view?filename=back_00015_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "byteLength": 960469
+    },
+    "durationMs": 5
+  }
+]

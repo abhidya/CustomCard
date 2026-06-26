@@ -198,6 +198,8 @@ export function buildCardCopyPrompt(input) {
         "Exactly four panels.",
         "Use each panel id exactly once in this order: front, inside-left, inside-right, back.",
         "Use only provided memory_notes.",
+        "If input.must_include has values, every value must appear naturally in the finished card copy, theme_guide, visual_cue, or image_prompt before the image step runs.",
+        "If input.must_avoid has values, do not use those values in final copy or image prompts unless the input explicitly says they are only negative prompts.",
         "Preserve exact concrete facts from personal_note and memory_notes in final copy: names, relationships, dates, places, product names, CTA nouns, and practical support items. Do not replace literal requested items such as meals, rides, calls, silence, QR, dates, names, or business terms with generic summaries.",
         "No order/payment claims.",
         "Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.",

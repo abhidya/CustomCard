@@ -223,7 +223,9 @@ function markdownCell(value) {
 
 function visualGradeCell(grade) {
   if (!grade) return "n/a";
-  const label = [grade.score ?? "n/a", grade.recommendation].filter(Boolean).join(" / ");
+  const label = [grade.score ?? "n/a", grade.recommendation]
+    .filter((value) => value !== undefined && value !== null && value !== "")
+    .join(" / ");
   const displayPath = grade.path?.replace(/\.json$/, ".md");
   return displayPath ? `[${markdownCell(label || "open")}](../${displayPath.replace(/^docs\/evidence\/generated-card-comparisons\//, "")})` : markdownCell(label || "manual");
 }

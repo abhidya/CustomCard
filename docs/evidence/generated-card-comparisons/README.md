@@ -27,3 +27,11 @@ and screenshots from our own prompts and product flows.
 
 Current production-text research status:
 `production-text-research-findings-2026-06-26.md`.
+
+Latest LLM-planned production-text matrix:
+`benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-rankings.md`.
+
+That aggregate is failure evidence from Qwen3-4B, not promotion evidence. Use
+`tools/start-local-card-planner.ps1` or a hosted/self-hosted larger planner for
+the full-quality prompt, and keep `-AllowSmallPlanner` reserved for exploratory
+failure runs.

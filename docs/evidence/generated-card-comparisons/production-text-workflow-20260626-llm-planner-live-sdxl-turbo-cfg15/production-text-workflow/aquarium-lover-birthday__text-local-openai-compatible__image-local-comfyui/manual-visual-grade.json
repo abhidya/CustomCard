@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "totalScore": 38,
+  "productScore": 38,
+  "contractScore": 72,
+  "status": "blocked",
+  "passed": false,
+  "productionRecommendation": "do-not-promote",
+  "blockingFailures": [
+    "Planner missed required recipient/name/theme terms: Nina and aquarium are absent.",
+    "Artwork and copy drifted into botanical birthday stationery instead of aquarium-lover stationery.",
+    "Back panel is too dark, contains visible text, and does not behave as a sparse no-copy back cover."
+  ],
+  "notes": "Comfy-side deterministic text compositing worked structurally, but the LLM-planned creative concept failed the customer request."
+}

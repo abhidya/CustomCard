@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "totalScore": 0,
+  "productScore": 0,
+  "contractScore": 15,
+  "status": "failed",
+  "passed": false,
+  "productionRecommendation": "do-not-promote",
+  "blockingFailures": [
+    "Local Qwen3-4B planner returned invalid JSON.",
+    "The LLM response hit the 2200-token completion cap with finish_reason length.",
+    "No image panels were generated for the koi encouragement request."
+  ],
+  "notes": "This run failed before Comfy image generation. The local planner needs tighter schema/token control or a stronger model before promotion."
+}

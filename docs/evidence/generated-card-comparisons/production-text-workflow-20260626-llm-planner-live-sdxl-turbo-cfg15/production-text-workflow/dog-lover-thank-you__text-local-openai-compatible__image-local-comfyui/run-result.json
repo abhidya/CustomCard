@@ -1,0 +1,97 @@
+{
+  "phase": "local-production-text",
+  "focus": "local-comfy-production-text-generated-copy",
+  "storyId": "dog-lover-thank-you",
+  "productionTextMode": "llm-generated-copy",
+  "textCandidateId": "text-local-openai-compatible",
+  "textAdapterId": "local-openai-compatible-chat",
+  "textModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+  "imageCandidateId": "image-local-comfyui",
+  "imageAdapterId": "local-comfyui-api-image",
+  "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+  "typographyModeId": "customcard-production-text-composer",
+  "typographyModeLabel": "CustomCard production text composer",
+  "typographyStrategy": "llm-planned-copy-comfy-deterministic-text",
+  "runDir": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15\\production-text-workflow\\dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui",
+  "startedAt": "2026-06-26T04:25:39.942Z",
+  "finishedAt": "2026-06-26T04:28:53.687Z",
+  "statusCode": 200,
+  "generatedBy": "ai-text-and-image",
+  "cardCopyModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+  "providerFailures": {},
+  "panelCount": 4,
+  "panelFiles": [
+    {
+      "panelId": "front",
+      "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15\\production-text-workflow\\dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui\\provider-front.png",
+      "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15\\production-text-workflow\\dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui\\preview-front.png",
+      "width": 960,
+      "height": 1344,
+      "prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Simple minimal thank-you cover with one small plant mark, clean white and warm ivory field, fine leaf-green rule, and lower text-safe space. Keep natural negative space for app-rendered typography in the upper and lower fields; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+      "renderedByComfyTextComposer": true,
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "inside-left",
+      "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15\\production-text-workflow\\dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui\\provider-inside-left.png",
+      "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15\\production-text-workflow\\dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui\\preview-inside-left.png",
+      "width": 960,
+      "height": 1344,
+      "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Minimal left interior with a tiny water-drop mark, fine rule, generous blank center, and no floral pattern. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+      "renderedByComfyTextComposer": true,
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "inside-right",
+      "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15\\production-text-workflow\\dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui\\provider-inside-right.png",
+      "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15\\production-text-workflow\\dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui\\preview-inside-right.png",
+      "width": 960,
+      "height": 1344,
+      "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Matching minimal right interior with one small plant-related mark near the lower edge and calm main-message space. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+      "renderedByComfyTextComposer": true,
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "back",
+      "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15\\production-text-workflow\\dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui\\provider-back.png",
+      "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15\\production-text-workflow\\dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui\\preview-back.png",
+      "width": 960,
+      "height": 1344,
+      "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language. Use this panel-specific composition: Clean back cover with a single plant mark and mostly white negative space. Keep natural negative space for app-rendered typography in the lower half; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+      "renderedByComfyTextComposer": true,
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    }
+  ],
+  "contactSheet": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15\\production-text-workflow\\dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui\\contact-sheet.png",
+  "effectiveProviderRequests": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15\\production-text-workflow\\dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui\\effective-provider-requests.json",
+  "providerCallCount": 123,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": true,
+      "noProviderFailure": true,
+      "mustIncludeCovered": false,
+      "mustAvoidClean": false,
+      "providerCalls": 123,
+      "productionTextGeneratedCopy": true,
+      "finalImagesRenderedByComfy": true,
+      "benchmarkPreviewOverlayBypassed": true,
+      "metadataIncludesExactGeneratedCopy": true,
+      "metadataIncludesSafeBoxes": true,
+      "metadataIncludesArtworkGuards": true,
+      "imagePromptsSuppressExactCopy": true
+    },
+    "missingMustInclude": [
+      "Morgan",
+      "dog"
+    ],
+    "avoidedFailures": [
+      "mockup"
+    ],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

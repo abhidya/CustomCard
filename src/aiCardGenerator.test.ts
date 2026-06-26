@@ -120,6 +120,44 @@ const cardCopyResponse = {
   memory_citations: ["She keeps a fern by the kitchen window."]
 };
 
+const aquariumLooseResponse = {
+  theme_guide:
+    "Aquatic ritual quietness: refined birthday stationery for a freshwater aquarium keeper, focused on plant care, tiny fish movement, and calm tank light.",
+  front: {
+    headline: "Happy Birthday, Nina",
+    body: "For a year with clear water, small wonders, and the quiet joy of tending life in motion.",
+    visual_cue:
+      "Single Java fern leaf floating in soft aquarium light, cool green-gray palette, clean lower text-safe area.",
+    image_prompt:
+      "Premium 5x7 vertical flat print panel, close-up Java fern leaf floating in still freshwater aquarium light, faint tiny fish silhouettes, cool green gray palette, clean lower text-safe area, no readable text, no people, no hands, no logos."
+  },
+  "inside-left": {
+    headline: "The calm you notice",
+    body: "You have a way of seeing the little changes that make a whole aquarium feel alive.",
+    visual_cue:
+      "Light interior panel with tiny neon tetras near the lower edge and a quiet center text-safe area.",
+    image_prompt:
+      "Premium 5x7 vertical inside-left panel, tiny neon tetras along lower edge, aquatic plant corner, quiet center text-safe area, no readable text."
+  },
+  "inside-right": {
+    headline: "Wishing you small wonders",
+    body: "I hope this birthday brings more peaceful rituals, healthy plants, and bright little moments that feel completely yours.",
+    visual_cue:
+      "Matching light aquarium interior with Anubias leaves in one corner and generous open message space.",
+    image_prompt:
+      "Premium 5x7 vertical inside-right panel, Anubias leaves in upper corner, soft aquarium glow, generous open text-safe area, no readable text."
+  },
+  back: {
+    headline: "For the little wonders",
+    body: "A quiet birthday note for Nina.",
+    visual_cue: "Mostly negative space with one small water-droplet and aquatic leaf mark near the bottom.",
+    image_prompt:
+      "Premium 5x7 vertical back panel, mostly negative space, tiny aquatic leaf and water droplet mark, no readable text."
+  },
+  image_negative_prompt:
+    "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo"
+};
+
 describe("AI card generator service", () => {
   it("keeps Provider Adapter transports behind explicit generation adapters", () => {
     expect(describeAiCardGenerationAdapters()).toEqual({
@@ -493,6 +531,139 @@ describe("AI card generator service", () => {
     expect(JSON.stringify(result.payload)).toContain("visual_cue");
     expect(JSON.stringify(result.payload)).toContain("Happy Birthday Sara");
     expect(JSON.stringify(result.payload)).not.toContain("test_text_token");
+  });
+
+  it("preserves loose LLM-decided recipient-interest output instead of replacing it with generic fallbacks", async () => {
+    const fetchImpl = vi.fn(async () =>
+      new Response(JSON.stringify({ result: { response: aquariumLooseResponse } }), {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      })
+    );
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel
+      },
+      fetchImpl,
+      aiFlowAdminConfig: buildDefaultAiFlowAdminConfigs().map((config) =>
+        config.flowId === "card-image" ? { ...config, liveProviderCallsEnabled: false } : config
+      )
+    });
+
+    const result = await service.generateCard(
+      {
+        ...cardRequest,
+        sender: "Riley",
+        recipient: "Nina",
+        occasion: "birthday",
+        style: "premium folded greeting card for an aquarium lover",
+        personal_note: "Make a birthday card for Nina, who relaxes by tending her freshwater aquarium.",
+        memory_notes: ["Nina loves freshwater aquariums, aquatic plants, tiny fish, and calm tank care."],
+        must_include: ["Nina", "birthday", "aquarium"]
+      },
+      { rateKey: "test-loose-aquarium-output" }
+    );
+    const payload = result.payload as {
+      card_copy: { theme_guide: { theme_title: string }; panels: Array<{ id: string; headline: string; image_prompt: string }> };
+    };
+
+    expect(result.statusCode).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(payload.card_copy.theme_guide.theme_title).toContain("Aquatic ritual quietness");
+    expect(payload.card_copy.panels[0].headline).toBe("Happy Birthday, Nina");
+    expect(payload.card_copy.panels[0].image_prompt).toContain("soft aquarium light");
+    expect(JSON.stringify(payload.card_copy)).not.toContain("Morning Garden");
+  });
+
+  it("retries card-copy planning when required customer terms are missing before image generation", async () => {
+    const weakResponse = {
+      theme_guide: {
+        theme_title: "Plain Thanks",
+        palette: ["clean white", "warm ivory", "leaf green"],
+        motifs: ["small plant mark", "fine rule", "single water drop"],
+        border_style: "minimal fine-rule border",
+        front_back_pairing: "front and back share one plant mark",
+        interior_pairing: "inside panels share quiet borders"
+      },
+      panels: cardCopyResponse.panels.map((panel) => ({
+        ...panel,
+        headline: panel.id === "front" ? "With Thanks" : panel.headline,
+        body: "Thank you for helping while I was away.",
+        image_prompt: "Minimal plant thank-you stationery with clean white space, no readable text."
+      })),
+      memory_citations: ["Morgan loves dogs, but this citation alone must not satisfy validation."]
+    };
+    const dogRetryResponse = {
+      theme_guide: "Dog-neighbor harmony: a thank-you card for Morgan built around dog-trust and neighborly care.",
+      copy: {
+        front_headline: "Thanks, Morgan",
+        inside_left_body: "You helped while I was away in exactly the steady way a good dog-loving neighbor would.",
+        inside_right_body:
+          "I am grateful for the care, the noticing, and the kind of trust that makes a neighbor feel like someone a dog would choose too. With thanks, Avery.",
+        back_body: "A quiet thank-you for Morgan, from Avery."
+      },
+      image_prompt: {
+        front:
+          "Premium 5x7 vertical flat print panel with an abstract dog leash curve beside a neighborly doorstep, clean lower text-safe area, no readable text.",
+        inside_left:
+          "Premium 5x7 vertical inside-left panel with a tiny dog-shaped shadow near the lower edge and generous center text-safe area.",
+        inside_right:
+          "Premium 5x7 vertical inside-right panel with a quiet sidewalk path and dog-trust motif, clean text-safe center.",
+        back: "Premium 5x7 vertical back panel, mostly negative space with one small dog-tag-shaped abstract mark, no readable text."
+      },
+      image_negative_prompt: "readable text, fake text, letters, people, face, portrait, hands, folded card mockup"
+    };
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ result: { response: weakResponse } }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ result: { response: dogRetryResponse } }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        })
+      );
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel
+      },
+      fetchImpl,
+      aiFlowAdminConfig: buildDefaultAiFlowAdminConfigs().map((config) =>
+        config.flowId === "card-image" ? { ...config, liveProviderCallsEnabled: false } : config
+      )
+    });
+
+    const result = await service.generateCard(
+      {
+        ...cardRequest,
+        sender: "Avery",
+        recipient: "Morgan",
+        occasion: "thank-you card",
+        style: "premium folded greeting card for a dog lover",
+        personal_note: "Thank Morgan for helping while Avery was away.",
+        memory_notes: ["Morgan loves dogs and helped while Avery was away."],
+        must_include: ["Morgan", "thank", "dog"]
+      },
+      { rateKey: "test-must-include-retry" }
+    );
+    const requestBodies = fetchImpl.mock.calls.map((call) => JSON.parse(String((call as unknown as [RequestInfo | URL, RequestInit?])[1]?.body)));
+    const retryPrompt = JSON.parse(requestBodies[1].messages[1].content);
+
+    expect(result.statusCode).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(retryPrompt.input.planner_retry.issues).toEqual(
+      expect.arrayContaining(["Missing required term: Morgan", "Missing required term: dog"])
+    );
+    expect(JSON.stringify(result.payload)).toContain("Dog-neighbor harmony");
+    expect(JSON.stringify(result.payload)).toContain("Morgan");
   });
 
   it("returns an explicit provider failure when card-copy provider credentials are missing", async () => {

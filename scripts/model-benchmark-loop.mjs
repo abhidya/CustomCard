@@ -1237,6 +1237,8 @@ async function runBenchmarkCard({ run, phaseDir, service, providerHttp, env, fet
   const aiFlowConfig = buildRunAiFlowConfig(run);
   const request = {
     ...run.story.request,
+    must_include: run.story.must_include,
+    must_avoid: run.story.must_avoid,
     aiFlowConfig
   };
   writeJson(resolve(runDir, "request.json"), sanitize(request, env));
@@ -1646,7 +1648,7 @@ function buildRunAiFlowConfig(run) {
       monthlyBudgetCents: 5000,
       perRequestBudgetCents: 5,
       maxRetries: 1,
-      maxTokens: 2200,
+      maxTokens: boundedIntegerEnv(process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS, 2200, 4000, 3200),
       temperature: 0.62
     },
     {

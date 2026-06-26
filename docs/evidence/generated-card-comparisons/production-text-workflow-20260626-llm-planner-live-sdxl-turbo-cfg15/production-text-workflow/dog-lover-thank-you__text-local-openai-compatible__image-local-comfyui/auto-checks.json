@@ -1,0 +1,25 @@
+{
+  "advisoryOnly": true,
+  "checks": {
+    "fourPanels": true,
+    "noProviderFailure": true,
+    "mustIncludeCovered": false,
+    "mustAvoidClean": false,
+    "providerCalls": 123,
+    "productionTextGeneratedCopy": true,
+    "finalImagesRenderedByComfy": true,
+    "benchmarkPreviewOverlayBypassed": true,
+    "metadataIncludesExactGeneratedCopy": true,
+    "metadataIncludesSafeBoxes": true,
+    "metadataIncludesArtworkGuards": true,
+    "imagePromptsSuppressExactCopy": true
+  },
+  "missingMustInclude": [
+    "Morgan",
+    "dog"
+  ],
+  "avoidedFailures": [
+    "mockup"
+  ],
+  "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+}

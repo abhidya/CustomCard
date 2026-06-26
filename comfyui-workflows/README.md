@@ -151,12 +151,27 @@ lover encouragement, and dog lover thank-you. The LLM decides the final theme,
 copy, layout, and per-panel artwork prompts; Comfy renders the exact generated
 copy with `CustomCardTextComposer`. The helper fails fast when no local LLM is
 configured so agents do not accidentally benchmark only the structural fixture.
-For live runs, it also preflights the local LLM at `/v1/models`; pass either
-`http://127.0.0.1:1234` or `http://127.0.0.1:1234/v1` as `-LocalLlmBaseUrl`.
-Use `-DryRun` to inspect the planned matrix without requiring a live text
-server. Pass `-AllowCompositorFixtureFallback` only when intentionally testing
-the single sunburst compositor calibration fixture. By default the helper writes
-to a timestamped
+For live runs, it also preflights the local LLM at `/v1/models`; pass either a
+root local URL such as `http://127.0.0.1:5001` or a `/v1` URL such as
+`http://127.0.0.1:5001/v1` as `-LocalLlmBaseUrl`. Use `-DryRun` to inspect the
+planned matrix without requiring a live text server. The helper rejects known
+small planners such as Qwen3-4B for production evidence because they miss
+customer terms and can truncate the full card-copy contract; pass
+`-AllowSmallPlanner` only for exploratory failure evidence. Start the installed
+local quality planner with:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/start-local-card-planner.ps1 -Port 5003 -ContextSize 8192
+```
+
+Then run with `-LocalLlmBaseUrl http://127.0.0.1:5003/v1 -LocalLlmModel
+koboldcpp/gemma-4-31B-it-Q4_K_M`. On this CPU-only attempt Gemma 31B loaded
+successfully but did not finish the first planner response in a practical
+benchmark window, so use a GPU/offloaded runtime or a hosted/self-hosted larger
+planner for promotion evidence. Pass
+`-AllowCompositorFixtureFallback` only when intentionally testing the single
+sunburst compositor calibration fixture. By default the helper writes to a
+timestamped
 `docs/evidence/generated-card-comparisons/production-text-workflow-YYYYMMDD-HHMMSS`
 directory. Pass `-OutputDir` only when you intentionally want a stable evidence
 path.
@@ -164,7 +179,7 @@ path.
 Checkpoint comparison example:
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:1234/v1 -LocalLlmModel local-qwen-card-copy -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5003/v1 -LocalLlmModel koboldcpp/gemma-4-31B-it-Q4_K_M -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 1800
 ```
 
 This helper uses the benchmark `local-production-text` phase rather than
@@ -182,6 +197,14 @@ Latest live evidence:
 - Artwork-guard preflight: `docs/evidence/generated-card-comparisons/production-text-preflight-20260626-artwork-guard`
 - Artwork-guard benchmark: `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-artwork-guard-v2`
 - Best current manual visual grade: 72/100, blocked, do not promote yet.
+- Live LLM-planned matrix aggregate:
+  `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-rankings.md`
+  - Best customer-request score: 38/100, blocked.
+  - Main blocker: local Qwen3-4B planner misses customer themes/must-include
+    terms and can emit truncated invalid JSON. Current code now passes
+    `must_include`/`must_avoid` into the planner, retries invalid or incomplete
+    card-copy output before Comfy, and refuses Qwen3-4B for production evidence
+    unless `-AllowSmallPlanner` is explicit.
 
 ## Local Visual Quality Gate
 

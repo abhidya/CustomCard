@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "totalScore": 34,
+  "productScore": 34,
+  "contractScore": 70,
+  "status": "blocked",
+  "passed": false,
+  "productionRecommendation": "do-not-promote",
+  "blockingFailures": [
+    "Planner missed required recipient/name/theme terms: Morgan and dog are absent.",
+    "Copy invents plant-watering context and says the plants are grateful, which contradicts the dog-lover thank-you request.",
+    "Back panel is too dark, contains visible text, and does not behave as a sparse no-copy back cover."
+  ],
+  "notes": "The deterministic Comfy text path rendered four panels, but the local planner failed customer-theme adherence."
+}

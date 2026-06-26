@@ -45,12 +45,12 @@ Use one local instruction model with strong JSON obedience. The card-copy contra
 
 Installed candidates, in suggested benchmark order:
 
-- `D:\models\Qwen3-4B-Instruct-2507-Q4_K_S.gguf` for fast schema and prompt-loop iteration.
 - `D:\models\gemma-4-31B-it-Q4_K_M.gguf` or `D:\models\lmstudio-community\gemma-4-31B-it-QAT-GGUF\gemma-4-31B-it-QAT-Q4_0.gguf` for higher-quality copy comparison.
 - `D:\models\lmstudio-community\Magistral-Small-2509-GGUF\Magistral-Small-2509-Q4_K_M.gguf` as a second-family long-form/copywriting comparison.
 - `D:\models\DeepSeekV4-Flash-158B-Q4_K_M.gguf` only if local runtime and memory tests show it is practical for repeated benchmark runs.
+- `D:\models\Qwen3-4B-Instruct-2507-Q4_K_S.gguf` only for fast schema smoke tests and failure evidence, not production promotion.
 
-LM Studio is preferred for schema/JSON experiments because it exposes OpenAI-compatible endpoints and structured-output support. KoboldCPP is useful for lightweight GGUF serving; keep JSON enforcement in prompt/post-parse repair if the server does not support JSON schema.
+LM Studio is preferred for schema/JSON experiments because it exposes OpenAI-compatible endpoints and structured-output support. KoboldCPP is useful for lightweight GGUF serving; keep JSON enforcement in prompt/post-parse repair if the server does not support JSON schema. For promotion runs, keep the full creative prompt and move to a stronger planner/runtime instead of shrinking the contract to fit Qwen3-4B.
 
 ### Image Renderer
 
@@ -106,13 +106,21 @@ Production text workflow tracking:
   `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-live-node`
 - Production-text aggregate:
   `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-candidates`
+- Live LLM-planned customer-request aggregate:
+  `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live`
 - Current production-text recommendation:
   keep the Comfy-side deterministic text composer with soft text-hug safe-field
   backgrounds and broader deterministic artwork guards, but do not promote yet.
-  The best local candidate is SDXL Turbo CFG 1.5 with rounded text-hug fields
-  and artwork guards at 72/100, still blocked because the art layer needs a
-  heavy front guard, over-softens the interiors, and fails the sparse back-mark
-  contract.
+  The best structural compositor candidate is SDXL Turbo CFG 1.5 with rounded
+  text-hug fields and artwork guards at 72/100, still blocked because the art
+  layer needs a heavy front guard, over-softens the interiors, and fails the
+  sparse back-mark contract. The live LLM-planned customer-request matrix is
+  lower quality: aquarium 38/100, dog 34/100, koi 0/100. That run proves local
+  text plus local Comfy reachability, but Qwen3-4B is now treated as a smoke or
+  failure-evidence planner only. Current code passes `must_include`/`must_avoid`
+  into the full prompt, validates and retries missing terms before Comfy, and
+  preserves useful loose JSON shapes. The next promotion run should use Gemma
+  31B with GPU/offload or a hosted/self-hosted larger planner.
 
 Installed research candidates under `D:\models\`:
 
@@ -240,19 +248,24 @@ Start with LoRAs. Do not train separate full checkpoints until there is clear be
 Recommended progression:
 
 1. Prompt/template improvement.
-2. Workflow improvement with masks/control layouts.
-3. Category LoRAs:
+2. Planner-contract improvement for production text:
+   - concise JSON plan shape
+   - must-include validation before image generation
+   - invalid/truncated JSON retry or repair
+   - stronger local copy model comparison before image-side tuning
+3. Workflow improvement with masks/control layouts.
+4. Category LoRAs:
    - botanical stationery
    - medical graduation
    - workshop/tools
    - sympathy/quiet support
    - small-business editorial
-4. Layout LoRAs:
+5. Layout LoRAs:
    - front cover hero
    - interior quiet field
    - back cover mark
-5. Optional merged checkpoint only after LoRAs stabilize.
-6. Optional distilled base model only after hundreds or thousands of high-scoring, rights-clean examples exist.
+6. Optional merged checkpoint only after LoRAs stabilize.
+7. Optional distilled base model only after hundreds or thousands of high-scoring, rights-clean examples exist.
 
 Separate full models per page do not make sense initially. Use one shared image model plus panel conditioning:
 

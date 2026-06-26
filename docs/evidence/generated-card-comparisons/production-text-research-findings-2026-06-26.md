@@ -22,6 +22,11 @@ Production text should be planned by the card-copy LLM and rendered by ComfyUI:
 | `.codex/tmp/production-text-wrapper-fixture` with `-AllowCompositorFixtureFallback` | Planned 1 run | Explicit fallback still schedules only `folded-card-sunburst-typography` as `compositor-fixture`. |
 | `.codex/tmp/production-text-wrapper-llm` with `-LocalLlmBaseUrl` and `-LocalLlmModel` | Planned 3 runs | Wrapper parameters schedule the full `llm-generated-copy` aquarium/koi/dog matrix without manual env setup. |
 | Live wrapper preflight on 2026-06-26 04:16 UTC | Blocked before image generation | Local ComfyUI passed live preflight, but the local LLM probe to `http://127.0.0.1:1234/v1/models` failed with connection refused. This is now a fast setup failure, not a late benchmark failure. |
+| `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15` | Ran 3 planned runs | KoboldCPP Qwen3-4B on `http://127.0.0.1:5001/v1` plus local Comfy reached the full aquarium/koi/dog matrix. Aquarium and dog rendered four panels; koi failed before images due truncated invalid JSON. |
+| `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live` | Blocked | Manual grades: aquarium 38/100, dog 34/100, koi 0/100. Promotion remains blocked by planner theme adherence and JSON reliability, not by Comfy text compositing. |
+| Card-copy contract follow-up | Implemented | The generator keeps the full planner prompt, passes benchmark `must_include`/`must_avoid` into the request, validates and retries missing required terms before Comfy, and preserves useful loose LLM JSON shapes instead of falling back to generic themes. |
+| `tools/run-production-text-benchmark.ps1` small-planner guard | Implemented | Production evidence now rejects known-small planners such as Qwen3-4B unless `-AllowSmallPlanner` is explicit. The 4B path remains useful for smoke/failure evidence, not promotion. |
+| `tools/start-local-card-planner.ps1` Gemma 31B attempt | Operationally blocked | Gemma 31B loaded at `http://127.0.0.1:5003/v1`, but CPU decoding did not finish the first benchmark planner response in a practical window even with `-PlannerMaxTokens 1800`. Use GPU/offload or a hosted/self-hosted larger planner for promotion evidence. |
 | `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-artwork-guard-v2` | 72/100, blocked | Deterministic Comfy text, soft text fields, and artwork guards work structurally, but artwork remains too dense for production. |
 | `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-candidates` | Blocked | Aggregate evidence still says do not promote production Comfy text as the default path. |
 
@@ -45,23 +50,50 @@ customer-interest examples should be fixed user requests, while the LLM should
 decide the final creative concept. Hardcoding finished palette/motif/copy in the
 benchmark overconstrained the wrong layer and still did not fix artwork quality.
 
-## Next Gate
+## Live LLM-Planned Matrix
 
-Run the live LLM-planned production matrix only after a local OpenAI-compatible
-text server is available. The wrapper accepts the local LLM settings directly:
+The live LLM-planned production matrix ran against the local KoboldCPP Qwen3-4B
+text server on port `5001`:
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:1234/v1 -LocalLlmModel local-qwen-card-copy -OutputDir docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5001/v1 -LocalLlmModel koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S -OutputDir docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15 -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform
 ```
 
-The wrapper accepts either `http://127.0.0.1:1234` or
-`http://127.0.0.1:1234/v1` and probes `/v1/models` before live provider calls.
-Use `-DryRun` to inspect planned aquarium/koi/dog runs while the text server is
-offline. Do not use `-SkipPreflight` for promotion evidence.
+That run is failure evidence, not promotion evidence. The wrapper now rejects
+Qwen3-4B by default for live production evidence because the run proved it can
+miss required customer terms and truncate JSON. Use `-AllowSmallPlanner` only
+when intentionally collecting exploratory failure evidence.
+
+For the installed higher-quality local planner:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/start-local-card-planner.ps1 -Port 5003 -ContextSize 8192
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5003/v1 -LocalLlmModel koboldcpp/gemma-4-31B-it-Q4_K_M -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 1800
+```
+
+Gemma 31B loaded successfully on this machine but was too slow on CPU-only
+settings for a practical benchmark pass. The next promotion attempt should run
+the same full-quality prompt through GPU/offload or a hosted/self-hosted larger
+planner.
+
+The wrapper accepts either a root local URL such as `http://127.0.0.1:5001` or
+a `/v1` URL such as `http://127.0.0.1:5001/v1`, then probes `/v1/models` before
+live provider calls. Use `-DryRun` to inspect planned aquarium/koi/dog runs
+while the text server is offline.
 
 Use `-AllowCompositorFixtureFallback` only when intentionally collecting a
 single-run structural compositor smoke test.
 
-Promotion remains blocked until the LLM-planned matrix has manual grades that
-beat the existing app-compositor baseline and resolves the dense-art/back-panel
-failures.
+## Next Gate
+
+Promotion remains blocked. The next gate is no longer reachability; it is
+correct planner runtime plus planner-output validation:
+
+- Keep full prompt quality and use a planner/runtime large enough for the full
+  creative contract.
+- Preserve `must_include` terms in generated copy/theme metadata and reject or
+  retry card plans that omit them before Comfy image generation.
+- Preserve useful loose JSON shapes and add post-response JSON repair where
+  needed; do not shrink the creative prompt to fit an underpowered model.
+- Keep the deterministic Comfy text compositor path; the live failure is mostly
+  planner/theme adherence, with remaining back-panel discipline issues.

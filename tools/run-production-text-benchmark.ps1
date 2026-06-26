@@ -17,8 +17,10 @@ param(
   [string]$LocalLlmModel = "",
   [string]$LocalLlmApiKey = "",
   [int]$LocalLlmPreflightTimeoutSec = 5,
+  [int]$PlannerMaxTokens = 3200,
   [switch]$DryRun,
   [switch]$AllowCompositorFixtureFallback,
+  [switch]$AllowSmallPlanner,
   [switch]$SkipPreflight
 )
 
@@ -78,6 +80,7 @@ if (-not [string]::IsNullOrWhiteSpace($LocalLlmModel)) {
 if (-not [string]::IsNullOrWhiteSpace($LocalLlmApiKey)) {
   $env:CUSTOMCARD_LOCAL_LLM_API_KEY = $LocalLlmApiKey
 }
+$env:CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS = [string]$PlannerMaxTokens
 
 function Test-UsableEnvValue {
   param([string]$Value)
@@ -152,7 +155,7 @@ if ($DryRun) {
   Write-Host "Dry run: enabled"
 }
 
-if ($HasLocalLlm -and -not $DryRun -and -not $SkipPreflight) {
+if ($HasLocalLlm -and -not $DryRun) {
   try {
     $LocalLlmModelsUrl = Resolve-LocalLlmModelsUrl $ResolvedLocalLlmBaseUrl
     $LocalLlmApiKeyValue = Get-FirstUsableEnvValue @(
@@ -165,7 +168,19 @@ if ($HasLocalLlm -and -not $DryRun -and -not $SkipPreflight) {
       $Headers["Authorization"] = "Bearer $LocalLlmApiKeyValue"
     }
     Write-Host "Local LLM preflight: $LocalLlmModelsUrl"
-    Invoke-RestMethod -Uri $LocalLlmModelsUrl -Headers $Headers -TimeoutSec $LocalLlmPreflightTimeoutSec | Out-Null
+    $ModelsResponse = Invoke-RestMethod -Uri $LocalLlmModelsUrl -Headers $Headers -TimeoutSec $LocalLlmPreflightTimeoutSec
+    $PlannerModelName = Get-FirstUsableEnvValue @(
+      "CUSTOMCARD_LOCAL_LLM_MODEL",
+      "LMSTUDIO_MODEL",
+      "KOBOLDCPP_MODEL"
+    )
+    if (-not (Test-UsableEnvValue $PlannerModelName) -and $null -ne $ModelsResponse.data -and $ModelsResponse.data.Count -gt 0) {
+      $PlannerModelName = [string]$ModelsResponse.data[0].id
+    }
+    if (-not $AllowSmallPlanner -and $PlannerModelName -match "(?i)(^|[-_/])(1\.5b|3b|4b|7b)([-_/]|$)") {
+      [Console]::Error.WriteLine("Local LLM planner '$PlannerModelName' is too small for the full production card-copy contract. Use a stronger planner such as D:\models\gemma-4-31B-it-Q4_K_M.gguf or a cloud/self-hosted model with enough context, or pass -AllowSmallPlanner for exploratory failure evidence only.")
+      exit 4
+    }
   } catch {
     [Console]::Error.WriteLine("Local LLM preflight failed. Start the OpenAI-compatible local text server, verify -LocalLlmBaseUrl, or use -DryRun for planning only. $($_.Exception.Message)")
     exit 3

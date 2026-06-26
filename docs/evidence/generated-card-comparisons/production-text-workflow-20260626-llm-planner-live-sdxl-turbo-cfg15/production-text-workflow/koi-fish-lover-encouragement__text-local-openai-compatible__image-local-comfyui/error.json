@@ -1,0 +1,22 @@
+{
+  "phase": "local-production-text",
+  "focus": "local-comfy-production-text-generated-copy",
+  "storyId": "koi-fish-lover-encouragement",
+  "productionTextMode": "llm-generated-copy",
+  "textCandidateId": "text-local-openai-compatible",
+  "textAdapterId": "local-openai-compatible-chat",
+  "textModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+  "imageCandidateId": "image-local-comfyui",
+  "imageAdapterId": "local-comfyui-api-image",
+  "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+  "typographyModeId": "customcard-production-text-composer",
+  "typographyModeLabel": "CustomCard production text composer",
+  "typographyStrategy": "llm-planned-copy-comfy-deterministic-text",
+  "runDir": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15\\production-text-workflow\\koi-fish-lover-encouragement__text-local-openai-compatible__image-local-comfyui",
+  "startedAt": "2026-06-26T04:25:00.654Z",
+  "finishedAt": "2026-06-26T04:25:39.935Z",
+  "status": "failed",
+  "error": "Expected ',' or '}' after property value in JSON at position 5353 (line 55 column 4)",
+  "providerCallCount": 1,
+  "effectiveProviderRequests": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15\\production-text-workflow\\koi-fish-lover-encouragement__text-local-openai-compatible__image-local-comfyui\\effective-provider-requests.json"
+}
