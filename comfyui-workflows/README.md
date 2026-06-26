@@ -139,6 +139,16 @@ loaded:
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/comfyui-production-text-preflight.mjs --require-live true
 ```
 
+Readiness doctor before collecting promotion evidence:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-readiness-doctor.mjs --advisory
+```
+
+The doctor checks the production workflow, live Comfy node, latest aggregate,
+local model inventory, and planner endpoint suitability. It should stay blocked
+when the only reachable planner is a Qwen3-4B smoke model.
+
 Run a full-card benchmark through the production workflow:
 
 ```powershell
@@ -205,6 +215,11 @@ Latest live evidence:
     `must_include`/`must_avoid` into the planner, retries invalid or incomplete
     card-copy output before Comfy, and refuses Qwen3-4B for production evidence
     unless `-AllowSmallPlanner` is explicit.
+- Current readiness doctor:
+  `docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current`
+  - ComfyUI and `CustomCardTextComposer` are live.
+  - Higher-quality local planner files exist, but no production-suitable
+    planner endpoint is reachable/configured yet.
 
 ## Local Visual Quality Gate
 

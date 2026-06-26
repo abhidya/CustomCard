@@ -27,6 +27,7 @@ Production text should be planned by the card-copy LLM and rendered by ComfyUI:
 | Card-copy contract follow-up | Implemented | The generator keeps the full planner prompt, passes benchmark `must_include`/`must_avoid` into the request, validates and retries missing required terms before Comfy, and preserves useful loose LLM JSON shapes instead of falling back to generic themes. |
 | `tools/run-production-text-benchmark.ps1` small-planner guard | Implemented | Production evidence now rejects known-small planners such as Qwen3-4B unless `-AllowSmallPlanner` is explicit. The 4B path remains useful for smoke/failure evidence, not promotion. |
 | `tools/start-local-card-planner.ps1` Gemma 31B attempt | Operationally blocked | Gemma 31B loaded at `http://127.0.0.1:5003/v1`, but CPU decoding did not finish the first benchmark planner response in a practical window even with `-PlannerMaxTokens 1800`. Use GPU/offload or a hosted/self-hosted larger planner for promotion evidence. |
+| `docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current` | Blocked | Readiness doctor confirms ComfyUI and `CustomCardTextComposer` are live and higher-quality planner files are installed, but the discovered reachable planner is still Qwen3-4B on `5001` and no production-suitable endpoint is reachable/configured. |
 | `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-artwork-guard-v2` | 72/100, blocked | Deterministic Comfy text, soft text fields, and artwork guards work structurally, but artwork remains too dense for production. |
 | `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-candidates` | Blocked | Aggregate evidence still says do not promote production Comfy text as the default path. |
 
@@ -81,6 +82,11 @@ a `/v1` URL such as `http://127.0.0.1:5001/v1`, then probes `/v1/models` before
 live provider calls. Use `-DryRun` to inspect planned aquarium/koi/dog runs
 while the text server is offline.
 
+Run `npm run comfy:production-text:doctor -- --advisory` before collecting new
+promotion evidence. It aggregates workflow/node availability, local model
+inventory, planner endpoint suitability, and the latest manual aggregate so the
+run does not accidentally use a reduced-quality smoke planner.
+
 Use `-AllowCompositorFixtureFallback` only when intentionally collecting a
 single-run structural compositor smoke test.
 
@@ -91,6 +97,9 @@ correct planner runtime plus planner-output validation:
 
 - Keep full prompt quality and use a planner/runtime large enough for the full
   creative contract.
+- Run the readiness doctor before promotion attempts and point
+  `-LocalLlmBaseUrl` at a production-suitable planner, not the Qwen3-4B smoke
+  endpoint.
 - Preserve `must_include` terms in generated copy/theme metadata and reject or
   retry card plans that omit them before Comfy image generation.
 - Preserve useful loose JSON shapes and add post-response JSON repair where
