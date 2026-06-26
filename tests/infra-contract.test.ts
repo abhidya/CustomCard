@@ -2,6 +2,7 @@ import { execFileSync, type ExecFileSyncOptionsWithStringEncoding } from "node:c
 import { readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
 import { describe, expect, it } from "vitest";
+import { apiRouteContracts } from "../src/apiRouteContractsData.mjs";
 import { capacityProfiles, summarizeCapacityPlan, validateCapacityProfiles } from "../src/capacityPlan";
 
 function read(path: string): string {
@@ -635,9 +636,14 @@ describe("production infrastructure contract", () => {
     };
     const handler = read("api/[...path].js");
     const robotsHandler = read("api/robots.js");
+    const delegateHelper = read("scripts/vercel-api-delegate.mjs");
     const apiServer = read("scripts/api-server.mjs");
     const apiRuntime = read("scripts/api-runtime.mjs");
     const vercelApiFiles = listFiles("api").map((path) => `api/${path}`).sort();
+    const nestedRouteHandlers = apiRouteContracts
+      .map((route) => route.path)
+      .filter((path) => path.split("/").length > 3)
+      .map((path) => `${path.slice(1).replace(/:([^/]+)/g, "[$1]")}.js`);
 
     expect(vercel).toMatchObject({
       buildCommand: "npm run build",
@@ -648,9 +654,16 @@ describe("production infrastructure contract", () => {
       { source: "/oauth/callback", destination: "/api/oauth/callback" },
       { source: "/((?!api/).*)", destination: "/index.html" }
     ]);
-    expect(vercelApiFiles).toEqual(["api/[...path].js", "api/robots.js"]);
+    expect(vercelApiFiles).toEqual(expect.arrayContaining(["api/[...path].js", "api/robots.js", "api/provider/jobs/status.js", "api/admin/local-ai-loop/run.js"]));
     expect(handler).toContain("handleApiRequest");
+    expect(handler).toContain("__customcard_path");
     expect(robotsHandler).toContain("PRODUCTION_ROBOTS");
+    expect(delegateHelper).toContain("export async function delegateApiRequest");
+    expect(delegateHelper).toContain("/api/_route");
+    for (const routeHandler of nestedRouteHandlers) {
+      expect(read(routeHandler), routeHandler).toContain("delegateApiRequest");
+      expect(read(routeHandler), routeHandler).not.toContain("handleApiRequest");
+    }
     expect(apiServer).toContain("export async function handleApiRequest");
     expect(apiRuntime).toContain("CUSTOMCARD_API_RUNTIME");
     expect(apiRuntime).toContain("DATABASE_URL");

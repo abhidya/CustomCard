@@ -36,6 +36,9 @@ const doctorManifest = defineDoctorManifest({
     vercel: "vercel.json",
     vercelApiHandler: "api/[...path].js",
     vercelRobotsHandler: "api/robots.js",
+    vercelApiDelegate: "scripts/vercel-api-delegate.mjs",
+    vercelProviderJobsStatusHandler: "api/provider/jobs/status.js",
+    vercelAdminLocalAiLoopHandler: "api/admin/local-ai-loop/run.js",
     envExample: "infra/env/.env.example",
     hostedReadinessData: "src/hostedApiReadinessData.mjs",
     apiContracts: "src/apiContracts.ts",
@@ -167,12 +170,15 @@ const checks = [
   checkDoctorSourceSignals(doctorManifest, contents, {
     lane: "vercel-source",
     id: "vercel-serverless-source-signals",
-    sourceKeys: ["vercel", "vercelApiHandler", "vercelRobotsHandler"],
+    sourceKeys: ["vercel", "vercelApiHandler", "vercelRobotsHandler", "vercelApiDelegate", "vercelProviderJobsStatusHandler", "vercelAdminLocalAiLoopHandler"],
     signals: [
       '"buildCommand": "npm run build"',
       '"source": "/oauth/callback"',
       '"destination": "/api/oauth/callback"',
       "handleApiRequest",
+      "__customcard_path",
+      "delegateApiRequest",
+      "/api/_route",
       "PRODUCTION_ROBOTS"
     ]
   }),
