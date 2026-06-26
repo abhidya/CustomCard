@@ -1,4 +1,6 @@
 export const cardGenerationUrlEnvName = "VITE_CARD_GEN_URL";
+export const localAdminPreviewTokenEnvName = "VITE_CUSTOMCARD_ADMIN_PREVIEW_TOKEN";
+export const defaultLocalAdminPreviewToken = "test-admin-session-token";
 export const sameOriginCardGenerationPath = "/api/ai/card/generate";
 
 export type BrowserGateEnv = Record<string, unknown> | undefined;
@@ -85,6 +87,11 @@ export function resolveLocalAdminPreview(env: BrowserGateEnv, href: string): boo
   } catch {
     return false;
   }
+}
+
+export function resolveLocalAdminPreviewToken(env: BrowserGateEnv, href: string): string | undefined {
+  if (!resolveLocalAdminPreview(env, href)) return undefined;
+  return stringEnvValue(env, localAdminPreviewTokenEnvName).trim() || defaultLocalAdminPreviewToken;
 }
 
 export function resolveCardGenerationEndpoint(

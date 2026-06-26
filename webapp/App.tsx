@@ -25,6 +25,7 @@ import {
 import {
   resolveBrowserAdminAccess,
   resolveLocalAdminPreview,
+  resolveLocalAdminPreviewToken,
   type BrowserAdminAccessPolicy
 } from "../src/browserGatePolicy";
 import {
@@ -173,6 +174,13 @@ export default function App() {
       return undefined;
     }
   }, [getToken]);
+  const localAdminPreviewTokenRef = useRef(
+    typeof window === "undefined" ? undefined : resolveLocalAdminPreviewToken(import.meta.env, window.location.href)
+  );
+  const getAdminApiToken = useCallback(async () => {
+    if (localAdminPreviewTokenRef.current) return localAdminPreviewTokenRef.current;
+    return getCustomerApiToken();
+  }, [getCustomerApiToken]);
 
   useDraftAutosave({
     draftInput,
@@ -492,7 +500,7 @@ export default function App() {
                   aiFlowConfigs={aiFlowConfigs}
                   aiGenerationJobs={aiGenerationJobs}
                   aiFlowSummary={aiFlowSummary}
-                  getAdminApiToken={getCustomerApiToken}
+                  getAdminApiToken={getAdminApiToken}
                   onAiFlowConfigsChange={setAiFlowConfigs}
                 />
               </AdminLazyPanel>
@@ -504,7 +512,7 @@ export default function App() {
                   aiFlowConfigs={aiFlowConfigs}
                   aiGenerationJobs={aiGenerationJobs}
                   aiFlowSummary={aiFlowSummary}
-                  getAdminApiToken={getCustomerApiToken}
+                  getAdminApiToken={getAdminApiToken}
                   onAiFlowConfigsChange={setAiFlowConfigs}
                 />
               </AdminLazyPanel>

@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   cardGenerationUrlEnvName,
+  defaultLocalAdminPreviewToken,
   resolveLocalAdminPreview,
+  resolveLocalAdminPreviewToken,
   resolveBrowserAdminAccess,
   resolveCardGenerationEndpoint,
   sameOriginCardGenerationPath
@@ -83,6 +85,17 @@ describe("browser gate policy", () => {
       user: null
     });
     expect(access).toMatchObject({ isAdmin: true, reason: "local-preview" });
+  });
+
+  it("resolves a dev-only local admin preview API token", () => {
+    expect(resolveLocalAdminPreviewToken({ DEV: true }, "http://localhost/?view=admin&adminPreview=1")).toBe(defaultLocalAdminPreviewToken);
+    expect(
+      resolveLocalAdminPreviewToken(
+        { DEV: true, VITE_CUSTOMCARD_ADMIN_PREVIEW_TOKEN: " custom-admin-token " },
+        "http://localhost/?view=admin&adminPreview=true"
+      )
+    ).toBe("custom-admin-token");
+    expect(resolveLocalAdminPreviewToken({ DEV: false }, "http://localhost/?view=admin&adminPreview=1")).toBeUndefined();
   });
 
   it("resolves AI card generation to the same-origin API adapter by default", () => {
