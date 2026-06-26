@@ -88,6 +88,10 @@ Production text workflow tracking:
   `comfyui-workflows/customcard-production-text-overlay.json`
 - Production Comfy custom text node:
   `comfyui-custom-nodes/CustomCardTextComposer`
+- Production preflight:
+  `scripts/comfyui-production-text-preflight.mjs`
+- Production benchmark wrapper:
+  `tools/run-production-text-benchmark.ps1`
 
 Installed research candidates under `D:\models\`:
 

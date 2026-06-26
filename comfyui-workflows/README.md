@@ -122,6 +122,29 @@ Prerequisites:
 See `docs/comfyui-production-text-workflow.md` for research, production gates,
 and the remaining QA work.
 
+Preflight without requiring a live Comfy server:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/comfyui-production-text-preflight.mjs
+```
+
+Promotion preflight, which fails if Comfy is not reachable or the node is not
+loaded:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/comfyui-production-text-preflight.mjs --require-live true
+```
+
+Run a full-card benchmark through the production workflow:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1
+```
+
+This uses the benchmark `local` phase rather than `local-typography`, because
+the full card-generation path is what passes `panel_copy` and text safe-box
+variables into `scripts/ai-card-generator.mjs`.
+
 ## Local Visual Quality Gate
 
 Use `customcard-local-visual-quality-gate.json` after a benchmark run to experiment

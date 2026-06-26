@@ -166,6 +166,13 @@ Comfy template variables exposed by the local adapter include:
   - Production candidate.
   - Requires checked-in `CustomCardTextComposer`.
   - Comfy returns the final panel image with exact copy rendered.
+- `scripts/comfyui-production-text-preflight.mjs`
+  - Offline/live preflight.
+  - Verifies workflow JSON, node source, and live `/object_info` when requested.
+- `tools/run-production-text-benchmark.ps1`
+  - Full-card benchmark wrapper for the production workflow.
+  - Uses benchmark phase `local`, not `local-typography`, so `panel_copy`
+    reaches the Comfy adapter.
 
 ## Gates Before Production Default
 
@@ -173,15 +180,17 @@ Comfy template variables exposed by the local adapter include:
    `tools/install-comfy-customcard-text-node.ps1`.
 2. Put approved font files in the node `fonts/` directory and document their
    names.
-3. Run the production overlay workflow against at least the local typography
-   fixture and one full card-generation fixture.
-4. Add an overflow/contrast QA gate. Minimum acceptable gate:
+3. Run preflight with `--require-live true` and confirm
+   `CustomCardTextComposer` is present in live `/object_info`.
+4. Run the production overlay workflow against one full card-generation fixture
+   through `tools/run-production-text-benchmark.ps1`.
+5. Add an overflow/contrast QA gate. Minimum acceptable gate:
    - all panels rendered
    - no text missing
    - no fake text in artwork-only areas
    - no people/mockup/object-scene leakage
    - text contrast meets print/readability threshold
-5. Promote only after aggregate benchmark evidence beats the current
+6. Promote only after aggregate benchmark evidence beats the current
    app-compositor baseline.
 
 ## Open Engineering Work

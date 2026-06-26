@@ -1,7 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
-const repoRoot = resolve(new URL("..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
+const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const defaultWorkflowPath = resolve(repoRoot, "comfyui-workflows/customcard-production-text-overlay.json");
 const defaultNodeSource = resolve(repoRoot, "comfyui-custom-nodes/CustomCardTextComposer");
 const defaultOutputRoot = resolve(repoRoot, "docs/evidence/generated-card-comparisons");
@@ -12,6 +13,7 @@ if (isMainModule()) {
   console.log(JSON.stringify({
     ok: result.ok,
     status: result.status,
+    promotionReady: result.promotionReady,
     reportDir: result.reportDir,
     liveComfyReachable: result.liveComfyReachable,
     liveNodeAvailable: result.liveNodeAvailable
@@ -47,21 +49,23 @@ export async function runPreflight(args = {}) {
     comfyUrl,
     requireLive,
     error: live.error
-  }));
-  checks.push(check("live ComfyUI has CustomCardTextComposer", liveNodeAvailable || !liveComfyReachable || !requireLive, {
+  }, { required: requireLive }));
+  checks.push(check("live ComfyUI has CustomCardTextComposer", liveNodeAvailable, {
     comfyUrl,
     requiredNodeClass,
     liveComfyReachable
-  }));
+  }, { required: requireLive, advisory: !requireLive }));
 
   const cachedObjectInfoPath = resolve(repoRoot, ".codex/comfyui/object_info.json");
   const cachedObjectInfo = readCachedObjectInfo(cachedObjectInfoPath);
   const cachedNodeAvailable = Boolean(cachedObjectInfo?.[requiredNodeClass]);
 
-  const ok = checks.every((item) => item.ok);
+  const ok = checks.filter((item) => item.required).every((item) => item.ok);
+  const promotionReady = liveComfyReachable && liveNodeAvailable && checks.filter((item) => item.required).every((item) => item.ok);
   const result = {
     ok,
-    status: ok ? "ok" : "failed",
+    promotionReady,
+    status: ok ? (promotionReady ? "promotion-ready" : "repo-ok-runtime-not-ready") : "failed",
     createdAtIso: new Date().toISOString(),
     comfyUrl,
     workflowPath: relativePath(workflowPath),
@@ -127,8 +131,14 @@ function collectClassTypes(workflow) {
     .map(String);
 }
 
-function check(name, ok, details = {}) {
-  return { name, ok: Boolean(ok), details };
+function check(name, ok, details = {}, options = {}) {
+  return {
+    name,
+    ok: Boolean(ok),
+    required: options.required !== false && !options.advisory,
+    advisory: Boolean(options.advisory),
+    details
+  };
 }
 
 function buildNextSteps({ requireLive, liveComfyReachable, liveNodeAvailable, cachedNodeAvailable }) {
@@ -163,14 +173,15 @@ function buildMarkdown(result) {
     `- Live Comfy reachable: ${result.liveComfyReachable ? "yes" : "no"}`,
     `- Live node available: ${result.liveNodeAvailable ? "yes" : "no"}`,
     `- Cached node available: ${result.cachedNodeAvailable ? "yes" : "no"}`,
+    `- Promotion ready: ${result.promotionReady ? "yes" : "no"}`,
     "",
     "## Checks",
     "",
-    "| Check | Status | Details |",
-    "| --- | --- | --- |"
+    "| Check | Required | Status | Details |",
+    "| --- | --- | --- | --- |"
   ];
   for (const item of result.checks) {
-    lines.push(`| ${item.name} | ${item.ok ? "ok" : "fail"} | ${escapeMarkdownTable(JSON.stringify(item.details))} |`);
+    lines.push(`| ${item.name} | ${item.required ? "yes" : "no"} | ${item.ok ? "ok" : "fail"} | ${escapeMarkdownTable(JSON.stringify(item.details))} |`);
   }
   lines.push("", "## Next Steps", "");
   for (const step of result.nextSteps) lines.push(`- ${step}`);
@@ -234,5 +245,5 @@ function errorMessage(error) {
 }
 
 function isMainModule() {
-  return process.argv[1] && import.meta.url === new URL(process.argv[1], "file:").href;
+  return process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
 }
