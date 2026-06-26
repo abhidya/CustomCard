@@ -88,6 +88,8 @@
               "alignment": "center",
               "body": "Wishing you strength and peace on your day.",
               "body_box_height": 403,
+              "body_box_background_color": "#111715",
+              "body_box_background_padding": 24,
               "body_box_width": 748,
               "body_box_x": 106,
               "body_box_y": 780,
@@ -101,6 +103,8 @@
               "debug_boxes": false,
               "headline": "For Moments That Matter",
               "headline_box_height": 296,
+              "headline_box_background_color": "#111715",
+              "headline_box_background_padding": 24,
               "headline_box_width": 788,
               "headline_box_x": 86,
               "headline_box_y": 376,
@@ -156,12 +160,16 @@
                 "width": 788,
                 "height": 296
               },
+              "headline_box_background_color": "#111715",
+              "headline_box_background_padding": 24,
               "body_box": {
                 "x": 106,
                 "y": 780,
                 "width": 748,
                 "height": 403
               },
+              "body_box_background_color": "#111715",
+              "body_box_background_padding": 24,
               "text_alignment": "center",
               "min_font_size": 16
             }
@@ -173,17 +181,17 @@
       "status": 200,
       "ok": true,
       "contentType": "application/json; charset=utf-8",
-      "byteLength": 86,
+      "byteLength": 85,
       "body": {
-        "prompt_id": "ada4c6a2-571b-4177-a799-8c96fcb7492b",
-        "number": 16,
+        "prompt_id": "3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+        "number": 0,
         "node_errors": {}
       }
     },
-    "durationMs": 39
+    "durationMs": 44
   },
   {
-    "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
     "method": "GET",
     "request": {
       "headers": {}
@@ -198,7 +206,82 @@
     "durationMs": 4
   },
   {
-    "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
     "method": "GET",
     "request": {
       "headers": {}
@@ -213,22 +296,7 @@
     "durationMs": 20
   },
   {
-    "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 5
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
     "method": "GET",
     "request": {
       "headers": {}
@@ -243,7 +311,7 @@
     "durationMs": 17
   },
   {
-    "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
     "method": "GET",
     "request": {
       "headers": {}
@@ -258,7 +326,7 @@
     "durationMs": 17
   },
   {
-    "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
     "method": "GET",
     "request": {
       "headers": {}
@@ -270,10 +338,145 @@
       "byteLength": 2,
       "body": {}
     },
-    "durationMs": 2
+    "durationMs": 17
   },
   {
-    "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 6
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 3
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 25
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 33
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
     "method": "GET",
     "request": {
       "headers": {}
@@ -288,7 +491,7 @@
     "durationMs": 20
   },
   {
-    "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
     "method": "GET",
     "request": {
       "headers": {}
@@ -303,7 +506,7 @@
     "durationMs": 17
   },
   {
-    "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
     "method": "GET",
     "request": {
       "headers": {}
@@ -315,10 +518,10 @@
       "byteLength": 2,
       "body": {}
     },
-    "durationMs": 22
+    "durationMs": 25
   },
   {
-    "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
     "method": "GET",
     "request": {
       "headers": {}
@@ -327,12 +530,267 @@
       "status": 200,
       "ok": true,
       "contentType": "application/json; charset=utf-8",
-      "byteLength": 9809,
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 1
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 15
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 8
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 41
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 21
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 10116,
       "body": {
-        "ada4c6a2-571b-4177-a799-8c96fcb7492b": {
+        "3fada957-cffb-45ab-8b2b-cf06d34e0b57": {
           "prompt": [
-            16,
-            "ada4c6a2-571b-4177-a799-8c96fcb7492b",
+            0,
+            "3fada957-cffb-45ab-8b2b-cf06d34e0b57",
             {
               "1": {
                 "class_type": "CheckpointLoaderSimple",
@@ -414,6 +872,8 @@
                   "alignment": "center",
                   "body": "Wishing you strength and peace on your day.",
                   "body_box_height": 403,
+                  "body_box_background_color": "#111715",
+                  "body_box_background_padding": 24,
                   "body_box_width": 748,
                   "body_box_x": 106,
                   "body_box_y": 780,
@@ -427,6 +887,8 @@
                   "debug_boxes": false,
                   "headline": "For Moments That Matter",
                   "headline_box_height": 296,
+                  "headline_box_background_color": "#111715",
+                  "headline_box_background_padding": 24,
                   "headline_box_width": 788,
                   "headline_box_x": 86,
                   "headline_box_y": 376,
@@ -481,18 +943,22 @@
                     "width": 788,
                     "height": 296
                   },
+                  "headline_box_background_color": "#111715",
+                  "headline_box_background_padding": 24,
                   "body_box": {
                     "x": 106,
                     "y": 780,
                     "width": 748,
                     "height": 403
                   },
+                  "body_box_background_color": "#111715",
+                  "body_box_background_padding": 24,
                   "text_alignment": "center",
                   "min_font_size": 16
                 }
               },
               "client_id": "customcard-local-typography-benchmark",
-              "create_time": 1782438836522
+              "create_time": 1782439528805
             },
             [
               "9"
@@ -502,7 +968,7 @@
             "9": {
               "images": [
                 {
-                  "filename": "front_00005_.png",
+                  "filename": "front_00006_.png",
                   "subfolder": "customcard\\customcard-production-text-overlay",
                   "type": "output"
                 }
@@ -516,26 +982,23 @@
               [
                 "execution_start",
                 {
-                  "prompt_id": "ada4c6a2-571b-4177-a799-8c96fcb7492b",
-                  "timestamp": 1782438836522
+                  "prompt_id": "3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+                  "timestamp": 1782439528806
                 }
               ],
               [
                 "execution_cached",
                 {
-                  "nodes": [
-                    "1",
-                    "4"
-                  ],
-                  "prompt_id": "ada4c6a2-571b-4177-a799-8c96fcb7492b",
-                  "timestamp": 1782438836522
+                  "nodes": [],
+                  "prompt_id": "3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+                  "timestamp": 1782439528809
                 }
               ],
               [
                 "execution_success",
                 {
-                  "prompt_id": "ada4c6a2-571b-4177-a799-8c96fcb7492b",
-                  "timestamp": 1782438849316
+                  "prompt_id": "3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+                  "timestamp": 1782439588126
                 }
               ]
             ]
@@ -551,10 +1014,10 @@
         }
       }
     },
-    "durationMs": 15
+    "durationMs": 173
   },
   {
-    "url": "http://127.0.0.1:8188/view?filename=front_00005_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+    "url": "http://127.0.0.1:8188/view?filename=front_00006_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
     "method": "GET",
     "request": {
       "headers": {}
@@ -563,9 +1026,9 @@
       "status": 200,
       "ok": true,
       "contentType": "image/png",
-      "byteLength": 2710508
+      "byteLength": 1417468
     },
-    "durationMs": 10
+    "durationMs": 7
   },
   {
     "url": "http://127.0.0.1:8188/prompt",
@@ -656,6 +1119,8 @@
               "alignment": "center",
               "body": "May this space hold steadiness, light, and the care surrounding you today.",
               "body_box_height": 484,
+              "body_box_background_color": "#fff6df",
+              "body_box_background_padding": 24,
               "body_box_width": 748,
               "body_box_x": 106,
               "body_box_y": 497,
@@ -669,6 +1134,8 @@
               "debug_boxes": false,
               "headline": "A Quiet Honor",
               "headline_box_height": 269,
+              "headline_box_background_color": "#fff6df",
+              "headline_box_background_padding": 24,
               "headline_box_width": 788,
               "headline_box_x": 86,
               "headline_box_y": 134,
@@ -724,12 +1191,16 @@
                 "width": 788,
                 "height": 269
               },
+              "headline_box_background_color": "#fff6df",
+              "headline_box_background_padding": 24,
               "body_box": {
                 "x": 106,
                 "y": 497,
                 "width": 748,
                 "height": 484
               },
+              "body_box_background_color": "#fff6df",
+              "body_box_background_padding": 24,
               "text_alignment": "center",
               "min_font_size": 16
             }
@@ -741,17 +1212,137 @@
       "status": 200,
       "ok": true,
       "contentType": "application/json; charset=utf-8",
-      "byteLength": 86,
+      "byteLength": 85,
       "body": {
-        "prompt_id": "a1b5facd-f0d3-4e43-b0f9-5f245960921b",
-        "number": 17,
+        "prompt_id": "b72c8b0d-a806-4305-929b-e77d3b68f974",
+        "number": 1,
         "node_errors": {}
       }
     },
+    "durationMs": 5
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 15
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
     "durationMs": 16
   },
   {
-    "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
     "method": "GET",
     "request": {
       "headers": {}
@@ -766,22 +1357,7 @@
     "durationMs": 16
   },
   {
-    "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 27
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
     "method": "GET",
     "request": {
       "headers": {}
@@ -796,82 +1372,7 @@
     "durationMs": 17
   },
   {
-    "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 17
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 21
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 17
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 17
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 18
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
     "method": "GET",
     "request": {
       "headers": {}
@@ -886,7 +1387,7 @@
     "durationMs": 1
   },
   {
-    "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
     "method": "GET",
     "request": {
       "headers": {}
@@ -895,12 +1396,237 @@
       "status": 200,
       "ok": true,
       "contentType": "application/json; charset=utf-8",
-      "byteLength": 10139,
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 8
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 21
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 20
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 10
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 6
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 20
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 19
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 4
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 3
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 19
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 10454,
       "body": {
-        "a1b5facd-f0d3-4e43-b0f9-5f245960921b": {
+        "b72c8b0d-a806-4305-929b-e77d3b68f974": {
           "prompt": [
-            17,
-            "a1b5facd-f0d3-4e43-b0f9-5f245960921b",
+            1,
+            "b72c8b0d-a806-4305-929b-e77d3b68f974",
             {
               "1": {
                 "class_type": "CheckpointLoaderSimple",
@@ -982,6 +1708,8 @@
                   "alignment": "center",
                   "body": "May this space hold steadiness, light, and the care surrounding you today.",
                   "body_box_height": 484,
+                  "body_box_background_color": "#fff6df",
+                  "body_box_background_padding": 24,
                   "body_box_width": 748,
                   "body_box_x": 106,
                   "body_box_y": 497,
@@ -995,6 +1723,8 @@
                   "debug_boxes": false,
                   "headline": "A Quiet Honor",
                   "headline_box_height": 269,
+                  "headline_box_background_color": "#fff6df",
+                  "headline_box_background_padding": 24,
                   "headline_box_width": 788,
                   "headline_box_x": 86,
                   "headline_box_y": 134,
@@ -1049,18 +1779,22 @@
                     "width": 788,
                     "height": 269
                   },
+                  "headline_box_background_color": "#fff6df",
+                  "headline_box_background_padding": 24,
                   "body_box": {
                     "x": 106,
                     "y": 497,
                     "width": 748,
                     "height": 484
                   },
+                  "body_box_background_color": "#fff6df",
+                  "body_box_background_padding": 24,
                   "text_alignment": "center",
                   "min_font_size": 16
                 }
               },
               "client_id": "customcard-local-typography-benchmark",
-              "create_time": 1782438850394
+              "create_time": 1782439588501
             },
             [
               "9"
@@ -1070,7 +1804,7 @@
             "9": {
               "images": [
                 {
-                  "filename": "inside-left_00005_.png",
+                  "filename": "inside-left_00006_.png",
                   "subfolder": "customcard\\customcard-production-text-overlay",
                   "type": "output"
                 }
@@ -1084,8 +1818,8 @@
               [
                 "execution_start",
                 {
-                  "prompt_id": "a1b5facd-f0d3-4e43-b0f9-5f245960921b",
-                  "timestamp": 1782438850394
+                  "prompt_id": "b72c8b0d-a806-4305-929b-e77d3b68f974",
+                  "timestamp": 1782439588501
                 }
               ],
               [
@@ -1095,15 +1829,15 @@
                     "1",
                     "4"
                   ],
-                  "prompt_id": "a1b5facd-f0d3-4e43-b0f9-5f245960921b",
-                  "timestamp": 1782438850394
+                  "prompt_id": "b72c8b0d-a806-4305-929b-e77d3b68f974",
+                  "timestamp": 1782439588501
                 }
               ],
               [
                 "execution_success",
                 {
-                  "prompt_id": "a1b5facd-f0d3-4e43-b0f9-5f245960921b",
-                  "timestamp": 1782438863107
+                  "prompt_id": "b72c8b0d-a806-4305-929b-e77d3b68f974",
+                  "timestamp": 1782439627027
                 }
               ]
             ]
@@ -1122,7 +1856,7 @@
     "durationMs": 16
   },
   {
-    "url": "http://127.0.0.1:8188/view?filename=inside-left_00005_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+    "url": "http://127.0.0.1:8188/view?filename=inside-left_00006_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1131,9 +1865,9 @@
       "status": 200,
       "ok": true,
       "contentType": "image/png",
-      "byteLength": 2584556
+      "byteLength": 1191566
     },
-    "durationMs": 11
+    "durationMs": 5
   },
   {
     "url": "http://127.0.0.1:8188/prompt",
@@ -1224,6 +1958,8 @@
               "alignment": "center",
               "body": "For the moments that ask for courage, may you feel supported, seen, and held in peace.",
               "body_box_height": 484,
+              "body_box_background_color": "#fff6df",
+              "body_box_background_padding": 24,
               "body_box_width": 748,
               "body_box_x": 106,
               "body_box_y": 497,
@@ -1237,6 +1973,8 @@
               "debug_boxes": false,
               "headline": "With Respect and Warmth",
               "headline_box_height": 269,
+              "headline_box_background_color": "#fff6df",
+              "headline_box_background_padding": 24,
               "headline_box_width": 788,
               "headline_box_x": 86,
               "headline_box_y": 134,
@@ -1292,12 +2030,16 @@
                 "width": 788,
                 "height": 269
               },
+              "headline_box_background_color": "#fff6df",
+              "headline_box_background_padding": 24,
               "body_box": {
                 "x": 106,
                 "y": 497,
                 "width": 748,
                 "height": 484
               },
+              "body_box_background_color": "#fff6df",
+              "body_box_background_padding": 24,
               "text_alignment": "center",
               "min_font_size": 16
             }
@@ -1309,17 +2051,32 @@
       "status": 200,
       "ok": true,
       "contentType": "application/json; charset=utf-8",
-      "byteLength": 86,
+      "byteLength": 85,
       "body": {
-        "prompt_id": "7208e767-0d82-49f3-bd32-9708397c5511",
-        "number": 18,
+        "prompt_id": "1e73593c-3f47-474b-8536-af5e29b5f334",
+        "number": 2,
         "node_errors": {}
       }
     },
-    "durationMs": 8
+    "durationMs": 17
   },
   {
-    "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
+    "url": "http://127.0.0.1:8188/history/1e73593c-3f47-474b-8536-af5e29b5f334",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/1e73593c-3f47-474b-8536-af5e29b5f334",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1334,52 +2091,7 @@
     "durationMs": 17
   },
   {
-    "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 16
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 16
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 16
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
+    "url": "http://127.0.0.1:8188/history/1e73593c-3f47-474b-8536-af5e29b5f334",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1394,7 +2106,7 @@
     "durationMs": 17
   },
   {
-    "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
+    "url": "http://127.0.0.1:8188/history/1e73593c-3f47-474b-8536-af5e29b5f334",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1406,10 +2118,55 @@
       "byteLength": 2,
       "body": {}
     },
-    "durationMs": 14
+    "durationMs": 17
   },
   {
-    "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
+    "url": "http://127.0.0.1:8188/history/1e73593c-3f47-474b-8536-af5e29b5f334",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 3
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/1e73593c-3f47-474b-8536-af5e29b5f334",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/1e73593c-3f47-474b-8536-af5e29b5f334",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/1e73593c-3f47-474b-8536-af5e29b5f334",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1424,7 +2181,7 @@
     "durationMs": 15
   },
   {
-    "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
+    "url": "http://127.0.0.1:8188/history/1e73593c-3f47-474b-8536-af5e29b5f334",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1436,10 +2193,10 @@
       "byteLength": 2,
       "body": {}
     },
-    "durationMs": 17
+    "durationMs": 13
   },
   {
-    "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
+    "url": "http://127.0.0.1:8188/history/1e73593c-3f47-474b-8536-af5e29b5f334",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1448,27 +2205,12 @@
       "status": 200,
       "ok": true,
       "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 17
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 10175,
+      "byteLength": 10490,
       "body": {
-        "7208e767-0d82-49f3-bd32-9708397c5511": {
+        "1e73593c-3f47-474b-8536-af5e29b5f334": {
           "prompt": [
-            18,
-            "7208e767-0d82-49f3-bd32-9708397c5511",
+            2,
+            "1e73593c-3f47-474b-8536-af5e29b5f334",
             {
               "1": {
                 "class_type": "CheckpointLoaderSimple",
@@ -1550,6 +2292,8 @@
                   "alignment": "center",
                   "body": "For the moments that ask for courage, may you feel supported, seen, and held in peace.",
                   "body_box_height": 484,
+                  "body_box_background_color": "#fff6df",
+                  "body_box_background_padding": 24,
                   "body_box_width": 748,
                   "body_box_x": 106,
                   "body_box_y": 497,
@@ -1563,6 +2307,8 @@
                   "debug_boxes": false,
                   "headline": "With Respect and Warmth",
                   "headline_box_height": 269,
+                  "headline_box_background_color": "#fff6df",
+                  "headline_box_background_padding": 24,
                   "headline_box_width": 788,
                   "headline_box_x": 86,
                   "headline_box_y": 134,
@@ -1617,18 +2363,22 @@
                     "width": 788,
                     "height": 269
                   },
+                  "headline_box_background_color": "#fff6df",
+                  "headline_box_background_padding": 24,
                   "body_box": {
                     "x": 106,
                     "y": 497,
                     "width": 748,
                     "height": 484
                   },
+                  "body_box_background_color": "#fff6df",
+                  "body_box_background_padding": 24,
                   "text_alignment": "center",
                   "min_font_size": 16
                 }
               },
               "client_id": "customcard-local-typography-benchmark",
-              "create_time": 1782438864213
+              "create_time": 1782439628175
             },
             [
               "9"
@@ -1638,7 +2388,7 @@
             "9": {
               "images": [
                 {
-                  "filename": "inside-right_00005_.png",
+                  "filename": "inside-right_00006_.png",
                   "subfolder": "customcard\\customcard-production-text-overlay",
                   "type": "output"
                 }
@@ -1652,8 +2402,8 @@
               [
                 "execution_start",
                 {
-                  "prompt_id": "7208e767-0d82-49f3-bd32-9708397c5511",
-                  "timestamp": 1782438864214
+                  "prompt_id": "1e73593c-3f47-474b-8536-af5e29b5f334",
+                  "timestamp": 1782439628176
                 }
               ],
               [
@@ -1664,15 +2414,15 @@
                     "3",
                     "4"
                   ],
-                  "prompt_id": "7208e767-0d82-49f3-bd32-9708397c5511",
-                  "timestamp": 1782438864216
+                  "prompt_id": "1e73593c-3f47-474b-8536-af5e29b5f334",
+                  "timestamp": 1782439628176
                 }
               ],
               [
                 "execution_success",
                 {
-                  "prompt_id": "7208e767-0d82-49f3-bd32-9708397c5511",
-                  "timestamp": 1782438876944
+                  "prompt_id": "1e73593c-3f47-474b-8536-af5e29b5f334",
+                  "timestamp": 1782439640527
                 }
               ]
             ]
@@ -1688,10 +2438,10 @@
         }
       }
     },
-    "durationMs": 16
+    "durationMs": 2
   },
   {
-    "url": "http://127.0.0.1:8188/view?filename=inside-right_00005_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+    "url": "http://127.0.0.1:8188/view?filename=inside-right_00006_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1700,9 +2450,9 @@
       "status": 200,
       "ok": true,
       "contentType": "image/png",
-      "byteLength": 2549942
+      "byteLength": 1230609
     },
-    "durationMs": 9
+    "durationMs": 5
   },
   {
     "url": "http://127.0.0.1:8188/prompt",
@@ -1793,6 +2543,8 @@
               "alignment": "center",
               "body": "",
               "body_box_height": 296,
+              "body_box_background_color": "",
+              "body_box_background_padding": 0,
               "body_box_width": 748,
               "body_box_x": 106,
               "body_box_y": 914,
@@ -1806,6 +2558,8 @@
               "debug_boxes": false,
               "headline": "",
               "headline_box_height": 269,
+              "headline_box_background_color": "",
+              "headline_box_background_padding": 0,
               "headline_box_width": 788,
               "headline_box_x": 86,
               "headline_box_y": 806,
@@ -1861,12 +2615,16 @@
                 "width": 788,
                 "height": 269
               },
+              "headline_box_background_color": "",
+              "headline_box_background_padding": 0,
               "body_box": {
                 "x": 106,
                 "y": 914,
                 "width": 748,
                 "height": 296
               },
+              "body_box_background_color": "",
+              "body_box_background_padding": 0,
               "text_alignment": "center",
               "min_font_size": 14
             }
@@ -1878,17 +2636,17 @@
       "status": 200,
       "ok": true,
       "contentType": "application/json; charset=utf-8",
-      "byteLength": 86,
+      "byteLength": 85,
       "body": {
-        "prompt_id": "5bd160b0-3512-4ac4-97ae-fa73156f97f1",
-        "number": 19,
+        "prompt_id": "e44b743d-1115-4862-a4c7-23c50472636d",
+        "number": 3,
         "node_errors": {}
       }
     },
-    "durationMs": 13
+    "durationMs": 16
   },
   {
-    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+    "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1900,10 +2658,25 @@
       "byteLength": 2,
       "body": {}
     },
-    "durationMs": 12
+    "durationMs": 16
   },
   {
-    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+    "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1918,7 +2691,7 @@
     "durationMs": 17
   },
   {
-    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+    "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1933,7 +2706,7 @@
     "durationMs": 17
   },
   {
-    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+    "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1945,40 +2718,10 @@
       "byteLength": 2,
       "body": {}
     },
-    "durationMs": 14
+    "durationMs": 16
   },
   {
-    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 14
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 15
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+    "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1993,7 +2736,7 @@
     "durationMs": 18
   },
   {
-    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+    "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
     "method": "GET",
     "request": {
       "headers": {}
@@ -2005,10 +2748,10 @@
       "byteLength": 2,
       "body": {}
     },
-    "durationMs": 13
+    "durationMs": 3
   },
   {
-    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+    "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
     "method": "GET",
     "request": {
       "headers": {}
@@ -2020,10 +2763,10 @@
       "byteLength": 2,
       "body": {}
     },
-    "durationMs": 12
+    "durationMs": 16
   },
   {
-    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+    "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
     "method": "GET",
     "request": {
       "headers": {}
@@ -2035,10 +2778,10 @@
       "byteLength": 2,
       "body": {}
     },
-    "durationMs": 13
+    "durationMs": 11
   },
   {
-    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+    "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
     "method": "GET",
     "request": {
       "headers": {}
@@ -2047,12 +2790,27 @@
       "status": 200,
       "ok": true,
       "contentType": "application/json; charset=utf-8",
-      "byteLength": 7784,
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 22
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 8067,
       "body": {
-        "5bd160b0-3512-4ac4-97ae-fa73156f97f1": {
+        "e44b743d-1115-4862-a4c7-23c50472636d": {
           "prompt": [
-            19,
-            "5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+            3,
+            "e44b743d-1115-4862-a4c7-23c50472636d",
             {
               "1": {
                 "class_type": "CheckpointLoaderSimple",
@@ -2134,6 +2892,8 @@
                   "alignment": "center",
                   "body": "",
                   "body_box_height": 296,
+                  "body_box_background_color": "",
+                  "body_box_background_padding": 0,
                   "body_box_width": 748,
                   "body_box_x": 106,
                   "body_box_y": 914,
@@ -2147,6 +2907,8 @@
                   "debug_boxes": false,
                   "headline": "",
                   "headline_box_height": 269,
+                  "headline_box_background_color": "",
+                  "headline_box_background_padding": 0,
                   "headline_box_width": 788,
                   "headline_box_x": 86,
                   "headline_box_y": 806,
@@ -2201,18 +2963,22 @@
                     "width": 788,
                     "height": 269
                   },
+                  "headline_box_background_color": "",
+                  "headline_box_background_padding": 0,
                   "body_box": {
                     "x": 106,
                     "y": 914,
                     "width": 748,
                     "height": 296
                   },
+                  "body_box_background_color": "",
+                  "body_box_background_padding": 0,
                   "text_alignment": "center",
                   "min_font_size": 14
                 }
               },
               "client_id": "customcard-local-typography-benchmark",
-              "create_time": 1782438878070
+              "create_time": 1782439641958
             },
             [
               "9"
@@ -2222,7 +2988,7 @@
             "9": {
               "images": [
                 {
-                  "filename": "back_00005_.png",
+                  "filename": "back_00006_.png",
                   "subfolder": "customcard\\customcard-production-text-overlay",
                   "type": "output"
                 }
@@ -2236,8 +3002,8 @@
               [
                 "execution_start",
                 {
-                  "prompt_id": "5bd160b0-3512-4ac4-97ae-fa73156f97f1",
-                  "timestamp": 1782438878070
+                  "prompt_id": "e44b743d-1115-4862-a4c7-23c50472636d",
+                  "timestamp": 1782439641958
                 }
               ],
               [
@@ -2247,15 +3013,15 @@
                     "1",
                     "4"
                   ],
-                  "prompt_id": "5bd160b0-3512-4ac4-97ae-fa73156f97f1",
-                  "timestamp": 1782438878074
+                  "prompt_id": "e44b743d-1115-4862-a4c7-23c50472636d",
+                  "timestamp": 1782439641962
                 }
               ],
               [
                 "execution_success",
                 {
-                  "prompt_id": "5bd160b0-3512-4ac4-97ae-fa73156f97f1",
-                  "timestamp": 1782438892018
+                  "prompt_id": "e44b743d-1115-4862-a4c7-23c50472636d",
+                  "timestamp": 1782439655875
                 }
               ]
             ]
@@ -2271,10 +3037,10 @@
         }
       }
     },
-    "durationMs": 13
+    "durationMs": 28
   },
   {
-    "url": "http://127.0.0.1:8188/view?filename=back_00005_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+    "url": "http://127.0.0.1:8188/view?filename=back_00006_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
     "method": "GET",
     "request": {
       "headers": {}
@@ -2283,8 +3049,8 @@
       "status": 200,
       "ok": true,
       "contentType": "image/png",
-      "byteLength": 2374776
+      "byteLength": 2374918
     },
-    "durationMs": 8
+    "durationMs": 48
   }
 ]

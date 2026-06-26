@@ -1979,12 +1979,16 @@ function localComfyWorkflowInputSummary(variables) {
       width: variables.headlineBoxWidth,
       height: variables.headlineBoxHeight
     },
+    headline_box_background_color: variables.headlineBoxBackgroundColor || "",
+    headline_box_background_padding: variables.headlineBoxBackgroundPadding || 0,
     body_box: {
       x: variables.bodyBoxX,
       y: variables.bodyBoxY,
       width: variables.bodyBoxWidth,
       height: variables.bodyBoxHeight
     },
+    body_box_background_color: variables.bodyBoxBackgroundColor || "",
+    body_box_background_padding: variables.bodyBoxBackgroundPadding || 0,
     text_alignment: variables.textAlignment,
     min_font_size: variables.minFontSize
   };
@@ -2004,11 +2008,15 @@ function localComfyTypographyVariables({ panelId, panelCopy = {}, width, height 
   const bodyZone = layout.body_zone || layout.bodyZone || (panelId === "front" ? "lower" : "center");
   const headlineBox = localComfyTextBox({ zone: headlineZone, role: "headline", width: imageWidth, height: imageHeight });
   const bodyBox = localComfyTextBox({ zone: bodyZone, role: "body", width: imageWidth, height: imageHeight });
+  const textBoxBackgroundColor = localComfyTextBoxBackgroundColor({ panelId, lightInk });
+  const textBoxBackgroundPadding = Math.max(16, Math.round(imageWidth * 0.025));
   return {
     bodyBoxHeight: bodyBox.height,
     bodyBoxWidth: bodyBox.width,
     bodyBoxX: bodyBox.x,
     bodyBoxY: bodyBox.y,
+    bodyBoxBackgroundColor: panelCopy.body ? textBoxBackgroundColor : "",
+    bodyBoxBackgroundPadding: panelCopy.body ? textBoxBackgroundPadding : 0,
     bodyFillColor: lightInk ? "#f4d77d" : "#4f432a",
     bodyFont: localComfyFontForPairing(fontPairing, "body"),
     bodyFontSize: Math.round(bodyBase * scale),
@@ -2026,6 +2034,8 @@ function localComfyTypographyVariables({ panelId, panelCopy = {}, width, height 
     headlineBoxWidth: headlineBox.width,
     headlineBoxX: headlineBox.x,
     headlineBoxY: headlineBox.y,
+    headlineBoxBackgroundColor: panelCopy.headline ? textBoxBackgroundColor : "",
+    headlineBoxBackgroundPadding: panelCopy.headline ? textBoxBackgroundPadding : 0,
     headlineFillColor: lightInk ? "#fff7df" : "#282923",
     headlineFont: localComfyFontForPairing(fontPairing, "headline"),
     headlineFontSize: Math.round(headlineBase * scale),
@@ -2045,6 +2055,11 @@ function localComfyTypographyVariables({ panelId, panelCopy = {}, width, height 
     textCanvasHeight: imageHeight,
     textDebugBoxes: layout.debug_boxes === true || layout.debugBoxes === true
   };
+}
+
+function localComfyTextBoxBackgroundColor({ panelId, lightInk }) {
+  if (panelId === "back") return "";
+  return lightInk ? "#111715" : "#fff6df";
 }
 
 function localComfyFontForPairing(pairing, role) {
@@ -2154,6 +2169,8 @@ function localComfyTemplateVariable(key, variables) {
     body_box_width: variables.bodyBoxWidth,
     body_box_x: variables.bodyBoxX,
     body_box_y: variables.bodyBoxY,
+    body_box_background_color: variables.bodyBoxBackgroundColor || "",
+    body_box_background_padding: variables.bodyBoxBackgroundPadding || 0,
     body_fill_color: variables.bodyFillColor,
     body_font: variables.bodyFont,
     body_font_size: variables.bodyFontSize,
@@ -2171,6 +2188,8 @@ function localComfyTemplateVariable(key, variables) {
     headline_box_width: variables.headlineBoxWidth,
     headline_box_x: variables.headlineBoxX,
     headline_box_y: variables.headlineBoxY,
+    headline_box_background_color: variables.headlineBoxBackgroundColor || "",
+    headline_box_background_padding: variables.headlineBoxBackgroundPadding || 0,
     headline_fill_color: variables.headlineFillColor,
     headline_font: variables.headlineFont,
     headline_font_size: variables.headlineFontSize,
@@ -2655,7 +2674,7 @@ async function renderContactSheet({ runDir, run, panelFiles }) {
   for (let index = 0; index < panelFiles.length; index += 1) {
     const file = panelFiles[index];
     const left = gap + index * (thumbWidth + gap);
-    const thumb = await sharp(file.previewPath).resize(thumbWidth, thumbHeight, { fit: "contain", background: "#ffffff" }).png().toBuffer();
+    const thumb = await renderContactSheetThumb(file.previewPath, { thumbWidth, thumbHeight });
     const label = Buffer.from(`
       <svg xmlns="http://www.w3.org/2000/svg" width="${thumbWidth}" height="${labelHeight}">
         <text x="${thumbWidth / 2}" y="28" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#24302b">${escapeXml(file.panelId)}</text>
@@ -2668,6 +2687,19 @@ async function renderContactSheet({ runDir, run, panelFiles }) {
   const output = resolve(runDir, "contact-sheet.png");
   writeFileSync(output, await base.composite(composites).png().toBuffer());
   return output;
+}
+
+async function renderContactSheetThumb(previewPath, { thumbWidth, thumbHeight }) {
+  let lastError;
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      return await sharp(readFileSync(previewPath)).resize(thumbWidth, thumbHeight, { fit: "contain", background: "#ffffff" }).png().toBuffer();
+    } catch (error) {
+      lastError = error;
+      await sleep(100 * (attempt + 1));
+    }
+  }
+  throw lastError;
 }
 
 function autoGrade({ run, payload, panelFiles, providerCalls }) {
@@ -2754,6 +2786,15 @@ export function productionTextAutoChecks({ promptPlans, panelCopies, providerCal
       inputs.body_text === (panelCopy.body || "")
     );
   });
+  const metadataIncludesSafeFieldBackgrounds = copyPanels.every((panelId) => {
+    const panelCopy = copies[panelId] || {};
+    return metadataInputs.some(
+      (inputs) =>
+        inputs.panel_id === panelId &&
+        (!panelCopy.headline || Boolean(inputs.headline_box_background_color)) &&
+        (!panelCopy.body || Boolean(inputs.body_box_background_color))
+    );
+  });
   return {
     advisoryOnly: true,
     checks: {
@@ -2765,7 +2806,8 @@ export function productionTextAutoChecks({ promptPlans, panelCopies, providerCal
       finalImagesRenderedByComfy: true,
       appOverlayBypassed: true,
       metadataIncludesExactCopy: metadataIncludesCopy,
-      metadataIncludesSafeBoxes: metadataInputs.every((inputs) => inputs.headline_box?.width > 0 && inputs.body_box?.width > 0)
+      metadataIncludesSafeBoxes: metadataInputs.every((inputs) => inputs.headline_box?.width > 0 && inputs.body_box?.width > 0),
+      metadataIncludesSafeFieldBackgrounds
     },
     note:
       "Production text phase treats Comfy output as the final text-composited panel. Automated checks prove request metadata and image materialization; visual text quality still requires inspection."

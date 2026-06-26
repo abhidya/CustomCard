@@ -173,17 +173,17 @@
       "status": 200,
       "ok": true,
       "contentType": "application/json; charset=utf-8",
-      "byteLength": 85,
+      "byteLength": 86,
       "body": {
-        "prompt_id": "c911597e-a105-421f-99f2-cb6345506e54",
-        "number": 8,
+        "prompt_id": "ada4c6a2-571b-4177-a799-8c96fcb7492b",
+        "number": 16,
         "node_errors": {}
       }
     },
     "durationMs": 39
   },
   {
-    "url": "http://127.0.0.1:8188/history/c911597e-a105-421f-99f2-cb6345506e54",
+    "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
     "method": "GET",
     "request": {
       "headers": {}
@@ -198,7 +198,7 @@
     "durationMs": 4
   },
   {
-    "url": "http://127.0.0.1:8188/history/c911597e-a105-421f-99f2-cb6345506e54",
+    "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
     "method": "GET",
     "request": {
       "headers": {}
@@ -210,10 +210,10 @@
       "byteLength": 2,
       "body": {}
     },
-    "durationMs": 22
+    "durationMs": 20
   },
   {
-    "url": "http://127.0.0.1:8188/history/c911597e-a105-421f-99f2-cb6345506e54",
+    "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
     "method": "GET",
     "request": {
       "headers": {}
@@ -225,25 +225,10 @@
       "byteLength": 2,
       "body": {}
     },
-    "durationMs": 16
+    "durationMs": 5
   },
   {
-    "url": "http://127.0.0.1:8188/history/c911597e-a105-421f-99f2-cb6345506e54",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 21
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/c911597e-a105-421f-99f2-cb6345506e54",
+    "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
     "method": "GET",
     "request": {
       "headers": {}
@@ -258,7 +243,7 @@
     "durationMs": 17
   },
   {
-    "url": "http://127.0.0.1:8188/history/c911597e-a105-421f-99f2-cb6345506e54",
+    "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
     "method": "GET",
     "request": {
       "headers": {}
@@ -273,7 +258,7 @@
     "durationMs": 17
   },
   {
-    "url": "http://127.0.0.1:8188/history/c911597e-a105-421f-99f2-cb6345506e54",
+    "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
     "method": "GET",
     "request": {
       "headers": {}
@@ -285,10 +270,10 @@
       "byteLength": 2,
       "body": {}
     },
-    "durationMs": 19
+    "durationMs": 2
   },
   {
-    "url": "http://127.0.0.1:8188/history/c911597e-a105-421f-99f2-cb6345506e54",
+    "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
     "method": "GET",
     "request": {
       "headers": {}
@@ -300,10 +285,25 @@
       "byteLength": 2,
       "body": {}
     },
-    "durationMs": 21
+    "durationMs": 20
   },
   {
-    "url": "http://127.0.0.1:8188/history/c911597e-a105-421f-99f2-cb6345506e54",
+    "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
     "method": "GET",
     "request": {
       "headers": {}
@@ -318,7 +318,7 @@
     "durationMs": 22
   },
   {
-    "url": "http://127.0.0.1:8188/history/c911597e-a105-421f-99f2-cb6345506e54",
+    "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
     "method": "GET",
     "request": {
       "headers": {}
@@ -327,12 +327,12 @@
       "status": 200,
       "ok": true,
       "contentType": "application/json; charset=utf-8",
-      "byteLength": 9808,
+      "byteLength": 9809,
       "body": {
-        "c911597e-a105-421f-99f2-cb6345506e54": {
+        "ada4c6a2-571b-4177-a799-8c96fcb7492b": {
           "prompt": [
-            8,
-            "c911597e-a105-421f-99f2-cb6345506e54",
+            16,
+            "ada4c6a2-571b-4177-a799-8c96fcb7492b",
             {
               "1": {
                 "class_type": "CheckpointLoaderSimple",
@@ -492,7 +492,7 @@
                 }
               },
               "client_id": "customcard-local-typography-benchmark",
-              "create_time": 1782438428945
+              "create_time": 1782438836522
             },
             [
               "9"
@@ -502,7 +502,7 @@
             "9": {
               "images": [
                 {
-                  "filename": "front_00003_.png",
+                  "filename": "front_00005_.png",
                   "subfolder": "customcard\\customcard-production-text-overlay",
                   "type": "output"
                 }
@@ -516,8 +516,8 @@
               [
                 "execution_start",
                 {
-                  "prompt_id": "c911597e-a105-421f-99f2-cb6345506e54",
-                  "timestamp": 1782438428945
+                  "prompt_id": "ada4c6a2-571b-4177-a799-8c96fcb7492b",
+                  "timestamp": 1782438836522
                 }
               ],
               [
@@ -527,15 +527,15 @@
                     "1",
                     "4"
                   ],
-                  "prompt_id": "c911597e-a105-421f-99f2-cb6345506e54",
-                  "timestamp": 1782438428947
+                  "prompt_id": "ada4c6a2-571b-4177-a799-8c96fcb7492b",
+                  "timestamp": 1782438836522
                 }
               ],
               [
                 "execution_success",
                 {
-                  "prompt_id": "c911597e-a105-421f-99f2-cb6345506e54",
-                  "timestamp": 1782438441655
+                  "prompt_id": "ada4c6a2-571b-4177-a799-8c96fcb7492b",
+                  "timestamp": 1782438849316
                 }
               ]
             ]
@@ -551,10 +551,10 @@
         }
       }
     },
-    "durationMs": 21
+    "durationMs": 15
   },
   {
-    "url": "http://127.0.0.1:8188/view?filename=front_00003_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+    "url": "http://127.0.0.1:8188/view?filename=front_00005_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
     "method": "GET",
     "request": {
       "headers": {}
@@ -565,7 +565,7 @@
       "contentType": "image/png",
       "byteLength": 2710508
     },
-    "durationMs": 49
+    "durationMs": 10
   },
   {
     "url": "http://127.0.0.1:8188/prompt",
@@ -741,47 +741,17 @@
       "status": 200,
       "ok": true,
       "contentType": "application/json; charset=utf-8",
-      "byteLength": 85,
+      "byteLength": 86,
       "body": {
-        "prompt_id": "84aab3b6-8237-4538-9873-3d172fd9ff75",
-        "number": 9,
+        "prompt_id": "a1b5facd-f0d3-4e43-b0f9-5f245960921b",
+        "number": 17,
         "node_errors": {}
       }
     },
-    "durationMs": 20
+    "durationMs": 16
   },
   {
-    "url": "http://127.0.0.1:8188/history/84aab3b6-8237-4538-9873-3d172fd9ff75",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 18
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/84aab3b6-8237-4538-9873-3d172fd9ff75",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 17
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/84aab3b6-8237-4538-9873-3d172fd9ff75",
+    "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
     "method": "GET",
     "request": {
       "headers": {}
@@ -796,7 +766,22 @@
     "durationMs": 16
   },
   {
-    "url": "http://127.0.0.1:8188/history/84aab3b6-8237-4538-9873-3d172fd9ff75",
+    "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 27
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
     "method": "GET",
     "request": {
       "headers": {}
@@ -811,7 +796,22 @@
     "durationMs": 17
   },
   {
-    "url": "http://127.0.0.1:8188/history/84aab3b6-8237-4538-9873-3d172fd9ff75",
+    "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
     "method": "GET",
     "request": {
       "headers": {}
@@ -826,37 +826,7 @@
     "durationMs": 21
   },
   {
-    "url": "http://127.0.0.1:8188/history/84aab3b6-8237-4538-9873-3d172fd9ff75",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 16
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/84aab3b6-8237-4538-9873-3d172fd9ff75",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 23
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/84aab3b6-8237-4538-9873-3d172fd9ff75",
+    "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
     "method": "GET",
     "request": {
       "headers": {}
@@ -871,7 +841,7 @@
     "durationMs": 17
   },
   {
-    "url": "http://127.0.0.1:8188/history/84aab3b6-8237-4538-9873-3d172fd9ff75",
+    "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
     "method": "GET",
     "request": {
       "headers": {}
@@ -883,10 +853,10 @@
       "byteLength": 2,
       "body": {}
     },
-    "durationMs": 22
+    "durationMs": 17
   },
   {
-    "url": "http://127.0.0.1:8188/history/84aab3b6-8237-4538-9873-3d172fd9ff75",
+    "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
     "method": "GET",
     "request": {
       "headers": {}
@@ -895,12 +865,42 @@
       "status": 200,
       "ok": true,
       "contentType": "application/json; charset=utf-8",
-      "byteLength": 10138,
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 1
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 10139,
       "body": {
-        "84aab3b6-8237-4538-9873-3d172fd9ff75": {
+        "a1b5facd-f0d3-4e43-b0f9-5f245960921b": {
           "prompt": [
-            9,
-            "84aab3b6-8237-4538-9873-3d172fd9ff75",
+            17,
+            "a1b5facd-f0d3-4e43-b0f9-5f245960921b",
             {
               "1": {
                 "class_type": "CheckpointLoaderSimple",
@@ -1060,7 +1060,7 @@
                 }
               },
               "client_id": "customcard-local-typography-benchmark",
-              "create_time": 1782438442887
+              "create_time": 1782438850394
             },
             [
               "9"
@@ -1070,7 +1070,7 @@
             "9": {
               "images": [
                 {
-                  "filename": "inside-left_00003_.png",
+                  "filename": "inside-left_00005_.png",
                   "subfolder": "customcard\\customcard-production-text-overlay",
                   "type": "output"
                 }
@@ -1084,8 +1084,8 @@
               [
                 "execution_start",
                 {
-                  "prompt_id": "84aab3b6-8237-4538-9873-3d172fd9ff75",
-                  "timestamp": 1782438442887
+                  "prompt_id": "a1b5facd-f0d3-4e43-b0f9-5f245960921b",
+                  "timestamp": 1782438850394
                 }
               ],
               [
@@ -1095,15 +1095,15 @@
                     "1",
                     "4"
                   ],
-                  "prompt_id": "84aab3b6-8237-4538-9873-3d172fd9ff75",
-                  "timestamp": 1782438442887
+                  "prompt_id": "a1b5facd-f0d3-4e43-b0f9-5f245960921b",
+                  "timestamp": 1782438850394
                 }
               ],
               [
                 "execution_success",
                 {
-                  "prompt_id": "84aab3b6-8237-4538-9873-3d172fd9ff75",
-                  "timestamp": 1782438455526
+                  "prompt_id": "a1b5facd-f0d3-4e43-b0f9-5f245960921b",
+                  "timestamp": 1782438863107
                 }
               ]
             ]
@@ -1119,10 +1119,10 @@
         }
       }
     },
-    "durationMs": 21
+    "durationMs": 16
   },
   {
-    "url": "http://127.0.0.1:8188/view?filename=inside-left_00003_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+    "url": "http://127.0.0.1:8188/view?filename=inside-left_00005_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1133,7 +1133,7 @@
       "contentType": "image/png",
       "byteLength": 2584556
     },
-    "durationMs": 9
+    "durationMs": 11
   },
   {
     "url": "http://127.0.0.1:8188/prompt",
@@ -1311,75 +1311,15 @@
       "contentType": "application/json; charset=utf-8",
       "byteLength": 86,
       "body": {
-        "prompt_id": "347682e2-2e3b-4139-82f7-e6858433a6df",
-        "number": 10,
+        "prompt_id": "7208e767-0d82-49f3-bd32-9708397c5511",
+        "number": 18,
         "node_errors": {}
       }
     },
-    "durationMs": 16
+    "durationMs": 8
   },
   {
-    "url": "http://127.0.0.1:8188/history/347682e2-2e3b-4139-82f7-e6858433a6df",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 15
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/347682e2-2e3b-4139-82f7-e6858433a6df",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 16
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/347682e2-2e3b-4139-82f7-e6858433a6df",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 23
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/347682e2-2e3b-4139-82f7-e6858433a6df",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 20
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/347682e2-2e3b-4139-82f7-e6858433a6df",
+    "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1394,7 +1334,7 @@
     "durationMs": 17
   },
   {
-    "url": "http://127.0.0.1:8188/history/347682e2-2e3b-4139-82f7-e6858433a6df",
+    "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1409,7 +1349,7 @@
     "durationMs": 16
   },
   {
-    "url": "http://127.0.0.1:8188/history/347682e2-2e3b-4139-82f7-e6858433a6df",
+    "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1424,7 +1364,7 @@
     "durationMs": 16
   },
   {
-    "url": "http://127.0.0.1:8188/history/347682e2-2e3b-4139-82f7-e6858433a6df",
+    "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1436,10 +1376,10 @@
       "byteLength": 2,
       "body": {}
     },
-    "durationMs": 4
+    "durationMs": 16
   },
   {
-    "url": "http://127.0.0.1:8188/history/347682e2-2e3b-4139-82f7-e6858433a6df",
+    "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1451,10 +1391,70 @@
       "byteLength": 2,
       "body": {}
     },
-    "durationMs": 21
+    "durationMs": 17
   },
   {
-    "url": "http://127.0.0.1:8188/history/347682e2-2e3b-4139-82f7-e6858433a6df",
+    "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 14
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 15
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1465,10 +1465,10 @@
       "contentType": "application/json; charset=utf-8",
       "byteLength": 10175,
       "body": {
-        "347682e2-2e3b-4139-82f7-e6858433a6df": {
+        "7208e767-0d82-49f3-bd32-9708397c5511": {
           "prompt": [
-            10,
-            "347682e2-2e3b-4139-82f7-e6858433a6df",
+            18,
+            "7208e767-0d82-49f3-bd32-9708397c5511",
             {
               "1": {
                 "class_type": "CheckpointLoaderSimple",
@@ -1628,7 +1628,7 @@
                 }
               },
               "client_id": "customcard-local-typography-benchmark",
-              "create_time": 1782438456786
+              "create_time": 1782438864213
             },
             [
               "9"
@@ -1638,7 +1638,7 @@
             "9": {
               "images": [
                 {
-                  "filename": "inside-right_00003_.png",
+                  "filename": "inside-right_00005_.png",
                   "subfolder": "customcard\\customcard-production-text-overlay",
                   "type": "output"
                 }
@@ -1652,8 +1652,8 @@
               [
                 "execution_start",
                 {
-                  "prompt_id": "347682e2-2e3b-4139-82f7-e6858433a6df",
-                  "timestamp": 1782438456786
+                  "prompt_id": "7208e767-0d82-49f3-bd32-9708397c5511",
+                  "timestamp": 1782438864214
                 }
               ],
               [
@@ -1664,15 +1664,15 @@
                     "3",
                     "4"
                   ],
-                  "prompt_id": "347682e2-2e3b-4139-82f7-e6858433a6df",
-                  "timestamp": 1782438456786
+                  "prompt_id": "7208e767-0d82-49f3-bd32-9708397c5511",
+                  "timestamp": 1782438864216
                 }
               ],
               [
                 "execution_success",
                 {
-                  "prompt_id": "347682e2-2e3b-4139-82f7-e6858433a6df",
-                  "timestamp": 1782438469267
+                  "prompt_id": "7208e767-0d82-49f3-bd32-9708397c5511",
+                  "timestamp": 1782438876944
                 }
               ]
             ]
@@ -1688,10 +1688,10 @@
         }
       }
     },
-    "durationMs": 19
+    "durationMs": 16
   },
   {
-    "url": "http://127.0.0.1:8188/view?filename=inside-right_00003_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+    "url": "http://127.0.0.1:8188/view?filename=inside-right_00005_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1702,7 +1702,7 @@
       "contentType": "image/png",
       "byteLength": 2549942
     },
-    "durationMs": 32
+    "durationMs": 9
   },
   {
     "url": "http://127.0.0.1:8188/prompt",
@@ -1880,15 +1880,60 @@
       "contentType": "application/json; charset=utf-8",
       "byteLength": 86,
       "body": {
-        "prompt_id": "ce6235a5-b675-4621-aa5a-9d5b4d2b4b23",
-        "number": 11,
+        "prompt_id": "5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+        "number": 19,
         "node_errors": {}
       }
+    },
+    "durationMs": 13
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
     },
     "durationMs": 12
   },
   {
-    "url": "http://127.0.0.1:8188/history/ce6235a5-b675-4621-aa5a-9d5b4d2b4b23",
+    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1903,7 +1948,7 @@
     "durationMs": 14
   },
   {
-    "url": "http://127.0.0.1:8188/history/ce6235a5-b675-4621-aa5a-9d5b4d2b4b23",
+    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1915,10 +1960,25 @@
       "byteLength": 2,
       "body": {}
     },
-    "durationMs": 9
+    "durationMs": 14
   },
   {
-    "url": "http://127.0.0.1:8188/history/ce6235a5-b675-4621-aa5a-9d5b4d2b4b23",
+    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 15
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1933,7 +1993,7 @@
     "durationMs": 18
   },
   {
-    "url": "http://127.0.0.1:8188/history/ce6235a5-b675-4621-aa5a-9d5b4d2b4b23",
+    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1945,10 +2005,10 @@
       "byteLength": 2,
       "body": {}
     },
-    "durationMs": 17
+    "durationMs": 13
   },
   {
-    "url": "http://127.0.0.1:8188/history/ce6235a5-b675-4621-aa5a-9d5b4d2b4b23",
+    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1960,10 +2020,10 @@
       "byteLength": 2,
       "body": {}
     },
-    "durationMs": 1
+    "durationMs": 12
   },
   {
-    "url": "http://127.0.0.1:8188/history/ce6235a5-b675-4621-aa5a-9d5b4d2b4b23",
+    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
     "method": "GET",
     "request": {
       "headers": {}
@@ -1975,70 +2035,10 @@
       "byteLength": 2,
       "body": {}
     },
-    "durationMs": 23
+    "durationMs": 13
   },
   {
-    "url": "http://127.0.0.1:8188/history/ce6235a5-b675-4621-aa5a-9d5b4d2b4b23",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 21
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/ce6235a5-b675-4621-aa5a-9d5b4d2b4b23",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 17
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/ce6235a5-b675-4621-aa5a-9d5b4d2b4b23",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 21
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/ce6235a5-b675-4621-aa5a-9d5b4d2b4b23",
-    "method": "GET",
-    "request": {
-      "headers": {}
-    },
-    "response": {
-      "status": 200,
-      "ok": true,
-      "contentType": "application/json; charset=utf-8",
-      "byteLength": 2,
-      "body": {}
-    },
-    "durationMs": 21
-  },
-  {
-    "url": "http://127.0.0.1:8188/history/ce6235a5-b675-4621-aa5a-9d5b4d2b4b23",
+    "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
     "method": "GET",
     "request": {
       "headers": {}
@@ -2049,10 +2049,10 @@
       "contentType": "application/json; charset=utf-8",
       "byteLength": 7784,
       "body": {
-        "ce6235a5-b675-4621-aa5a-9d5b4d2b4b23": {
+        "5bd160b0-3512-4ac4-97ae-fa73156f97f1": {
           "prompt": [
-            11,
-            "ce6235a5-b675-4621-aa5a-9d5b4d2b4b23",
+            19,
+            "5bd160b0-3512-4ac4-97ae-fa73156f97f1",
             {
               "1": {
                 "class_type": "CheckpointLoaderSimple",
@@ -2212,7 +2212,7 @@
                 }
               },
               "client_id": "customcard-local-typography-benchmark",
-              "create_time": 1782438470629
+              "create_time": 1782438878070
             },
             [
               "9"
@@ -2222,7 +2222,7 @@
             "9": {
               "images": [
                 {
-                  "filename": "back_00003_.png",
+                  "filename": "back_00005_.png",
                   "subfolder": "customcard\\customcard-production-text-overlay",
                   "type": "output"
                 }
@@ -2236,8 +2236,8 @@
               [
                 "execution_start",
                 {
-                  "prompt_id": "ce6235a5-b675-4621-aa5a-9d5b4d2b4b23",
-                  "timestamp": 1782438470629
+                  "prompt_id": "5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+                  "timestamp": 1782438878070
                 }
               ],
               [
@@ -2247,15 +2247,15 @@
                     "1",
                     "4"
                   ],
-                  "prompt_id": "ce6235a5-b675-4621-aa5a-9d5b4d2b4b23",
-                  "timestamp": 1782438470629
+                  "prompt_id": "5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+                  "timestamp": 1782438878074
                 }
               ],
               [
                 "execution_success",
                 {
-                  "prompt_id": "ce6235a5-b675-4621-aa5a-9d5b4d2b4b23",
-                  "timestamp": 1782438484649
+                  "prompt_id": "5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+                  "timestamp": 1782438892018
                 }
               ]
             ]
@@ -2271,10 +2271,10 @@
         }
       }
     },
-    "durationMs": 20
+    "durationMs": 13
   },
   {
-    "url": "http://127.0.0.1:8188/view?filename=back_00003_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+    "url": "http://127.0.0.1:8188/view?filename=back_00005_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
     "method": "GET",
     "request": {
       "headers": {}
@@ -2285,6 +2285,6 @@
       "contentType": "image/png",
       "byteLength": 2374776
     },
-    "durationMs": 9
+    "durationMs": 8
   }
 ]

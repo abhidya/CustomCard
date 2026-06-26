@@ -27,10 +27,14 @@ class CustomCardTextComposer:
                 "headline_box_y": ("INT", {"default": 120, "min": 0, "max": 8192, "step": 1}),
                 "headline_box_width": ("INT", {"default": 800, "min": 1, "max": 8192, "step": 1}),
                 "headline_box_height": ("INT", {"default": 260, "min": 1, "max": 8192, "step": 1}),
+                "headline_box_background_color": ("STRING", {"default": ""}),
+                "headline_box_background_padding": ("INT", {"default": 0, "min": 0, "max": 512, "step": 1}),
                 "body_box_x": ("INT", {"default": 100, "min": 0, "max": 8192, "step": 1}),
                 "body_box_y": ("INT", {"default": 460, "min": 0, "max": 8192, "step": 1}),
                 "body_box_width": ("INT", {"default": 760, "min": 1, "max": 8192, "step": 1}),
                 "body_box_height": ("INT", {"default": 520, "min": 1, "max": 8192, "step": 1}),
+                "body_box_background_color": ("STRING", {"default": ""}),
+                "body_box_background_padding": ("INT", {"default": 0, "min": 0, "max": 512, "step": 1}),
                 "alignment": (["left", "center", "right"], {"default": "center"}),
                 "headline_vertical_alignment": (["top", "middle", "bottom"], {"default": "middle"}),
                 "body_vertical_alignment": (["top", "middle", "bottom"], {"default": "middle"}),
@@ -66,10 +70,14 @@ class CustomCardTextComposer:
         headline_box_y,
         headline_box_width,
         headline_box_height,
+        headline_box_background_color,
+        headline_box_background_padding,
         body_box_x,
         body_box_y,
         body_box_width,
         body_box_height,
+        body_box_background_color,
+        body_box_background_padding,
         alignment,
         headline_vertical_alignment,
         body_vertical_alignment,
@@ -88,6 +96,22 @@ class CustomCardTextComposer:
         for frame in frames:
             canvas = _tensor_to_pil(frame)
             draw = ImageDraw.Draw(canvas)
+            _draw_box_background(
+                draw=draw,
+                image_size=canvas.size,
+                text=headline,
+                box=(headline_box_x, headline_box_y, headline_box_width, headline_box_height),
+                fill=headline_box_background_color,
+                padding=headline_box_background_padding,
+            )
+            _draw_box_background(
+                draw=draw,
+                image_size=canvas.size,
+                text=body,
+                box=(body_box_x, body_box_y, body_box_width, body_box_height),
+                fill=body_box_background_color,
+                padding=body_box_background_padding,
+            )
             _draw_text_box(
                 draw=draw,
                 image_size=canvas.size,
@@ -188,6 +212,21 @@ def _draw_text_box(
             stroke_fill=stroke_color,
         )
         cursor_y += measurement["height"] + spacing
+
+
+def _draw_box_background(draw, image_size, text, box, fill, padding):
+    if not _normalize_text(text):
+        return
+    color = _parse_optional_color(fill)
+    if color is None:
+        return
+    x, y, width, height = _clip_box(image_size, box)
+    pad = max(0, int(round(float(padding or 0))))
+    x = max(0, x - pad)
+    y = max(0, y - pad)
+    right = min(image_size[0], x + width + pad * 2)
+    bottom = min(image_size[1], y + height + pad * 2)
+    draw.rectangle((x, y, right, bottom), fill=color)
 
 
 def _fit_text(draw, text, font_name, font_size, min_font_size, max_width, max_height, stroke_width, line_spacing):
@@ -304,6 +343,16 @@ def _parse_color(value, fallback):
         return ImageColor.getrgb(str(value or fallback))
     except ValueError:
         return ImageColor.getrgb(fallback)
+
+
+def _parse_optional_color(value):
+    text = str(value or "").strip()
+    if not text or text.lower() in {"none", "transparent"}:
+        return None
+    try:
+        return ImageColor.getrgb(text)
+    except ValueError:
+        return None
 
 
 def _normalize_text(value):

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "createdAtIso": "2026-06-26T02:10:00.000Z",
+  "reviewer": "codex-manual-visual-inspection",
+  "sourceContactSheet": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/contact-sheet.png",
+  "totalScore": 22,
+  "status": "blocked",
+  "passed": false,
+  "productionRecommendation": "do-not-promote",
+  "rubric": {
+    "fourPanelPromptAdherenceAndPanelContract": { "score": 1, "maxScore": 10 },
+    "frontExactTextAndTypography": { "score": 7, "maxScore": 20 },
+    "insideLeftRightExactTextAndReadability": { "score": 3, "maxScore": 20 },
+    "insideLeftRightVisualCohesionAsOpenedSpread": { "score": 2, "maxScore": 15 },
+    "backNoTextDisciplineAndCoordinatingMark": { "score": 1, "maxScore": 10 },
+    "overallFoldedCardThemeCoherence": { "score": 5, "maxScore": 10 },
+    "printReadinessAndMargins": { "score": 3, "maxScore": 15 }
+  },
+  "blockingFailures": [
+    "CFG 0 under-steers the prompt and produces pseudo-calligraphy/fake text across the artwork.",
+    "Back panel becomes a photographed paper-and-hands scene, violating the flat 2D no-object contract.",
+    "Text-safe fields are absent; exact text is drawn over busy generated details."
+  ],
+  "smallestNextFix": "Do not use SDXL Turbo at CFG 0 for this workflow. If Turbo is retained, use nonzero CFG and deterministic safe-field backgrounds."
+}

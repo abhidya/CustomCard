@@ -28,6 +28,7 @@ repeatable print output.
   - `headline_text`, `body_text`
   - font, size, fill, stroke, alignment, line spacing
   - explicit headline/body safe boxes with x, y, width, and height
+  - deterministic safe-field background colors and padding
   - panel/workflow metadata for evidence
 
 ## Latest Evidence
@@ -52,13 +53,22 @@ quality.
   - Status: blocked.
   - Recommendation: do not promote.
 - Aggregate report:
-  `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text/benchmark-rankings.md`
+  `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-candidates/benchmark-rankings.md`
   - Manual visual grade is preferred over the structural auto-check score.
-  - Result: 47/100, blocked, `do-not-promote`.
+  - Current best result: 65/100, blocked, `do-not-promote-yet`.
+- Safe-field proof:
+  `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields`
+  - `CustomCardTextComposer` rendered exact copy plus deterministic safe-field
+    backgrounds.
+  - Auto-checks prove exact copy, safe boxes, and safe-field background metadata
+    reached live Comfy.
 
 The current DreamShaper run proves the Comfy text architecture, not production
 card quality. Visual blockers are object/mockup-scene leakage, busy interior
-safe fields, and low body-copy readability on inside panels.
+safe fields, and low body-copy readability on inside panels. The safe-field
+node update proves a stronger architecture: Comfy can own deterministic text
+and deterministic readability fields, while the image model only supplies
+surrounding art.
 
 ## Research Summary
 
@@ -71,8 +81,9 @@ The production path is now a checked-in custom node:
 - workflow: `comfyui-workflows/customcard-production-text-overlay.json`
 
 The node draws exact headline and body copy into explicit pixel safe boxes. It
-wraps text, shrinks font size down to a configured floor, uses pinned fonts from
-the node `fonts/` directory or system fonts, and returns the final Comfy image.
+can draw deterministic safe-field backgrounds behind text, wraps text, shrinks
+font size down to a configured floor, uses pinned fonts from the node `fonts/`
+directory or system fonts, and returns the final Comfy image.
 
 Why this is the production path:
 
@@ -81,6 +92,8 @@ Why this is the production path:
 - Text is deterministic and supplied as exact app copy.
 - Layout is a software contract: explicit safe boxes beat coarse global
   alignment shifts.
+- Readability is not left entirely to the image model: the node can draw solid
+  safe fields behind text inside Comfy before writing exact copy.
 - The node is repo-owned, so agents do not need to guess which public custom
   text node happens to be installed.
 
@@ -186,8 +199,10 @@ Comfy template variables exposed by the local adapter include:
 - `{{headline_vertical_alignment}}`, `{{body_vertical_alignment}}`
 - `{{headline_box_x}}`, `{{headline_box_y}}`
 - `{{headline_box_width}}`, `{{headline_box_height}}`
+- `{{headline_box_background_color}}`, `{{headline_box_background_padding}}`
 - `{{body_box_x}}`, `{{body_box_y}}`
 - `{{body_box_width}}`, `{{body_box_height}}`
+- `{{body_box_background_color}}`, `{{body_box_background_padding}}`
 - `{{min_font_size}}`
 
 ## Workflow Files
@@ -230,14 +245,19 @@ Comfy template variables exposed by the local adapter include:
    app-compositor baseline.
 
 Current status: gates 1, 3, and 4 have passing evidence for the local Comfy
-runtime used on 2026-06-26. Gate 5 blocks promotion because the live benchmark
-manual grade is 47/100. Gate 6 is not satisfied because the production-text
-aggregate ranks the candidate as blocked after applying the manual visual grade.
+runtime used on 2026-06-26. Gate 5 still blocks promotion, but the best manual
+grade moved from 47/100 to 65/100 after deterministic safe-field backgrounds
+were added to `CustomCardTextComposer`. Gate 6 is not satisfied because the
+production-text aggregate still ranks every candidate as blocked after applying
+manual visual grades.
 
 ## Open Engineering Work
 
+- Refine safe-field visual design: rounded/softened fields, per-panel field
+  merging, better padding, and color choices that feel intentional rather than
+  blunt rectangles.
 - Test a flatter illustration/stationery checkpoint or stricter workflow so the
-  artwork layer stays a flat 2D greeting-card panel instead of drifting into
+  surrounding artwork stays restrained instead of dense ornamental fill or
   object/mockup scenes.
 - Add per-panel seed offsets when `CUSTOMCARD_COMFYUI_SEED` is set.
 - Add OCR or local vision-review evidence to catch pseudo-text and object-scene

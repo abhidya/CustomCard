@@ -97,12 +97,12 @@ Production text workflow tracking:
 - Live benchmark evidence:
   `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-live-node`
 - Production-text aggregate:
-  `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text`
+  `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-candidates`
 - Current production-text recommendation:
-  keep the Comfy-side deterministic text composer, but do not promote the
-  DreamShaper production-text benchmark. Manual visual grade is 47/100 and
-  blocked due to object/mockup-scene leakage, busy interior text fields, and
-  weak inside-panel body readability.
+  keep the Comfy-side deterministic text composer and safe-field backgrounds,
+  but do not promote yet. The best local candidate is SDXL Turbo CFG 1.5 with
+  deterministic safe fields at 65/100, still blocked due to blunt rectangles,
+  dense surrounding ornament, and a busy back panel.
 
 Installed research candidates under `D:\models\`:
 

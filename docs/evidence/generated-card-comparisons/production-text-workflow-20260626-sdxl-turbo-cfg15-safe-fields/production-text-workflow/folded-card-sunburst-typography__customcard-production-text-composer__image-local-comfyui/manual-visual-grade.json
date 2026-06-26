@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "createdAtIso": "2026-06-26T02:10:00.000Z",
+  "reviewer": "codex-manual-visual-inspection",
+  "sourceContactSheet": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/contact-sheet.png",
+  "totalScore": 65,
+  "status": "blocked",
+  "passed": false,
+  "productionRecommendation": "do-not-promote-yet",
+  "rubric": {
+    "fourPanelPromptAdherenceAndPanelContract": { "score": 7, "maxScore": 10 },
+    "frontExactTextAndTypography": { "score": 16, "maxScore": 20 },
+    "insideLeftRightExactTextAndReadability": { "score": 15, "maxScore": 20 },
+    "insideLeftRightVisualCohesionAsOpenedSpread": { "score": 9, "maxScore": 15 },
+    "backNoTextDisciplineAndCoordinatingMark": { "score": 5, "maxScore": 10 },
+    "overallFoldedCardThemeCoherence": { "score": 7, "maxScore": 10 },
+    "printReadinessAndMargins": { "score": 6, "maxScore": 15 }
+  },
+  "blockingFailures": [
+    "Safe-field backgrounds fix readability, but the rectangles are too blunt and card-like polish is not production-ready.",
+    "Artwork around the fields remains dense and ornamental instead of restrained stationery.",
+    "Back panel is coordinated but too busy for the no-text back-cover contract."
+  ],
+  "smallestNextFix": "Keep deterministic safe-field backgrounds, then tune field shape/padding and use a flatter artwork workflow/checkpoint before promotion."
+}

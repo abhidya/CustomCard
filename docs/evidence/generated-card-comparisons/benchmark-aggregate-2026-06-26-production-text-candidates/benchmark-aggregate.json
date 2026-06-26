@@ -1,0 +1,172 @@
+{
+  "createdAtIso": "2026-06-26T02:10:33.944Z",
+  "inputDir": "docs/evidence/generated-card-comparisons",
+  "outputDir": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-candidates",
+  "phaseFilter": [
+    "local-production-text"
+  ],
+  "totalRuns": 4,
+  "ranked": [
+    {
+      "rank": 1,
+      "benchmarkKind": "model-benchmark-loop",
+      "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields/production-text-workflow-summary.json",
+      "runId": "production-text-workflow:folded-card-sunburst-typography:text-fixture-panel-copy:image-local-comfyui",
+      "phase": "local-production-text",
+      "createdAtIso": "2026-06-26T02:07:37.609Z",
+      "fixtureId": "folded-card-sunburst-typography",
+      "textAdapterId": "fixture",
+      "textModel": "",
+      "imageAdapterId": "local-comfyui-api-image",
+      "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+      "provider": "local-comfyui-api-image",
+      "technique": "comfy-deterministic-text-composer",
+      "score": 65,
+      "status": "blocked",
+      "passed": 7,
+      "total": 7,
+      "autoScore": 100,
+      "manualVisualGrade": {
+        "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/manual-visual-grade.json",
+        "score": 65,
+        "status": "blocked",
+        "passed": false,
+        "recommendation": "do-not-promote-yet",
+        "blockingFailures": [
+          "Safe-field backgrounds fix readability, but the rectangles are too blunt and card-like polish is not production-ready.",
+          "Artwork around the fields remains dense and ornamental instead of restrained stationery.",
+          "Back panel is coordinated but too busy for the no-text back-cover contract."
+        ]
+      },
+      "panelCount": 4,
+      "providerCallCount": 96,
+      "contactSheet": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/contact-sheet.png",
+      "settings": {
+        "phase": "local-production-text",
+        "phaseDir": "production-text-workflow",
+        "localOnlyNetworkGuard": true
+      }
+    },
+    {
+      "rank": 2,
+      "benchmarkKind": "model-benchmark-loop",
+      "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-live-node/production-text-workflow-summary.json",
+      "runId": "production-text-workflow:folded-card-sunburst-typography:text-fixture-panel-copy:image-local-comfyui",
+      "phase": "local-production-text",
+      "createdAtIso": "2026-06-26T01:29:31.391Z",
+      "fixtureId": "folded-card-sunburst-typography",
+      "textAdapterId": "fixture",
+      "textModel": "",
+      "imageAdapterId": "local-comfyui-api-image",
+      "imageModel": "DreamShaper_8_pruned.safetensors",
+      "provider": "local-comfyui-api-image",
+      "technique": "comfy-deterministic-text-composer",
+      "score": 47,
+      "status": "blocked",
+      "passed": 6,
+      "total": 6,
+      "autoScore": 100,
+      "manualVisualGrade": {
+        "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-live-node/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/manual-visual-grade.json",
+        "score": 47,
+        "status": "blocked",
+        "passed": false,
+        "recommendation": "do-not-promote",
+        "blockingFailures": [
+          "Generated artwork violates the flat 2D greeting-card panel contract with object/mockup-like scenes.",
+          "Inside-left and inside-right text sits over busy generated imagery instead of plain safe fields.",
+          "Interior body copy has low readability at contact-sheet scale and needs a stronger contrast/layout gate.",
+          "Preflight and structural auto-checks prove the Comfy text composer path, but they do not prove production visual quality."
+        ]
+      },
+      "panelCount": 4,
+      "providerCallCount": 163,
+      "contactSheet": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-live-node/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/contact-sheet.png",
+      "settings": {
+        "phase": "local-production-text",
+        "phaseDir": "production-text-workflow",
+        "localOnlyNetworkGuard": true
+      }
+    },
+    {
+      "rank": 3,
+      "benchmarkKind": "model-benchmark-loop",
+      "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15/production-text-workflow-summary.json",
+      "runId": "production-text-workflow:folded-card-sunburst-typography:text-fixture-panel-copy:image-local-comfyui",
+      "phase": "local-production-text",
+      "createdAtIso": "2026-06-26T01:54:53.729Z",
+      "fixtureId": "folded-card-sunburst-typography",
+      "textAdapterId": "fixture",
+      "textModel": "",
+      "imageAdapterId": "local-comfyui-api-image",
+      "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+      "provider": "local-comfyui-api-image",
+      "technique": "comfy-deterministic-text-composer",
+      "score": 43,
+      "status": "blocked",
+      "passed": 6,
+      "total": 6,
+      "autoScore": 100,
+      "manualVisualGrade": {
+        "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/manual-visual-grade.json",
+        "score": 43,
+        "status": "blocked",
+        "passed": false,
+        "recommendation": "do-not-promote",
+        "blockingFailures": [
+          "Nonzero CFG removes the photo/mockup failure but still fills every text-safe region with dense ornament.",
+          "Exact text is present but sits directly over high-contrast linework.",
+          "Inside body copy is too small and low-contrast for production print."
+        ]
+      },
+      "panelCount": 4,
+      "providerCallCount": 49,
+      "contactSheet": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/contact-sheet.png",
+      "settings": {
+        "phase": "local-production-text",
+        "phaseDir": "production-text-workflow",
+        "localOnlyNetworkGuard": true
+      }
+    },
+    {
+      "rank": 4,
+      "benchmarkKind": "model-benchmark-loop",
+      "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo/production-text-workflow-summary.json",
+      "runId": "production-text-workflow:folded-card-sunburst-typography:text-fixture-panel-copy:image-local-comfyui",
+      "phase": "local-production-text",
+      "createdAtIso": "2026-06-26T01:46:17.624Z",
+      "fixtureId": "folded-card-sunburst-typography",
+      "textAdapterId": "fixture",
+      "textModel": "",
+      "imageAdapterId": "local-comfyui-api-image",
+      "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+      "provider": "local-comfyui-api-image",
+      "technique": "comfy-deterministic-text-composer",
+      "score": 22,
+      "status": "blocked",
+      "passed": 6,
+      "total": 6,
+      "autoScore": 100,
+      "manualVisualGrade": {
+        "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/manual-visual-grade.json",
+        "score": 22,
+        "status": "blocked",
+        "passed": false,
+        "recommendation": "do-not-promote",
+        "blockingFailures": [
+          "CFG 0 under-steers the prompt and produces pseudo-calligraphy/fake text across the artwork.",
+          "Back panel becomes a photographed paper-and-hands scene, violating the flat 2D no-object contract.",
+          "Text-safe fields are absent; exact text is drawn over busy generated details."
+        ]
+      },
+      "panelCount": 4,
+      "providerCallCount": 102,
+      "contactSheet": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/contact-sheet.png",
+      "settings": {
+        "phase": "local-production-text",
+        "phaseDir": "production-text-workflow",
+        "localOnlyNetworkGuard": true
+      }
+    }
+  ]
+}

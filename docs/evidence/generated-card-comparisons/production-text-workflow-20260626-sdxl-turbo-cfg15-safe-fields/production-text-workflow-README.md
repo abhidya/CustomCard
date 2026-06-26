@@ -1,6 +1,6 @@
 # Model Benchmark local-production-text
 
-Created: 2026-06-26T01:53:56.476Z
+Created: 2026-06-26T02:05:28.762Z
 
 | Run | Status | Panels | Contact sheet |
 | --- | --- | --- | --- |
@@ -8,11 +8,12 @@ Created: 2026-06-26T01:53:56.476Z
 
 ## Manual Visual Review
 
-- Grade: 43/100
+- Grade: 65/100
 - Status: blocked
-- Recommendation: do not promote
+- Recommendation: do not promote yet
 - Evidence: [manual visual grade](production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/manual-visual-grade.md)
 
-CFG 1.5 avoids the photographed-object failure, but every text zone remains
-busy. This run motivated deterministic safe-field backgrounds inside the Comfy
-text composer.
+Deterministic safe-field backgrounds inside `CustomCardTextComposer` fix the
+main readability failure. The candidate remains blocked on visual polish:
+rectangles are too blunt, surrounding ornament is too dense, and the back panel
+is too busy.

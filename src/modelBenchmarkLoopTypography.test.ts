@@ -477,7 +477,9 @@ describe("model benchmark typography experiment", () => {
                     headline_text: frontCopy.headline,
                     body_text: frontCopy.body,
                     headline_box: { x: 86, y: 376, width: 788, height: 296 },
-                    body_box: { x: 106, y: 780, width: 748, height: 403 }
+                    headline_box_background_color: "#111715",
+                    body_box: { x: 106, y: 780, width: 748, height: 403 },
+                    body_box_background_color: "#111715"
                   }
                 }
               }
@@ -496,5 +498,6 @@ describe("model benchmark typography experiment", () => {
 
     expect(autoChecks.checks.metadataIncludesExactCopy).toBe(true);
     expect(autoChecks.checks.metadataIncludesSafeBoxes).toBe(true);
+    expect(autoChecks.checks.metadataIncludesSafeFieldBackgrounds).toBe(true);
   });
 });

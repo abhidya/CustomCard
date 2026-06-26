@@ -168,6 +168,7 @@ export interface ProductionTextAutoChecks {
     appOverlayBypassed: boolean;
     metadataIncludesExactCopy: boolean;
     metadataIncludesSafeBoxes: boolean;
+    metadataIncludesSafeFieldBackgrounds: boolean;
   };
   note: string;
 }

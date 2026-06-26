@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "createdAtIso": "2026-06-26T02:10:00.000Z",
+  "reviewer": "codex-manual-visual-inspection",
+  "sourceContactSheet": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/contact-sheet.png",
+  "totalScore": 43,
+  "status": "blocked",
+  "passed": false,
+  "productionRecommendation": "do-not-promote",
+  "rubric": {
+    "fourPanelPromptAdherenceAndPanelContract": { "score": 5, "maxScore": 10 },
+    "frontExactTextAndTypography": { "score": 10, "maxScore": 20 },
+    "insideLeftRightExactTextAndReadability": { "score": 7, "maxScore": 20 },
+    "insideLeftRightVisualCohesionAsOpenedSpread": { "score": 7, "maxScore": 15 },
+    "backNoTextDisciplineAndCoordinatingMark": { "score": 5, "maxScore": 10 },
+    "overallFoldedCardThemeCoherence": { "score": 6, "maxScore": 10 },
+    "printReadinessAndMargins": { "score": 3, "maxScore": 15 }
+  },
+  "blockingFailures": [
+    "Nonzero CFG removes the photo/mockup failure but still fills every text-safe region with dense ornament.",
+    "Exact text is present but sits directly over high-contrast linework.",
+    "Inside body copy is too small and low-contrast for production print."
+  ],
+  "smallestNextFix": "Keep nonzero CFG if using Turbo, but require deterministic safe-field backgrounds inside CustomCardTextComposer."
+}

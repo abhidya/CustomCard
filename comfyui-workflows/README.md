@@ -9,8 +9,8 @@ the local worker or benchmark loop.
 - `customcard-production-text-overlay.json`
   - Production candidate for Comfy-side deterministic text compositing.
   - Requires the checked-in `CustomCardTextComposer` node from `comfyui-custom-nodes/CustomCardTextComposer`.
-  - The diffusion model still generates text-safe artwork only; exact card copy is rendered into explicit safe boxes before `SaveImage`.
-  - Live local evidence on 2026-06-26 proves the text-composer path works, but the DreamShaper benchmark is blocked for visual quality. Do not make this the production default until a manual/local-vision grade passes.
+  - The diffusion model still generates artwork only; exact card copy and deterministic safe-field backgrounds are rendered into explicit safe boxes before `SaveImage`.
+  - Live local evidence on 2026-06-26 proves the text-composer path works. The best safe-field candidate is improved but still blocked for visual quality. Do not make this the production default until a manual/local-vision grade passes.
 - `customcard-hybrid-reserved-layout.json`
   - Production-leaning benchmark workflow for four greeting-card panels.
   - The image model generates coordinated, text-safe artwork only; the model benchmark flattens exact greeting-card copy into the final `preview-*.png` panels with deterministic typography.
@@ -162,7 +162,8 @@ Latest live evidence:
 - Preflight: `docs/evidence/generated-card-comparisons/production-text-preflight-20260626-live-node`
 - Benchmark: `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-live-node`
 - Aggregate: `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text`
-- Manual visual grade: 47/100, blocked, do not promote.
+- Candidate aggregate: `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-candidates`
+- Best current manual visual grade: 65/100, blocked, do not promote yet.
 
 ## Local Visual Quality Gate
 

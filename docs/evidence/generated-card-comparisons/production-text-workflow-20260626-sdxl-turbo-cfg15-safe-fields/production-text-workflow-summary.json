@@ -1,10 +1,10 @@
 {
   "phase": "local-production-text",
   "phaseDir": "production-text-workflow",
-  "createdAtIso": "2026-06-26T01:53:56.476Z",
+  "createdAtIso": "2026-06-26T02:05:28.762Z",
   "liveProviderCallsEnabled": true,
   "localOnlyNetworkGuard": true,
-  "outputDir": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15",
+  "outputDir": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields",
   "envRouting": {
     "aiEnvSources": [
       ".env.local"
@@ -55,15 +55,15 @@
       "typographyModeId": "customcard-production-text-composer",
       "typographyModeLabel": "CustomCard production text composer",
       "typographyStrategy": "comfy-deterministic-text-composer",
-      "runDir": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui",
-      "startedAt": "2026-06-26T01:53:56.477Z",
-      "finishedAt": "2026-06-26T01:54:53.729Z",
+      "runDir": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui",
+      "startedAt": "2026-06-26T02:05:28.764Z",
+      "finishedAt": "2026-06-26T02:07:37.609Z",
       "panelCount": 4,
       "panelFiles": [
         {
           "panelId": "front",
-          "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\provider-front.png",
-          "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\preview-front.png",
+          "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\provider-front.png",
+          "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\preview-front.png",
           "prompt": "Create one artwork-only 5x7 portrait Front Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: deep charcoal main field with warm gold and ivory accents kept outside the central text field\nMotif: edge-only warm-gold corner rays and thin border accents; no central radial sunburst, no halo, no medallion, no rays behind copy\nMood: Respectful, warm, sophisticated\nPanel Role: primary typography measurement panel\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nPlace a broad opaque plain deep-charcoal text-safe field in the central 60% of the panel. Treat this field as a real solid print area, not transparent negative space. Keep all rays, ornaments, bright marks, fake glyphs, and high-contrast details outside it. Put sunburst detail only as edge-only corner or margin ornaments; do not use a centered radial burst, halo, medallion, or rays crossing behind the field.\n\nPanel-specific composition: deep charcoal field, thin warm-gold border, small edge or corner rays only, and a plain central text-safe field; no central radial burst.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
           "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline",
           "renderedByComfyTextComposer": true,
@@ -74,8 +74,8 @@
         },
         {
           "panelId": "inside-left",
-          "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\provider-inside-left.png",
-          "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\preview-inside-left.png",
+          "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\provider-inside-left.png",
+          "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\preview-inside-left.png",
           "prompt": "Create one artwork-only 5x7 portrait Inside Left panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Left\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: left half of a coordinated interior spread with opening message text\nHeadline length: 3 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this an interior writing panel, not another cover. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-left edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-left edge accent only, quiet plain center, paired with inside-right.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
           "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior",
           "renderedByComfyTextComposer": true,
@@ -86,8 +86,8 @@
         },
         {
           "panelId": "inside-right",
-          "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\provider-inside-right.png",
-          "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\preview-inside-right.png",
+          "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\provider-inside-right.png",
+          "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\preview-inside-right.png",
           "prompt": "Create one artwork-only 5x7 portrait Inside Right panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Right\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: right half of a coordinated interior spread with main message text\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this the matching interior message panel. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-right edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-right edge accent only, quiet plain center, paired with inside-left.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
           "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior",
           "renderedByComfyTextComposer": true,
@@ -98,8 +98,8 @@
         },
         {
           "panelId": "back",
-          "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\provider-back.png",
-          "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\preview-back.png",
+          "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\provider-back.png",
+          "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\preview-back.png",
           "prompt": "Create one artwork-only 5x7 portrait Back Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Back Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: deep charcoal main field with one tiny warm-gold lower-edge mark only; no ivory panel, no cream wave, no large light area\nMotif: mostly plain deep-charcoal back cover with one tiny lower-edge gold sun mark; no centered or full-panel radial burst\nMood: Respectful, warm, sophisticated\nPanel Role: coordinating no-text back panel\nNo card copy belongs on this panel.\nReserve hierarchy for visual coordination only.\nUse mostly negative space plus one small coordinating back mark.\nBack cover must be at least 85% plain deep charcoal. Use only one tiny warm-gold sun mark near the lower third. Do not create a large radial halo, full-panel burst, centered sunburst, decorative typography, or any text-like marks.\nPanel-specific composition: mostly deep charcoal negative space, thin gold border echo, one small lower-edge sun mark, no card copy.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with only one small lower-edge sun mark on the back cover.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat abstract stationery artwork only, not a photographed object scene.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
           "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene, large sunburst, full radial halo, full-page radial burst, rays across the whole panel, centered halo, busy back cover, ivory wave, cream lower half, large cream area, white panel",
           "renderedByComfyTextComposer": true,
@@ -109,9 +109,9 @@
           "contentType": "image/png"
         }
       ],
-      "contactSheet": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\contact-sheet.png",
-      "effectiveProviderRequests": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\effective-provider-requests.json",
-      "providerCallCount": 49,
+      "contactSheet": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\contact-sheet.png",
+      "effectiveProviderRequests": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields\\production-text-workflow\\folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui\\effective-provider-requests.json",
+      "providerCallCount": 96,
       "autoChecks": {
         "advisoryOnly": true,
         "checks": {
@@ -122,13 +122,14 @@
             "inside-right",
             "back"
           ],
-          "providerCalls": 49,
+          "providerCalls": 96,
           "materializedImages": 4,
           "allPanelsMaterialized": true,
           "finalImagesRenderedByComfy": true,
           "appOverlayBypassed": true,
           "metadataIncludesExactCopy": true,
-          "metadataIncludesSafeBoxes": true
+          "metadataIncludesSafeBoxes": true,
+          "metadataIncludesSafeFieldBackgrounds": true
         },
         "note": "Production text phase treats Comfy output as the final text-composited panel. Automated checks prove request metadata and image materialization; visual text quality still requires inspection."
       }
@@ -224,6 +225,8 @@
                 "alignment": "center",
                 "body": "Wishing you strength and peace on your day.",
                 "body_box_height": 403,
+                "body_box_background_color": "#111715",
+                "body_box_background_padding": 24,
                 "body_box_width": 748,
                 "body_box_x": 106,
                 "body_box_y": 780,
@@ -237,6 +240,8 @@
                 "debug_boxes": false,
                 "headline": "For Moments That Matter",
                 "headline_box_height": 296,
+                "headline_box_background_color": "#111715",
+                "headline_box_background_padding": 24,
                 "headline_box_width": 788,
                 "headline_box_x": 86,
                 "headline_box_y": 376,
@@ -292,12 +297,16 @@
                   "width": 788,
                   "height": 296
                 },
+                "headline_box_background_color": "#111715",
+                "headline_box_background_padding": 24,
                 "body_box": {
                   "x": 106,
                   "y": 780,
                   "width": 748,
                   "height": 403
                 },
+                "body_box_background_color": "#111715",
+                "body_box_background_padding": 24,
                 "text_alignment": "center",
                 "min_font_size": 16
               }
@@ -309,17 +318,17 @@
         "status": 200,
         "ok": true,
         "contentType": "application/json; charset=utf-8",
-        "byteLength": 86,
+        "byteLength": 85,
         "body": {
-          "prompt_id": "ada4c6a2-571b-4177-a799-8c96fcb7492b",
-          "number": 16,
+          "prompt_id": "3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+          "number": 0,
           "node_errors": {}
         }
       },
-      "durationMs": 39
+      "durationMs": 44
     },
     {
-      "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
       "method": "GET",
       "request": {
         "headers": {}
@@ -334,7 +343,82 @@
       "durationMs": 4
     },
     {
-      "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 18
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
       "method": "GET",
       "request": {
         "headers": {}
@@ -349,22 +433,7 @@
       "durationMs": 20
     },
     {
-      "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
-      "method": "GET",
-      "request": {
-        "headers": {}
-      },
-      "response": {
-        "status": 200,
-        "ok": true,
-        "contentType": "application/json; charset=utf-8",
-        "byteLength": 2,
-        "body": {}
-      },
-      "durationMs": 5
-    },
-    {
-      "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
       "method": "GET",
       "request": {
         "headers": {}
@@ -379,7 +448,7 @@
       "durationMs": 17
     },
     {
-      "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
       "method": "GET",
       "request": {
         "headers": {}
@@ -394,7 +463,7 @@
       "durationMs": 17
     },
     {
-      "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
       "method": "GET",
       "request": {
         "headers": {}
@@ -406,10 +475,145 @@
         "byteLength": 2,
         "body": {}
       },
-      "durationMs": 2
+      "durationMs": 17
     },
     {
-      "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 6
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 18
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 3
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 25
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 18
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 33
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
       "method": "GET",
       "request": {
         "headers": {}
@@ -424,7 +628,7 @@
       "durationMs": 20
     },
     {
-      "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
       "method": "GET",
       "request": {
         "headers": {}
@@ -439,7 +643,7 @@
       "durationMs": 17
     },
     {
-      "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
       "method": "GET",
       "request": {
         "headers": {}
@@ -451,10 +655,10 @@
         "byteLength": 2,
         "body": {}
       },
-      "durationMs": 22
+      "durationMs": 25
     },
     {
-      "url": "http://127.0.0.1:8188/history/ada4c6a2-571b-4177-a799-8c96fcb7492b",
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
       "method": "GET",
       "request": {
         "headers": {}
@@ -463,12 +667,267 @@
         "status": 200,
         "ok": true,
         "contentType": "application/json; charset=utf-8",
-        "byteLength": 9809,
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 1
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 15
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 8
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 41
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 21
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 10116,
         "body": {
-          "ada4c6a2-571b-4177-a799-8c96fcb7492b": {
+          "3fada957-cffb-45ab-8b2b-cf06d34e0b57": {
             "prompt": [
-              16,
-              "ada4c6a2-571b-4177-a799-8c96fcb7492b",
+              0,
+              "3fada957-cffb-45ab-8b2b-cf06d34e0b57",
               {
                 "1": {
                   "class_type": "CheckpointLoaderSimple",
@@ -550,6 +1009,8 @@
                     "alignment": "center",
                     "body": "Wishing you strength and peace on your day.",
                     "body_box_height": 403,
+                    "body_box_background_color": "#111715",
+                    "body_box_background_padding": 24,
                     "body_box_width": 748,
                     "body_box_x": 106,
                     "body_box_y": 780,
@@ -563,6 +1024,8 @@
                     "debug_boxes": false,
                     "headline": "For Moments That Matter",
                     "headline_box_height": 296,
+                    "headline_box_background_color": "#111715",
+                    "headline_box_background_padding": 24,
                     "headline_box_width": 788,
                     "headline_box_x": 86,
                     "headline_box_y": 376,
@@ -617,18 +1080,22 @@
                       "width": 788,
                       "height": 296
                     },
+                    "headline_box_background_color": "#111715",
+                    "headline_box_background_padding": 24,
                     "body_box": {
                       "x": 106,
                       "y": 780,
                       "width": 748,
                       "height": 403
                     },
+                    "body_box_background_color": "#111715",
+                    "body_box_background_padding": 24,
                     "text_alignment": "center",
                     "min_font_size": 16
                   }
                 },
                 "client_id": "customcard-local-typography-benchmark",
-                "create_time": 1782438836522
+                "create_time": 1782439528805
               },
               [
                 "9"
@@ -638,7 +1105,7 @@
               "9": {
                 "images": [
                   {
-                    "filename": "front_00005_.png",
+                    "filename": "front_00006_.png",
                     "subfolder": "customcard\\customcard-production-text-overlay",
                     "type": "output"
                   }
@@ -652,26 +1119,23 @@
                 [
                   "execution_start",
                   {
-                    "prompt_id": "ada4c6a2-571b-4177-a799-8c96fcb7492b",
-                    "timestamp": 1782438836522
+                    "prompt_id": "3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+                    "timestamp": 1782439528806
                   }
                 ],
                 [
                   "execution_cached",
                   {
-                    "nodes": [
-                      "1",
-                      "4"
-                    ],
-                    "prompt_id": "ada4c6a2-571b-4177-a799-8c96fcb7492b",
-                    "timestamp": 1782438836522
+                    "nodes": [],
+                    "prompt_id": "3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+                    "timestamp": 1782439528809
                   }
                 ],
                 [
                   "execution_success",
                   {
-                    "prompt_id": "ada4c6a2-571b-4177-a799-8c96fcb7492b",
-                    "timestamp": 1782438849316
+                    "prompt_id": "3fada957-cffb-45ab-8b2b-cf06d34e0b57",
+                    "timestamp": 1782439588126
                   }
                 ]
               ]
@@ -687,10 +1151,10 @@
           }
         }
       },
-      "durationMs": 15
+      "durationMs": 173
     },
     {
-      "url": "http://127.0.0.1:8188/view?filename=front_00005_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+      "url": "http://127.0.0.1:8188/view?filename=front_00006_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
       "method": "GET",
       "request": {
         "headers": {}
@@ -699,9 +1163,9 @@
         "status": 200,
         "ok": true,
         "contentType": "image/png",
-        "byteLength": 2710508
+        "byteLength": 1417468
       },
-      "durationMs": 10
+      "durationMs": 7
     },
     {
       "url": "http://127.0.0.1:8188/prompt",
@@ -792,6 +1256,8 @@
                 "alignment": "center",
                 "body": "May this space hold steadiness, light, and the care surrounding you today.",
                 "body_box_height": 484,
+                "body_box_background_color": "#fff6df",
+                "body_box_background_padding": 24,
                 "body_box_width": 748,
                 "body_box_x": 106,
                 "body_box_y": 497,
@@ -805,6 +1271,8 @@
                 "debug_boxes": false,
                 "headline": "A Quiet Honor",
                 "headline_box_height": 269,
+                "headline_box_background_color": "#fff6df",
+                "headline_box_background_padding": 24,
                 "headline_box_width": 788,
                 "headline_box_x": 86,
                 "headline_box_y": 134,
@@ -860,12 +1328,16 @@
                   "width": 788,
                   "height": 269
                 },
+                "headline_box_background_color": "#fff6df",
+                "headline_box_background_padding": 24,
                 "body_box": {
                   "x": 106,
                   "y": 497,
                   "width": 748,
                   "height": 484
                 },
+                "body_box_background_color": "#fff6df",
+                "body_box_background_padding": 24,
                 "text_alignment": "center",
                 "min_font_size": 16
               }
@@ -877,17 +1349,137 @@
         "status": 200,
         "ok": true,
         "contentType": "application/json; charset=utf-8",
-        "byteLength": 86,
+        "byteLength": 85,
         "body": {
-          "prompt_id": "a1b5facd-f0d3-4e43-b0f9-5f245960921b",
-          "number": 17,
+          "prompt_id": "b72c8b0d-a806-4305-929b-e77d3b68f974",
+          "number": 1,
           "node_errors": {}
         }
       },
+      "durationMs": 5
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 15
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
       "durationMs": 16
     },
     {
-      "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
       "method": "GET",
       "request": {
         "headers": {}
@@ -902,22 +1494,7 @@
       "durationMs": 16
     },
     {
-      "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
-      "method": "GET",
-      "request": {
-        "headers": {}
-      },
-      "response": {
-        "status": 200,
-        "ok": true,
-        "contentType": "application/json; charset=utf-8",
-        "byteLength": 2,
-        "body": {}
-      },
-      "durationMs": 27
-    },
-    {
-      "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
       "method": "GET",
       "request": {
         "headers": {}
@@ -932,82 +1509,7 @@
       "durationMs": 17
     },
     {
-      "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
-      "method": "GET",
-      "request": {
-        "headers": {}
-      },
-      "response": {
-        "status": 200,
-        "ok": true,
-        "contentType": "application/json; charset=utf-8",
-        "byteLength": 2,
-        "body": {}
-      },
-      "durationMs": 17
-    },
-    {
-      "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
-      "method": "GET",
-      "request": {
-        "headers": {}
-      },
-      "response": {
-        "status": 200,
-        "ok": true,
-        "contentType": "application/json; charset=utf-8",
-        "byteLength": 2,
-        "body": {}
-      },
-      "durationMs": 21
-    },
-    {
-      "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
-      "method": "GET",
-      "request": {
-        "headers": {}
-      },
-      "response": {
-        "status": 200,
-        "ok": true,
-        "contentType": "application/json; charset=utf-8",
-        "byteLength": 2,
-        "body": {}
-      },
-      "durationMs": 17
-    },
-    {
-      "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
-      "method": "GET",
-      "request": {
-        "headers": {}
-      },
-      "response": {
-        "status": 200,
-        "ok": true,
-        "contentType": "application/json; charset=utf-8",
-        "byteLength": 2,
-        "body": {}
-      },
-      "durationMs": 17
-    },
-    {
-      "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
-      "method": "GET",
-      "request": {
-        "headers": {}
-      },
-      "response": {
-        "status": 200,
-        "ok": true,
-        "contentType": "application/json; charset=utf-8",
-        "byteLength": 2,
-        "body": {}
-      },
-      "durationMs": 18
-    },
-    {
-      "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
       "method": "GET",
       "request": {
         "headers": {}
@@ -1022,7 +1524,7 @@
       "durationMs": 1
     },
     {
-      "url": "http://127.0.0.1:8188/history/a1b5facd-f0d3-4e43-b0f9-5f245960921b",
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
       "method": "GET",
       "request": {
         "headers": {}
@@ -1031,12 +1533,237 @@
         "status": 200,
         "ok": true,
         "contentType": "application/json; charset=utf-8",
-        "byteLength": 10139,
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 8
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 21
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 20
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 10
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 6
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 20
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 19
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 4
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 18
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 18
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 3
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 19
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/b72c8b0d-a806-4305-929b-e77d3b68f974",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 10454,
         "body": {
-          "a1b5facd-f0d3-4e43-b0f9-5f245960921b": {
+          "b72c8b0d-a806-4305-929b-e77d3b68f974": {
             "prompt": [
-              17,
-              "a1b5facd-f0d3-4e43-b0f9-5f245960921b",
+              1,
+              "b72c8b0d-a806-4305-929b-e77d3b68f974",
               {
                 "1": {
                   "class_type": "CheckpointLoaderSimple",
@@ -1118,6 +1845,8 @@
                     "alignment": "center",
                     "body": "May this space hold steadiness, light, and the care surrounding you today.",
                     "body_box_height": 484,
+                    "body_box_background_color": "#fff6df",
+                    "body_box_background_padding": 24,
                     "body_box_width": 748,
                     "body_box_x": 106,
                     "body_box_y": 497,
@@ -1131,6 +1860,8 @@
                     "debug_boxes": false,
                     "headline": "A Quiet Honor",
                     "headline_box_height": 269,
+                    "headline_box_background_color": "#fff6df",
+                    "headline_box_background_padding": 24,
                     "headline_box_width": 788,
                     "headline_box_x": 86,
                     "headline_box_y": 134,
@@ -1185,18 +1916,22 @@
                       "width": 788,
                       "height": 269
                     },
+                    "headline_box_background_color": "#fff6df",
+                    "headline_box_background_padding": 24,
                     "body_box": {
                       "x": 106,
                       "y": 497,
                       "width": 748,
                       "height": 484
                     },
+                    "body_box_background_color": "#fff6df",
+                    "body_box_background_padding": 24,
                     "text_alignment": "center",
                     "min_font_size": 16
                   }
                 },
                 "client_id": "customcard-local-typography-benchmark",
-                "create_time": 1782438850394
+                "create_time": 1782439588501
               },
               [
                 "9"
@@ -1206,7 +1941,7 @@
               "9": {
                 "images": [
                   {
-                    "filename": "inside-left_00005_.png",
+                    "filename": "inside-left_00006_.png",
                     "subfolder": "customcard\\customcard-production-text-overlay",
                     "type": "output"
                   }
@@ -1220,8 +1955,8 @@
                 [
                   "execution_start",
                   {
-                    "prompt_id": "a1b5facd-f0d3-4e43-b0f9-5f245960921b",
-                    "timestamp": 1782438850394
+                    "prompt_id": "b72c8b0d-a806-4305-929b-e77d3b68f974",
+                    "timestamp": 1782439588501
                   }
                 ],
                 [
@@ -1231,15 +1966,15 @@
                       "1",
                       "4"
                     ],
-                    "prompt_id": "a1b5facd-f0d3-4e43-b0f9-5f245960921b",
-                    "timestamp": 1782438850394
+                    "prompt_id": "b72c8b0d-a806-4305-929b-e77d3b68f974",
+                    "timestamp": 1782439588501
                   }
                 ],
                 [
                   "execution_success",
                   {
-                    "prompt_id": "a1b5facd-f0d3-4e43-b0f9-5f245960921b",
-                    "timestamp": 1782438863107
+                    "prompt_id": "b72c8b0d-a806-4305-929b-e77d3b68f974",
+                    "timestamp": 1782439627027
                   }
                 ]
               ]
@@ -1258,7 +1993,7 @@
       "durationMs": 16
     },
     {
-      "url": "http://127.0.0.1:8188/view?filename=inside-left_00005_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+      "url": "http://127.0.0.1:8188/view?filename=inside-left_00006_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
       "method": "GET",
       "request": {
         "headers": {}
@@ -1267,9 +2002,9 @@
         "status": 200,
         "ok": true,
         "contentType": "image/png",
-        "byteLength": 2584556
+        "byteLength": 1191566
       },
-      "durationMs": 11
+      "durationMs": 5
     },
     {
       "url": "http://127.0.0.1:8188/prompt",
@@ -1360,6 +2095,8 @@
                 "alignment": "center",
                 "body": "For the moments that ask for courage, may you feel supported, seen, and held in peace.",
                 "body_box_height": 484,
+                "body_box_background_color": "#fff6df",
+                "body_box_background_padding": 24,
                 "body_box_width": 748,
                 "body_box_x": 106,
                 "body_box_y": 497,
@@ -1373,6 +2110,8 @@
                 "debug_boxes": false,
                 "headline": "With Respect and Warmth",
                 "headline_box_height": 269,
+                "headline_box_background_color": "#fff6df",
+                "headline_box_background_padding": 24,
                 "headline_box_width": 788,
                 "headline_box_x": 86,
                 "headline_box_y": 134,
@@ -1428,12 +2167,16 @@
                   "width": 788,
                   "height": 269
                 },
+                "headline_box_background_color": "#fff6df",
+                "headline_box_background_padding": 24,
                 "body_box": {
                   "x": 106,
                   "y": 497,
                   "width": 748,
                   "height": 484
                 },
+                "body_box_background_color": "#fff6df",
+                "body_box_background_padding": 24,
                 "text_alignment": "center",
                 "min_font_size": 16
               }
@@ -1445,17 +2188,32 @@
         "status": 200,
         "ok": true,
         "contentType": "application/json; charset=utf-8",
-        "byteLength": 86,
+        "byteLength": 85,
         "body": {
-          "prompt_id": "7208e767-0d82-49f3-bd32-9708397c5511",
-          "number": 18,
+          "prompt_id": "1e73593c-3f47-474b-8536-af5e29b5f334",
+          "number": 2,
           "node_errors": {}
         }
       },
-      "durationMs": 8
+      "durationMs": 17
     },
     {
-      "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
+      "url": "http://127.0.0.1:8188/history/1e73593c-3f47-474b-8536-af5e29b5f334",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/1e73593c-3f47-474b-8536-af5e29b5f334",
       "method": "GET",
       "request": {
         "headers": {}
@@ -1470,52 +2228,7 @@
       "durationMs": 17
     },
     {
-      "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
-      "method": "GET",
-      "request": {
-        "headers": {}
-      },
-      "response": {
-        "status": 200,
-        "ok": true,
-        "contentType": "application/json; charset=utf-8",
-        "byteLength": 2,
-        "body": {}
-      },
-      "durationMs": 16
-    },
-    {
-      "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
-      "method": "GET",
-      "request": {
-        "headers": {}
-      },
-      "response": {
-        "status": 200,
-        "ok": true,
-        "contentType": "application/json; charset=utf-8",
-        "byteLength": 2,
-        "body": {}
-      },
-      "durationMs": 16
-    },
-    {
-      "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
-      "method": "GET",
-      "request": {
-        "headers": {}
-      },
-      "response": {
-        "status": 200,
-        "ok": true,
-        "contentType": "application/json; charset=utf-8",
-        "byteLength": 2,
-        "body": {}
-      },
-      "durationMs": 16
-    },
-    {
-      "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
+      "url": "http://127.0.0.1:8188/history/1e73593c-3f47-474b-8536-af5e29b5f334",
       "method": "GET",
       "request": {
         "headers": {}
@@ -1530,7 +2243,7 @@
       "durationMs": 17
     },
     {
-      "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
+      "url": "http://127.0.0.1:8188/history/1e73593c-3f47-474b-8536-af5e29b5f334",
       "method": "GET",
       "request": {
         "headers": {}
@@ -1542,10 +2255,55 @@
         "byteLength": 2,
         "body": {}
       },
-      "durationMs": 14
+      "durationMs": 17
     },
     {
-      "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
+      "url": "http://127.0.0.1:8188/history/1e73593c-3f47-474b-8536-af5e29b5f334",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 3
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/1e73593c-3f47-474b-8536-af5e29b5f334",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/1e73593c-3f47-474b-8536-af5e29b5f334",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 17
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/1e73593c-3f47-474b-8536-af5e29b5f334",
       "method": "GET",
       "request": {
         "headers": {}
@@ -1560,7 +2318,7 @@
       "durationMs": 15
     },
     {
-      "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
+      "url": "http://127.0.0.1:8188/history/1e73593c-3f47-474b-8536-af5e29b5f334",
       "method": "GET",
       "request": {
         "headers": {}
@@ -1572,10 +2330,10 @@
         "byteLength": 2,
         "body": {}
       },
-      "durationMs": 17
+      "durationMs": 13
     },
     {
-      "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
+      "url": "http://127.0.0.1:8188/history/1e73593c-3f47-474b-8536-af5e29b5f334",
       "method": "GET",
       "request": {
         "headers": {}
@@ -1584,27 +2342,12 @@
         "status": 200,
         "ok": true,
         "contentType": "application/json; charset=utf-8",
-        "byteLength": 2,
-        "body": {}
-      },
-      "durationMs": 17
-    },
-    {
-      "url": "http://127.0.0.1:8188/history/7208e767-0d82-49f3-bd32-9708397c5511",
-      "method": "GET",
-      "request": {
-        "headers": {}
-      },
-      "response": {
-        "status": 200,
-        "ok": true,
-        "contentType": "application/json; charset=utf-8",
-        "byteLength": 10175,
+        "byteLength": 10490,
         "body": {
-          "7208e767-0d82-49f3-bd32-9708397c5511": {
+          "1e73593c-3f47-474b-8536-af5e29b5f334": {
             "prompt": [
-              18,
-              "7208e767-0d82-49f3-bd32-9708397c5511",
+              2,
+              "1e73593c-3f47-474b-8536-af5e29b5f334",
               {
                 "1": {
                   "class_type": "CheckpointLoaderSimple",
@@ -1686,6 +2429,8 @@
                     "alignment": "center",
                     "body": "For the moments that ask for courage, may you feel supported, seen, and held in peace.",
                     "body_box_height": 484,
+                    "body_box_background_color": "#fff6df",
+                    "body_box_background_padding": 24,
                     "body_box_width": 748,
                     "body_box_x": 106,
                     "body_box_y": 497,
@@ -1699,6 +2444,8 @@
                     "debug_boxes": false,
                     "headline": "With Respect and Warmth",
                     "headline_box_height": 269,
+                    "headline_box_background_color": "#fff6df",
+                    "headline_box_background_padding": 24,
                     "headline_box_width": 788,
                     "headline_box_x": 86,
                     "headline_box_y": 134,
@@ -1753,18 +2500,22 @@
                       "width": 788,
                       "height": 269
                     },
+                    "headline_box_background_color": "#fff6df",
+                    "headline_box_background_padding": 24,
                     "body_box": {
                       "x": 106,
                       "y": 497,
                       "width": 748,
                       "height": 484
                     },
+                    "body_box_background_color": "#fff6df",
+                    "body_box_background_padding": 24,
                     "text_alignment": "center",
                     "min_font_size": 16
                   }
                 },
                 "client_id": "customcard-local-typography-benchmark",
-                "create_time": 1782438864213
+                "create_time": 1782439628175
               },
               [
                 "9"
@@ -1774,7 +2525,7 @@
               "9": {
                 "images": [
                   {
-                    "filename": "inside-right_00005_.png",
+                    "filename": "inside-right_00006_.png",
                     "subfolder": "customcard\\customcard-production-text-overlay",
                     "type": "output"
                   }
@@ -1788,8 +2539,8 @@
                 [
                   "execution_start",
                   {
-                    "prompt_id": "7208e767-0d82-49f3-bd32-9708397c5511",
-                    "timestamp": 1782438864214
+                    "prompt_id": "1e73593c-3f47-474b-8536-af5e29b5f334",
+                    "timestamp": 1782439628176
                   }
                 ],
                 [
@@ -1800,15 +2551,15 @@
                       "3",
                       "4"
                     ],
-                    "prompt_id": "7208e767-0d82-49f3-bd32-9708397c5511",
-                    "timestamp": 1782438864216
+                    "prompt_id": "1e73593c-3f47-474b-8536-af5e29b5f334",
+                    "timestamp": 1782439628176
                   }
                 ],
                 [
                   "execution_success",
                   {
-                    "prompt_id": "7208e767-0d82-49f3-bd32-9708397c5511",
-                    "timestamp": 1782438876944
+                    "prompt_id": "1e73593c-3f47-474b-8536-af5e29b5f334",
+                    "timestamp": 1782439640527
                   }
                 ]
               ]
@@ -1824,10 +2575,10 @@
           }
         }
       },
-      "durationMs": 16
+      "durationMs": 2
     },
     {
-      "url": "http://127.0.0.1:8188/view?filename=inside-right_00005_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+      "url": "http://127.0.0.1:8188/view?filename=inside-right_00006_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
       "method": "GET",
       "request": {
         "headers": {}
@@ -1836,9 +2587,9 @@
         "status": 200,
         "ok": true,
         "contentType": "image/png",
-        "byteLength": 2549942
+        "byteLength": 1230609
       },
-      "durationMs": 9
+      "durationMs": 5
     },
     {
       "url": "http://127.0.0.1:8188/prompt",
@@ -1929,6 +2680,8 @@
                 "alignment": "center",
                 "body": "",
                 "body_box_height": 296,
+                "body_box_background_color": "",
+                "body_box_background_padding": 0,
                 "body_box_width": 748,
                 "body_box_x": 106,
                 "body_box_y": 914,
@@ -1942,6 +2695,8 @@
                 "debug_boxes": false,
                 "headline": "",
                 "headline_box_height": 269,
+                "headline_box_background_color": "",
+                "headline_box_background_padding": 0,
                 "headline_box_width": 788,
                 "headline_box_x": 86,
                 "headline_box_y": 806,
@@ -1997,12 +2752,16 @@
                   "width": 788,
                   "height": 269
                 },
+                "headline_box_background_color": "",
+                "headline_box_background_padding": 0,
                 "body_box": {
                   "x": 106,
                   "y": 914,
                   "width": 748,
                   "height": 296
                 },
+                "body_box_background_color": "",
+                "body_box_background_padding": 0,
                 "text_alignment": "center",
                 "min_font_size": 14
               }
@@ -2014,17 +2773,17 @@
         "status": 200,
         "ok": true,
         "contentType": "application/json; charset=utf-8",
-        "byteLength": 86,
+        "byteLength": 85,
         "body": {
-          "prompt_id": "5bd160b0-3512-4ac4-97ae-fa73156f97f1",
-          "number": 19,
+          "prompt_id": "e44b743d-1115-4862-a4c7-23c50472636d",
+          "number": 3,
           "node_errors": {}
         }
       },
-      "durationMs": 13
+      "durationMs": 16
     },
     {
-      "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+      "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
       "method": "GET",
       "request": {
         "headers": {}
@@ -2036,10 +2795,25 @@
         "byteLength": 2,
         "body": {}
       },
-      "durationMs": 12
+      "durationMs": 16
     },
     {
-      "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+      "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 16
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
       "method": "GET",
       "request": {
         "headers": {}
@@ -2054,7 +2828,7 @@
       "durationMs": 17
     },
     {
-      "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+      "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
       "method": "GET",
       "request": {
         "headers": {}
@@ -2069,7 +2843,7 @@
       "durationMs": 17
     },
     {
-      "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+      "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
       "method": "GET",
       "request": {
         "headers": {}
@@ -2081,40 +2855,10 @@
         "byteLength": 2,
         "body": {}
       },
-      "durationMs": 14
+      "durationMs": 16
     },
     {
-      "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
-      "method": "GET",
-      "request": {
-        "headers": {}
-      },
-      "response": {
-        "status": 200,
-        "ok": true,
-        "contentType": "application/json; charset=utf-8",
-        "byteLength": 2,
-        "body": {}
-      },
-      "durationMs": 14
-    },
-    {
-      "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
-      "method": "GET",
-      "request": {
-        "headers": {}
-      },
-      "response": {
-        "status": 200,
-        "ok": true,
-        "contentType": "application/json; charset=utf-8",
-        "byteLength": 2,
-        "body": {}
-      },
-      "durationMs": 15
-    },
-    {
-      "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+      "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
       "method": "GET",
       "request": {
         "headers": {}
@@ -2129,7 +2873,7 @@
       "durationMs": 18
     },
     {
-      "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+      "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
       "method": "GET",
       "request": {
         "headers": {}
@@ -2141,10 +2885,10 @@
         "byteLength": 2,
         "body": {}
       },
-      "durationMs": 13
+      "durationMs": 3
     },
     {
-      "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+      "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
       "method": "GET",
       "request": {
         "headers": {}
@@ -2156,10 +2900,10 @@
         "byteLength": 2,
         "body": {}
       },
-      "durationMs": 12
+      "durationMs": 16
     },
     {
-      "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+      "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
       "method": "GET",
       "request": {
         "headers": {}
@@ -2171,10 +2915,10 @@
         "byteLength": 2,
         "body": {}
       },
-      "durationMs": 13
+      "durationMs": 11
     },
     {
-      "url": "http://127.0.0.1:8188/history/5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+      "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
       "method": "GET",
       "request": {
         "headers": {}
@@ -2183,12 +2927,27 @@
         "status": 200,
         "ok": true,
         "contentType": "application/json; charset=utf-8",
-        "byteLength": 7784,
+        "byteLength": 2,
+        "body": {}
+      },
+      "durationMs": 22
+    },
+    {
+      "url": "http://127.0.0.1:8188/history/e44b743d-1115-4862-a4c7-23c50472636d",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json; charset=utf-8",
+        "byteLength": 8067,
         "body": {
-          "5bd160b0-3512-4ac4-97ae-fa73156f97f1": {
+          "e44b743d-1115-4862-a4c7-23c50472636d": {
             "prompt": [
-              19,
-              "5bd160b0-3512-4ac4-97ae-fa73156f97f1",
+              3,
+              "e44b743d-1115-4862-a4c7-23c50472636d",
               {
                 "1": {
                   "class_type": "CheckpointLoaderSimple",
@@ -2270,6 +3029,8 @@
                     "alignment": "center",
                     "body": "",
                     "body_box_height": 296,
+                    "body_box_background_color": "",
+                    "body_box_background_padding": 0,
                     "body_box_width": 748,
                     "body_box_x": 106,
                     "body_box_y": 914,
@@ -2283,6 +3044,8 @@
                     "debug_boxes": false,
                     "headline": "",
                     "headline_box_height": 269,
+                    "headline_box_background_color": "",
+                    "headline_box_background_padding": 0,
                     "headline_box_width": 788,
                     "headline_box_x": 86,
                     "headline_box_y": 806,
@@ -2337,18 +3100,22 @@
                       "width": 788,
                       "height": 269
                     },
+                    "headline_box_background_color": "",
+                    "headline_box_background_padding": 0,
                     "body_box": {
                       "x": 106,
                       "y": 914,
                       "width": 748,
                       "height": 296
                     },
+                    "body_box_background_color": "",
+                    "body_box_background_padding": 0,
                     "text_alignment": "center",
                     "min_font_size": 14
                   }
                 },
                 "client_id": "customcard-local-typography-benchmark",
-                "create_time": 1782438878070
+                "create_time": 1782439641958
               },
               [
                 "9"
@@ -2358,7 +3125,7 @@
               "9": {
                 "images": [
                   {
-                    "filename": "back_00005_.png",
+                    "filename": "back_00006_.png",
                     "subfolder": "customcard\\customcard-production-text-overlay",
                     "type": "output"
                   }
@@ -2372,8 +3139,8 @@
                 [
                   "execution_start",
                   {
-                    "prompt_id": "5bd160b0-3512-4ac4-97ae-fa73156f97f1",
-                    "timestamp": 1782438878070
+                    "prompt_id": "e44b743d-1115-4862-a4c7-23c50472636d",
+                    "timestamp": 1782439641958
                   }
                 ],
                 [
@@ -2383,15 +3150,15 @@
                       "1",
                       "4"
                     ],
-                    "prompt_id": "5bd160b0-3512-4ac4-97ae-fa73156f97f1",
-                    "timestamp": 1782438878074
+                    "prompt_id": "e44b743d-1115-4862-a4c7-23c50472636d",
+                    "timestamp": 1782439641962
                   }
                 ],
                 [
                   "execution_success",
                   {
-                    "prompt_id": "5bd160b0-3512-4ac4-97ae-fa73156f97f1",
-                    "timestamp": 1782438892018
+                    "prompt_id": "e44b743d-1115-4862-a4c7-23c50472636d",
+                    "timestamp": 1782439655875
                   }
                 ]
               ]
@@ -2407,10 +3174,10 @@
           }
         }
       },
-      "durationMs": 13
+      "durationMs": 28
     },
     {
-      "url": "http://127.0.0.1:8188/view?filename=back_00005_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+      "url": "http://127.0.0.1:8188/view?filename=back_00006_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
       "method": "GET",
       "request": {
         "headers": {}
@@ -2419,9 +3186,9 @@
         "status": 200,
         "ok": true,
         "contentType": "image/png",
-        "byteLength": 2374776
+        "byteLength": 2374918
       },
-      "durationMs": 8
+      "durationMs": 48
     }
   ]
 }

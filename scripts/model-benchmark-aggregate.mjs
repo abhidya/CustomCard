@@ -14,15 +14,17 @@ async function main() {
   const inputDir = resolve(args.input || defaultInputDir);
   const outputDir = resolve(args["output-dir"] || defaultOutputDir);
   const files = collectJsonFiles(inputDir);
+  const phaseFilter = parseListArg(args.phase);
   const entries = [
     ...files.filter((file) => basename(file) === "debug-log.json").flatMap(readLocalComfyDebugLog),
     ...files.filter((file) => basename(file).endsWith("-summary.json")).flatMap(readModelBenchmarkSummary)
-  ].filter(Boolean);
+  ].filter(Boolean).filter((entry) => !phaseFilter.length || phaseFilter.includes(entry.phase || entry.settings?.phase));
   const ranked = rankEntries(entries);
   const aggregate = {
     createdAtIso: new Date().toISOString(),
     inputDir: relativePath(inputDir),
     outputDir: relativePath(outputDir),
+    phaseFilter,
     totalRuns: entries.length,
     ranked
   };
@@ -60,9 +62,10 @@ function readLocalComfyDebugLog(filePath) {
   if (!payload || payload.mode !== "local-comfyui") return [];
   return (payload.fixtures || []).map((fixture) => ({
     benchmarkKind: "local-comfyui",
-    sourceFile: relativePath(filePath),
-    runId: payload.runId,
-    createdAtIso: payload.createdAtIso,
+      sourceFile: relativePath(filePath),
+      runId: payload.runId,
+      phase: payload.phase,
+      createdAtIso: payload.createdAtIso,
     fixtureId: fixture.id,
     textAdapterId: "deterministic-local-copy",
     textModel: "fixture-specific-local-copy",
@@ -97,6 +100,7 @@ function readModelBenchmarkSummary(filePath) {
       benchmarkKind: "model-benchmark-loop",
       sourceFile: relativePath(filePath),
       runId: `${payload.phaseDir || payload.phase}:${run.storyId || "story"}:${run.textCandidateId || run.textAdapterId}:${run.imageCandidateId || run.imageAdapterId}`,
+      phase: payload.phase,
       createdAtIso: run.finishedAt || payload.createdAtIso,
       fixtureId: run.storyId,
       textAdapterId: run.textAdapterId,
@@ -171,6 +175,7 @@ function buildRankingsMarkdown(aggregate) {
     "",
     `Created: ${aggregate.createdAtIso}`,
     `Runs: ${aggregate.totalRuns}`,
+    aggregate.phaseFilter?.length ? `Phase filter: ${aggregate.phaseFilter.join(", ")}` : "",
     "",
     "| Rank | Score | Status | Visual grade | Fixture | Text model | Image model | Provider | Technique | Contact sheet |",
     "|---:|---:|---|---|---|---|---|---|---|---|"
@@ -239,6 +244,13 @@ function parseArgs(values) {
     }
   }
   return parsed;
+}
+
+function parseListArg(value) {
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function relativePath(filePath) {
