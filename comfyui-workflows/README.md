@@ -116,7 +116,7 @@ Prerequisites:
 - Restart ComfyUI after installation.
 - Pin production font file names to match the adapter variables
   (`georgia.ttf`, `arial.ttf`, `arialbd.ttf`) or update
-  `localComfyFontForPairing` in `scripts/ai-card-generator.mjs`.
+  `localComfyFontForPairing` in `scripts/local-comfy-production-text.mjs`.
 - Confirm `http://127.0.0.1:8188/object_info` contains
   `CustomCardTextComposer`, the soft safe-field inputs
   (`*_box_background_style`, `*_box_background_radius`,

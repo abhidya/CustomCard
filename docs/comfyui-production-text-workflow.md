@@ -23,6 +23,10 @@ repeatable print output.
   Comfy output as the final text-composited panel and bypasses the app overlay.
 - `buildImagePromptPlan` now carries `headline`, `body`, and normalized
   `text_layout` into image-provider execution as `panel_copy`.
+- `scripts/local-comfy-production-text.mjs` is the shared production text
+  contract used by both the app generator and benchmark loop. Put template
+  variables, safe-field geometry, artwork guards, and workflow-input metadata
+  there first so the two execution paths do not drift.
 - `executeLocalComfyUiImage` now exposes text/layout variables to Comfy workflow
   templates:
   - `headline_text`, `body_text`
@@ -246,6 +250,9 @@ Comfy template variables exposed by the local adapter include:
 - `scripts/comfyui-production-text-preflight.mjs`
   - Offline/live preflight.
   - Verifies workflow JSON, node source, and live `/object_info` when requested.
+- `scripts/local-comfy-production-text.mjs`
+  - Shared adapter contract for Comfy template variables, deterministic
+    typography boxes, soft safe fields, artwork guards, and metadata summaries.
 - `tools/run-production-text-benchmark.ps1`
   - Full-card benchmark wrapper for the production workflow.
   - Uses benchmark phase `local-production-text`, not `local-typography`, so `panel_copy`
