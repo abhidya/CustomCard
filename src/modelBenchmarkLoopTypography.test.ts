@@ -6,6 +6,7 @@ import {
   localTypographyRuns,
   parseBenchmarkRequestBody,
   pipelineQualityRuns,
+  productionTextAutoChecks,
   sanitizeBenchmarkValue,
   stories as benchmarkStories,
   typographyExperimentRuns,
@@ -448,5 +449,52 @@ describe("model benchmark typography experiment", () => {
       responseStatus: 200,
       responseOk: true
     });
+  });
+
+  it("recognizes exact copy metadata in production Comfy text requests", () => {
+    const frontCopy = {
+      headline: "For Moments That Matter",
+      body: "Wishing you strength and peace on your day."
+    };
+    const autoChecks = productionTextAutoChecks({
+      promptPlans: [
+        { panelId: "front" },
+        { panelId: "inside-left" },
+        { panelId: "inside-right" },
+        { panelId: "back" }
+      ],
+      panelCopies: { front: frontCopy },
+      providerCalls: [
+        {
+          url: "http://127.0.0.1:8188/prompt",
+          method: "POST",
+          request: {
+            body: {
+              extra_data: {
+                customcard: {
+                  panel_id: "front",
+                  inputs: {
+                    headline_text: frontCopy.headline,
+                    body_text: frontCopy.body,
+                    headline_box: { x: 86, y: 376, width: 788, height: 296 },
+                    body_box: { x: 106, y: 780, width: 748, height: 403 }
+                  }
+                }
+              }
+            }
+          },
+          response: { status: 200, ok: true, contentType: "application/json" }
+        }
+      ],
+      decodedFiles: [
+        { buffer: Buffer.from("front") },
+        { buffer: Buffer.from("inside-left") },
+        { buffer: Buffer.from("inside-right") },
+        { buffer: Buffer.from("back") }
+      ]
+    });
+
+    expect(autoChecks.checks.metadataIncludesExactCopy).toBe(true);
+    expect(autoChecks.checks.metadataIncludesSafeBoxes).toBe(true);
   });
 });

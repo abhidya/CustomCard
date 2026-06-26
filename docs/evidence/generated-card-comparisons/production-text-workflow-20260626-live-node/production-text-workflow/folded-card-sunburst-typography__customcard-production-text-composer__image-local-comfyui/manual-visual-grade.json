@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "createdAtIso": "2026-06-26T01:45:00.000Z",
+  "reviewer": "codex-manual-visual-inspection",
+  "sourceContactSheet": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-live-node/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/contact-sheet.png",
+  "totalScore": 47,
+  "status": "blocked",
+  "passed": false,
+  "productionRecommendation": "do-not-promote",
+  "rubric": {
+    "fourPanelPromptAdherenceAndPanelContract": {
+      "score": 4,
+      "maxScore": 10,
+      "notes": "Four panels rendered, but front and interior panels drift into object/mockup scenes instead of flat stationery artwork."
+    },
+    "frontExactTextAndTypography": {
+      "score": 13,
+      "maxScore": 20,
+      "notes": "Headline and body are exact and visible. Body is small, and the generated object at the top violates the flat panel contract."
+    },
+    "insideLeftRightExactTextAndReadability": {
+      "score": 8,
+      "maxScore": 20,
+      "notes": "Exact copy is present, but body text is small, low-contrast, and placed over busy generated imagery."
+    },
+    "insideLeftRightVisualCohesionAsOpenedSpread": {
+      "score": 4,
+      "maxScore": 15,
+      "notes": "The two interior panels share a warm palette, but both read as object scenes rather than a coordinated opened-card spread."
+    },
+    "backNoTextDisciplineAndCoordinatingMark": {
+      "score": 8,
+      "maxScore": 10,
+      "notes": "Back panel has no readable copy and stays broadly coordinated, though the abstract marks are not yet a deliberate brand/device system."
+    },
+    "overallFoldedCardThemeCoherence": {
+      "score": 5,
+      "maxScore": 10,
+      "notes": "Gold, charcoal, and ivory are consistent, but the visual language shifts from stationery to generated objects."
+    },
+    "printReadinessAndMargins": {
+      "score": 5,
+      "maxScore": 15,
+      "notes": "Text boxes exist and margins are mostly safe, but interior readability and busy backgrounds are not print-ready."
+    }
+  },
+  "blockingFailures": [
+    "Generated artwork violates the flat 2D greeting-card panel contract with object/mockup-like scenes.",
+    "Inside-left and inside-right text sits over busy generated imagery instead of plain safe fields.",
+    "Interior body copy has low readability at contact-sheet scale and needs a stronger contrast/layout gate.",
+    "Preflight and structural auto-checks prove the Comfy text composer path, but they do not prove production visual quality."
+  ],
+  "smallestNextFix": "Keep CustomCardTextComposer as the text path, but test a flatter illustration/stationery checkpoint or stricter workflow before promotion. Add OCR/local vision review for object-scene leakage, fake text, and low contrast."
+}

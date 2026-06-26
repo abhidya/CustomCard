@@ -2,7 +2,7 @@
   "ok": true,
   "promotionReady": true,
   "status": "promotion-ready",
-  "createdAtIso": "2026-06-26T01:25:29.188Z",
+  "createdAtIso": "2026-06-26T01:37:18.730Z",
   "comfyUrl": "http://127.0.0.1:8188",
   "workflowPath": "comfyui-workflows/customcard-production-text-overlay.json",
   "nodeSource": "comfyui-custom-nodes/CustomCardTextComposer",
@@ -92,7 +92,7 @@
     }
   ],
   "nextSteps": [
-    "After restart, refresh /object_info evidence so CustomCardTextComposer is visible to future agents."
+    "Run tools/run-production-text-benchmark.ps1 to produce four-panel production workflow evidence."
   ],
   "reportDir": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626-live-node"
 }

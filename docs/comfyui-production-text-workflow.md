@@ -19,6 +19,8 @@ repeatable print output.
 - `customcard-production-text-overlay.json` is the production candidate. It adds
   the repo-owned `CustomCardTextComposer` node after `VAEDecode` and before
   `SaveImage`.
+- `local-production-text` is the benchmark phase for this candidate. It treats
+  Comfy output as the final text-composited panel and bypasses the app overlay.
 - `buildImagePromptPlan` now carries `headline`, `body`, and normalized
   `text_layout` into image-provider execution as `panel_copy`.
 - `executeLocalComfyUiImage` now exposes text/layout variables to Comfy workflow
@@ -27,6 +29,36 @@ repeatable print output.
   - font, size, fill, stroke, alignment, line spacing
   - explicit headline/body safe boxes with x, y, width, and height
   - panel/workflow metadata for evidence
+
+## Latest Evidence
+
+Structural workflow proof exists, but production promotion is blocked by visual
+quality.
+
+- Live Comfy preflight:
+  `docs/evidence/generated-card-comparisons/production-text-preflight-20260626-live-node`
+  - `CustomCardTextComposer` was visible in live `/object_info`.
+  - Status: `promotion-ready` for workflow/node availability only.
+- Live production benchmark:
+  `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-live-node`
+  - Phase: `local-production-text`.
+  - Four panels rendered.
+  - Final images were rendered by Comfy with `CustomCardTextComposer`.
+  - App overlay was bypassed.
+  - Exact headline/body metadata and safe boxes were present.
+- Manual visual grade:
+  `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-live-node/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/manual-visual-grade.md`
+  - Score: 47/100.
+  - Status: blocked.
+  - Recommendation: do not promote.
+- Aggregate report:
+  `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text/benchmark-rankings.md`
+  - Manual visual grade is preferred over the structural auto-check score.
+  - Result: 47/100, blocked, `do-not-promote`.
+
+The current DreamShaper run proves the Comfy text architecture, not production
+card quality. Visual blockers are object/mockup-scene leakage, busy interior
+safe fields, and low body-copy readability on inside panels.
 
 ## Research Summary
 
@@ -58,6 +90,8 @@ Remaining risks:
   in the artwork layer, and low contrast.
 - The first version has fixed box heuristics derived from `text_layout`; it does
   not yet score alternative placements.
+- The current local checkpoint can ignore the flat stationery prompt contract
+  and produce object scenes even when text compositing succeeds.
 
 ### Third-Party Overlay Reference
 
@@ -171,7 +205,7 @@ Comfy template variables exposed by the local adapter include:
   - Verifies workflow JSON, node source, and live `/object_info` when requested.
 - `tools/run-production-text-benchmark.ps1`
   - Full-card benchmark wrapper for the production workflow.
-  - Uses benchmark phase `local`, not `local-typography`, so `panel_copy`
+  - Uses benchmark phase `local-production-text`, not `local-typography`, so `panel_copy`
     reaches the Comfy adapter.
 
 ## Gates Before Production Default
@@ -193,11 +227,19 @@ Comfy template variables exposed by the local adapter include:
 6. Promote only after aggregate benchmark evidence beats the current
    app-compositor baseline.
 
+Current status: gates 1, 3, and 4 have passing evidence for the local Comfy
+runtime used on 2026-06-26. Gate 5 blocks promotion because the live benchmark
+manual grade is 47/100. Gate 6 is not satisfied because the production-text
+aggregate ranks the candidate as blocked after applying the manual visual grade.
+
 ## Open Engineering Work
 
-- Add a live benchmark proof after the target Comfy runtime is restarted with
-  `CustomCardTextComposer` available in `/object_info`.
+- Test a flatter illustration/stationery checkpoint or stricter workflow so the
+  artwork layer stays a flat 2D greeting-card panel instead of drifting into
+  object/mockup scenes.
 - Add per-panel seed offsets when `CUSTOMCARD_COMFYUI_SEED` is set.
 - Make benchmark output directories timestamped by default.
 - Add OCR or local vision-review evidence to catch pseudo-text and object-scene
   failures automatically.
+- Promote only after a benchmark aggregate includes a passing manual or local
+  vision visual grade for every production-text candidate run.

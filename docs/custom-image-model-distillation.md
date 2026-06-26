@@ -92,6 +92,17 @@ Production text workflow tracking:
   `scripts/comfyui-production-text-preflight.mjs`
 - Production benchmark wrapper:
   `tools/run-production-text-benchmark.ps1`
+- Live node/preflight evidence:
+  `docs/evidence/generated-card-comparisons/production-text-preflight-20260626-live-node`
+- Live benchmark evidence:
+  `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-live-node`
+- Production-text aggregate:
+  `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text`
+- Current production-text recommendation:
+  keep the Comfy-side deterministic text composer, but do not promote the
+  DreamShaper production-text benchmark. Manual visual grade is 47/100 and
+  blocked due to object/mockup-scene leakage, busy interior text fields, and
+  weak inside-panel body readability.
 
 Installed research candidates under `D:\models\`:
 
@@ -158,6 +169,7 @@ Local visual quality gate:
 4. Aggregate and rank:
    - pass/fail
    - score
+   - manual visual grade when present
    - critical failures
    - provider/model/workflow hashes
    - cost or GPU seconds
@@ -169,6 +181,8 @@ Local visual quality gate:
    - aggregate score beats current champion
    - no fixture drops below its pass score
    - human review approves taste and print readiness
+   - for production text workflows, the aggregate score includes a passing
+     manual or local-vision visual grade, not only structural auto-checks
 
 ## Aggregate Schema
 

@@ -149,7 +149,7 @@ function buildNextSteps({ requireLive, liveComfyReachable, liveNodeAvailable, ca
   if (liveComfyReachable && !liveNodeAvailable) {
     steps.push("Link comfyui-custom-nodes/CustomCardTextComposer into ComfyUI/custom_nodes and restart ComfyUI.");
   }
-  if (!cachedNodeAvailable) {
+  if (!cachedNodeAvailable && !liveNodeAvailable) {
     steps.push("After restart, refresh /object_info evidence so CustomCardTextComposer is visible to future agents.");
   }
   if (!requireLive) {

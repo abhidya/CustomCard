@@ -92,6 +92,7 @@ function readModelBenchmarkSummary(filePath) {
   if (!payload?.runs || !Array.isArray(payload.runs)) return [];
   return payload.runs.map((run) => {
     const autoScore = scoreAutoChecks(run.autoChecks);
+    const manualVisualGrade = readManualVisualGrade(run);
     return {
       benchmarkKind: "model-benchmark-loop",
       sourceFile: relativePath(filePath),
@@ -104,13 +105,15 @@ function readModelBenchmarkSummary(filePath) {
       imageModel: run.imageModel,
       provider: run.imageAdapterId,
       technique: run.typographyStrategy || run.focus || payload.phase,
-      score: autoScore.score,
-      status: run.status || (run.statusCode === 200 ? "pass" : run.statusCode ? `status-${run.statusCode}` : "unknown"),
+      score: manualVisualGrade?.score ?? autoScore.score,
+      status: manualVisualGrade?.status || run.status || (run.statusCode === 200 ? "pass" : run.statusCode ? `status-${run.statusCode}` : "unknown"),
       passed: autoScore.passed,
       total: autoScore.total,
+      autoScore: autoScore.score,
+      manualVisualGrade,
       panelCount: run.panelCount,
       providerCallCount: run.providerCallCount,
-      contactSheet: run.contactSheet,
+      contactSheet: run.contactSheet ? relativePath(run.contactSheet) : undefined,
       settings: {
         phase: payload.phase,
         phaseDir: payload.phaseDir,
@@ -118,6 +121,22 @@ function readModelBenchmarkSummary(filePath) {
       }
     };
   });
+}
+
+function readManualVisualGrade(run) {
+  if (!run?.runDir) return undefined;
+  const gradePath = resolve(repoRoot, run.runDir, "manual-visual-grade.json");
+  const grade = readJson(gradePath);
+  if (!grade) return undefined;
+  const score = Number(grade.totalScore ?? grade.score);
+  return {
+    path: relativePath(gradePath),
+    score: Number.isFinite(score) ? score : undefined,
+    status: grade.status || (grade.passed === true ? "pass" : grade.passed === false ? "blocked" : undefined),
+    passed: grade.passed,
+    recommendation: grade.productionRecommendation,
+    blockingFailures: Array.isArray(grade.blockingFailures) ? grade.blockingFailures : []
+  };
 }
 
 function scoreAutoChecks(autoChecks) {
@@ -153,14 +172,15 @@ function buildRankingsMarkdown(aggregate) {
     `Created: ${aggregate.createdAtIso}`,
     `Runs: ${aggregate.totalRuns}`,
     "",
-    "| Rank | Score | Status | Fixture | Text model | Image model | Provider | Technique | Contact sheet |",
-    "|---:|---:|---|---|---|---|---|---|---|"
+    "| Rank | Score | Status | Visual grade | Fixture | Text model | Image model | Provider | Technique | Contact sheet |",
+    "|---:|---:|---|---|---|---|---|---|---|---|"
   ];
   for (const entry of aggregate.ranked) {
     lines.push([
       entry.rank,
       entry.score ?? "n/a",
       entry.status || "unknown",
+      visualGradeCell(entry.manualVisualGrade),
       entry.fixtureId || "n/a",
       markdownCell(entry.textModel || entry.textAdapterId || "n/a"),
       markdownCell(entry.imageModel || entry.imageAdapterId || "n/a"),
@@ -170,7 +190,7 @@ function buildRankingsMarkdown(aggregate) {
     ].join(" | ").replace(/^/, "| ").replace(/$/, " |"));
   }
   lines.push("");
-  lines.push("Scores are normalized from deterministic QA scorecards when available, otherwise from advisory benchmark-loop auto-check booleans. Human visual grades should be added before production promotion.");
+  lines.push("Scores prefer manual visual grades when present, then deterministic QA scorecards, then advisory benchmark-loop auto-check booleans. Human visual grades should be added before production promotion.");
   return `${lines.join("\n")}\n`;
 }
 
@@ -194,6 +214,13 @@ function writeMarkdown(filePath, value) {
 
 function markdownCell(value) {
   return String(value ?? "").replace(/\|/g, "\\|");
+}
+
+function visualGradeCell(grade) {
+  if (!grade) return "n/a";
+  const label = [grade.score ?? "n/a", grade.recommendation].filter(Boolean).join(" / ");
+  const displayPath = grade.path?.replace(/\.json$/, ".md");
+  return displayPath ? `[${markdownCell(label || "open")}](../${displayPath.replace(/^docs\/evidence\/generated-card-comparisons\//, "")})` : markdownCell(label || "manual");
 }
 
 function parseArgs(values) {

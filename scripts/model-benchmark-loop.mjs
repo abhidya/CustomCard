@@ -2730,15 +2730,21 @@ function typographyAutoChecks({ promptPlans, providerCalls, decodedFiles }) {
   };
 }
 
-function productionTextAutoChecks({ promptPlans, panelCopies, providerCalls, decodedFiles }) {
+export function productionTextAutoChecks({ promptPlans, panelCopies, providerCalls, decodedFiles }) {
   const plans = Array.isArray(promptPlans) ? promptPlans : [];
   const decoded = Array.isArray(decodedFiles) ? decodedFiles : [];
   const copies = panelCopies || {};
   const requestBodies = providerCalls
     .filter((call) => String(call.url || "").includes("/prompt"))
-    .map((call) => call.request?.body || {})
+    .map((call) => providerCallBodyObject(call))
     .filter(Boolean);
-  const metadataInputs = requestBodies.map((body) => body.extra_data?.customcard?.inputs || {});
+  const metadataInputs = requestBodies.map((body) => {
+    const customcard = body.extra_data?.customcard || {};
+    return {
+      ...customcard.inputs,
+      panel_id: customcard.panel_id || customcard.inputs?.panel_id
+    };
+  });
   const copyPanels = typographyPanelOrder.filter((panelId) => Boolean(copies[panelId]?.headline || copies[panelId]?.body));
   const metadataIncludesCopy = copyPanels.every((panelId) => {
     const panelCopy = copies[panelId] || {};
@@ -2764,6 +2770,14 @@ function productionTextAutoChecks({ promptPlans, panelCopies, providerCalls, dec
     note:
       "Production text phase treats Comfy output as the final text-composited panel. Automated checks prove request metadata and image materialization; visual text quality still requires inspection."
   };
+}
+
+function providerCallBodyObject(call) {
+  const body = call?.request?.body;
+  if (!body) return undefined;
+  if (typeof body === "string") return parseJson(body);
+  if (typeof body === "object") return body;
+  return undefined;
 }
 
 function panelHasBenchmarkCopy(panelId) {

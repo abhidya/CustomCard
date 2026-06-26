@@ -156,6 +156,22 @@ export interface EffectiveProviderRequests {
   requests: EffectiveProviderRequest[];
 }
 
+export interface ProductionTextAutoChecks {
+  advisoryOnly: true;
+  checks: {
+    fourPanels: boolean;
+    panelIds: unknown[];
+    providerCalls: number;
+    materializedImages: number;
+    allPanelsMaterialized: boolean;
+    finalImagesRenderedByComfy: boolean;
+    appOverlayBypassed: boolean;
+    metadataIncludesExactCopy: boolean;
+    metadataIncludesSafeBoxes: boolean;
+  };
+  note: string;
+}
+
 export const typographyExperimentSpec: TypographyExperimentSpec;
 
 export const stories: Record<string, BenchmarkStory>;
@@ -197,6 +213,13 @@ export function buildEffectiveProviderRequests(args: {
   providerCalls?: LoggedProviderCall[];
   requestPanelIds?: string[];
 }): EffectiveProviderRequests;
+
+export function productionTextAutoChecks(args: {
+  promptPlans?: Array<{ panelId?: string }>;
+  panelCopies?: Record<string, { headline?: string; body?: string }>;
+  providerCalls?: LoggedProviderCall[];
+  decodedFiles?: Array<{ buffer?: { length?: number } }>;
+}): ProductionTextAutoChecks;
 
 export function sanitizeBenchmarkValue(value: undefined, env?: Record<string, string | undefined>): undefined;
 

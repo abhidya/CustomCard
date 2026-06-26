@@ -83,7 +83,7 @@
       "allPanelsMaterialized": true,
       "finalImagesRenderedByComfy": true,
       "appOverlayBypassed": true,
-      "metadataIncludesExactCopy": false,
+      "metadataIncludesExactCopy": true,
       "metadataIncludesSafeBoxes": true
     },
     "note": "Production text phase treats Comfy output as the final text-composited panel. Automated checks prove request metadata and image materialization; visual text quality still requires inspection."

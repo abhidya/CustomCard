@@ -1,6 +1,6 @@
 # Production Text Workflow Preflight
 
-Created: 2026-06-26T01:25:29.188Z
+Created: 2026-06-26T01:37:18.730Z
 
 - Workflow: `comfyui-workflows/customcard-production-text-overlay.json`
 - Custom node source: `comfyui-custom-nodes/CustomCardTextComposer`
@@ -24,4 +24,4 @@ Created: 2026-06-26T01:25:29.188Z
 
 ## Next Steps
 
-- After restart, refresh /object_info evidence so CustomCardTextComposer is visible to future agents.
+- Run tools/run-production-text-benchmark.ps1 to produce four-panel production workflow evidence.
