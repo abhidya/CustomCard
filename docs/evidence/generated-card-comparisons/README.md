@@ -31,6 +31,9 @@ Current production-text research status:
 Current production-text evidence index:
 `production-text-evidence-index-20260626-current/production-text-evidence-index.md`.
 
+Current production-text promotion gate:
+`production-text-promotion-gate-20260626-current/production-text-promotion-gate.md`.
+
 Latest LLM-planned production-text matrix:
 `benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-rankings.md`.
 

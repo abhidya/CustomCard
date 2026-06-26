@@ -97,6 +97,7 @@
     "comfy:production-text:preflight": "node scripts/comfyui-production-text-preflight.mjs",
     "comfy:production-text:doctor": "node scripts/production-text-readiness-doctor.mjs",
     "comfy:production-text:evidence": "node scripts/production-text-evidence-index.mjs",
+    "comfy:production-text:gate": "node scripts/production-text-promotion-gate.mjs",
     "comfy:production-text:benchmark": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1",
     "mcp:serve": "node --disable-warning=ExperimentalWarning mcp/server.mjs",
     "mobile:release:doctor": "npm --prefix apps/mobile run release:doctor"

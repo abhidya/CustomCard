@@ -29,6 +29,7 @@ Production text should be planned by the card-copy LLM and rendered by ComfyUI:
 | `tools/start-local-card-planner.ps1` Gemma 31B attempt | Operationally blocked | Gemma 31B loaded at `http://127.0.0.1:5003/v1`, but CPU decoding did not finish the first benchmark planner response in a practical window even with `-PlannerMaxTokens 1800`. Use GPU/offload or a hosted/self-hosted larger planner for promotion evidence. |
 | `docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current` | Blocked | Readiness doctor confirms ComfyUI and `CustomCardTextComposer` are live and higher-quality planner files are installed, but the discovered reachable planner is still Qwen3-4B on `5001` and no production-suitable endpoint is reachable/configured. |
 | `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current` | Blocked | Evidence index aggregates the tracked readiness, preflight, benchmark, aggregate, and manual-grade reports. It excludes untracked scratch by default and keeps promotion blocked by the small planner endpoint plus failed LLM-planned aggregate. |
+| `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current` | Blocked | Promotion gate passes live Comfy/text-composer and final-Comfy-image requirements, but fails readiness, production-suitable planner, no-small-planner, full matrix completion, must-include adherence, and manual aggregate requirements. |
 | `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-artwork-guard-v2` | 72/100, blocked | Deterministic Comfy text, soft text fields, and artwork guards work structurally, but artwork remains too dense for production. |
 | `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-candidates` | Blocked | Aggregate evidence still says do not promote production Comfy text as the default path. |
 
@@ -92,6 +93,10 @@ Run `npm run comfy:production-text:evidence -- --output-dir docs/evidence/genera
 to refresh the tracked production-text evidence index. Add `--include-untracked`
 only when intentionally reviewing local scratch runs that should not be treated
 as promotion proof.
+
+Run `npm run comfy:production-text:gate -- --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current --index-output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current`
+as the final promotion contract. Remove `--advisory` only when the current
+planner/runtime and aggregate evidence are expected to pass.
 
 Use `-AllowCompositorFixtureFallback` only when intentionally collecting a
 single-run structural compositor smoke test.

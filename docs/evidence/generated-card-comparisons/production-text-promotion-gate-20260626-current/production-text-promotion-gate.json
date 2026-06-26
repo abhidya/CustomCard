@@ -1,0 +1,137 @@
+{
+  "createdAtIso": "2026-06-26T22:21:46.669Z",
+  "status": "blocked",
+  "promotionReady": false,
+  "advisory": true,
+  "requiredFixtures": [
+    "aquarium-lover-birthday",
+    "koi-fish-lover-encouragement",
+    "dog-lover-thank-you"
+  ],
+  "evidenceIndex": "docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current",
+  "latest": {
+    "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
+    "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626T042126Z/production-text-preflight.json",
+    "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
+    "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json"
+  },
+  "requirements": [
+    {
+      "name": "live ComfyUI preflight passed",
+      "ok": true,
+      "details": {
+        "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626T042126Z/production-text-preflight.json",
+        "liveComfyReachable": true,
+        "liveNodeAvailable": true
+      }
+    },
+    {
+      "name": "readiness doctor is promotion-ready",
+      "ok": false,
+      "details": {
+        "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
+        "blockers": [
+          "latest LLM-planned aggregate is passing",
+          "configured production planner endpoint is production-suitable",
+          "configured production planner is not a small smoke model"
+        ]
+      }
+    },
+    {
+      "name": "production-suitable planner endpoint is reachable",
+      "ok": false,
+      "details": {
+        "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
+        "activePlannerModels": [
+          "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
+        ]
+      }
+    },
+    {
+      "name": "no small smoke planner is active or used",
+      "ok": false,
+      "details": {
+        "readinessSmallPlannerActive": true,
+        "benchmarkSmallPlannerUsed": true,
+        "textModels": [
+          "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
+        ]
+      }
+    },
+    {
+      "name": "LLM-planned customer request matrix completed",
+      "ok": false,
+      "details": {
+        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
+        "requiredFixtures": [
+          "aquarium-lover-birthday",
+          "koi-fish-lover-encouragement",
+          "dog-lover-thank-you"
+        ],
+        "fixtures": [
+          "aquarium-lover-birthday",
+          "koi-fish-lover-encouragement",
+          "dog-lover-thank-you"
+        ],
+        "completedRuns": 2,
+        "failedRuns": 1
+      }
+    },
+    {
+      "name": "final images came from Comfy text composer",
+      "ok": true,
+      "details": {
+        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
+        "finalImagesRenderedByComfy": true,
+        "deterministicTextComposerUsed": true
+      }
+    },
+    {
+      "name": "planner preserved required terms and avoided forbidden terms",
+      "ok": false,
+      "details": {
+        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
+        "missingMustInclude": [
+          "Nina",
+          "aquarium",
+          "Morgan",
+          "dog"
+        ],
+        "mustAvoidFailures": [
+          "mockup"
+        ]
+      }
+    },
+    {
+      "name": "manual aggregate is promotion-ready",
+      "ok": false,
+      "details": {
+        "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
+        "totalRuns": 3,
+        "statuses": {
+          "blocked": 2,
+          "failed": 1
+        },
+        "bestScore": 38,
+        "blockingFailures": [
+          "Planner missed required recipient/name/theme terms: Nina and aquarium are absent.",
+          "Artwork and copy drifted into botanical birthday stationery instead of aquarium-lover stationery.",
+          "Back panel is too dark, contains visible text, and does not behave as a sparse no-copy back cover.",
+          "Planner missed required recipient/name/theme terms: Morgan and dog are absent.",
+          "Copy invents plant-watering context and says the plants are grateful, which contradicts the dog-lover thank-you request.",
+          "Local Qwen3-4B planner returned invalid JSON.",
+          "The LLM response hit the 2200-token completion cap with finish_reason length.",
+          "No image panels were generated for the koi encouragement request."
+        ]
+      }
+    }
+  ],
+  "nextSteps": [
+    "Run the readiness doctor after starting a production-suitable planner endpoint.",
+    "Use Qwen3-4B only for smoke/failure evidence; run promotion evidence with the larger planner endpoint.",
+    "Run the full aquarium/koi/dog production-text matrix to completion.",
+    "Keep the full prompt and retry/repair planner output until must_include and must_avoid checks pass before Comfy work.",
+    "Manually grade every run and regenerate the aggregate only after all candidates pass."
+  ],
+  "reportDir": "docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current"
+}

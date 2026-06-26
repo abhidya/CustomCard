@@ -159,6 +159,16 @@ The index scans tracked production-text readiness, preflight, benchmark,
 aggregate, and manual-grade evidence. Pass `--include-untracked` only for local
 scratch review.
 
+Promotion gate before defaulting the workflow:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-promotion-gate.mjs --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current --index-output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current
+```
+
+The gate is the final pass/fail contract for production-text promotion. It is
+expected to stay blocked until the planner endpoint, LLM-planned matrix, term
+adherence, and manual aggregate requirements all pass.
+
 Run a full-card benchmark through the production workflow:
 
 ```powershell
@@ -234,6 +244,11 @@ Latest live evidence:
   `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current`
   - Tracks the current production-text evidence set and keeps promotion blocked
     until the planner endpoint and aggregate evidence pass.
+- Current promotion gate:
+  `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current`
+  - Passes live Comfy/text-composer proof and final-Comfy-image evidence.
+  - Fails the planner, matrix completion, must-include, and manual aggregate
+    requirements, so production promotion remains blocked.
 
 ## Local Visual Quality Gate
 
