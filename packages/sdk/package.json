@@ -1,0 +1,58 @@
+{
+  "name": "@customcard/sdk",
+  "version": "0.1.0",
+  "description": "Official TypeScript/JavaScript client SDK for the CustomCard API — relationship-aware greeting cards, AI card generation, render packets, retail fulfillment, and admin operations.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abhidya/CustomCard.git",
+    "directory": "packages/sdk"
+  },
+  "homepage": "https://github.com/abhidya/CustomCard/tree/main/packages/sdk#readme",
+  "bugs": {
+    "url": "https://github.com/abhidya/CustomCard/issues"
+  },
+  "keywords": [
+    "customcard",
+    "greeting-cards",
+    "sdk",
+    "api-client",
+    "typescript",
+    "ai",
+    "print-on-demand"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.8"
+  }
+}
