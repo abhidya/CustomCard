@@ -149,6 +149,16 @@ The doctor checks the production workflow, live Comfy node, latest aggregate,
 local model inventory, and planner endpoint suitability. It should stay blocked
 when the only reachable planner is a Qwen3-4B smoke model.
 
+Evidence index before deciding the next run:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-evidence-index.mjs --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current
+```
+
+The index scans tracked production-text readiness, preflight, benchmark,
+aggregate, and manual-grade evidence. Pass `--include-untracked` only for local
+scratch review.
+
 Run a full-card benchmark through the production workflow:
 
 ```powershell
@@ -220,6 +230,10 @@ Latest live evidence:
   - ComfyUI and `CustomCardTextComposer` are live.
   - Higher-quality local planner files exist, but no production-suitable
     planner endpoint is reachable/configured yet.
+- Current evidence index:
+  `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current`
+  - Tracks the current production-text evidence set and keeps promotion blocked
+    until the planner endpoint and aggregate evidence pass.
 
 ## Local Visual Quality Gate
 

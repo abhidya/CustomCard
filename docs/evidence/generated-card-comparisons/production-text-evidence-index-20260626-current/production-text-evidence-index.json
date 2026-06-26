@@ -1,0 +1,584 @@
+{
+  "createdAtIso": "2026-06-26T22:14:19.581Z",
+  "status": "blocked",
+  "promotionReady": false,
+  "evidenceRoot": "docs/evidence/generated-card-comparisons",
+  "includeUntracked": false,
+  "scanMode": "git-tracked",
+  "latest": {
+    "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
+    "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626T042126Z/production-text-preflight.json",
+    "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
+    "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json"
+  },
+  "findings": [
+    "Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.",
+    "The currently reachable planner is a known-small smoke model, so current evidence must not be promoted.",
+    "No production-suitable planner endpoint is reachable/configured in the latest readiness report.",
+    "The latest LLM-planned benchmark covers 3 customer request runs.",
+    "Planner/theme adherence is still failing required terms: Nina, aquarium, Morgan, dog.",
+    "Latest aggregate is blocked: best score 38 across 3 run(s)."
+  ],
+  "nextSteps": [
+    "Start or configure a production-suitable planner endpoint before collecting promotion evidence.",
+    "Keep Qwen3-4B/small planner runs as smoke or failure evidence only.",
+    "Run the full aquarium/koi/dog LLM-planned production-text matrix with the stronger planner.",
+    "Manually grade every production-text run and aggregate only after all candidates pass."
+  ],
+  "readinessReports": [
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
+      "createdAtIso": "2026-06-26T05:22:09.061Z",
+      "status": "blocked",
+      "promotionReady": false,
+      "blockerCount": 3,
+      "blockers": [
+        "latest LLM-planned aggregate is passing",
+        "configured production planner endpoint is production-suitable",
+        "configured production planner is not a small smoke model"
+      ],
+      "comfyReachable": true,
+      "hasTextComposer": true,
+      "activePlannerModels": [
+        "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
+      ],
+      "productionSuitablePlannerReachable": false,
+      "smallPlannerActive": true,
+      "nextSteps": [
+        "Run tools/start-local-card-planner.ps1 with GPU/offload, use a hosted/self-hosted larger planner, or point -LocalLlmBaseUrl at that endpoint.",
+        "Switch the production planner URL away from Qwen3-4B/small smoke models; keep -AllowSmallPlanner only for exploratory failure evidence.",
+        "Run the full LLM-planned matrix with a production-suitable planner, manually grade every run, then aggregate."
+      ]
+    }
+  ],
+  "preflights": [
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626T042126Z/production-text-preflight.json",
+      "createdAtIso": "2026-06-26T04:21:27.154Z",
+      "status": "promotion-ready",
+      "promotionReady": true,
+      "liveComfyReachable": true,
+      "liveNodeAvailable": true,
+      "workflowPath": "comfyui-workflows/customcard-production-text-overlay.json",
+      "nextSteps": [
+        "Run tools/run-production-text-benchmark.ps1 to produce four-panel production workflow evidence."
+      ]
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626-artwork-guard/production-text-preflight.json",
+      "createdAtIso": "2026-06-26T02:59:23.249Z",
+      "status": "promotion-ready",
+      "promotionReady": true,
+      "liveComfyReachable": true,
+      "liveNodeAvailable": true,
+      "workflowPath": "comfyui-workflows/customcard-production-text-overlay.json",
+      "nextSteps": [
+        "Run tools/run-production-text-benchmark.ps1 to produce four-panel production workflow evidence."
+      ]
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626-soft-fields/production-text-preflight.json",
+      "createdAtIso": "2026-06-26T02:33:34.908Z",
+      "status": "promotion-ready",
+      "promotionReady": true,
+      "liveComfyReachable": true,
+      "liveNodeAvailable": true,
+      "workflowPath": "comfyui-workflows/customcard-production-text-overlay.json",
+      "nextSteps": [
+        "Run tools/run-production-text-benchmark.ps1 to produce four-panel production workflow evidence."
+      ]
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626-safe-fields/production-text-preflight.json",
+      "createdAtIso": "2026-06-26T02:04:55.929Z",
+      "status": "promotion-ready",
+      "promotionReady": true,
+      "liveComfyReachable": true,
+      "liveNodeAvailable": true,
+      "workflowPath": "comfyui-workflows/customcard-production-text-overlay.json",
+      "nextSteps": [
+        "Run tools/run-production-text-benchmark.ps1 to produce four-panel production workflow evidence."
+      ]
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626T014708Z/production-text-preflight.json",
+      "createdAtIso": "2026-06-26T01:47:08.448Z",
+      "status": "promotion-ready",
+      "promotionReady": true,
+      "liveComfyReachable": true,
+      "liveNodeAvailable": true,
+      "workflowPath": "comfyui-workflows/customcard-production-text-overlay.json",
+      "nextSteps": [
+        "Run tools/run-production-text-benchmark.ps1 to produce four-panel production workflow evidence."
+      ]
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626T014358Z/production-text-preflight.json",
+      "createdAtIso": "2026-06-26T01:43:58.874Z",
+      "status": "promotion-ready",
+      "promotionReady": true,
+      "liveComfyReachable": true,
+      "liveNodeAvailable": true,
+      "workflowPath": "comfyui-workflows/customcard-production-text-overlay.json",
+      "nextSteps": [
+        "Run tools/run-production-text-benchmark.ps1 to produce four-panel production workflow evidence."
+      ]
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626-live-node/production-text-preflight.json",
+      "createdAtIso": "2026-06-26T01:43:40.344Z",
+      "status": "promotion-ready",
+      "promotionReady": true,
+      "liveComfyReachable": true,
+      "liveNodeAvailable": true,
+      "workflowPath": "comfyui-workflows/customcard-production-text-overlay.json",
+      "nextSteps": [
+        "Run tools/run-production-text-benchmark.ps1 to produce four-panel production workflow evidence."
+      ]
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626T012537Z/production-text-preflight.json",
+      "createdAtIso": "2026-06-26T01:25:38.768Z",
+      "status": "promotion-ready",
+      "promotionReady": true,
+      "liveComfyReachable": true,
+      "liveNodeAvailable": true,
+      "workflowPath": "comfyui-workflows/customcard-production-text-overlay.json",
+      "nextSteps": [
+        "After restart, refresh /object_info evidence so CustomCardTextComposer is visible to future agents."
+      ]
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626T012157Z/production-text-preflight.json",
+      "createdAtIso": "2026-06-26T01:21:58.313Z",
+      "status": "promotion-ready",
+      "promotionReady": true,
+      "liveComfyReachable": true,
+      "liveNodeAvailable": true,
+      "workflowPath": "comfyui-workflows/customcard-production-text-overlay.json",
+      "nextSteps": [
+        "After restart, refresh /object_info evidence so CustomCardTextComposer is visible to future agents."
+      ]
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626/production-text-preflight.json",
+      "createdAtIso": "2026-06-26T01:14:13.097Z",
+      "status": "repo-ok-runtime-not-ready",
+      "promotionReady": false,
+      "liveComfyReachable": true,
+      "liveNodeAvailable": false,
+      "workflowPath": "comfyui-workflows/customcard-production-text-overlay.json",
+      "nextSteps": [
+        "Link comfyui-custom-nodes/CustomCardTextComposer into ComfyUI/custom_nodes and restart ComfyUI.",
+        "After restart, refresh /object_info evidence so CustomCardTextComposer is visible to future agents.",
+        "Use --require-live true in CI or promotion gates so missing live Comfy nodes fail the command."
+      ]
+    }
+  ],
+  "aggregates": [
+    {
+      "path": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
+      "createdAtIso": "2026-06-26T04:36:01.116Z",
+      "kind": "llm-planned",
+      "totalRuns": 3,
+      "statuses": {
+        "blocked": 2,
+        "failed": 1
+      },
+      "promotionReady": false,
+      "bestScore": 38,
+      "bestRun": "aquarium-lover-birthday",
+      "textModels": [
+        "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
+      ],
+      "imageModels": [
+        "sd_xl_turbo_1.0_fp16.safetensors"
+      ],
+      "manualGrades": [
+        {
+          "fixtureId": "aquarium-lover-birthday",
+          "score": 38,
+          "status": "blocked",
+          "passed": false,
+          "recommendation": "do-not-promote",
+          "blockingFailures": [
+            "Planner missed required recipient/name/theme terms: Nina and aquarium are absent.",
+            "Artwork and copy drifted into botanical birthday stationery instead of aquarium-lover stationery.",
+            "Back panel is too dark, contains visible text, and does not behave as a sparse no-copy back cover."
+          ],
+          "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow/aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui/manual-visual-grade.json"
+        },
+        {
+          "fixtureId": "dog-lover-thank-you",
+          "score": 34,
+          "status": "blocked",
+          "passed": false,
+          "recommendation": "do-not-promote",
+          "blockingFailures": [
+            "Planner missed required recipient/name/theme terms: Morgan and dog are absent.",
+            "Copy invents plant-watering context and says the plants are grateful, which contradicts the dog-lover thank-you request.",
+            "Back panel is too dark, contains visible text, and does not behave as a sparse no-copy back cover."
+          ],
+          "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow/dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui/manual-visual-grade.json"
+        },
+        {
+          "fixtureId": "koi-fish-lover-encouragement",
+          "score": 0,
+          "status": "failed",
+          "passed": false,
+          "recommendation": "do-not-promote",
+          "blockingFailures": [
+            "Local Qwen3-4B planner returned invalid JSON.",
+            "The LLM response hit the 2200-token completion cap with finish_reason length.",
+            "No image panels were generated for the koi encouragement request."
+          ],
+          "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow/koi-fish-lover-encouragement__text-local-openai-compatible__image-local-comfyui/manual-visual-grade.json"
+        }
+      ],
+      "blockingFailures": [
+        "Planner missed required recipient/name/theme terms: Nina and aquarium are absent.",
+        "Artwork and copy drifted into botanical birthday stationery instead of aquarium-lover stationery.",
+        "Back panel is too dark, contains visible text, and does not behave as a sparse no-copy back cover.",
+        "Planner missed required recipient/name/theme terms: Morgan and dog are absent.",
+        "Copy invents plant-watering context and says the plants are grateful, which contradicts the dog-lover thank-you request.",
+        "Local Qwen3-4B planner returned invalid JSON.",
+        "The LLM response hit the 2200-token completion cap with finish_reason length.",
+        "No image panels were generated for the koi encouragement request."
+      ]
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-candidates/benchmark-aggregate.json",
+      "createdAtIso": "2026-06-26T02:56:40.724Z",
+      "kind": "production-text-candidate",
+      "totalRuns": 6,
+      "statuses": {
+        "blocked": 6
+      },
+      "promotionReady": false,
+      "bestScore": 72,
+      "bestRun": "folded-card-sunburst-typography",
+      "textModels": [],
+      "imageModels": [
+        "sd_xl_turbo_1.0_fp16.safetensors",
+        "DreamShaper_8_pruned.safetensors"
+      ],
+      "manualGrades": [
+        {
+          "fixtureId": "folded-card-sunburst-typography",
+          "score": 72,
+          "status": "blocked",
+          "passed": false,
+          "recommendation": "do-not-promote-yet",
+          "blockingFailures": [
+            "Artwork guards protect deterministic typography better than the soft text fields alone and preserve exact readable copy on all text-bearing panels.",
+            "The front still depends on a visibly heavy dark guard to overpower dense ornament, so the artwork layer is not naturally leaving a quiet text-safe field.",
+            "The interior panels are readable but over-softened by broad guards, making them feel rescued rather than purpose-designed.",
+            "The back panel is calmer and text-free, but it becomes a full dark patterned field without the requested small coordinating mark."
+          ],
+          "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-artwork-guard-v2/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/manual-visual-grade.json"
+        },
+        {
+          "fixtureId": "folded-card-sunburst-typography",
+          "score": 68,
+          "status": "blocked",
+          "passed": false,
+          "recommendation": "do-not-promote-yet",
+          "blockingFailures": [
+            "Soft text-hug safe fields remove most of the blunt rectangle problem and preserve exact readable copy.",
+            "The generated artwork is still too dense around and behind the text-safe zones, especially on the front and interior medallions.",
+            "The back panel remains a busy ornamental illustration instead of mostly plain deep-charcoal negative space with one small coordinating mark."
+          ],
+          "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-soft-fields/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/manual-visual-grade.json"
+        },
+        {
+          "fixtureId": "folded-card-sunburst-typography",
+          "score": 65,
+          "status": "blocked",
+          "passed": false,
+          "recommendation": "do-not-promote-yet",
+          "blockingFailures": [
+            "Safe-field backgrounds fix readability, but the rectangles are too blunt and card-like polish is not production-ready.",
+            "Artwork around the fields remains dense and ornamental instead of restrained stationery.",
+            "Back panel is coordinated but too busy for the no-text back-cover contract."
+          ],
+          "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/manual-visual-grade.json"
+        },
+        {
+          "fixtureId": "folded-card-sunburst-typography",
+          "score": 47,
+          "status": "blocked",
+          "passed": false,
+          "recommendation": "do-not-promote",
+          "blockingFailures": [
+            "Generated artwork violates the flat 2D greeting-card panel contract with object/mockup-like scenes.",
+            "Inside-left and inside-right text sits over busy generated imagery instead of plain safe fields.",
+            "Interior body copy has low readability at contact-sheet scale and needs a stronger contrast/layout gate.",
+            "Preflight and structural auto-checks prove the Comfy text composer path, but they do not prove production visual quality."
+          ],
+          "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-live-node/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/manual-visual-grade.json"
+        },
+        {
+          "fixtureId": "folded-card-sunburst-typography",
+          "score": 43,
+          "status": "blocked",
+          "passed": false,
+          "recommendation": "do-not-promote",
+          "blockingFailures": [
+            "Nonzero CFG removes the photo/mockup failure but still fills every text-safe region with dense ornament.",
+            "Exact text is present but sits directly over high-contrast linework.",
+            "Inside body copy is too small and low-contrast for production print."
+          ],
+          "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/manual-visual-grade.json"
+        },
+        {
+          "fixtureId": "folded-card-sunburst-typography",
+          "score": 22,
+          "status": "blocked",
+          "passed": false,
+          "recommendation": "do-not-promote",
+          "blockingFailures": [
+            "CFG 0 under-steers the prompt and produces pseudo-calligraphy/fake text across the artwork.",
+            "Back panel becomes a photographed paper-and-hands scene, violating the flat 2D no-object contract.",
+            "Text-safe fields are absent; exact text is drawn over busy generated details."
+          ],
+          "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/manual-visual-grade.json"
+        }
+      ],
+      "blockingFailures": [
+        "Artwork guards protect deterministic typography better than the soft text fields alone and preserve exact readable copy on all text-bearing panels.",
+        "The front still depends on a visibly heavy dark guard to overpower dense ornament, so the artwork layer is not naturally leaving a quiet text-safe field.",
+        "The interior panels are readable but over-softened by broad guards, making them feel rescued rather than purpose-designed.",
+        "The back panel is calmer and text-free, but it becomes a full dark patterned field without the requested small coordinating mark.",
+        "Soft text-hug safe fields remove most of the blunt rectangle problem and preserve exact readable copy.",
+        "The generated artwork is still too dense around and behind the text-safe zones, especially on the front and interior medallions.",
+        "The back panel remains a busy ornamental illustration instead of mostly plain deep-charcoal negative space with one small coordinating mark.",
+        "Safe-field backgrounds fix readability, but the rectangles are too blunt and card-like polish is not production-ready.",
+        "Artwork around the fields remains dense and ornamental instead of restrained stationery.",
+        "Back panel is coordinated but too busy for the no-text back-cover contract.",
+        "Generated artwork violates the flat 2D greeting-card panel contract with object/mockup-like scenes.",
+        "Inside-left and inside-right text sits over busy generated imagery instead of plain safe fields.",
+        "Interior body copy has low readability at contact-sheet scale and needs a stronger contrast/layout gate.",
+        "Preflight and structural auto-checks prove the Comfy text composer path, but they do not prove production visual quality.",
+        "Nonzero CFG removes the photo/mockup failure but still fills every text-safe region with dense ornament.",
+        "Exact text is present but sits directly over high-contrast linework.",
+        "Inside body copy is too small and low-contrast for production print.",
+        "CFG 0 under-steers the prompt and produces pseudo-calligraphy/fake text across the artwork.",
+        "Back panel becomes a photographed paper-and-hands scene, violating the flat 2D no-object contract.",
+        "Text-safe fields are absent; exact text is drawn over busy generated details."
+      ]
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text/benchmark-aggregate.json",
+      "createdAtIso": "2026-06-26T01:38:49.778Z",
+      "kind": "production-text-candidate",
+      "totalRuns": 1,
+      "statuses": {
+        "blocked": 1
+      },
+      "promotionReady": false,
+      "bestScore": 47,
+      "bestRun": "folded-card-sunburst-typography",
+      "textModels": [],
+      "imageModels": [
+        "DreamShaper_8_pruned.safetensors"
+      ],
+      "manualGrades": [
+        {
+          "fixtureId": "folded-card-sunburst-typography",
+          "score": 47,
+          "status": "blocked",
+          "passed": false,
+          "recommendation": "do-not-promote",
+          "blockingFailures": [
+            "Generated artwork violates the flat 2D greeting-card panel contract with object/mockup-like scenes.",
+            "Inside-left and inside-right text sits over busy generated imagery instead of plain safe fields.",
+            "Interior body copy has low readability at contact-sheet scale and needs a stronger contrast/layout gate.",
+            "Preflight and structural auto-checks prove the Comfy text composer path, but they do not prove production visual quality."
+          ],
+          "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-live-node/production-text-workflow/folded-card-sunburst-typography__customcard-production-text-composer__image-local-comfyui/manual-visual-grade.json"
+        }
+      ],
+      "blockingFailures": [
+        "Generated artwork violates the flat 2D greeting-card panel contract with object/mockup-like scenes.",
+        "Inside-left and inside-right text sits over busy generated imagery instead of plain safe fields.",
+        "Interior body copy has low readability at contact-sheet scale and needs a stronger contrast/layout gate.",
+        "Preflight and structural auto-checks prove the Comfy text composer path, but they do not prove production visual quality."
+      ]
+    }
+  ],
+  "benchmarkSummaries": [
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
+      "createdAtIso": "2026-06-26T04:21:27.749Z",
+      "phase": "local-production-text",
+      "totalPlannedRuns": 3,
+      "totalRuns": 3,
+      "completedRuns": 2,
+      "failedRuns": 1,
+      "llmGeneratedRuns": 3,
+      "fixtureRuns": 0,
+      "fixtures": [
+        "aquarium-lover-birthday",
+        "koi-fish-lover-encouragement",
+        "dog-lover-thank-you"
+      ],
+      "textModels": [
+        "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
+      ],
+      "smallPlannerUsed": true,
+      "imageModels": [
+        "sd_xl_turbo_1.0_fp16.safetensors"
+      ],
+      "missingMustInclude": [
+        "Nina",
+        "aquarium",
+        "Morgan",
+        "dog"
+      ],
+      "mustAvoidFailures": [
+        "mockup"
+      ],
+      "finalImagesRenderedByComfy": true,
+      "deterministicTextComposerUsed": true
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-artwork-guard-v2/production-text-workflow-summary.json",
+      "createdAtIso": "2026-06-26T02:50:06.234Z",
+      "phase": "local-production-text",
+      "totalPlannedRuns": 1,
+      "totalRuns": 1,
+      "completedRuns": 1,
+      "failedRuns": 0,
+      "llmGeneratedRuns": 0,
+      "fixtureRuns": 1,
+      "fixtures": [
+        "folded-card-sunburst-typography"
+      ],
+      "textModels": [],
+      "smallPlannerUsed": false,
+      "imageModels": [
+        "sd_xl_turbo_1.0_fp16.safetensors"
+      ],
+      "missingMustInclude": [],
+      "mustAvoidFailures": [],
+      "finalImagesRenderedByComfy": true,
+      "deterministicTextComposerUsed": true
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-soft-fields/production-text-workflow-summary.json",
+      "createdAtIso": "2026-06-26T02:27:14.553Z",
+      "phase": "local-production-text",
+      "totalPlannedRuns": 1,
+      "totalRuns": 1,
+      "completedRuns": 1,
+      "failedRuns": 0,
+      "llmGeneratedRuns": 0,
+      "fixtureRuns": 1,
+      "fixtures": [
+        "folded-card-sunburst-typography"
+      ],
+      "textModels": [],
+      "smallPlannerUsed": false,
+      "imageModels": [
+        "sd_xl_turbo_1.0_fp16.safetensors"
+      ],
+      "missingMustInclude": [],
+      "mustAvoidFailures": [],
+      "finalImagesRenderedByComfy": true,
+      "deterministicTextComposerUsed": true
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields/production-text-workflow-summary.json",
+      "createdAtIso": "2026-06-26T02:05:28.762Z",
+      "phase": "local-production-text",
+      "totalPlannedRuns": 1,
+      "totalRuns": 1,
+      "completedRuns": 1,
+      "failedRuns": 0,
+      "llmGeneratedRuns": 0,
+      "fixtureRuns": 1,
+      "fixtures": [
+        "folded-card-sunburst-typography"
+      ],
+      "textModels": [],
+      "smallPlannerUsed": false,
+      "imageModels": [
+        "sd_xl_turbo_1.0_fp16.safetensors"
+      ],
+      "missingMustInclude": [],
+      "mustAvoidFailures": [],
+      "finalImagesRenderedByComfy": true,
+      "deterministicTextComposerUsed": true
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15/production-text-workflow-summary.json",
+      "createdAtIso": "2026-06-26T01:53:56.476Z",
+      "phase": "local-production-text",
+      "totalPlannedRuns": 1,
+      "totalRuns": 1,
+      "completedRuns": 1,
+      "failedRuns": 0,
+      "llmGeneratedRuns": 0,
+      "fixtureRuns": 1,
+      "fixtures": [
+        "folded-card-sunburst-typography"
+      ],
+      "textModels": [],
+      "smallPlannerUsed": false,
+      "imageModels": [
+        "sd_xl_turbo_1.0_fp16.safetensors"
+      ],
+      "missingMustInclude": [],
+      "mustAvoidFailures": [],
+      "finalImagesRenderedByComfy": true,
+      "deterministicTextComposerUsed": true
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo/production-text-workflow-summary.json",
+      "createdAtIso": "2026-06-26T01:43:59.340Z",
+      "phase": "local-production-text",
+      "totalPlannedRuns": 1,
+      "totalRuns": 1,
+      "completedRuns": 1,
+      "failedRuns": 0,
+      "llmGeneratedRuns": 0,
+      "fixtureRuns": 1,
+      "fixtures": [
+        "folded-card-sunburst-typography"
+      ],
+      "textModels": [],
+      "smallPlannerUsed": false,
+      "imageModels": [
+        "sd_xl_turbo_1.0_fp16.safetensors"
+      ],
+      "missingMustInclude": [],
+      "mustAvoidFailures": [],
+      "finalImagesRenderedByComfy": true,
+      "deterministicTextComposerUsed": true
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-live-node/production-text-workflow-summary.json",
+      "createdAtIso": "2026-06-26T01:25:39.502Z",
+      "phase": "local-production-text",
+      "totalPlannedRuns": 1,
+      "totalRuns": 1,
+      "completedRuns": 1,
+      "failedRuns": 0,
+      "llmGeneratedRuns": 0,
+      "fixtureRuns": 1,
+      "fixtures": [
+        "folded-card-sunburst-typography"
+      ],
+      "textModels": [],
+      "smallPlannerUsed": false,
+      "imageModels": [
+        "DreamShaper_8_pruned.safetensors"
+      ],
+      "missingMustInclude": [],
+      "mustAvoidFailures": [],
+      "finalImagesRenderedByComfy": true,
+      "deterministicTextComposerUsed": true
+    }
+  ],
+  "reportDir": "docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current"
+}

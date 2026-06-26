@@ -288,6 +288,12 @@ Comfy template variables exposed by the local adapter include:
     quality, local model inventory, and active planner endpoint suitability.
   - Treats known-small planners such as Qwen3-4B as smoke/failure evidence, not
     production evidence.
+- `scripts/production-text-evidence-index.mjs`
+  - Read-only evidence index for the production-text workflow.
+  - Scans tracked readiness, preflight, benchmark, aggregate, and manual-grade
+    evidence and writes one current JSON/Markdown summary.
+  - Use `--include-untracked` only when intentionally reviewing local scratch
+    evidence that should not be cited as committed promotion proof.
 - `scripts/local-comfy-production-text.mjs`
   - Shared adapter contract for Comfy template variables, deterministic
     typography boxes, soft safe fields, artwork guards, and metadata summaries.
@@ -347,17 +353,19 @@ customer-theme quality.
 4. Run `npm run comfy:production-text:doctor -- --advisory` and confirm the
    configured planner endpoint is reachable and production-suitable. The doctor
    should not be satisfied by the Qwen3-4B smoke planner.
-5. Run the production overlay workflow against the LLM-planned customer request
+5. Run `npm run comfy:production-text:evidence -- --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-YYYYMMDD-current`
+   to refresh the tracked evidence index before deciding what to run next.
+6. Run the production overlay workflow against the LLM-planned customer request
    matrix through `tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl ...`
    and manually grade every run. Use `-AllowCompositorFixtureFallback` only for
    compositor/node smoke evidence.
-6. Add an overflow/contrast QA gate. Minimum acceptable gate:
+7. Add an overflow/contrast QA gate. Minimum acceptable gate:
    - all panels rendered
    - no text missing
    - no fake text in artwork-only areas
    - no people/mockup/object-scene leakage
    - text contrast meets print/readability threshold
-7. Promote only after aggregate benchmark evidence beats the current
+8. Promote only after aggregate benchmark evidence beats the current
    app-compositor baseline.
 
 Current status: gates 1, 3, and the readiness portion of 4 have current local
@@ -365,13 +373,17 @@ evidence for the 2026-06-26 runtime. The current readiness report is
 `docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current`:
 ComfyUI and `CustomCardTextComposer` are live, higher-quality planner files are
 installed locally, but the reachable planner endpoint is still Qwen3-4B and no
-production-suitable planner endpoint is running. Gate 5's live LLM-planned
+production-suitable planner endpoint is running. The current evidence index is
+`docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current`;
+it aggregates the tracked readiness, preflight, benchmark, and manual-grade
+evidence and keeps promotion blocked for the same planner/model reasons. Gate
+6's live LLM-planned
 matrix ran through KoboldCPP
 Qwen3-4B and local Comfy, then failed quality review: aquarium scored 38/100,
 dog scored 34/100, and koi failed before image generation because the local LLM
 returned truncated invalid JSON. The code now keeps full prompt quality and
 requires a stronger planner plus validated card-copy output before spending
-Comfy image work. Gate 6 still blocks promotion, and gate 7 is
+Comfy image work. Gate 7 still blocks promotion, and gate 8 is
 not satisfied because both the production-text candidate aggregate and the new
 LLM-planner aggregate rank every candidate as blocked after applying manual
 visual grades. The best structural compositor grade remains 72/100, but the
