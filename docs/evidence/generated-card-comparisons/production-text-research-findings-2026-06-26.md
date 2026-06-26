@@ -18,6 +18,9 @@ Production text should be planned by the card-copy LLM and rendered by ComfyUI:
 | Live preflight rerun on 2026-06-26 04:03 UTC | Passed | Current local Comfy runtime is reachable at `http://127.0.0.1:8188` and exposes all production text compositor inputs. |
 | `.codex/tmp/production-text-llm-check` dry run | No planned runs | The ambient shell did not provide `CUSTOMCARD_COMFYUI_URL` or a local LLM base URL, so benchmark discovery could not schedule live local production-text runs. |
 | `.codex/tmp/production-text-llm-planner-dry-run` with local Comfy + local LLM env set | Planned 3 runs | The current contract schedules `aquarium-lover-birthday`, `koi-fish-lover-encouragement`, and `dog-lover-thank-you` as `llm-generated-copy` runs through local OpenAI-compatible text plus local Comfy image. |
+| `tools/run-production-text-benchmark.ps1 -DryRun -SkipPreflight` without local LLM | Failed fast | The wrapper now refuses to silently run the compositor fixture when the LLM-planned matrix cannot be scheduled. |
+| `.codex/tmp/production-text-wrapper-fixture` with `-AllowCompositorFixtureFallback` | Planned 1 run | Explicit fallback still schedules only `folded-card-sunburst-typography` as `compositor-fixture`. |
+| `.codex/tmp/production-text-wrapper-llm` with `-LocalLlmBaseUrl` and `-LocalLlmModel` | Planned 3 runs | Wrapper parameters schedule the full `llm-generated-copy` aquarium/koi/dog matrix without manual env setup. |
 | `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-artwork-guard-v2` | 72/100, blocked | Deterministic Comfy text, soft text fields, and artwork guards work structurally, but artwork remains too dense for production. |
 | `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-candidates` | Blocked | Aggregate evidence still says do not promote production Comfy text as the default path. |
 
@@ -44,13 +47,14 @@ benchmark overconstrained the wrong layer and still did not fix artwork quality.
 ## Next Gate
 
 Run the live LLM-planned production matrix only after a local OpenAI-compatible
-text server is available:
+text server is available. The wrapper accepts the local LLM settings directly:
 
 ```powershell
-$env:CUSTOMCARD_LOCAL_LLM_BASE_URL = "http://127.0.0.1:1234/v1"
-$env:CUSTOMCARD_LOCAL_LLM_MODEL = "local-qwen-card-copy"
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -OutputDir docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:1234/v1 -LocalLlmModel local-qwen-card-copy -OutputDir docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live
 ```
+
+Use `-AllowCompositorFixtureFallback` only when intentionally collecting a
+single-run structural compositor smoke test.
 
 Promotion remains blocked until the LLM-planned matrix has manual grades that
 beat the existing app-compositor baseline and resolves the dense-art/back-panel

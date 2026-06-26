@@ -273,6 +273,12 @@ Comfy template variables exposed by the local adapter include:
   - Full-card benchmark wrapper for the production workflow.
   - Uses benchmark phase `local-production-text`, not `local-typography`, so `panel_copy`
     reaches the Comfy adapter.
+  - Accepts `-LocalLlmBaseUrl`, `-LocalLlmModel`, and `-LocalLlmApiKey` so the
+    LLM-planned customer request matrix can be run without brittle shell env
+    setup.
+  - Fails fast when no local LLM is configured. Use
+    `-AllowCompositorFixtureFallback` only for the one-run structural
+    compositor fixture.
   - Defaults to a timestamped evidence directory and accepts checkpoint/sampler
     overrides for quick candidate comparisons.
 
@@ -294,9 +300,11 @@ composition. The LLM must decide those. The image prompt remains artwork-only,
 and `panel_copy` carries the exact generated headline/body/text layout into
 Comfy for deterministic rendering.
 
-When no local LLM is configured, `local-production-text` runs only
-`folded-card-sunburst-typography` as a compositor calibration fixture. That
-fixture is for node/runtime validation, not customer-theme quality.
+The wrapper requires a local LLM for the customer-request matrix and otherwise
+fails fast. `local-production-text` can still run `folded-card-sunburst-typography`
+as a compositor calibration fixture when `-AllowCompositorFixtureFallback` is
+passed explicitly. That fixture is for node/runtime validation, not
+customer-theme quality.
 
 ## Gates Before Production Default
 
@@ -306,8 +314,10 @@ fixture is for node/runtime validation, not customer-theme quality.
    names.
 3. Run preflight with `--require-live true` and confirm
    `CustomCardTextComposer` is present in live `/object_info`.
-4. Run the production overlay workflow against one full card-generation fixture
-   through `tools/run-production-text-benchmark.ps1`.
+4. Run the production overlay workflow against the LLM-planned customer request
+   matrix through `tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl ...`
+   and manually grade every run. Use `-AllowCompositorFixtureFallback` only for
+   compositor/node smoke evidence.
 5. Add an overflow/contrast QA gate. Minimum acceptable gate:
    - all panels rendered
    - no text missing

@@ -13,6 +13,11 @@ param(
   [int]$Width = 960,
   [int]$Height = 1344,
   [int]$TimeoutMs = 900000,
+  [string]$LocalLlmBaseUrl = "",
+  [string]$LocalLlmModel = "",
+  [string]$LocalLlmApiKey = "",
+  [switch]$DryRun,
+  [switch]$AllowCompositorFixtureFallback,
   [switch]$SkipPreflight
 )
 
@@ -63,18 +68,58 @@ if (-not [string]::IsNullOrWhiteSpace($Scheduler)) {
 if ($Seed -ge 0) {
   $env:CUSTOMCARD_COMFYUI_SEED = [string]$Seed
 }
+if (-not [string]::IsNullOrWhiteSpace($LocalLlmBaseUrl)) {
+  $env:CUSTOMCARD_LOCAL_LLM_BASE_URL = $LocalLlmBaseUrl
+}
+if (-not [string]::IsNullOrWhiteSpace($LocalLlmModel)) {
+  $env:CUSTOMCARD_LOCAL_LLM_MODEL = $LocalLlmModel
+}
+if (-not [string]::IsNullOrWhiteSpace($LocalLlmApiKey)) {
+  $env:CUSTOMCARD_LOCAL_LLM_API_KEY = $LocalLlmApiKey
+}
+
+function Test-UsableEnvValue {
+  param([string]$Value)
+  return -not [string]::IsNullOrWhiteSpace($Value) -and
+    $Value.Trim() -ne "__UNSET__" -and
+    $Value.Trim() -ne "placeholder" -and
+    $Value.Trim() -ne "changeme"
+}
+
+$HasLocalLlm = (Test-UsableEnvValue $env:CUSTOMCARD_LOCAL_LLM_BASE_URL) -or
+  (Test-UsableEnvValue $env:LMSTUDIO_BASE_URL) -or
+  (Test-UsableEnvValue $env:KOBOLDCPP_BASE_URL)
+
+if (-not $HasLocalLlm -and -not $AllowCompositorFixtureFallback) {
+  [Console]::Error.WriteLine("local-production-text requires a local LLM for the LLM-planned customer request matrix. Pass -LocalLlmBaseUrl http://127.0.0.1:1234/v1 and -LocalLlmModel <model>, set CUSTOMCARD_LOCAL_LLM_BASE_URL/LMSTUDIO_BASE_URL/KOBOLDCPP_BASE_URL, or pass -AllowCompositorFixtureFallback to run only the structural compositor fixture.")
+  exit 2
+}
 
 Write-Host "Production text benchmark output: $OutputDir"
 if (-not [string]::IsNullOrWhiteSpace($Checkpoint)) {
   Write-Host "Checkpoint override: $Checkpoint"
 }
+if ($HasLocalLlm) {
+  Write-Host "Local LLM planner: enabled"
+}
+if ($AllowCompositorFixtureFallback -and -not $HasLocalLlm) {
+  Write-Host "Local LLM planner: missing; compositor fixture fallback explicitly allowed"
+}
+if ($DryRun) {
+  Write-Host "Dry run: enabled"
+}
 
-& powershell -NoProfile -ExecutionPolicy Bypass -File $NodeWrapper `
-  $BenchmarkScript `
-  --phase local-production-text `
-  --live true `
-  --local-only true `
-  --phase-dir $PhaseDir `
-  --output-dir $OutputDir
+$BenchmarkArgs = @(
+  $BenchmarkScript,
+  "--phase", "local-production-text",
+  "--local-only", "true",
+  "--phase-dir", $PhaseDir,
+  "--output-dir", $OutputDir
+)
+if (-not $DryRun) {
+  $BenchmarkArgs += @("--live", "true")
+}
+
+& powershell -NoProfile -ExecutionPolicy Bypass -File $NodeWrapper @BenchmarkArgs
 
 exit $LASTEXITCODE

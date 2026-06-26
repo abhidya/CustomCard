@@ -142,16 +142,18 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 Run a full-card benchmark through the production workflow:
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:1234/v1 -LocalLlmModel local-qwen-card-copy
 ```
 
 The `local-production-text` phase benchmarks fixed customer request inputs when
 a local LLM and local ComfyUI are configured: aquarium lover birthday, koi fish
 lover encouragement, and dog lover thank-you. The LLM decides the final theme,
 copy, layout, and per-panel artwork prompts; Comfy renders the exact generated
-copy with `CustomCardTextComposer`. If a local LLM is not configured, the phase
-falls back to a single sunburst compositor calibration fixture. By default the
-helper writes to a timestamped
+copy with `CustomCardTextComposer`. The helper fails fast when no local LLM is
+configured so agents do not accidentally benchmark only the structural fixture.
+Pass `-AllowCompositorFixtureFallback` only when intentionally testing the
+single sunburst compositor calibration fixture. By default the helper writes to
+a timestamped
 `docs/evidence/generated-card-comparisons/production-text-workflow-YYYYMMDD-HHMMSS`
 directory. Pass `-OutputDir` only when you intentionally want a stable evidence
 path.
@@ -159,7 +161,7 @@ path.
 Checkpoint comparison example:
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:1234/v1 -LocalLlmModel local-qwen-card-copy -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform
 ```
 
 This helper uses the benchmark `local-production-text` phase rather than

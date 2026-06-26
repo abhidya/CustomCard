@@ -92,6 +92,12 @@ Production text workflow tracking:
   `scripts/comfyui-production-text-preflight.mjs`
 - Production benchmark wrapper:
   `tools/run-production-text-benchmark.ps1`
+  - Pass `-LocalLlmBaseUrl` and `-LocalLlmModel` for the normal
+    LLM-planned production-text matrix.
+  - The wrapper fails fast without a local LLM so agents do not mistake the
+    one-run compositor fixture for customer-theme evidence.
+  - Pass `-AllowCompositorFixtureFallback` only for structural compositor smoke
+    tests.
 - Live node/preflight evidence:
   `docs/evidence/generated-card-comparisons/production-text-preflight-20260626-live-node`
 - Live benchmark evidence:
