@@ -290,6 +290,9 @@ Comfy template variables exposed by the local adapter include:
     not production evidence.
 - `scripts/production-text-planner-preflight.mjs`
   - Checks the active OpenAI-compatible planner before benchmark work.
+  - Verifies `/v1/models` reports the requested planner model, so a stale
+    small-model endpoint cannot be relabeled as Gemma or another production
+    planner by config alone.
   - Requires a production-suitable model class, a full output budget, and an
     8192+ intended context budget for promotion evidence.
   - Allows Qwen3-4B/8B and 4096-context runs only when `--allow-small` is
@@ -336,6 +339,8 @@ Comfy template variables exposed by the local adapter include:
   - Accepts either a root planner URL such as `http://127.0.0.1:5003` or a `/v1`
     URL such as `http://127.0.0.1:5003/v1`, then runs the production planner
     preflight before live runs.
+  - The preflight must see the requested `-LocalLlmModel` in `/v1/models`;
+    mismatched stale servers are blocked instead of trusted.
   - Accepts `-PlannerMaxTokens` and `-PlannerContextSize` while keeping the full
     planner prompt. Do not shrink the creative contract to fit a 4096-context
     local model.
@@ -420,7 +425,7 @@ readiness probe finds local Comfy and planner endpoints offline. Higher-quality
 planner files are installed locally, but no production-suitable planner endpoint
 is currently reachable/configured. The current rerun plan is
 `docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current`:
-it turns the 7 failed gate requirements into 9 ordered commands for the next
+it turns the 8 failed gate requirements into 9 ordered commands for the next
 production-suitable planner evidence pass. The current evidence index is
 `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current`;
 it aggregates the tracked rerun plan, planner preflight, readiness, Comfy
@@ -434,8 +439,8 @@ current promotion gate is
 `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current`;
 it passes live Comfy/text-composer and final-Comfy-image requirements, but fails
 planner preflight, readiness, production-suitable planner, no-small-planner,
-full matrix completion, must-include adherence, and manual aggregate
-requirements: 7 failed requirements total. Gate 9's live LLM-planned
+full matrix completion, must-include adherence, manual grade checklist, and
+manual aggregate requirements: 8 failed requirements total. Gate 9's live LLM-planned
 matrix ran through KoboldCPP
 Qwen3-4B and local Comfy, then failed quality review: aquarium scored 38/100,
 dog scored 34/100, and koi failed before image generation because the local LLM

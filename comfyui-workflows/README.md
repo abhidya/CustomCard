@@ -155,10 +155,10 @@ Planner runtime preflight:
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-preflight.mjs --base-url http://127.0.0.1:5003/v1 --model koboldcpp/gemma-4-31B-it-Q4_K_M --reported-context-tokens 8192 --max-output-tokens 3200
 ```
 
-This checks the planner model class, output cap, and intended context budget.
-Production evidence keeps the full creative contract and requires a
-production-suitable planner. Qwen3-4B/8B and 4096-context runs are
-smoke/failure evidence only.
+This checks the planner model class, verifies `/v1/models` reports the requested
+model, output cap, and intended context budget. Production evidence keeps the
+full creative contract and requires a production-suitable planner. Qwen3-4B/8B
+and 4096-context runs are smoke/failure evidence only.
 
 Generate the blocked-evidence rerun plan:
 
@@ -280,7 +280,7 @@ Latest live evidence:
     reachable and the explicit Qwen3-4B/4096-context planner is smoke-only.
 - Current rerun plan:
   `docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current`
-  - Converts the 7 failed gate requirements into 9 ordered commands for the
+  - Converts the 8 failed gate requirements into 9 ordered commands for the
     next production-suitable planner pass.
 - Current manual grade checklist:
   `docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current`

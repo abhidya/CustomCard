@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-26T23:14:14.817Z",
+  "createdAtIso": "2026-06-26T23:24:06.638Z",
   "status": "rerun-required",
   "promotionReady": false,
   "reportDir": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current",
@@ -92,6 +92,24 @@
         ],
         "mustAvoidFailures": [
           "mockup"
+        ]
+      }
+    },
+    {
+      "name": "manual grade checklist is promotion-ready",
+      "details": {
+        "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current/production-text-manual-grade-checklist.json",
+        "totalRuns": 3,
+        "gradableRuns": 2,
+        "gradedGeneratedRuns": 2,
+        "missingGrades": 0,
+        "invalidGrades": 0,
+        "failedBeforeImageGeneration": 1,
+        "blockers": [
+          "3 manual grade(s) are blocked or failed.",
+          "1 run(s) failed before image generation.",
+          "Automated must_include checks failed for: Nina, aquarium, Morgan, dog.",
+          "Automated must_avoid checks failed for: mockup."
         ]
       }
     },
@@ -209,6 +227,7 @@
     "no small smoke planner is active or used",
     "LLM-planned customer request matrix completed",
     "planner preserved required terms and avoided forbidden terms",
+    "manual grade checklist is promotion-ready",
     "manual aggregate is promotion-ready"
   ]
 }

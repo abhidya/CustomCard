@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-26T23:11:08.841Z",
+  "createdAtIso": "2026-06-26T23:24:00.115Z",
   "status": "blocked",
   "promotionReady": false,
   "advisory": true,
@@ -122,6 +122,25 @@
       }
     },
     {
+      "name": "manual grade checklist is promotion-ready",
+      "ok": false,
+      "details": {
+        "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current/production-text-manual-grade-checklist.json",
+        "totalRuns": 3,
+        "gradableRuns": 2,
+        "gradedGeneratedRuns": 2,
+        "missingGrades": 0,
+        "invalidGrades": 0,
+        "failedBeforeImageGeneration": 1,
+        "blockers": [
+          "3 manual grade(s) are blocked or failed.",
+          "1 run(s) failed before image generation.",
+          "Automated must_include checks failed for: Nina, aquarium, Morgan, dog.",
+          "Automated must_avoid checks failed for: mockup."
+        ]
+      }
+    },
+    {
       "name": "manual aggregate is promotion-ready",
       "ok": false,
       "details": {
@@ -151,6 +170,7 @@
     "Use Qwen3-4B/8B only for smoke/failure evidence; run promotion evidence with Gemma 31B, Magistral Small, Qwen3-14B+, or a hosted/self-hosted production planner.",
     "Run the full aquarium/koi/dog production-text matrix to completion.",
     "Keep the full prompt and correct planner runtime; retry/repair planner output until must_include and must_avoid checks pass before Comfy work.",
+    "Run the manual grade checklist after grading every generated run, then resolve missing/invalid/blocked grades before aggregation.",
     "Manually grade every run and regenerate the aggregate only after all candidates pass."
   ],
   "reportDir": "docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current"

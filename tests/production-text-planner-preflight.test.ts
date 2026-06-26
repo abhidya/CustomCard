@@ -76,6 +76,28 @@ describe("production text planner preflight", () => {
     expect(report.blockers.join("\n")).toContain("Qwen3 14B+");
   });
 
+  it("blocks stale planner endpoints when the loaded model does not match the requested production model", async () => {
+    const fetchImpl = async () => modelsResponse("koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S");
+    const root = mkdtempSync(join(tmpdir(), "production-text-planner-preflight-mismatch-"));
+
+    const report = await runProductionTextPlannerPreflight(
+      {
+        "base-url": "http://127.0.0.1:5003/v1",
+        model: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+        "reported-context-tokens": "8192",
+        "max-output-tokens": "3200",
+        "output-dir": root
+      },
+      { fetchImpl }
+    );
+
+    expect(report.runAllowed).toBe(false);
+    expect(report.promotionReady).toBe(false);
+    expect(report.requestedModel).toBe("koboldcpp/gemma-4-31B-it-Q4_K_M");
+    expect(report.blockers.join("\n")).toContain("did not report the requested model");
+    expect(report.blockers.join("\n")).toContain("Qwen3-4B");
+  });
+
   it("accepts a production planner with enough context and output budget", async () => {
     const fetchImpl = async () => modelsResponse("koboldcpp/gemma-4-31B-it-Q4_K_M");
     const root = mkdtempSync(join(tmpdir(), "production-text-planner-preflight-ready-"));

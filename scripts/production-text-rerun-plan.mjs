@@ -103,6 +103,7 @@ export function buildProductionTextRerunPlan(args = {}) {
       "no small smoke planner is active or used",
       "LLM-planned customer request matrix completed",
       "planner preserved required terms and avoided forbidden terms",
+      "manual grade checklist is promotion-ready",
       "manual aggregate is promotion-ready"
     ]
   };

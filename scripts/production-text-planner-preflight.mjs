@@ -49,7 +49,8 @@ export async function runProductionTextPlannerPreflight(args = {}, options = {})
   const probe = endpoint
     ? await probeModels(endpoint.modelsUrl, { fetchImpl, timeoutMs, apiKey })
     : { reachable: false, models: [], error: "Planner base URL was not provided." };
-  const activeModel = explicitModel || probe.models[0] || "";
+  const modelMatch = matchReportedModel(probe.models, explicitModel);
+  const activeModel = modelMatch || explicitModel || probe.models[0] || "";
   const classification = classifyProductionTextPlanner(activeModel, {
     allowSmall: args["allow-small"],
     allowUnknownProductionModel: args["allow-unknown-production-model"],
@@ -61,6 +62,9 @@ export async function runProductionTextPlannerPreflight(args = {}, options = {})
     ...(!endpoint ? ["Planner base URL is missing."] : []),
     ...(endpoint?.error ? [endpoint.error] : []),
     ...(endpoint && !probe.reachable ? [`Planner /models preflight failed: ${probe.error}`] : []),
+    ...(explicitModel && probe.reachable && !modelMatch
+      ? [`Planner /models did not report the requested model '${explicitModel}'. Loaded models: ${probe.models.join(", ") || "none"}.`]
+      : []),
     ...classification.blockers
   ];
   const runAllowed = blockers.length === 0 && (classification.productionSuitable || Boolean(args["allow-small"]));
@@ -74,6 +78,7 @@ export async function runProductionTextPlannerPreflight(args = {}, options = {})
     baseUrl: endpoint?.baseUrl || "",
     modelsUrl: endpoint?.modelsUrl || "",
     reachable: Boolean(probe.reachable),
+    requestedModel: explicitModel,
     activeModel,
     models: probe.models,
     classification,
@@ -171,6 +176,20 @@ function firstUsableValue(...values) {
   return "";
 }
 
+function matchReportedModel(models, requestedModel) {
+  if (!requestedModel) return "";
+  const requested = normalizeModelId(requestedModel);
+  return (models || []).find((model) => normalizeModelId(model) === requested) || "";
+}
+
+function normalizeModelId(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^koboldcpp\//, "")
+    .replace(/\.gguf$/, "");
+}
+
 function boundedInteger(value, min, max, fallback) {
   const parsed = Number(value);
   if (!Number.isInteger(parsed)) return fallback;
@@ -190,6 +209,7 @@ function buildMarkdown(result) {
     `Promotion ready: ${result.promotionReady ? "yes" : "no"}`,
     `Run allowed: ${result.runAllowed ? "yes" : "no"}`,
     `Base URL: ${result.baseUrl || "n/a"}`,
+    `Requested model: ${result.requestedModel || "n/a"}`,
     `Active model: ${result.activeModel || "n/a"}`,
     `Classification: ${result.classification.classification}`,
     "",

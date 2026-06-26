@@ -33,6 +33,7 @@ export function runProductionTextPromotionGate(args = {}) {
   const latestPreflight = index.preflights[0];
   const latestAggregate = index.aggregates.find((entry) => entry.kind === "llm-planned") || index.aggregates[0];
   const latestBenchmark = index.benchmarkSummaries.find((entry) => entry.llmGeneratedRuns > 0) || index.benchmarkSummaries[0];
+  const latestManualGradeChecklist = index.manualGradeChecklists[0];
   const requiredFixtures = parseList(args.fixtures || "aquarium-lover-birthday,koi-fish-lover-encouragement,dog-lover-thank-you");
   const requirements = [
     requirement("live ComfyUI preflight passed", latestPreflight?.liveComfyReachable && latestPreflight?.liveNodeAvailable, {
@@ -83,6 +84,16 @@ export function runProductionTextPromotionGate(args = {}) {
       benchmark: latestBenchmark?.path || "",
       missingMustInclude: latestBenchmark?.missingMustInclude || [],
       mustAvoidFailures: latestBenchmark?.mustAvoidFailures || []
+    }),
+    requirement("manual grade checklist is promotion-ready", latestManualGradeChecklist?.promotionReady, {
+      manualGradeChecklist: latestManualGradeChecklist?.path || "",
+      totalRuns: latestManualGradeChecklist?.totalRuns ?? 0,
+      gradableRuns: latestManualGradeChecklist?.gradableRuns ?? 0,
+      gradedGeneratedRuns: latestManualGradeChecklist?.gradedGeneratedRuns ?? 0,
+      missingGrades: latestManualGradeChecklist?.missingGrades ?? 0,
+      invalidGrades: latestManualGradeChecklist?.invalidGrades ?? 0,
+      failedBeforeImageGeneration: latestManualGradeChecklist?.failedBeforeImageGeneration ?? 0,
+      blockers: latestManualGradeChecklist?.blockers || []
     }),
     requirement("manual aggregate is promotion-ready", latestAggregate?.promotionReady && latestAggregate?.totalRuns >= requiredFixtures.length, {
       aggregate: latestAggregate?.path || "",
@@ -136,6 +147,9 @@ function buildNextSteps(requirements, indexedNextSteps) {
   }
   if (failed.has("planner preserved required terms and avoided forbidden terms")) {
     steps.push("Keep the full prompt and correct planner runtime; retry/repair planner output until must_include and must_avoid checks pass before Comfy work.");
+  }
+  if (failed.has("manual grade checklist is promotion-ready")) {
+    steps.push("Run the manual grade checklist after grading every generated run, then resolve missing/invalid/blocked grades before aggregation.");
   }
   if (failed.has("manual aggregate is promotion-ready")) {
     steps.push("Manually grade every run and regenerate the aggregate only after all candidates pass.");

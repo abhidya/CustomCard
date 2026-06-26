@@ -78,6 +78,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
   const promotionReady = Boolean(
     latestReadiness?.promotionReady &&
     latestPlannerPreflight?.promotionReady &&
+    latestManualGradeChecklist?.promotionReady &&
     latestAggregate?.promotionReady &&
     latestBenchmark?.failedRuns === 0 &&
     latestBenchmark?.completedRuns >= 3

@@ -1,10 +1,11 @@
 # Production Text Planner Preflight
 
-Created: 2026-06-26T23:09:30.041Z
+Created: 2026-06-26T23:23:48.950Z
 Status: blocked
 Promotion ready: no
 Run allowed: no
 Base URL: http://127.0.0.1:5001/v1
+Requested model: koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S
 Active model: koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S
 Classification: smoke-only
 

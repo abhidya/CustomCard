@@ -1,6 +1,6 @@
 # Production Text Promotion Gate
 
-Created: 2026-06-26T23:11:08.841Z
+Created: 2026-06-26T23:24:00.115Z
 Status: blocked
 Promotion ready: no
 Evidence index: docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current
@@ -17,6 +17,7 @@ Evidence index: docs/evidence/generated-card-comparisons/production-text-evidenc
 | LLM-planned customer request matrix completed | fail | {"benchmark":"docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json","requiredFixtures":["aquarium-lover-birthday","koi-fish-lover-encouragement","dog-lover-thank-you"],"fixtures":["aquarium-lover-birthday","koi-fish-lover-encouragement","dog-lover-thank-you"],"completedRuns":2,"failedRuns":1} |
 | final images came from Comfy text composer | ok | {"benchmark":"docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json","finalImagesRenderedByComfy":true,"deterministicTextComposerUsed":true} |
 | planner preserved required terms and avoided forbidden terms | fail | {"benchmark":"docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json","missingMustInclude":["Nina","aquarium","Morgan","dog"],"mustAvoidFailures":["mockup"]} |
+| manual grade checklist is promotion-ready | fail | {"manualGradeChecklist":"docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current/production-text-manual-grade-checklist.json","totalRuns":3,"gradableRuns":2,"gradedGeneratedRuns":2,"missingGrades":0,"invalidGrades":0,"failedBeforeImageGeneration":1,"blockers":["3 manual grade(s) are blocked or failed.","1 run(s) failed before image generation.","Automated must_include checks failed for: Nina, aquarium, Morgan, dog.","Automated must_avoid checks failed for: mockup."]} |
 | manual aggregate is promotion-ready | fail | {"aggregate":"docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json","totalRuns":3,"statuses":{"blocked":2,"failed":1},"bestScore":38,"blockingFailures":["Planner missed required recipient/name/theme terms: Nina and aquarium are absent.","Artwork and copy drifted into botanical birthday stationery instead of aquarium-lover stationery.","Back panel is too dark, contains visible text, and does not behave as a sparse no-copy back cover.","Planner missed required recipient/name/theme terms: Morgan and dog are absent.","Copy invents plant-watering context and says the plants are grateful, which contradicts the dog-lover thank-you request.","Local Qwen3-4B planner returned invalid JSON.","The LLM response hit the 2200-token completion cap with finish_reason length.","No image panels were generated for the koi encouragement request."]} |
 
 ## Next Steps
@@ -26,4 +27,5 @@ Evidence index: docs/evidence/generated-card-comparisons/production-text-evidenc
 - Use Qwen3-4B/8B only for smoke/failure evidence; run promotion evidence with Gemma 31B, Magistral Small, Qwen3-14B+, or a hosted/self-hosted production planner.
 - Run the full aquarium/koi/dog production-text matrix to completion.
 - Keep the full prompt and correct planner runtime; retry/repair planner output until must_include and must_avoid checks pass before Comfy work.
+- Run the manual grade checklist after grading every generated run, then resolve missing/invalid/blocked grades before aggregation.
 - Manually grade every run and regenerate the aggregate only after all candidates pass.

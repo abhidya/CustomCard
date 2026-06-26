@@ -1,6 +1,6 @@
 # Production Text Rerun Plan
 
-Created: 2026-06-26T23:14:14.817Z
+Created: 2026-06-26T23:24:06.638Z
 Status: rerun-required
 Gate: docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current/production-text-promotion-gate.json
 Evidence index: docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current/production-text-evidence-index.json
@@ -13,6 +13,7 @@ Evidence index: docs/evidence/generated-card-comparisons/production-text-evidenc
 - no small smoke planner is active or used
 - LLM-planned customer request matrix completed
 - planner preserved required terms and avoided forbidden terms
+- manual grade checklist is promotion-ready
 - manual aggregate is promotion-ready
 
 ## Planner Contract
@@ -111,4 +112,5 @@ Shows whether every production-text requirement now passes. Remove --advisory on
 - no small smoke planner is active or used
 - LLM-planned customer request matrix completed
 - planner preserved required terms and avoided forbidden terms
+- manual grade checklist is promotion-ready
 - manual aggregate is promotion-ready

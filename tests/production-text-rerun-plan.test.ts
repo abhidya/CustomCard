@@ -86,6 +86,7 @@ describe("production text rerun plan", () => {
     expect(plan.commands[3].command).not.toContain("-AllowSmallPlanner");
     expect(plan.commands[5].command).toContain("production-text-manual-grade-checklist.mjs");
     expect(plan.acceptanceChecks).toContain("planner preflight is production-ready");
+    expect(plan.acceptanceChecks).toContain("manual grade checklist is promotion-ready");
     expect(existsSync(join(outputDir, "production-text-rerun-plan.json"))).toBe(true);
     expect(existsSync(join(outputDir, "production-text-rerun-plan.md"))).toBe(true);
   });

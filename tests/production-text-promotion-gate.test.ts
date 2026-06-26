@@ -74,6 +74,22 @@ function writeBaseEvidence(root: string, options: { ready: boolean }) {
       }
     }))
   });
+  writeJson(join(root, "production-text-manual-grade-checklist.json"), {
+    createdAtIso: "2026-06-26T04:32:00.000Z",
+    status: options.ready ? "promotion-ready" : "blocked",
+    promotionReady: options.ready,
+    summary: {
+      totalRuns: fixtures.length,
+      gradableRuns: options.ready ? fixtures.length : 2,
+      gradedGeneratedRuns: options.ready ? fixtures.length : 2,
+      gradedRuns: fixtures.length,
+      missingGrades: 0,
+      invalidGrades: 0,
+      blockedGrades: options.ready ? 0 : 3,
+      failedBeforeImageGeneration: options.ready ? 0 : 1
+    },
+    blockers: options.ready ? [] : ["3 manual grade(s) are blocked or failed.", "1 run(s) failed before image generation."]
+  });
   writeJson(join(root, "production-text-workflow-summary.json"), {
     createdAtIso: "2026-06-26T04:15:00.000Z",
     phase: "local-production-text",
@@ -117,6 +133,7 @@ describe("production text promotion gate", () => {
       "no small smoke planner is active or used",
       "LLM-planned customer request matrix completed",
       "planner preserved required terms and avoided forbidden terms",
+      "manual grade checklist is promotion-ready",
       "manual aggregate is promotion-ready"
     ]);
   });
@@ -134,5 +151,6 @@ describe("production text promotion gate", () => {
     expect(report.status).toBe("promotion-ready");
     expect(report.promotionReady).toBe(true);
     expect(report.requirements.every((item) => item.ok)).toBe(true);
+    expect(report.requirements.map((item) => item.name)).toContain("manual grade checklist is promotion-ready");
   });
 });

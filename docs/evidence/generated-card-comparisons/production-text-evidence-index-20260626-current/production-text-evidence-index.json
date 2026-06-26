@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-26T23:14:22.703Z",
+  "createdAtIso": "2026-06-26T23:24:18.659Z",
   "status": "blocked",
   "promotionReady": false,
   "evidenceRoot": "docs/evidence/generated-card-comparisons",
@@ -34,7 +34,7 @@
   "rerunPlans": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current/production-text-rerun-plan.json",
-      "createdAtIso": "2026-06-26T23:14:14.817Z",
+      "createdAtIso": "2026-06-26T23:24:06.638Z",
       "status": "rerun-required",
       "promotionReady": false,
       "failedRequirements": [
@@ -44,6 +44,7 @@
         "no small smoke planner is active or used",
         "LLM-planned customer request matrix completed",
         "planner preserved required terms and avoided forbidden terms",
+        "manual grade checklist is promotion-ready",
         "manual aggregate is promotion-ready"
       ],
       "commandCount": 9,
@@ -55,7 +56,7 @@
   "plannerPreflights": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current/production-text-planner-preflight.json",
-      "createdAtIso": "2026-06-26T23:09:30.041Z",
+      "createdAtIso": "2026-06-26T23:23:48.950Z",
       "status": "blocked",
       "promotionReady": false,
       "runAllowed": false,

@@ -1,6 +1,6 @@
 # Production Text Evidence Index
 
-Created: 2026-06-26T23:14:22.703Z
+Created: 2026-06-26T23:24:18.659Z
 Status: blocked
 Promotion ready: no
 
@@ -27,7 +27,7 @@ Promotion ready: no
 
 | Type | Path | Status | Key result |
 | --- | --- | --- | --- |
-| Rerun Plan | [open](../production-text-rerun-plan-20260626-current/production-text-rerun-plan.json) | rerun-required | 7 failed requirement(s); commands=9 |
+| Rerun Plan | [open](../production-text-rerun-plan-20260626-current/production-text-rerun-plan.json) | rerun-required | 8 failed requirement(s); commands=9 |
 | Planner | [open](../production-text-planner-preflight-20260626-current/production-text-planner-preflight.json) | blocked | smoke-only; model=koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S; context=4096 |
 | Readiness | [open](../production-text-readiness-20260626-current/production-text-readiness.json) | blocked | 5 blocker(s); planner=none |
 | Preflight | [open](../production-text-preflight-20260626T042126Z/production-text-preflight.json) | promotion-ready | comfy=yes node=yes |
