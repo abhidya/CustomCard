@@ -83,7 +83,7 @@ describe("model benchmark typography experiment", () => {
       }
       expect(prompt.negativePrompt).toContain("readable text");
     }
-    expect(prompts[2].prompt).toContain("Palette: deep charcoal main field");
+    expect(prompts[2].prompt).toContain("Palette: solid deep charcoal only");
     expect(prompts[2].negativePrompt).toContain("ivory wave");
   });
 
@@ -335,22 +335,29 @@ describe("model benchmark typography experiment", () => {
     for (const prompt of [front, left, right]) {
       expect(prompt.prompt).toContain("Text-safe field requirement");
       expect(prompt.prompt).toContain("one continuous opaque plain field");
+      expect(prompt.prompt).toContain("flat editorial print-design");
       expect(prompt.prompt).toContain("Do not place sunburst rays");
-      expect(prompt.prompt).toContain("outer-edge or corner sunburst echoes");
-      expect(prompt.prompt).toContain("No people, faces, bodies, hands, portraits, characters");
+      expect(prompt.prompt).toContain("Use no sunburst motif");
+      expect(prompt.prompt).toContain("no central medallion");
+      expect(prompt.prompt).toContain("no ornate frame around copy");
+      expect(prompt.prompt).toContain("No people, faces, eyes, hair, bodies, hands, portraits, characters");
+      expect(prompt.prompt).not.toContain("5x7 portrait");
       expect(prompt.prompt).toMatch(/no central radial/i);
       expect(prompt.prompt).not.toContain("Motif: Elegant radial sunburst");
       expect(prompt.negativePrompt).toContain("central starburst behind text");
       expect(prompt.negativePrompt).toContain("dense ornament in text area");
+      expect(prompt.negativePrompt).toContain("ornate frame around copy");
+      expect(prompt.negativePrompt).toContain("fake glyph-like marks");
+      expect(prompt.negativePrompt).toContain("stationery supplies");
       expect(prompt.negativePrompt).toContain("rays crossing center");
       expect(prompt.negativePrompt).toContain("portrait");
     }
-    expect(front.prompt).toContain("broad opaque plain deep-charcoal text-safe field");
-    expect(left.prompt).toContain("interior writing panel");
-    expect(left.prompt).toContain("Palette: warm ivory main sheet");
+    expect(front.prompt).toContain("solid deep-charcoal flat print field");
+    expect(left.prompt).toContain("solid warm-ivory flat print field");
+    expect(left.prompt).toContain("Palette: solid warm ivory only");
     expect(left.negativePrompt).toContain("full-width dark band");
-    expect(right.prompt).toContain("matching interior message panel");
-    expect(right.prompt).toContain("Palette: warm ivory main sheet");
+    expect(right.prompt).toContain("solid warm-ivory flat print field");
+    expect(right.prompt).toContain("Palette: solid warm ivory only");
     expect(right.negativePrompt).toContain("split color-blocked interior");
   });
 
@@ -702,7 +709,7 @@ describe("model benchmark typography experiment", () => {
                 body_text: panelId === "front" ? frontCopy.body : "",
                 artwork_guard: { x: 76, y: 268, width: 806, height: 860 },
                 artwork_guard_opacity: 0.74,
-                artwork_guard_style: "box",
+                artwork_guard_style: panelId === "back" ? "box" : "panel",
                 headline_box: { x: 86, y: 376, width: 788, height: 296 },
                 headline_box_background_color: panelId === "front" ? "#111715" : "",
                 headline_box_background_radius: panelId === "front" ? 34 : 0,

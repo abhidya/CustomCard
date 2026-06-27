@@ -549,26 +549,14 @@ function localComfyArtworkGuard({ panelId, lightInk, width, height }) {
   if (panelId === "back") {
     return { x: 0, y: 0, width: imageWidth, height: imageHeight, color: "#111715", opacity: 1, radius: 0, style: "box" };
   }
-  if (panelId === "front") {
-    return {
-      x: Math.round(imageWidth * 0.08),
-      y: Math.round(imageHeight * 0.2),
-      width: Math.round(imageWidth * 0.84),
-      height: Math.round(imageHeight * 0.64),
-      color: lightInk ? "#111715" : "#fff6df",
-      opacity: lightInk ? 0.96 : 0.97,
-      radius: Math.round(imageWidth * 0.045),
-      style: "panel"
-    };
-  }
   return {
-    x: Math.round(imageWidth * 0.09),
-    y: Math.round(imageHeight * 0.14),
-    width: Math.round(imageWidth * 0.82),
-    height: Math.round(imageHeight * 0.72),
-    color: "#fff6df",
-    opacity: 0.97,
-    radius: Math.round(imageWidth * 0.055),
+    x: 0,
+    y: 0,
+    width: imageWidth,
+    height: imageHeight,
+    color: lightInk ? "#111715" : "#fff6df",
+    opacity: 1,
+    radius: 0,
     style: "panel"
   };
 }

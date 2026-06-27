@@ -1,0 +1,2429 @@
+[
+  {
+    "url": "http://127.0.0.1:8188/prompt",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "Create one artwork-only 5x7 vertical Front Cover panel as a minimal flat print field.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 vertical\nOutput: Flat 2D print artwork\nStyle: Minimal flat solid-color print field\nPalette: solid deep charcoal only; no warm-gold accents, no ivory accents, no border, no ornament\nMotif: none; plain solid color only, no ornament, no gold accents, no sunburst, no corner rays, no border, no edge rule, no central radial motif, no halo, no medallion, no ornate frame around copy, no rays behind copy\nMood: Respectful, warm, sophisticated\nPanel Role: primary typography measurement panel\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as flat editorial print design: solid matte paper or ink, integrated into the panel, with no ornament required.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use no sunburst motif, no central medallion, no ornate frame around copy, no decorative ring, no oval, no arch, and no rays behind copy.\nMake the whole panel a solid deep-charcoal flat print field. Treat the central 60% as a real solid print area, not transparent negative space. Best result: plain solid color with no decorative motif anywhere. Do not use gold accents, borders, edge rules, rays, ornaments, bright marks, fake glyphs, faces, figures, sunbursts, ovals, arches, rings, centered radial bursts, halos, medallions, physical frames, portraits, or rays crossing behind the field.\n\nPanel-specific composition: solid deep charcoal flat print-design field and a plain central text-safe field; no gold accents, no border, no edge rule, no figure, no face, no sunburst, no oval, no ring, no central radial burst, no medallion, no ornate frame around copy.\n\nUse only flat solid print fields: deep charcoal for the front, warm ivory for interiors. Keep every text field plain and avoid all decorative objects.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat editorial print-design artwork only, not a photographed object scene or a scene of stationery supplies.\nUse simple flat graphic fills only; do not create borders, edge rules, 3D relief, shadows, physical frames, photographed paper, brushes, boxes, paper stacks, or objects sitting in a scene.\nKeep ornament edge-led and sparse: no central medallion, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, eyes, hair, bodies, hands, portraits, characters, envelopes, boxes, picture frames, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, eyes, hair, woman, girl, portrait, character, human figure, body, hands, fingers, envelope, box, open box, packaging, stationery supplies, paper stack, paintbrush, brush, pencil, fabric, parchment, picture frame, ornate gold frame, baroque frame, framed painting, display prop, product scene, physical object, 3d render, relief sculpture, statue, gray wall, cast shadow, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, gold accents, decorative border, floral border, filigree, border, edge rule, full-page radial burst, centered radial burst, oval, arch, ring, halo behind text, medallion behind text, central medallion, ornate frame around copy, decorative ring under typography, fake glyph-like marks, stationery supplies, paintbrush, brush, pencil, paper stack, open box, packaging, fabric, parchment, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline"
+            }
+          },
+          "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {
+              "batch_size": 1,
+              "height": 1344,
+              "width": 960
+            }
+          },
+          "5": {
+            "class_type": "KSampler",
+            "inputs": {
+              "cfg": 1.5,
+              "denoise": 1,
+              "latent_image": [
+                "4",
+                0
+              ],
+              "model": [
+                "1",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "positive": [
+                "2",
+                0
+              ],
+              "sampler_name": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 2429372540,
+              "steps": 2
+            }
+          },
+          "6": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "5",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            }
+          },
+          "7": {
+            "class_type": "CustomCardTextComposer",
+            "inputs": {
+              "alignment": "center",
+              "artwork_guard_color": "#111715",
+              "artwork_guard_height": 1344,
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "panel",
+              "artwork_guard_width": 960,
+              "artwork_guard_x": 0,
+              "artwork_guard_y": 0,
+              "body": "Wishing you strength and peace on your day.",
+              "body_box_height": 403,
+              "body_box_background_color": "#111715",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "body_box_width": 748,
+              "body_box_x": 106,
+              "body_box_y": 780,
+              "body_fill_color": "#f4d77d",
+              "body_font": "arial.ttf",
+              "body_font_size": 31,
+              "body_line_spacing": 6,
+              "body_stroke_color": "#111715",
+              "body_stroke_width": 2,
+              "body_vertical_alignment": "middle",
+              "debug_boxes": false,
+              "headline": "For Moments That Matter",
+              "headline_box_height": 296,
+              "headline_box_background_color": "#111715",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "headline_box_width": 788,
+              "headline_box_x": 86,
+              "headline_box_y": 376,
+              "headline_fill_color": "#fff7df",
+              "headline_font": "arialbd.ttf",
+              "headline_font_size": 79,
+              "headline_line_spacing": 8,
+              "headline_stroke_color": "#111715",
+              "headline_stroke_width": 2,
+              "headline_vertical_alignment": "middle",
+              "image": [
+                "6",
+                0
+              ],
+              "min_font_size": 16
+            }
+          },
+          "9": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "filename_prefix": "customcard/customcard-production-text-overlay/front",
+              "images": [
+                "7",
+                0
+              ]
+            }
+          }
+        },
+        "client_id": "customcard-local-typography-benchmark",
+        "extra_data": {
+          "customcard": {
+            "workflow_id": "customcard-production-text-overlay",
+            "panel_id": "front",
+            "seed": 2429372540,
+            "inputs": {
+              "workflow_id": "customcard-production-text-overlay",
+              "panel_id": "front",
+              "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+              "width": 960,
+              "height": 1344,
+              "steps": 2,
+              "cfg": 1.5,
+              "sampler": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 2429372540,
+              "prompt": "Create one artwork-only 5x7 vertical Front Cover panel as a minimal flat print field.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 vertical\nOutput: Flat 2D print artwork\nStyle: Minimal flat solid-color print field\nPalette: solid deep charcoal only; no warm-gold accents, no ivory accents, no border, no ornament\nMotif: none; plain solid color only, no ornament, no gold accents, no sunburst, no corner rays, no border, no edge rule, no central radial motif, no halo, no medallion, no ornate frame around copy, no rays behind copy\nMood: Respectful, warm, sophisticated\nPanel Role: primary typography measurement panel\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as flat editorial print design: solid matte paper or ink, integrated into the panel, with no ornament required.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use no sunburst motif, no central medallion, no ornate frame around copy, no decorative ring, no oval, no arch, and no rays behind copy.\nMake the whole panel a solid deep-charcoal flat print field. Treat the central 60% as a real solid print area, not transparent negative space. Best result: plain solid color with no decorative motif anywhere. Do not use gold accents, borders, edge rules, rays, ornaments, bright marks, fake glyphs, faces, figures, sunbursts, ovals, arches, rings, centered radial bursts, halos, medallions, physical frames, portraits, or rays crossing behind the field.\n\nPanel-specific composition: solid deep charcoal flat print-design field and a plain central text-safe field; no gold accents, no border, no edge rule, no figure, no face, no sunburst, no oval, no ring, no central radial burst, no medallion, no ornate frame around copy.\n\nUse only flat solid print fields: deep charcoal for the front, warm ivory for interiors. Keep every text field plain and avoid all decorative objects.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat editorial print-design artwork only, not a photographed object scene or a scene of stationery supplies.\nUse simple flat graphic fills only; do not create borders, edge rules, 3D relief, shadows, physical frames, photographed paper, brushes, boxes, paper stacks, or objects sitting in a scene.\nKeep ornament edge-led and sparse: no central medallion, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, eyes, hair, bodies, hands, portraits, characters, envelopes, boxes, picture frames, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+              "negative_prompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, eyes, hair, woman, girl, portrait, character, human figure, body, hands, fingers, envelope, box, open box, packaging, stationery supplies, paper stack, paintbrush, brush, pencil, fabric, parchment, picture frame, ornate gold frame, baroque frame, framed painting, display prop, product scene, physical object, 3d render, relief sculpture, statue, gray wall, cast shadow, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, gold accents, decorative border, floral border, filigree, border, edge rule, full-page radial burst, centered radial burst, oval, arch, ring, halo behind text, medallion behind text, central medallion, ornate frame around copy, decorative ring under typography, fake glyph-like marks, stationery supplies, paintbrush, brush, pencil, paper stack, open box, packaging, fabric, parchment, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline",
+              "artwork_guard": {
+                "x": 0,
+                "y": 0,
+                "width": 960,
+                "height": 1344
+              },
+              "artwork_guard_color": "#111715",
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "panel",
+              "headline_text": "For Moments That Matter",
+              "body_text": "Wishing you strength and peace on your day.",
+              "headline_font_size": 79,
+              "body_font_size": 31,
+              "headline_box": {
+                "x": 86,
+                "y": 376,
+                "width": 788,
+                "height": 296
+              },
+              "headline_box_background_color": "#111715",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "body_box": {
+                "x": 106,
+                "y": 780,
+                "width": 748,
+                "height": 403
+              },
+              "body_box_background_color": "#111715",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "text_alignment": "center",
+              "min_font_size": 16
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 86,
+      "body": {
+        "prompt_id": "a7d903d7-c26e-468a-be8a-89fbcf3f41a4",
+        "number": 24,
+        "node_errors": {}
+      }
+    },
+    "durationMs": 45
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a7d903d7-c26e-468a-be8a-89fbcf3f41a4",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 4
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a7d903d7-c26e-468a-be8a-89fbcf3f41a4",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a7d903d7-c26e-468a-be8a-89fbcf3f41a4",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a7d903d7-c26e-468a-be8a-89fbcf3f41a4",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a7d903d7-c26e-468a-be8a-89fbcf3f41a4",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a7d903d7-c26e-468a-be8a-89fbcf3f41a4",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/a7d903d7-c26e-468a-be8a-89fbcf3f41a4",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 13805,
+      "body": {
+        "a7d903d7-c26e-468a-be8a-89fbcf3f41a4": {
+          "prompt": [
+            24,
+            "a7d903d7-c26e-468a-be8a-89fbcf3f41a4",
+            {
+              "1": {
+                "class_type": "CheckpointLoaderSimple",
+                "inputs": {
+                  "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+                }
+              },
+              "2": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "Create one artwork-only 5x7 vertical Front Cover panel as a minimal flat print field.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 vertical\nOutput: Flat 2D print artwork\nStyle: Minimal flat solid-color print field\nPalette: solid deep charcoal only; no warm-gold accents, no ivory accents, no border, no ornament\nMotif: none; plain solid color only, no ornament, no gold accents, no sunburst, no corner rays, no border, no edge rule, no central radial motif, no halo, no medallion, no ornate frame around copy, no rays behind copy\nMood: Respectful, warm, sophisticated\nPanel Role: primary typography measurement panel\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as flat editorial print design: solid matte paper or ink, integrated into the panel, with no ornament required.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use no sunburst motif, no central medallion, no ornate frame around copy, no decorative ring, no oval, no arch, and no rays behind copy.\nMake the whole panel a solid deep-charcoal flat print field. Treat the central 60% as a real solid print area, not transparent negative space. Best result: plain solid color with no decorative motif anywhere. Do not use gold accents, borders, edge rules, rays, ornaments, bright marks, fake glyphs, faces, figures, sunbursts, ovals, arches, rings, centered radial bursts, halos, medallions, physical frames, portraits, or rays crossing behind the field.\n\nPanel-specific composition: solid deep charcoal flat print-design field and a plain central text-safe field; no gold accents, no border, no edge rule, no figure, no face, no sunburst, no oval, no ring, no central radial burst, no medallion, no ornate frame around copy.\n\nUse only flat solid print fields: deep charcoal for the front, warm ivory for interiors. Keep every text field plain and avoid all decorative objects.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat editorial print-design artwork only, not a photographed object scene or a scene of stationery supplies.\nUse simple flat graphic fills only; do not create borders, edge rules, 3D relief, shadows, physical frames, photographed paper, brushes, boxes, paper stacks, or objects sitting in a scene.\nKeep ornament edge-led and sparse: no central medallion, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, eyes, hair, bodies, hands, portraits, characters, envelopes, boxes, picture frames, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+                }
+              },
+              "3": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, eyes, hair, woman, girl, portrait, character, human figure, body, hands, fingers, envelope, box, open box, packaging, stationery supplies, paper stack, paintbrush, brush, pencil, fabric, parchment, picture frame, ornate gold frame, baroque frame, framed painting, display prop, product scene, physical object, 3d render, relief sculpture, statue, gray wall, cast shadow, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, gold accents, decorative border, floral border, filigree, border, edge rule, full-page radial burst, centered radial burst, oval, arch, ring, halo behind text, medallion behind text, central medallion, ornate frame around copy, decorative ring under typography, fake glyph-like marks, stationery supplies, paintbrush, brush, pencil, paper stack, open box, packaging, fabric, parchment, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline"
+                }
+              },
+              "4": {
+                "class_type": "EmptyLatentImage",
+                "inputs": {
+                  "batch_size": 1,
+                  "height": 1344,
+                  "width": 960
+                }
+              },
+              "5": {
+                "class_type": "KSampler",
+                "inputs": {
+                  "cfg": 1.5,
+                  "denoise": 1,
+                  "latent_image": [
+                    "4",
+                    0
+                  ],
+                  "model": [
+                    "1",
+                    0
+                  ],
+                  "negative": [
+                    "3",
+                    0
+                  ],
+                  "positive": [
+                    "2",
+                    0
+                  ],
+                  "sampler_name": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 2429372540,
+                  "steps": 2
+                }
+              },
+              "6": {
+                "class_type": "VAEDecode",
+                "inputs": {
+                  "samples": [
+                    "5",
+                    0
+                  ],
+                  "vae": [
+                    "1",
+                    2
+                  ]
+                }
+              },
+              "7": {
+                "class_type": "CustomCardTextComposer",
+                "inputs": {
+                  "alignment": "center",
+                  "artwork_guard_color": "#111715",
+                  "artwork_guard_height": 1344,
+                  "artwork_guard_opacity": 1,
+                  "artwork_guard_radius": 0,
+                  "artwork_guard_style": "panel",
+                  "artwork_guard_width": 960,
+                  "artwork_guard_x": 0,
+                  "artwork_guard_y": 0,
+                  "body": "Wishing you strength and peace on your day.",
+                  "body_box_height": 403,
+                  "body_box_background_color": "#111715",
+                  "body_box_background_padding": 24,
+                  "body_box_background_radius": 34,
+                  "body_box_background_opacity": 0.96,
+                  "body_box_background_style": "text-hug",
+                  "body_box_width": 748,
+                  "body_box_x": 106,
+                  "body_box_y": 780,
+                  "body_fill_color": "#f4d77d",
+                  "body_font": "arial.ttf",
+                  "body_font_size": 31,
+                  "body_line_spacing": 6,
+                  "body_stroke_color": "#111715",
+                  "body_stroke_width": 2,
+                  "body_vertical_alignment": "middle",
+                  "debug_boxes": false,
+                  "headline": "For Moments That Matter",
+                  "headline_box_height": 296,
+                  "headline_box_background_color": "#111715",
+                  "headline_box_background_padding": 24,
+                  "headline_box_background_radius": 34,
+                  "headline_box_background_opacity": 0.96,
+                  "headline_box_background_style": "text-hug",
+                  "headline_box_width": 788,
+                  "headline_box_x": 86,
+                  "headline_box_y": 376,
+                  "headline_fill_color": "#fff7df",
+                  "headline_font": "arialbd.ttf",
+                  "headline_font_size": 79,
+                  "headline_line_spacing": 8,
+                  "headline_stroke_color": "#111715",
+                  "headline_stroke_width": 2,
+                  "headline_vertical_alignment": "middle",
+                  "image": [
+                    "6",
+                    0
+                  ],
+                  "min_font_size": 16
+                }
+              },
+              "9": {
+                "class_type": "SaveImage",
+                "inputs": {
+                  "filename_prefix": "customcard/customcard-production-text-overlay/front",
+                  "images": [
+                    "7",
+                    0
+                  ]
+                }
+              }
+            },
+            {
+              "customcard": {
+                "workflow_id": "customcard-production-text-overlay",
+                "panel_id": "front",
+                "seed": 2429372540,
+                "inputs": {
+                  "workflow_id": "customcard-production-text-overlay",
+                  "panel_id": "front",
+                  "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+                  "width": 960,
+                  "height": 1344,
+                  "steps": 2,
+                  "cfg": 1.5,
+                  "sampler": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 2429372540,
+                  "prompt": "Create one artwork-only 5x7 vertical Front Cover panel as a minimal flat print field.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 vertical\nOutput: Flat 2D print artwork\nStyle: Minimal flat solid-color print field\nPalette: solid deep charcoal only; no warm-gold accents, no ivory accents, no border, no ornament\nMotif: none; plain solid color only, no ornament, no gold accents, no sunburst, no corner rays, no border, no edge rule, no central radial motif, no halo, no medallion, no ornate frame around copy, no rays behind copy\nMood: Respectful, warm, sophisticated\nPanel Role: primary typography measurement panel\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as flat editorial print design: solid matte paper or ink, integrated into the panel, with no ornament required.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use no sunburst motif, no central medallion, no ornate frame around copy, no decorative ring, no oval, no arch, and no rays behind copy.\nMake the whole panel a solid deep-charcoal flat print field. Treat the central 60% as a real solid print area, not transparent negative space. Best result: plain solid color with no decorative motif anywhere. Do not use gold accents, borders, edge rules, rays, ornaments, bright marks, fake glyphs, faces, figures, sunbursts, ovals, arches, rings, centered radial bursts, halos, medallions, physical frames, portraits, or rays crossing behind the field.\n\nPanel-specific composition: solid deep charcoal flat print-design field and a plain central text-safe field; no gold accents, no border, no edge rule, no figure, no face, no sunburst, no oval, no ring, no central radial burst, no medallion, no ornate frame around copy.\n\nUse only flat solid print fields: deep charcoal for the front, warm ivory for interiors. Keep every text field plain and avoid all decorative objects.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat editorial print-design artwork only, not a photographed object scene or a scene of stationery supplies.\nUse simple flat graphic fills only; do not create borders, edge rules, 3D relief, shadows, physical frames, photographed paper, brushes, boxes, paper stacks, or objects sitting in a scene.\nKeep ornament edge-led and sparse: no central medallion, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, eyes, hair, bodies, hands, portraits, characters, envelopes, boxes, picture frames, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+                  "negative_prompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, eyes, hair, woman, girl, portrait, character, human figure, body, hands, fingers, envelope, box, open box, packaging, stationery supplies, paper stack, paintbrush, brush, pencil, fabric, parchment, picture frame, ornate gold frame, baroque frame, framed painting, display prop, product scene, physical object, 3d render, relief sculpture, statue, gray wall, cast shadow, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, gold accents, decorative border, floral border, filigree, border, edge rule, full-page radial burst, centered radial burst, oval, arch, ring, halo behind text, medallion behind text, central medallion, ornate frame around copy, decorative ring under typography, fake glyph-like marks, stationery supplies, paintbrush, brush, pencil, paper stack, open box, packaging, fabric, parchment, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline",
+                  "artwork_guard": {
+                    "x": 0,
+                    "y": 0,
+                    "width": 960,
+                    "height": 1344
+                  },
+                  "artwork_guard_color": "#111715",
+                  "artwork_guard_opacity": 1,
+                  "artwork_guard_radius": 0,
+                  "artwork_guard_style": "panel",
+                  "headline_text": "For Moments That Matter",
+                  "body_text": "Wishing you strength and peace on your day.",
+                  "headline_font_size": 79,
+                  "body_font_size": 31,
+                  "headline_box": {
+                    "x": 86,
+                    "y": 376,
+                    "width": 788,
+                    "height": 296
+                  },
+                  "headline_box_background_color": "#111715",
+                  "headline_box_background_padding": 24,
+                  "headline_box_background_radius": 34,
+                  "headline_box_background_opacity": 0.96,
+                  "headline_box_background_style": "text-hug",
+                  "body_box": {
+                    "x": 106,
+                    "y": 780,
+                    "width": 748,
+                    "height": 403
+                  },
+                  "body_box_background_color": "#111715",
+                  "body_box_background_padding": 24,
+                  "body_box_background_radius": 34,
+                  "body_box_background_opacity": 0.96,
+                  "body_box_background_style": "text-hug",
+                  "text_alignment": "center",
+                  "min_font_size": 16
+                }
+              },
+              "client_id": "customcard-local-typography-benchmark",
+              "create_time": 1782588695233
+            },
+            [
+              "9"
+            ]
+          ],
+          "outputs": {
+            "9": {
+              "images": [
+                {
+                  "filename": "front_00025_.png",
+                  "subfolder": "customcard\\customcard-production-text-overlay",
+                  "type": "output"
+                }
+              ]
+            }
+          },
+          "status": {
+            "status_str": "success",
+            "completed": true,
+            "messages": [
+              [
+                "execution_start",
+                {
+                  "prompt_id": "a7d903d7-c26e-468a-be8a-89fbcf3f41a4",
+                  "timestamp": 1782588695233
+                }
+              ],
+              [
+                "execution_cached",
+                {
+                  "nodes": [
+                    "1"
+                  ],
+                  "prompt_id": "a7d903d7-c26e-468a-be8a-89fbcf3f41a4",
+                  "timestamp": 1782588695233
+                }
+              ],
+              [
+                "execution_success",
+                {
+                  "prompt_id": "a7d903d7-c26e-468a-be8a-89fbcf3f41a4",
+                  "timestamp": 1782588703310
+                }
+              ]
+            ]
+          },
+          "meta": {
+            "9": {
+              "node_id": "9",
+              "display_node": "9",
+              "parent_node": null,
+              "real_node_id": "9"
+            }
+          }
+        }
+      }
+    },
+    "durationMs": 4
+  },
+  {
+    "url": "http://127.0.0.1:8188/view?filename=front_00025_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "byteLength": 37314
+    },
+    "durationMs": 4
+  },
+  {
+    "url": "http://127.0.0.1:8188/prompt",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "Create one artwork-only 5x7 vertical Inside Left panel as a minimal flat print field.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Left\nSize: 5x7 vertical\nOutput: Flat 2D print artwork\nStyle: Minimal flat solid-color print field\nPalette: solid warm ivory only; no warm-gold accents, no border, no edge rule, no object props, no full-width dark bands\nMotif: none; quiet plain solid warm-ivory interior print field only, no ornament, no gold accents, no border, no edge rule, no stationery supplies, no central radial motif, no halo, no medallion, no ornate frame around copy\nMood: Respectful, warm, sophisticated\nPanel Role: left half of a coordinated interior spread with opening message text\nHeadline length: 3 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as flat editorial print design: solid matte paper or ink, integrated into the panel, with no ornament required.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use no sunburst motif, no central medallion, no ornate frame around copy, no decorative ring, no oval, no arch, and no rays behind copy.\nMake the whole panel a solid warm-ivory flat print field, not another cover, physical page, supply scene, or object layout. Best result: plain solid color with no decorative motif anywhere. Do not draw gold accents, borders, edge rules, stationery supplies, brushes, boxes, paper stacks, physical frames, prop objects, radial sunbursts, halos, medallions, circles, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: solid warm ivory flat print-design field, quiet plain center, paired with inside-right; no gold accents, no border, no edge rule, no stationery supplies, no physical frame, no prop, no central medallion or ornate frame.\n\nUse only flat solid print fields: deep charcoal for the front, warm ivory for interiors. Keep every text field plain and avoid all decorative objects.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat editorial print-design artwork only, not a photographed object scene or a scene of stationery supplies.\nUse simple flat graphic fills only; do not create borders, edge rules, 3D relief, shadows, physical frames, photographed paper, brushes, boxes, paper stacks, or objects sitting in a scene.\nKeep ornament edge-led and sparse: no central medallion, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, eyes, hair, bodies, hands, portraits, characters, envelopes, boxes, picture frames, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, eyes, hair, woman, girl, portrait, character, human figure, body, hands, fingers, envelope, box, open box, packaging, stationery supplies, paper stack, paintbrush, brush, pencil, fabric, parchment, picture frame, ornate gold frame, baroque frame, framed painting, display prop, product scene, physical object, 3d render, relief sculpture, statue, gray wall, cast shadow, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, gold accents, decorative border, floral border, filigree, border, edge rule, full-page radial burst, centered radial burst, oval, arch, ring, halo behind text, medallion behind text, central medallion, ornate frame around copy, decorative ring under typography, fake glyph-like marks, stationery supplies, paintbrush, brush, pencil, paper stack, open box, packaging, fabric, parchment, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior"
+            }
+          },
+          "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {
+              "batch_size": 1,
+              "height": 1344,
+              "width": 960
+            }
+          },
+          "5": {
+            "class_type": "KSampler",
+            "inputs": {
+              "cfg": 1.5,
+              "denoise": 1,
+              "latent_image": [
+                "4",
+                0
+              ],
+              "model": [
+                "1",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "positive": [
+                "2",
+                0
+              ],
+              "sampler_name": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 3378380801,
+              "steps": 2
+            }
+          },
+          "6": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "5",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            }
+          },
+          "7": {
+            "class_type": "CustomCardTextComposer",
+            "inputs": {
+              "alignment": "center",
+              "artwork_guard_color": "#fff6df",
+              "artwork_guard_height": 1344,
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "panel",
+              "artwork_guard_width": 960,
+              "artwork_guard_x": 0,
+              "artwork_guard_y": 0,
+              "body": "May this space hold steadiness, light, and the care surrounding you today.",
+              "body_box_height": 484,
+              "body_box_background_color": "#fff6df",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "body_box_width": 748,
+              "body_box_x": 106,
+              "body_box_y": 497,
+              "body_fill_color": "#4f432a",
+              "body_font": "georgia.ttf",
+              "body_font_size": 26,
+              "body_line_spacing": 6,
+              "body_stroke_color": "#fff6df",
+              "body_stroke_width": 1,
+              "body_vertical_alignment": "middle",
+              "debug_boxes": false,
+              "headline": "A Quiet Honor",
+              "headline_box_height": 269,
+              "headline_box_background_color": "#fff6df",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "headline_box_width": 788,
+              "headline_box_x": 86,
+              "headline_box_y": 134,
+              "headline_fill_color": "#282923",
+              "headline_font": "georgia.ttf",
+              "headline_font_size": 54,
+              "headline_line_spacing": 8,
+              "headline_stroke_color": "#fff6df",
+              "headline_stroke_width": 1,
+              "headline_vertical_alignment": "middle",
+              "image": [
+                "6",
+                0
+              ],
+              "min_font_size": 16
+            }
+          },
+          "9": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "filename_prefix": "customcard/customcard-production-text-overlay/inside-left",
+              "images": [
+                "7",
+                0
+              ]
+            }
+          }
+        },
+        "client_id": "customcard-local-typography-benchmark",
+        "extra_data": {
+          "customcard": {
+            "workflow_id": "customcard-production-text-overlay",
+            "panel_id": "inside-left",
+            "seed": 3378380801,
+            "inputs": {
+              "workflow_id": "customcard-production-text-overlay",
+              "panel_id": "inside-left",
+              "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+              "width": 960,
+              "height": 1344,
+              "steps": 2,
+              "cfg": 1.5,
+              "sampler": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 3378380801,
+              "prompt": "Create one artwork-only 5x7 vertical Inside Left panel as a minimal flat print field.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Left\nSize: 5x7 vertical\nOutput: Flat 2D print artwork\nStyle: Minimal flat solid-color print field\nPalette: solid warm ivory only; no warm-gold accents, no border, no edge rule, no object props, no full-width dark bands\nMotif: none; quiet plain solid warm-ivory interior print field only, no ornament, no gold accents, no border, no edge rule, no stationery supplies, no central radial motif, no halo, no medallion, no ornate frame around copy\nMood: Respectful, warm, sophisticated\nPanel Role: left half of a coordinated interior spread with opening message text\nHeadline length: 3 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as flat editorial print design: solid matte paper or ink, integrated into the panel, with no ornament required.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use no sunburst motif, no central medallion, no ornate frame around copy, no decorative ring, no oval, no arch, and no rays behind copy.\nMake the whole panel a solid warm-ivory flat print field, not another cover, physical page, supply scene, or object layout. Best result: plain solid color with no decorative motif anywhere. Do not draw gold accents, borders, edge rules, stationery supplies, brushes, boxes, paper stacks, physical frames, prop objects, radial sunbursts, halos, medallions, circles, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: solid warm ivory flat print-design field, quiet plain center, paired with inside-right; no gold accents, no border, no edge rule, no stationery supplies, no physical frame, no prop, no central medallion or ornate frame.\n\nUse only flat solid print fields: deep charcoal for the front, warm ivory for interiors. Keep every text field plain and avoid all decorative objects.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat editorial print-design artwork only, not a photographed object scene or a scene of stationery supplies.\nUse simple flat graphic fills only; do not create borders, edge rules, 3D relief, shadows, physical frames, photographed paper, brushes, boxes, paper stacks, or objects sitting in a scene.\nKeep ornament edge-led and sparse: no central medallion, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, eyes, hair, bodies, hands, portraits, characters, envelopes, boxes, picture frames, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+              "negative_prompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, eyes, hair, woman, girl, portrait, character, human figure, body, hands, fingers, envelope, box, open box, packaging, stationery supplies, paper stack, paintbrush, brush, pencil, fabric, parchment, picture frame, ornate gold frame, baroque frame, framed painting, display prop, product scene, physical object, 3d render, relief sculpture, statue, gray wall, cast shadow, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, gold accents, decorative border, floral border, filigree, border, edge rule, full-page radial burst, centered radial burst, oval, arch, ring, halo behind text, medallion behind text, central medallion, ornate frame around copy, decorative ring under typography, fake glyph-like marks, stationery supplies, paintbrush, brush, pencil, paper stack, open box, packaging, fabric, parchment, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior",
+              "artwork_guard": {
+                "x": 0,
+                "y": 0,
+                "width": 960,
+                "height": 1344
+              },
+              "artwork_guard_color": "#fff6df",
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "panel",
+              "headline_text": "A Quiet Honor",
+              "body_text": "May this space hold steadiness, light, and the care surrounding you today.",
+              "headline_font_size": 54,
+              "body_font_size": 26,
+              "headline_box": {
+                "x": 86,
+                "y": 134,
+                "width": 788,
+                "height": 269
+              },
+              "headline_box_background_color": "#fff6df",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "body_box": {
+                "x": 106,
+                "y": 497,
+                "width": 748,
+                "height": 484
+              },
+              "body_box_background_color": "#fff6df",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "text_alignment": "center",
+              "min_font_size": 16
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 86,
+      "body": {
+        "prompt_id": "c106251e-8328-4ecb-8dbf-32e50adf6a18",
+        "number": 25,
+        "node_errors": {}
+      }
+    },
+    "durationMs": 11
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/c106251e-8328-4ecb-8dbf-32e50adf6a18",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 15
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/c106251e-8328-4ecb-8dbf-32e50adf6a18",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/c106251e-8328-4ecb-8dbf-32e50adf6a18",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 6
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/c106251e-8328-4ecb-8dbf-32e50adf6a18",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/c106251e-8328-4ecb-8dbf-32e50adf6a18",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 19
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/c106251e-8328-4ecb-8dbf-32e50adf6a18",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 19
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/c106251e-8328-4ecb-8dbf-32e50adf6a18",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/c106251e-8328-4ecb-8dbf-32e50adf6a18",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 14160,
+      "body": {
+        "c106251e-8328-4ecb-8dbf-32e50adf6a18": {
+          "prompt": [
+            25,
+            "c106251e-8328-4ecb-8dbf-32e50adf6a18",
+            {
+              "1": {
+                "class_type": "CheckpointLoaderSimple",
+                "inputs": {
+                  "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+                }
+              },
+              "2": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "Create one artwork-only 5x7 vertical Inside Left panel as a minimal flat print field.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Left\nSize: 5x7 vertical\nOutput: Flat 2D print artwork\nStyle: Minimal flat solid-color print field\nPalette: solid warm ivory only; no warm-gold accents, no border, no edge rule, no object props, no full-width dark bands\nMotif: none; quiet plain solid warm-ivory interior print field only, no ornament, no gold accents, no border, no edge rule, no stationery supplies, no central radial motif, no halo, no medallion, no ornate frame around copy\nMood: Respectful, warm, sophisticated\nPanel Role: left half of a coordinated interior spread with opening message text\nHeadline length: 3 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as flat editorial print design: solid matte paper or ink, integrated into the panel, with no ornament required.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use no sunburst motif, no central medallion, no ornate frame around copy, no decorative ring, no oval, no arch, and no rays behind copy.\nMake the whole panel a solid warm-ivory flat print field, not another cover, physical page, supply scene, or object layout. Best result: plain solid color with no decorative motif anywhere. Do not draw gold accents, borders, edge rules, stationery supplies, brushes, boxes, paper stacks, physical frames, prop objects, radial sunbursts, halos, medallions, circles, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: solid warm ivory flat print-design field, quiet plain center, paired with inside-right; no gold accents, no border, no edge rule, no stationery supplies, no physical frame, no prop, no central medallion or ornate frame.\n\nUse only flat solid print fields: deep charcoal for the front, warm ivory for interiors. Keep every text field plain and avoid all decorative objects.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat editorial print-design artwork only, not a photographed object scene or a scene of stationery supplies.\nUse simple flat graphic fills only; do not create borders, edge rules, 3D relief, shadows, physical frames, photographed paper, brushes, boxes, paper stacks, or objects sitting in a scene.\nKeep ornament edge-led and sparse: no central medallion, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, eyes, hair, bodies, hands, portraits, characters, envelopes, boxes, picture frames, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+                }
+              },
+              "3": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, eyes, hair, woman, girl, portrait, character, human figure, body, hands, fingers, envelope, box, open box, packaging, stationery supplies, paper stack, paintbrush, brush, pencil, fabric, parchment, picture frame, ornate gold frame, baroque frame, framed painting, display prop, product scene, physical object, 3d render, relief sculpture, statue, gray wall, cast shadow, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, gold accents, decorative border, floral border, filigree, border, edge rule, full-page radial burst, centered radial burst, oval, arch, ring, halo behind text, medallion behind text, central medallion, ornate frame around copy, decorative ring under typography, fake glyph-like marks, stationery supplies, paintbrush, brush, pencil, paper stack, open box, packaging, fabric, parchment, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior"
+                }
+              },
+              "4": {
+                "class_type": "EmptyLatentImage",
+                "inputs": {
+                  "batch_size": 1,
+                  "height": 1344,
+                  "width": 960
+                }
+              },
+              "5": {
+                "class_type": "KSampler",
+                "inputs": {
+                  "cfg": 1.5,
+                  "denoise": 1,
+                  "latent_image": [
+                    "4",
+                    0
+                  ],
+                  "model": [
+                    "1",
+                    0
+                  ],
+                  "negative": [
+                    "3",
+                    0
+                  ],
+                  "positive": [
+                    "2",
+                    0
+                  ],
+                  "sampler_name": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 3378380801,
+                  "steps": 2
+                }
+              },
+              "6": {
+                "class_type": "VAEDecode",
+                "inputs": {
+                  "samples": [
+                    "5",
+                    0
+                  ],
+                  "vae": [
+                    "1",
+                    2
+                  ]
+                }
+              },
+              "7": {
+                "class_type": "CustomCardTextComposer",
+                "inputs": {
+                  "alignment": "center",
+                  "artwork_guard_color": "#fff6df",
+                  "artwork_guard_height": 1344,
+                  "artwork_guard_opacity": 1,
+                  "artwork_guard_radius": 0,
+                  "artwork_guard_style": "panel",
+                  "artwork_guard_width": 960,
+                  "artwork_guard_x": 0,
+                  "artwork_guard_y": 0,
+                  "body": "May this space hold steadiness, light, and the care surrounding you today.",
+                  "body_box_height": 484,
+                  "body_box_background_color": "#fff6df",
+                  "body_box_background_padding": 24,
+                  "body_box_background_radius": 34,
+                  "body_box_background_opacity": 0.96,
+                  "body_box_background_style": "text-hug",
+                  "body_box_width": 748,
+                  "body_box_x": 106,
+                  "body_box_y": 497,
+                  "body_fill_color": "#4f432a",
+                  "body_font": "georgia.ttf",
+                  "body_font_size": 26,
+                  "body_line_spacing": 6,
+                  "body_stroke_color": "#fff6df",
+                  "body_stroke_width": 1,
+                  "body_vertical_alignment": "middle",
+                  "debug_boxes": false,
+                  "headline": "A Quiet Honor",
+                  "headline_box_height": 269,
+                  "headline_box_background_color": "#fff6df",
+                  "headline_box_background_padding": 24,
+                  "headline_box_background_radius": 34,
+                  "headline_box_background_opacity": 0.96,
+                  "headline_box_background_style": "text-hug",
+                  "headline_box_width": 788,
+                  "headline_box_x": 86,
+                  "headline_box_y": 134,
+                  "headline_fill_color": "#282923",
+                  "headline_font": "georgia.ttf",
+                  "headline_font_size": 54,
+                  "headline_line_spacing": 8,
+                  "headline_stroke_color": "#fff6df",
+                  "headline_stroke_width": 1,
+                  "headline_vertical_alignment": "middle",
+                  "image": [
+                    "6",
+                    0
+                  ],
+                  "min_font_size": 16
+                }
+              },
+              "9": {
+                "class_type": "SaveImage",
+                "inputs": {
+                  "filename_prefix": "customcard/customcard-production-text-overlay/inside-left",
+                  "images": [
+                    "7",
+                    0
+                  ]
+                }
+              }
+            },
+            {
+              "customcard": {
+                "workflow_id": "customcard-production-text-overlay",
+                "panel_id": "inside-left",
+                "seed": 3378380801,
+                "inputs": {
+                  "workflow_id": "customcard-production-text-overlay",
+                  "panel_id": "inside-left",
+                  "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+                  "width": 960,
+                  "height": 1344,
+                  "steps": 2,
+                  "cfg": 1.5,
+                  "sampler": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 3378380801,
+                  "prompt": "Create one artwork-only 5x7 vertical Inside Left panel as a minimal flat print field.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Left\nSize: 5x7 vertical\nOutput: Flat 2D print artwork\nStyle: Minimal flat solid-color print field\nPalette: solid warm ivory only; no warm-gold accents, no border, no edge rule, no object props, no full-width dark bands\nMotif: none; quiet plain solid warm-ivory interior print field only, no ornament, no gold accents, no border, no edge rule, no stationery supplies, no central radial motif, no halo, no medallion, no ornate frame around copy\nMood: Respectful, warm, sophisticated\nPanel Role: left half of a coordinated interior spread with opening message text\nHeadline length: 3 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as flat editorial print design: solid matte paper or ink, integrated into the panel, with no ornament required.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use no sunburst motif, no central medallion, no ornate frame around copy, no decorative ring, no oval, no arch, and no rays behind copy.\nMake the whole panel a solid warm-ivory flat print field, not another cover, physical page, supply scene, or object layout. Best result: plain solid color with no decorative motif anywhere. Do not draw gold accents, borders, edge rules, stationery supplies, brushes, boxes, paper stacks, physical frames, prop objects, radial sunbursts, halos, medallions, circles, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: solid warm ivory flat print-design field, quiet plain center, paired with inside-right; no gold accents, no border, no edge rule, no stationery supplies, no physical frame, no prop, no central medallion or ornate frame.\n\nUse only flat solid print fields: deep charcoal for the front, warm ivory for interiors. Keep every text field plain and avoid all decorative objects.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat editorial print-design artwork only, not a photographed object scene or a scene of stationery supplies.\nUse simple flat graphic fills only; do not create borders, edge rules, 3D relief, shadows, physical frames, photographed paper, brushes, boxes, paper stacks, or objects sitting in a scene.\nKeep ornament edge-led and sparse: no central medallion, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, eyes, hair, bodies, hands, portraits, characters, envelopes, boxes, picture frames, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+                  "negative_prompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, eyes, hair, woman, girl, portrait, character, human figure, body, hands, fingers, envelope, box, open box, packaging, stationery supplies, paper stack, paintbrush, brush, pencil, fabric, parchment, picture frame, ornate gold frame, baroque frame, framed painting, display prop, product scene, physical object, 3d render, relief sculpture, statue, gray wall, cast shadow, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, gold accents, decorative border, floral border, filigree, border, edge rule, full-page radial burst, centered radial burst, oval, arch, ring, halo behind text, medallion behind text, central medallion, ornate frame around copy, decorative ring under typography, fake glyph-like marks, stationery supplies, paintbrush, brush, pencil, paper stack, open box, packaging, fabric, parchment, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior",
+                  "artwork_guard": {
+                    "x": 0,
+                    "y": 0,
+                    "width": 960,
+                    "height": 1344
+                  },
+                  "artwork_guard_color": "#fff6df",
+                  "artwork_guard_opacity": 1,
+                  "artwork_guard_radius": 0,
+                  "artwork_guard_style": "panel",
+                  "headline_text": "A Quiet Honor",
+                  "body_text": "May this space hold steadiness, light, and the care surrounding you today.",
+                  "headline_font_size": 54,
+                  "body_font_size": 26,
+                  "headline_box": {
+                    "x": 86,
+                    "y": 134,
+                    "width": 788,
+                    "height": 269
+                  },
+                  "headline_box_background_color": "#fff6df",
+                  "headline_box_background_padding": 24,
+                  "headline_box_background_radius": 34,
+                  "headline_box_background_opacity": 0.96,
+                  "headline_box_background_style": "text-hug",
+                  "body_box": {
+                    "x": 106,
+                    "y": 497,
+                    "width": 748,
+                    "height": 484
+                  },
+                  "body_box_background_color": "#fff6df",
+                  "body_box_background_padding": 24,
+                  "body_box_background_radius": 34,
+                  "body_box_background_opacity": 0.96,
+                  "body_box_background_style": "text-hug",
+                  "text_alignment": "center",
+                  "min_font_size": 16
+                }
+              },
+              "client_id": "customcard-local-typography-benchmark",
+              "create_time": 1782588704774
+            },
+            [
+              "9"
+            ]
+          ],
+          "outputs": {
+            "9": {
+              "images": [
+                {
+                  "filename": "inside-left_00025_.png",
+                  "subfolder": "customcard\\customcard-production-text-overlay",
+                  "type": "output"
+                }
+              ]
+            }
+          },
+          "status": {
+            "status_str": "success",
+            "completed": true,
+            "messages": [
+              [
+                "execution_start",
+                {
+                  "prompt_id": "c106251e-8328-4ecb-8dbf-32e50adf6a18",
+                  "timestamp": 1782588704775
+                }
+              ],
+              [
+                "execution_cached",
+                {
+                  "nodes": [
+                    "1",
+                    "4"
+                  ],
+                  "prompt_id": "c106251e-8328-4ecb-8dbf-32e50adf6a18",
+                  "timestamp": 1782588704775
+                }
+              ],
+              [
+                "execution_success",
+                {
+                  "prompt_id": "c106251e-8328-4ecb-8dbf-32e50adf6a18",
+                  "timestamp": 1782588714064
+                }
+              ]
+            ]
+          },
+          "meta": {
+            "9": {
+              "node_id": "9",
+              "display_node": "9",
+              "parent_node": null,
+              "real_node_id": "9"
+            }
+          }
+        }
+      }
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/view?filename=inside-left_00025_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "byteLength": 31389
+    },
+    "durationMs": 2
+  },
+  {
+    "url": "http://127.0.0.1:8188/prompt",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "Create one artwork-only 5x7 vertical Inside Right panel as a minimal flat print field.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Right\nSize: 5x7 vertical\nOutput: Flat 2D print artwork\nStyle: Minimal flat solid-color print field\nPalette: solid warm ivory only; no warm-gold accents, no border, no edge rule, no object props, no full-width dark bands\nMotif: none; quiet plain solid warm-ivory interior print field only, no ornament, no gold accents, no border, no edge rule, no stationery supplies, no central radial motif, no halo, no medallion, no ornate frame around copy\nMood: Respectful, warm, sophisticated\nPanel Role: right half of a coordinated interior spread with main message text\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as flat editorial print design: solid matte paper or ink, integrated into the panel, with no ornament required.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use no sunburst motif, no central medallion, no ornate frame around copy, no decorative ring, no oval, no arch, and no rays behind copy.\nMake the whole panel a solid warm-ivory flat print field, not a physical page, supply scene, or object layout. Best result: plain solid color with no decorative motif anywhere. Do not draw gold accents, borders, edge rules, stationery supplies, brushes, boxes, paper stacks, physical frames, prop objects, radial sunbursts, halos, medallions, circles, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: solid warm ivory flat print-design field, quiet plain center, paired with inside-left; no gold accents, no border, no edge rule, no stationery supplies, no physical frame, no prop, no central medallion or ornate frame.\n\nUse only flat solid print fields: deep charcoal for the front, warm ivory for interiors. Keep every text field plain and avoid all decorative objects.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat editorial print-design artwork only, not a photographed object scene or a scene of stationery supplies.\nUse simple flat graphic fills only; do not create borders, edge rules, 3D relief, shadows, physical frames, photographed paper, brushes, boxes, paper stacks, or objects sitting in a scene.\nKeep ornament edge-led and sparse: no central medallion, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, eyes, hair, bodies, hands, portraits, characters, envelopes, boxes, picture frames, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, eyes, hair, woman, girl, portrait, character, human figure, body, hands, fingers, envelope, box, open box, packaging, stationery supplies, paper stack, paintbrush, brush, pencil, fabric, parchment, picture frame, ornate gold frame, baroque frame, framed painting, display prop, product scene, physical object, 3d render, relief sculpture, statue, gray wall, cast shadow, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, gold accents, decorative border, floral border, filigree, border, edge rule, full-page radial burst, centered radial burst, oval, arch, ring, halo behind text, medallion behind text, central medallion, ornate frame around copy, decorative ring under typography, fake glyph-like marks, stationery supplies, paintbrush, brush, pencil, paper stack, open box, packaging, fabric, parchment, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior"
+            }
+          },
+          "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {
+              "batch_size": 1,
+              "height": 1344,
+              "width": 960
+            }
+          },
+          "5": {
+            "class_type": "KSampler",
+            "inputs": {
+              "cfg": 1.5,
+              "denoise": 1,
+              "latent_image": [
+                "4",
+                0
+              ],
+              "model": [
+                "1",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "positive": [
+                "2",
+                0
+              ],
+              "sampler_name": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 3863085513,
+              "steps": 2
+            }
+          },
+          "6": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "5",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            }
+          },
+          "7": {
+            "class_type": "CustomCardTextComposer",
+            "inputs": {
+              "alignment": "center",
+              "artwork_guard_color": "#fff6df",
+              "artwork_guard_height": 1344,
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "panel",
+              "artwork_guard_width": 960,
+              "artwork_guard_x": 0,
+              "artwork_guard_y": 0,
+              "body": "For the moments that ask for courage, may you feel supported, seen, and held in peace.",
+              "body_box_height": 484,
+              "body_box_background_color": "#fff6df",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "body_box_width": 748,
+              "body_box_x": 106,
+              "body_box_y": 497,
+              "body_fill_color": "#4f432a",
+              "body_font": "georgia.ttf",
+              "body_font_size": 26,
+              "body_line_spacing": 6,
+              "body_stroke_color": "#fff6df",
+              "body_stroke_width": 1,
+              "body_vertical_alignment": "middle",
+              "debug_boxes": false,
+              "headline": "With Respect and Warmth",
+              "headline_box_height": 269,
+              "headline_box_background_color": "#fff6df",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "headline_box_width": 788,
+              "headline_box_x": 86,
+              "headline_box_y": 134,
+              "headline_fill_color": "#282923",
+              "headline_font": "georgia.ttf",
+              "headline_font_size": 54,
+              "headline_line_spacing": 8,
+              "headline_stroke_color": "#fff6df",
+              "headline_stroke_width": 1,
+              "headline_vertical_alignment": "middle",
+              "image": [
+                "6",
+                0
+              ],
+              "min_font_size": 16
+            }
+          },
+          "9": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "filename_prefix": "customcard/customcard-production-text-overlay/inside-right",
+              "images": [
+                "7",
+                0
+              ]
+            }
+          }
+        },
+        "client_id": "customcard-local-typography-benchmark",
+        "extra_data": {
+          "customcard": {
+            "workflow_id": "customcard-production-text-overlay",
+            "panel_id": "inside-right",
+            "seed": 3863085513,
+            "inputs": {
+              "workflow_id": "customcard-production-text-overlay",
+              "panel_id": "inside-right",
+              "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+              "width": 960,
+              "height": 1344,
+              "steps": 2,
+              "cfg": 1.5,
+              "sampler": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 3863085513,
+              "prompt": "Create one artwork-only 5x7 vertical Inside Right panel as a minimal flat print field.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Right\nSize: 5x7 vertical\nOutput: Flat 2D print artwork\nStyle: Minimal flat solid-color print field\nPalette: solid warm ivory only; no warm-gold accents, no border, no edge rule, no object props, no full-width dark bands\nMotif: none; quiet plain solid warm-ivory interior print field only, no ornament, no gold accents, no border, no edge rule, no stationery supplies, no central radial motif, no halo, no medallion, no ornate frame around copy\nMood: Respectful, warm, sophisticated\nPanel Role: right half of a coordinated interior spread with main message text\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as flat editorial print design: solid matte paper or ink, integrated into the panel, with no ornament required.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use no sunburst motif, no central medallion, no ornate frame around copy, no decorative ring, no oval, no arch, and no rays behind copy.\nMake the whole panel a solid warm-ivory flat print field, not a physical page, supply scene, or object layout. Best result: plain solid color with no decorative motif anywhere. Do not draw gold accents, borders, edge rules, stationery supplies, brushes, boxes, paper stacks, physical frames, prop objects, radial sunbursts, halos, medallions, circles, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: solid warm ivory flat print-design field, quiet plain center, paired with inside-left; no gold accents, no border, no edge rule, no stationery supplies, no physical frame, no prop, no central medallion or ornate frame.\n\nUse only flat solid print fields: deep charcoal for the front, warm ivory for interiors. Keep every text field plain and avoid all decorative objects.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat editorial print-design artwork only, not a photographed object scene or a scene of stationery supplies.\nUse simple flat graphic fills only; do not create borders, edge rules, 3D relief, shadows, physical frames, photographed paper, brushes, boxes, paper stacks, or objects sitting in a scene.\nKeep ornament edge-led and sparse: no central medallion, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, eyes, hair, bodies, hands, portraits, characters, envelopes, boxes, picture frames, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+              "negative_prompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, eyes, hair, woman, girl, portrait, character, human figure, body, hands, fingers, envelope, box, open box, packaging, stationery supplies, paper stack, paintbrush, brush, pencil, fabric, parchment, picture frame, ornate gold frame, baroque frame, framed painting, display prop, product scene, physical object, 3d render, relief sculpture, statue, gray wall, cast shadow, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, gold accents, decorative border, floral border, filigree, border, edge rule, full-page radial burst, centered radial burst, oval, arch, ring, halo behind text, medallion behind text, central medallion, ornate frame around copy, decorative ring under typography, fake glyph-like marks, stationery supplies, paintbrush, brush, pencil, paper stack, open box, packaging, fabric, parchment, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior",
+              "artwork_guard": {
+                "x": 0,
+                "y": 0,
+                "width": 960,
+                "height": 1344
+              },
+              "artwork_guard_color": "#fff6df",
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "panel",
+              "headline_text": "With Respect and Warmth",
+              "body_text": "For the moments that ask for courage, may you feel supported, seen, and held in peace.",
+              "headline_font_size": 54,
+              "body_font_size": 26,
+              "headline_box": {
+                "x": 86,
+                "y": 134,
+                "width": 788,
+                "height": 269
+              },
+              "headline_box_background_color": "#fff6df",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "body_box": {
+                "x": 106,
+                "y": 497,
+                "width": 748,
+                "height": 484
+              },
+              "body_box_background_color": "#fff6df",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "text_alignment": "center",
+              "min_font_size": 16
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 86,
+      "body": {
+        "prompt_id": "87b89e47-0a84-4461-8983-a6e2467b4596",
+        "number": 26,
+        "node_errors": {}
+      }
+    },
+    "durationMs": 15
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/87b89e47-0a84-4461-8983-a6e2467b4596",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 4
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/87b89e47-0a84-4461-8983-a6e2467b4596",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 9
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/87b89e47-0a84-4461-8983-a6e2467b4596",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/87b89e47-0a84-4461-8983-a6e2467b4596",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/87b89e47-0a84-4461-8983-a6e2467b4596",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/87b89e47-0a84-4461-8983-a6e2467b4596",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 4
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/87b89e47-0a84-4461-8983-a6e2467b4596",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 14185,
+      "body": {
+        "87b89e47-0a84-4461-8983-a6e2467b4596": {
+          "prompt": [
+            26,
+            "87b89e47-0a84-4461-8983-a6e2467b4596",
+            {
+              "1": {
+                "class_type": "CheckpointLoaderSimple",
+                "inputs": {
+                  "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+                }
+              },
+              "2": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "Create one artwork-only 5x7 vertical Inside Right panel as a minimal flat print field.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Right\nSize: 5x7 vertical\nOutput: Flat 2D print artwork\nStyle: Minimal flat solid-color print field\nPalette: solid warm ivory only; no warm-gold accents, no border, no edge rule, no object props, no full-width dark bands\nMotif: none; quiet plain solid warm-ivory interior print field only, no ornament, no gold accents, no border, no edge rule, no stationery supplies, no central radial motif, no halo, no medallion, no ornate frame around copy\nMood: Respectful, warm, sophisticated\nPanel Role: right half of a coordinated interior spread with main message text\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as flat editorial print design: solid matte paper or ink, integrated into the panel, with no ornament required.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use no sunburst motif, no central medallion, no ornate frame around copy, no decorative ring, no oval, no arch, and no rays behind copy.\nMake the whole panel a solid warm-ivory flat print field, not a physical page, supply scene, or object layout. Best result: plain solid color with no decorative motif anywhere. Do not draw gold accents, borders, edge rules, stationery supplies, brushes, boxes, paper stacks, physical frames, prop objects, radial sunbursts, halos, medallions, circles, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: solid warm ivory flat print-design field, quiet plain center, paired with inside-left; no gold accents, no border, no edge rule, no stationery supplies, no physical frame, no prop, no central medallion or ornate frame.\n\nUse only flat solid print fields: deep charcoal for the front, warm ivory for interiors. Keep every text field plain and avoid all decorative objects.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat editorial print-design artwork only, not a photographed object scene or a scene of stationery supplies.\nUse simple flat graphic fills only; do not create borders, edge rules, 3D relief, shadows, physical frames, photographed paper, brushes, boxes, paper stacks, or objects sitting in a scene.\nKeep ornament edge-led and sparse: no central medallion, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, eyes, hair, bodies, hands, portraits, characters, envelopes, boxes, picture frames, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+                }
+              },
+              "3": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, eyes, hair, woman, girl, portrait, character, human figure, body, hands, fingers, envelope, box, open box, packaging, stationery supplies, paper stack, paintbrush, brush, pencil, fabric, parchment, picture frame, ornate gold frame, baroque frame, framed painting, display prop, product scene, physical object, 3d render, relief sculpture, statue, gray wall, cast shadow, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, gold accents, decorative border, floral border, filigree, border, edge rule, full-page radial burst, centered radial burst, oval, arch, ring, halo behind text, medallion behind text, central medallion, ornate frame around copy, decorative ring under typography, fake glyph-like marks, stationery supplies, paintbrush, brush, pencil, paper stack, open box, packaging, fabric, parchment, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior"
+                }
+              },
+              "4": {
+                "class_type": "EmptyLatentImage",
+                "inputs": {
+                  "batch_size": 1,
+                  "height": 1344,
+                  "width": 960
+                }
+              },
+              "5": {
+                "class_type": "KSampler",
+                "inputs": {
+                  "cfg": 1.5,
+                  "denoise": 1,
+                  "latent_image": [
+                    "4",
+                    0
+                  ],
+                  "model": [
+                    "1",
+                    0
+                  ],
+                  "negative": [
+                    "3",
+                    0
+                  ],
+                  "positive": [
+                    "2",
+                    0
+                  ],
+                  "sampler_name": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 3863085513,
+                  "steps": 2
+                }
+              },
+              "6": {
+                "class_type": "VAEDecode",
+                "inputs": {
+                  "samples": [
+                    "5",
+                    0
+                  ],
+                  "vae": [
+                    "1",
+                    2
+                  ]
+                }
+              },
+              "7": {
+                "class_type": "CustomCardTextComposer",
+                "inputs": {
+                  "alignment": "center",
+                  "artwork_guard_color": "#fff6df",
+                  "artwork_guard_height": 1344,
+                  "artwork_guard_opacity": 1,
+                  "artwork_guard_radius": 0,
+                  "artwork_guard_style": "panel",
+                  "artwork_guard_width": 960,
+                  "artwork_guard_x": 0,
+                  "artwork_guard_y": 0,
+                  "body": "For the moments that ask for courage, may you feel supported, seen, and held in peace.",
+                  "body_box_height": 484,
+                  "body_box_background_color": "#fff6df",
+                  "body_box_background_padding": 24,
+                  "body_box_background_radius": 34,
+                  "body_box_background_opacity": 0.96,
+                  "body_box_background_style": "text-hug",
+                  "body_box_width": 748,
+                  "body_box_x": 106,
+                  "body_box_y": 497,
+                  "body_fill_color": "#4f432a",
+                  "body_font": "georgia.ttf",
+                  "body_font_size": 26,
+                  "body_line_spacing": 6,
+                  "body_stroke_color": "#fff6df",
+                  "body_stroke_width": 1,
+                  "body_vertical_alignment": "middle",
+                  "debug_boxes": false,
+                  "headline": "With Respect and Warmth",
+                  "headline_box_height": 269,
+                  "headline_box_background_color": "#fff6df",
+                  "headline_box_background_padding": 24,
+                  "headline_box_background_radius": 34,
+                  "headline_box_background_opacity": 0.96,
+                  "headline_box_background_style": "text-hug",
+                  "headline_box_width": 788,
+                  "headline_box_x": 86,
+                  "headline_box_y": 134,
+                  "headline_fill_color": "#282923",
+                  "headline_font": "georgia.ttf",
+                  "headline_font_size": 54,
+                  "headline_line_spacing": 8,
+                  "headline_stroke_color": "#fff6df",
+                  "headline_stroke_width": 1,
+                  "headline_vertical_alignment": "middle",
+                  "image": [
+                    "6",
+                    0
+                  ],
+                  "min_font_size": 16
+                }
+              },
+              "9": {
+                "class_type": "SaveImage",
+                "inputs": {
+                  "filename_prefix": "customcard/customcard-production-text-overlay/inside-right",
+                  "images": [
+                    "7",
+                    0
+                  ]
+                }
+              }
+            },
+            {
+              "customcard": {
+                "workflow_id": "customcard-production-text-overlay",
+                "panel_id": "inside-right",
+                "seed": 3863085513,
+                "inputs": {
+                  "workflow_id": "customcard-production-text-overlay",
+                  "panel_id": "inside-right",
+                  "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+                  "width": 960,
+                  "height": 1344,
+                  "steps": 2,
+                  "cfg": 1.5,
+                  "sampler": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 3863085513,
+                  "prompt": "Create one artwork-only 5x7 vertical Inside Right panel as a minimal flat print field.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Right\nSize: 5x7 vertical\nOutput: Flat 2D print artwork\nStyle: Minimal flat solid-color print field\nPalette: solid warm ivory only; no warm-gold accents, no border, no edge rule, no object props, no full-width dark bands\nMotif: none; quiet plain solid warm-ivory interior print field only, no ornament, no gold accents, no border, no edge rule, no stationery supplies, no central radial motif, no halo, no medallion, no ornate frame around copy\nMood: Respectful, warm, sophisticated\nPanel Role: right half of a coordinated interior spread with main message text\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for app-rendered typography.\nThe field must read as flat editorial print design: solid matte paper or ink, integrated into the panel, with no ornament required.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use no sunburst motif, no central medallion, no ornate frame around copy, no decorative ring, no oval, no arch, and no rays behind copy.\nMake the whole panel a solid warm-ivory flat print field, not a physical page, supply scene, or object layout. Best result: plain solid color with no decorative motif anywhere. Do not draw gold accents, borders, edge rules, stationery supplies, brushes, boxes, paper stacks, physical frames, prop objects, radial sunbursts, halos, medallions, circles, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: solid warm ivory flat print-design field, quiet plain center, paired with inside-left; no gold accents, no border, no edge rule, no stationery supplies, no physical frame, no prop, no central medallion or ornate frame.\n\nUse only flat solid print fields: deep charcoal for the front, warm ivory for interiors. Keep every text field plain and avoid all decorative objects.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat editorial print-design artwork only, not a photographed object scene or a scene of stationery supplies.\nUse simple flat graphic fills only; do not create borders, edge rules, 3D relief, shadows, physical frames, photographed paper, brushes, boxes, paper stacks, or objects sitting in a scene.\nKeep ornament edge-led and sparse: no central medallion, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, eyes, hair, bodies, hands, portraits, characters, envelopes, boxes, picture frames, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+                  "negative_prompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, eyes, hair, woman, girl, portrait, character, human figure, body, hands, fingers, envelope, box, open box, packaging, stationery supplies, paper stack, paintbrush, brush, pencil, fabric, parchment, picture frame, ornate gold frame, baroque frame, framed painting, display prop, product scene, physical object, 3d render, relief sculpture, statue, gray wall, cast shadow, photorealistic scene, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, gold accents, decorative border, floral border, filigree, border, edge rule, full-page radial burst, centered radial burst, oval, arch, ring, halo behind text, medallion behind text, central medallion, ornate frame around copy, decorative ring under typography, fake glyph-like marks, stationery supplies, paintbrush, brush, pencil, paper stack, open box, packaging, fabric, parchment, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior",
+                  "artwork_guard": {
+                    "x": 0,
+                    "y": 0,
+                    "width": 960,
+                    "height": 1344
+                  },
+                  "artwork_guard_color": "#fff6df",
+                  "artwork_guard_opacity": 1,
+                  "artwork_guard_radius": 0,
+                  "artwork_guard_style": "panel",
+                  "headline_text": "With Respect and Warmth",
+                  "body_text": "For the moments that ask for courage, may you feel supported, seen, and held in peace.",
+                  "headline_font_size": 54,
+                  "body_font_size": 26,
+                  "headline_box": {
+                    "x": 86,
+                    "y": 134,
+                    "width": 788,
+                    "height": 269
+                  },
+                  "headline_box_background_color": "#fff6df",
+                  "headline_box_background_padding": 24,
+                  "headline_box_background_radius": 34,
+                  "headline_box_background_opacity": 0.96,
+                  "headline_box_background_style": "text-hug",
+                  "body_box": {
+                    "x": 106,
+                    "y": 497,
+                    "width": 748,
+                    "height": 484
+                  },
+                  "body_box_background_color": "#fff6df",
+                  "body_box_background_padding": 24,
+                  "body_box_background_radius": 34,
+                  "body_box_background_opacity": 0.96,
+                  "body_box_background_style": "text-hug",
+                  "text_alignment": "center",
+                  "min_font_size": 16
+                }
+              },
+              "client_id": "customcard-local-typography-benchmark",
+              "create_time": 1782588715515
+            },
+            [
+              "9"
+            ]
+          ],
+          "outputs": {
+            "9": {
+              "images": [
+                {
+                  "filename": "inside-right_00025_.png",
+                  "subfolder": "customcard\\customcard-production-text-overlay",
+                  "type": "output"
+                }
+              ]
+            }
+          },
+          "status": {
+            "status_str": "success",
+            "completed": true,
+            "messages": [
+              [
+                "execution_start",
+                {
+                  "prompt_id": "87b89e47-0a84-4461-8983-a6e2467b4596",
+                  "timestamp": 1782588715517
+                }
+              ],
+              [
+                "execution_cached",
+                {
+                  "nodes": [
+                    "1",
+                    "3",
+                    "4"
+                  ],
+                  "prompt_id": "87b89e47-0a84-4461-8983-a6e2467b4596",
+                  "timestamp": 1782588715520
+                }
+              ],
+              [
+                "execution_success",
+                {
+                  "prompt_id": "87b89e47-0a84-4461-8983-a6e2467b4596",
+                  "timestamp": 1782588724294
+                }
+              ]
+            ]
+          },
+          "meta": {
+            "9": {
+              "node_id": "9",
+              "display_node": "9",
+              "parent_node": null,
+              "real_node_id": "9"
+            }
+          }
+        }
+      }
+    },
+    "durationMs": 80
+  },
+  {
+    "url": "http://127.0.0.1:8188/view?filename=inside-right_00025_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "byteLength": 37360
+    },
+    "durationMs": 3
+  },
+  {
+    "url": "http://127.0.0.1:8188/prompt",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "Create one artwork-only 5x7 vertical Back Cover panel as a minimal flat print field.\nThis is an artwork layer, not a finished panel.\nPanel Type: Back Cover\nSize: 5x7 vertical\nOutput: Flat 2D print artwork\nStyle: Minimal flat solid-color print field\nPalette: solid deep charcoal only; no warm-gold mark, no ivory panel, no cream wave, no large light area\nMotif: none; plain solid deep-charcoal back cover only, no mark, no border, no centered or full-panel radial burst\nMood: Respectful, warm, sophisticated\nPanel Role: coordinating no-text back panel\nNo card copy belongs on this panel.\nReserve hierarchy for visual coordination only.\nUse mostly negative space plus one small coordinating back mark.\nBack cover must be plain solid deep charcoal. Do not add a logo, sun mark, border, halo, burst, decorative typography, or any text-like marks.\nPanel-specific composition: solid deep charcoal negative space, no mark, no border, no card copy.\n\nUse only a plain solid deep-charcoal field on the back cover.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat editorial print-design artwork only, not a photographed object scene or a scene of stationery supplies.\nUse simple flat graphic fills only; do not create borders, edge rules, 3D relief, shadows, physical frames, photographed paper, brushes, boxes, paper stacks, or objects sitting in a scene.\nKeep ornament edge-led and sparse: no central medallion, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, eyes, hair, bodies, hands, portraits, characters, envelopes, boxes, picture frames, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, eyes, hair, woman, girl, portrait, character, human figure, body, hands, fingers, envelope, box, open box, packaging, stationery supplies, paper stack, paintbrush, brush, pencil, fabric, parchment, picture frame, ornate gold frame, baroque frame, framed painting, display prop, product scene, physical object, 3d render, relief sculpture, statue, gray wall, cast shadow, photorealistic scene, large sunburst, full radial halo, full-page radial burst, rays across the whole panel, centered halo, busy back cover, ivory wave, cream lower half, large cream area, white panel"
+            }
+          },
+          "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {
+              "batch_size": 1,
+              "height": 1344,
+              "width": 960
+            }
+          },
+          "5": {
+            "class_type": "KSampler",
+            "inputs": {
+              "cfg": 1.5,
+              "denoise": 1,
+              "latent_image": [
+                "4",
+                0
+              ],
+              "model": [
+                "1",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "positive": [
+                "2",
+                0
+              ],
+              "sampler_name": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 325935060,
+              "steps": 2
+            }
+          },
+          "6": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "5",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            }
+          },
+          "7": {
+            "class_type": "CustomCardTextComposer",
+            "inputs": {
+              "alignment": "center",
+              "artwork_guard_color": "#111715",
+              "artwork_guard_height": 1344,
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "box",
+              "artwork_guard_width": 960,
+              "artwork_guard_x": 0,
+              "artwork_guard_y": 0,
+              "body": "",
+              "body_box_height": 296,
+              "body_box_background_color": "",
+              "body_box_background_padding": 0,
+              "body_box_background_radius": 0,
+              "body_box_background_opacity": 0,
+              "body_box_background_style": "box",
+              "body_box_width": 748,
+              "body_box_x": 106,
+              "body_box_y": 914,
+              "body_fill_color": "#f4d77d",
+              "body_font": "arial.ttf",
+              "body_font_size": 20,
+              "body_line_spacing": 6,
+              "body_stroke_color": "#111715",
+              "body_stroke_width": 2,
+              "body_vertical_alignment": "bottom",
+              "debug_boxes": false,
+              "headline": "",
+              "headline_box_height": 269,
+              "headline_box_background_color": "",
+              "headline_box_background_padding": 0,
+              "headline_box_background_radius": 0,
+              "headline_box_background_opacity": 0,
+              "headline_box_background_style": "box",
+              "headline_box_width": 788,
+              "headline_box_x": 86,
+              "headline_box_y": 806,
+              "headline_fill_color": "#fff7df",
+              "headline_font": "arial.ttf",
+              "headline_font_size": 38,
+              "headline_line_spacing": 8,
+              "headline_stroke_color": "#111715",
+              "headline_stroke_width": 2,
+              "headline_vertical_alignment": "middle",
+              "image": [
+                "6",
+                0
+              ],
+              "min_font_size": 14
+            }
+          },
+          "9": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "filename_prefix": "customcard/customcard-production-text-overlay/back",
+              "images": [
+                "7",
+                0
+              ]
+            }
+          }
+        },
+        "client_id": "customcard-local-typography-benchmark",
+        "extra_data": {
+          "customcard": {
+            "workflow_id": "customcard-production-text-overlay",
+            "panel_id": "back",
+            "seed": 325935060,
+            "inputs": {
+              "workflow_id": "customcard-production-text-overlay",
+              "panel_id": "back",
+              "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+              "width": 960,
+              "height": 1344,
+              "steps": 2,
+              "cfg": 1.5,
+              "sampler": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 325935060,
+              "prompt": "Create one artwork-only 5x7 vertical Back Cover panel as a minimal flat print field.\nThis is an artwork layer, not a finished panel.\nPanel Type: Back Cover\nSize: 5x7 vertical\nOutput: Flat 2D print artwork\nStyle: Minimal flat solid-color print field\nPalette: solid deep charcoal only; no warm-gold mark, no ivory panel, no cream wave, no large light area\nMotif: none; plain solid deep-charcoal back cover only, no mark, no border, no centered or full-panel radial burst\nMood: Respectful, warm, sophisticated\nPanel Role: coordinating no-text back panel\nNo card copy belongs on this panel.\nReserve hierarchy for visual coordination only.\nUse mostly negative space plus one small coordinating back mark.\nBack cover must be plain solid deep charcoal. Do not add a logo, sun mark, border, halo, burst, decorative typography, or any text-like marks.\nPanel-specific composition: solid deep charcoal negative space, no mark, no border, no card copy.\n\nUse only a plain solid deep-charcoal field on the back cover.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat editorial print-design artwork only, not a photographed object scene or a scene of stationery supplies.\nUse simple flat graphic fills only; do not create borders, edge rules, 3D relief, shadows, physical frames, photographed paper, brushes, boxes, paper stacks, or objects sitting in a scene.\nKeep ornament edge-led and sparse: no central medallion, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, eyes, hair, bodies, hands, portraits, characters, envelopes, boxes, picture frames, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+              "negative_prompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, eyes, hair, woman, girl, portrait, character, human figure, body, hands, fingers, envelope, box, open box, packaging, stationery supplies, paper stack, paintbrush, brush, pencil, fabric, parchment, picture frame, ornate gold frame, baroque frame, framed painting, display prop, product scene, physical object, 3d render, relief sculpture, statue, gray wall, cast shadow, photorealistic scene, large sunburst, full radial halo, full-page radial burst, rays across the whole panel, centered halo, busy back cover, ivory wave, cream lower half, large cream area, white panel",
+              "artwork_guard": {
+                "x": 0,
+                "y": 0,
+                "width": 960,
+                "height": 1344
+              },
+              "artwork_guard_color": "#111715",
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "box",
+              "headline_text": "",
+              "body_text": "",
+              "headline_font_size": 38,
+              "body_font_size": 20,
+              "headline_box": {
+                "x": 86,
+                "y": 806,
+                "width": 788,
+                "height": 269
+              },
+              "headline_box_background_color": "",
+              "headline_box_background_padding": 0,
+              "headline_box_background_radius": 0,
+              "headline_box_background_opacity": 0,
+              "headline_box_background_style": "box",
+              "body_box": {
+                "x": 106,
+                "y": 914,
+                "width": 748,
+                "height": 296
+              },
+              "body_box_background_color": "",
+              "body_box_background_padding": 0,
+              "body_box_background_radius": 0,
+              "body_box_background_opacity": 0,
+              "body_box_background_style": "box",
+              "text_alignment": "center",
+              "min_font_size": 14
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 86,
+      "body": {
+        "prompt_id": "ee23356a-ea0f-46d4-a07e-4cf21f69dfb0",
+        "number": 27,
+        "node_errors": {}
+      }
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/ee23356a-ea0f-46d4-a07e-4cf21f69dfb0",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 5
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/ee23356a-ea0f-46d4-a07e-4cf21f69dfb0",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/ee23356a-ea0f-46d4-a07e-4cf21f69dfb0",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/ee23356a-ea0f-46d4-a07e-4cf21f69dfb0",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/ee23356a-ea0f-46d4-a07e-4cf21f69dfb0",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/ee23356a-ea0f-46d4-a07e-4cf21f69dfb0",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/ee23356a-ea0f-46d4-a07e-4cf21f69dfb0",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 9959,
+      "body": {
+        "ee23356a-ea0f-46d4-a07e-4cf21f69dfb0": {
+          "prompt": [
+            27,
+            "ee23356a-ea0f-46d4-a07e-4cf21f69dfb0",
+            {
+              "1": {
+                "class_type": "CheckpointLoaderSimple",
+                "inputs": {
+                  "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+                }
+              },
+              "2": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "Create one artwork-only 5x7 vertical Back Cover panel as a minimal flat print field.\nThis is an artwork layer, not a finished panel.\nPanel Type: Back Cover\nSize: 5x7 vertical\nOutput: Flat 2D print artwork\nStyle: Minimal flat solid-color print field\nPalette: solid deep charcoal only; no warm-gold mark, no ivory panel, no cream wave, no large light area\nMotif: none; plain solid deep-charcoal back cover only, no mark, no border, no centered or full-panel radial burst\nMood: Respectful, warm, sophisticated\nPanel Role: coordinating no-text back panel\nNo card copy belongs on this panel.\nReserve hierarchy for visual coordination only.\nUse mostly negative space plus one small coordinating back mark.\nBack cover must be plain solid deep charcoal. Do not add a logo, sun mark, border, halo, burst, decorative typography, or any text-like marks.\nPanel-specific composition: solid deep charcoal negative space, no mark, no border, no card copy.\n\nUse only a plain solid deep-charcoal field on the back cover.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat editorial print-design artwork only, not a photographed object scene or a scene of stationery supplies.\nUse simple flat graphic fills only; do not create borders, edge rules, 3D relief, shadows, physical frames, photographed paper, brushes, boxes, paper stacks, or objects sitting in a scene.\nKeep ornament edge-led and sparse: no central medallion, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, eyes, hair, bodies, hands, portraits, characters, envelopes, boxes, picture frames, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+                }
+              },
+              "3": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, eyes, hair, woman, girl, portrait, character, human figure, body, hands, fingers, envelope, box, open box, packaging, stationery supplies, paper stack, paintbrush, brush, pencil, fabric, parchment, picture frame, ornate gold frame, baroque frame, framed painting, display prop, product scene, physical object, 3d render, relief sculpture, statue, gray wall, cast shadow, photorealistic scene, large sunburst, full radial halo, full-page radial burst, rays across the whole panel, centered halo, busy back cover, ivory wave, cream lower half, large cream area, white panel"
+                }
+              },
+              "4": {
+                "class_type": "EmptyLatentImage",
+                "inputs": {
+                  "batch_size": 1,
+                  "height": 1344,
+                  "width": 960
+                }
+              },
+              "5": {
+                "class_type": "KSampler",
+                "inputs": {
+                  "cfg": 1.5,
+                  "denoise": 1,
+                  "latent_image": [
+                    "4",
+                    0
+                  ],
+                  "model": [
+                    "1",
+                    0
+                  ],
+                  "negative": [
+                    "3",
+                    0
+                  ],
+                  "positive": [
+                    "2",
+                    0
+                  ],
+                  "sampler_name": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 325935060,
+                  "steps": 2
+                }
+              },
+              "6": {
+                "class_type": "VAEDecode",
+                "inputs": {
+                  "samples": [
+                    "5",
+                    0
+                  ],
+                  "vae": [
+                    "1",
+                    2
+                  ]
+                }
+              },
+              "7": {
+                "class_type": "CustomCardTextComposer",
+                "inputs": {
+                  "alignment": "center",
+                  "artwork_guard_color": "#111715",
+                  "artwork_guard_height": 1344,
+                  "artwork_guard_opacity": 1,
+                  "artwork_guard_radius": 0,
+                  "artwork_guard_style": "box",
+                  "artwork_guard_width": 960,
+                  "artwork_guard_x": 0,
+                  "artwork_guard_y": 0,
+                  "body": "",
+                  "body_box_height": 296,
+                  "body_box_background_color": "",
+                  "body_box_background_padding": 0,
+                  "body_box_background_radius": 0,
+                  "body_box_background_opacity": 0,
+                  "body_box_background_style": "box",
+                  "body_box_width": 748,
+                  "body_box_x": 106,
+                  "body_box_y": 914,
+                  "body_fill_color": "#f4d77d",
+                  "body_font": "arial.ttf",
+                  "body_font_size": 20,
+                  "body_line_spacing": 6,
+                  "body_stroke_color": "#111715",
+                  "body_stroke_width": 2,
+                  "body_vertical_alignment": "bottom",
+                  "debug_boxes": false,
+                  "headline": "",
+                  "headline_box_height": 269,
+                  "headline_box_background_color": "",
+                  "headline_box_background_padding": 0,
+                  "headline_box_background_radius": 0,
+                  "headline_box_background_opacity": 0,
+                  "headline_box_background_style": "box",
+                  "headline_box_width": 788,
+                  "headline_box_x": 86,
+                  "headline_box_y": 806,
+                  "headline_fill_color": "#fff7df",
+                  "headline_font": "arial.ttf",
+                  "headline_font_size": 38,
+                  "headline_line_spacing": 8,
+                  "headline_stroke_color": "#111715",
+                  "headline_stroke_width": 2,
+                  "headline_vertical_alignment": "middle",
+                  "image": [
+                    "6",
+                    0
+                  ],
+                  "min_font_size": 14
+                }
+              },
+              "9": {
+                "class_type": "SaveImage",
+                "inputs": {
+                  "filename_prefix": "customcard/customcard-production-text-overlay/back",
+                  "images": [
+                    "7",
+                    0
+                  ]
+                }
+              }
+            },
+            {
+              "customcard": {
+                "workflow_id": "customcard-production-text-overlay",
+                "panel_id": "back",
+                "seed": 325935060,
+                "inputs": {
+                  "workflow_id": "customcard-production-text-overlay",
+                  "panel_id": "back",
+                  "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+                  "width": 960,
+                  "height": 1344,
+                  "steps": 2,
+                  "cfg": 1.5,
+                  "sampler": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 325935060,
+                  "prompt": "Create one artwork-only 5x7 vertical Back Cover panel as a minimal flat print field.\nThis is an artwork layer, not a finished panel.\nPanel Type: Back Cover\nSize: 5x7 vertical\nOutput: Flat 2D print artwork\nStyle: Minimal flat solid-color print field\nPalette: solid deep charcoal only; no warm-gold mark, no ivory panel, no cream wave, no large light area\nMotif: none; plain solid deep-charcoal back cover only, no mark, no border, no centered or full-panel radial burst\nMood: Respectful, warm, sophisticated\nPanel Role: coordinating no-text back panel\nNo card copy belongs on this panel.\nReserve hierarchy for visual coordination only.\nUse mostly negative space plus one small coordinating back mark.\nBack cover must be plain solid deep charcoal. Do not add a logo, sun mark, border, halo, burst, decorative typography, or any text-like marks.\nPanel-specific composition: solid deep charcoal negative space, no mark, no border, no card copy.\n\nUse only a plain solid deep-charcoal field on the back cover.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nRender flat editorial print-design artwork only, not a photographed object scene or a scene of stationery supplies.\nUse simple flat graphic fills only; do not create borders, edge rules, 3D relief, shadows, physical frames, photographed paper, brushes, boxes, paper stacks, or objects sitting in a scene.\nKeep ornament edge-led and sparse: no central medallion, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nDo not add tiny decorative strokes that resemble glyphs or a signature.\nNo people, faces, eyes, hair, bodies, hands, portraits, characters, envelopes, boxes, picture frames, framed paintings, product scenes, or display props.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+                  "negative_prompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, eyes, hair, woman, girl, portrait, character, human figure, body, hands, fingers, envelope, box, open box, packaging, stationery supplies, paper stack, paintbrush, brush, pencil, fabric, parchment, picture frame, ornate gold frame, baroque frame, framed painting, display prop, product scene, physical object, 3d render, relief sculpture, statue, gray wall, cast shadow, photorealistic scene, large sunburst, full radial halo, full-page radial burst, rays across the whole panel, centered halo, busy back cover, ivory wave, cream lower half, large cream area, white panel",
+                  "artwork_guard": {
+                    "x": 0,
+                    "y": 0,
+                    "width": 960,
+                    "height": 1344
+                  },
+                  "artwork_guard_color": "#111715",
+                  "artwork_guard_opacity": 1,
+                  "artwork_guard_radius": 0,
+                  "artwork_guard_style": "box",
+                  "headline_text": "",
+                  "body_text": "",
+                  "headline_font_size": 38,
+                  "body_font_size": 20,
+                  "headline_box": {
+                    "x": 86,
+                    "y": 806,
+                    "width": 788,
+                    "height": 269
+                  },
+                  "headline_box_background_color": "",
+                  "headline_box_background_padding": 0,
+                  "headline_box_background_radius": 0,
+                  "headline_box_background_opacity": 0,
+                  "headline_box_background_style": "box",
+                  "body_box": {
+                    "x": 106,
+                    "y": 914,
+                    "width": 748,
+                    "height": 296
+                  },
+                  "body_box_background_color": "",
+                  "body_box_background_padding": 0,
+                  "body_box_background_radius": 0,
+                  "body_box_background_opacity": 0,
+                  "body_box_background_style": "box",
+                  "text_alignment": "center",
+                  "min_font_size": 14
+                }
+              },
+              "client_id": "customcard-local-typography-benchmark",
+              "create_time": 1782588724843
+            },
+            [
+              "9"
+            ]
+          ],
+          "outputs": {
+            "9": {
+              "images": [
+                {
+                  "filename": "back_00025_.png",
+                  "subfolder": "customcard\\customcard-production-text-overlay",
+                  "type": "output"
+                }
+              ]
+            }
+          },
+          "status": {
+            "status_str": "success",
+            "completed": true,
+            "messages": [
+              [
+                "execution_start",
+                {
+                  "prompt_id": "ee23356a-ea0f-46d4-a07e-4cf21f69dfb0",
+                  "timestamp": 1782588724843
+                }
+              ],
+              [
+                "execution_cached",
+                {
+                  "nodes": [
+                    "1",
+                    "4"
+                  ],
+                  "prompt_id": "ee23356a-ea0f-46d4-a07e-4cf21f69dfb0",
+                  "timestamp": 1782588724843
+                }
+              ],
+              [
+                "execution_success",
+                {
+                  "prompt_id": "ee23356a-ea0f-46d4-a07e-4cf21f69dfb0",
+                  "timestamp": 1782588733506
+                }
+              ]
+            ]
+          },
+          "meta": {
+            "9": {
+              "node_id": "9",
+              "display_node": "9",
+              "parent_node": null,
+              "real_node_id": "9"
+            }
+          }
+        }
+      }
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/view?filename=back_00025_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "byteLength": 11719
+    },
+    "durationMs": 4
+  }
+]

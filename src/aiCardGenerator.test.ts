@@ -601,15 +601,21 @@ describe("AI card generator service", () => {
       expect.arrayContaining([
         "Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, edge-led gallery illustration, lower-corner object cluster, or mostly blank back mark.",
         "Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.",
+        "Artwork should read as flat editorial stationery: clean print surfaces, integrated negative space, and restrained edge/corner ornament rather than ornate central decoration.",
+        "Keep the text-safe field blank, simple, and integrated into the artwork; do not surround it with a central medallion, halo, ornate frame, or decorative ring.",
         "visual_cue is binding for the image prompt: make front, inside-left, inside-right, and back visually distinct while still coordinated.",
         "text_layout controls app-rendered typography only. Choose zones that match the clean text-safe area in visual_cue; never ask the image model to draw the text."
       ])
     );
     expect(userPrompt.image_prompt_requirements).toEqual(
       expect.arrayContaining([
+        "Text-safe areas must stay plain and low-detail: no central medallion, no halo, no ornate frame around copy, no rays behind copy, and no decorative ring under typography.",
         "For B2B CTA cards, reserve a clean app-overlay area for any QR code or account-manager CTA; do not ask the image model to draw QR codes, labels, or interface elements.",
         "For cards requesting handwriting space, reserve an open note area but do not ask the image model to create handwriting, signatures, script, or fake personal notes."
       ])
+    );
+    expect(userPrompt.safety_requirements).toContain(
+      "Do not include fake glyph-like marks, pseudo-calligraphy, decorative micro-lettering, or signature-like strokes as ornament."
     );
     expect(requestBody.response_format).toMatchObject({
       type: "json_schema",
@@ -650,7 +656,17 @@ describe("AI card generator service", () => {
       },
       fetchImpl,
       aiFlowAdminConfig: buildDefaultAiFlowAdminConfigs().map((config) =>
-        config.flowId === "card-image" ? { ...config, liveProviderCallsEnabled: false } : config
+        config.flowId === "card-copy"
+          ? {
+              ...config,
+              fallbackAdapterId: "cloudflare-workers-ai-chat",
+              fallbackQueueEnabled: false,
+              liveProviderCallsEnabled: true,
+              model: cloudflareTextModel
+            }
+          : config.flowId === "card-image"
+            ? { ...config, liveProviderCallsEnabled: false }
+            : config
       )
     });
 
@@ -677,6 +693,67 @@ describe("AI card generator service", () => {
     expect(payload.card_copy.panels[0].headline).toBe("Happy Birthday, Nina");
     expect(payload.card_copy.panels[0].image_prompt).toContain("soft aquarium light");
     expect(JSON.stringify(payload.card_copy)).not.toContain("Morning Garden");
+  });
+
+  it("repairs ornate medallion and glyph-like image prompts before image work", async () => {
+    const ornateResponse = {
+      ...cardCopyResponse,
+      panels: cardCopyResponse.panels.map((panel) =>
+        panel.id === "front"
+          ? {
+              ...panel,
+              visual_cue:
+                "A single fern silhouette near the lower edge with a quiet central text-safe field and warm cream negative space.",
+              image_prompt:
+                "Premium 5x7 vertical front panel with a gold central medallion around copy, an ornate frame around typography, rays behind the message field, and fake glyph-like marks in the center."
+            }
+          : panel
+      )
+    };
+    const fetchImpl = vi.fn(async () =>
+      new Response(JSON.stringify({ result: { response: ornateResponse } }), {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      })
+    );
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel
+      },
+      fetchImpl,
+      aiFlowAdminConfig: buildDefaultAiFlowAdminConfigs().map((config) =>
+        config.flowId === "card-copy"
+          ? {
+              ...config,
+              fallbackAdapterId: "cloudflare-workers-ai-chat",
+              fallbackQueueEnabled: false,
+              liveProviderCallsEnabled: true,
+              model: cloudflareTextModel
+            }
+          : config.flowId === "card-image"
+            ? { ...config, liveProviderCallsEnabled: false }
+            : config
+      )
+    });
+
+    const result = await service.generateCard(cardRequest, { rateKey: "test-ornate-medallion-repair" });
+    const payload = result.payload as {
+      card_copy: { panels: Array<{ id: string; image_prompt: string; image_negative_prompt: string }> };
+    };
+    const front = payload.card_copy.panels.find((panel) => panel.id === "front");
+
+    expect(result.statusCode).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(front?.image_prompt).toMatch(/flat editorial stationery/i);
+    expect(front?.image_prompt).toMatch(/no central medallion/i);
+    expect(front?.image_prompt).toMatch(/no ornate frame around copy/i);
+    expect(front?.image_prompt).not.toContain("gold central medallion around copy");
+    expect(front?.image_prompt).not.toContain("fake glyph-like marks in the center");
+    expect(front?.image_negative_prompt).toContain("central medallion");
+    expect(front?.image_negative_prompt).toContain("ornate frame around copy");
+    expect(front?.image_negative_prompt).toContain("glyph-like marks");
   });
 
   it("retries aquarium benchmark copy before image work when required request facts are missing", async () => {
@@ -957,7 +1034,17 @@ describe("AI card generator service", () => {
       },
       fetchImpl,
       aiFlowAdminConfig: buildDefaultAiFlowAdminConfigs().map((config) =>
-        config.flowId === "card-image" ? { ...config, liveProviderCallsEnabled: false } : config
+        config.flowId === "card-copy"
+          ? {
+              ...config,
+              fallbackAdapterId: "cloudflare-workers-ai-chat",
+              fallbackQueueEnabled: false,
+              liveProviderCallsEnabled: true,
+              model: cloudflareTextModel
+            }
+          : config.flowId === "card-image"
+            ? { ...config, liveProviderCallsEnabled: false }
+            : config
       )
     });
 
@@ -999,7 +1086,7 @@ describe("AI card generator service", () => {
       ai_flow: {
         card_copy: expect.objectContaining({
           adapter_id: "",
-          fallback_adapter_id: "cloudflare-workers-ai-chat",
+          fallback_adapter_id: "huggingface-chat",
           provider_failure: expect.stringContaining("missing")
         })
       }
@@ -1036,9 +1123,18 @@ describe("AI card generator service", () => {
         CUSTOMCARD_AI_CARD_COPY_FALLBACK_QUEUE_ENABLED: "true",
       },
       fetchImpl,
-      aiFlowAdminConfig: buildDefaultAiFlowAdminConfigs().map((config) =>
-        config.flowId === "card-image" ? { ...config, liveProviderCallsEnabled: false } : config
-      )
+      aiFlowAdminConfig: buildDefaultAiFlowAdminConfigs().map((config) => {
+        if (config.flowId === "card-copy") {
+          return {
+            ...config,
+            primaryAdapterId: "huggingface-chat",
+            fallbackAdapterId: "cloudflare-workers-ai-chat",
+            fallbackQueueEnabled: true,
+            liveProviderCallsEnabled: true
+          };
+        }
+        return config.flowId === "card-image" ? { ...config, liveProviderCallsEnabled: false } : config;
+      })
     });
 
     const result = await service.generateCard(cardRequest, { rateKey: "test-card-copy-fallback" });
@@ -1084,11 +1180,22 @@ describe("AI card generator service", () => {
       env: {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
-        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
-        CUSTOMCARD_AI_CARD_COPY_MONTHLY_BUDGET_CENTS: "12",
-        CUSTOMCARD_AI_CARD_COPY_PER_REQUEST_BUDGET_CENTS: "12"
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel
       },
-      fetchImpl
+      fetchImpl,
+      aiFlowAdminConfig: buildDefaultAiFlowAdminConfigs().map((config) =>
+        config.flowId === "card-copy"
+          ? {
+              ...config,
+              fallbackAdapterId: "cloudflare-workers-ai-chat",
+              fallbackQueueEnabled: false,
+              liveProviderCallsEnabled: true,
+              model: cloudflareTextModel,
+              monthlyBudgetCents: 12,
+              perRequestBudgetCents: 12
+            }
+          : config
+      )
     });
 
     const first = await service.generateCard(cardRequest, { rateKey: "test-monthly-budget", idempotencyKey: "idem-1" });

@@ -1847,11 +1847,11 @@ function buildPanelImagePrompt(input, panelId, panel) {
       }
     : {
         front:
-          "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper.",
+          "Full-bleed flat 2D artwork layer with editorial stationery restraint for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, use edge/corner ornament only, no central medallion, no ornate frame around copy, no caption plaque, and avoid all-over motif wallpaper.",
         "inside-left":
-          "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box.",
+          "Full-bleed flat 2D artwork layer with editorial stationery restraint for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, edge-led stationery layout, thin perimeter rule, sparse edge/corner or lower-edge motifs only, quiet blank center, clean text-safe area, generous safe margins, no central medallion, no ornate frame around copy, no inner text box.",
         "inside-right":
-          "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box.",
+          "Full-bleed flat 2D artwork layer with editorial stationery restraint for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, edge-led stationery layout, thin perimeter rule, sparse edge/corner or lower-edge motifs only, quiet blank center, clean text-safe area, generous safe margins, no central medallion, no ornate frame around copy, no inner text box.",
         back:
           "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque."
       })[panelId];
@@ -1872,7 +1872,7 @@ function buildPanelImagePrompt(input, panelId, panel) {
     `Keep natural negative space for app-rendered typography in the ${textSafeCue}; do not draw words, labels, or handwriting.`,
     isSympathy
       ? "Artwork layer only with a camera-free flat print composition. Use sparse integrated support artwork, open message fields, premium full-bleed 2D artwork, minimal clutter, disciplined negative space, restrained hierarchy, and generous safe margins."
-      : "Artwork layer only with flat print composition, integrated negative space, decorative print borders when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins."
+      : "Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins."
   ].join(" ");
 }
 
@@ -1910,8 +1910,9 @@ function normalizeImagePrompt(prompt, panelId, input, panel) {
   }
   if (!/\b5x7\b/i.test(base)) guardrails.push("5x7 vertical print panel.");
   if (!/\bflat\b/i.test(base) || !/\b2d\b/i.test(base)) guardrails.push("Flat 2D full-bleed digital illustration.");
+  if (!/\bflat editorial stationery\b/i.test(base)) guardrails.push("Flat editorial stationery artwork with clean print surfaces and integrated negative space.");
   if (!/\bno readable text\b/i.test(base)) guardrails.push("No readable text.");
-  if (!/\bno (?:words|letters)\b/i.test(base)) guardrails.push("No words, letters, handwriting, calligraphy, labels, signatures, or fake text.");
+  if (!/\bno (?:words|letters)\b/i.test(base)) guardrails.push("No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text.");
   if (!/\bno people\b/i.test(base)) guardrails.push("No people.");
   if (!/\bno hands\b/i.test(base)) guardrails.push("No hands.");
   if (!/\bno logos?\b/i.test(base)) guardrails.push("No logos.");
@@ -1921,6 +1922,9 @@ function normalizeImagePrompt(prompt, panelId, input, panel) {
   }
   if (!/\bno (?:caption plaque|text box|inner card rectangle|blank tag|label)\b/i.test(base)) {
     guardrails.push("No caption plaque, no text box, no inner card rectangle, no blank tag, no label.");
+  }
+  if (!/\bno (?:central medallion|ornate frame|halo|decorative ring)\b/i.test(base)) {
+    guardrails.push("No central medallion, no halo, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.");
   }
   if (isSympathyInput(input)) {
     guardrails.push("Sympathy art must keep a plain text field and use only sparse lower-edge abstract support relief; no fruit, flowers, vases, urns, table settings, phones, devices, note cards, envelopes, bright yellow, neon green, sun, landscape, window bars, ornate frames, or line-art thickets.");
@@ -1941,6 +1945,7 @@ function normalizeImagePrompt(prompt, panelId, input, panel) {
 function imagePromptNeedsRepair(prompt, panelId, input, panel) {
   return imagePromptHasUnsafeSubject(prompt) ||
     imagePromptLeaksAppCopy(prompt) ||
+    imagePromptHasUnsafeTextFieldOrnament(prompt) ||
     sympathyImagePromptNeedsRepair(prompt, input) ||
     imagePromptConflictsWithPanelRole(prompt, panelId) ||
     imagePromptIsUnderspecified(prompt, panelId, input, panel);
@@ -1954,6 +1959,12 @@ function sympathyImagePromptNeedsRepair(prompt, input) {
 function imagePromptHasUnsafeSubject(prompt) {
   return /\b(person|people|human|owner|customer|customers|face|portrait|body|hands?|holding|model|signature|handwriting|lettering|readable text|thank[- ]you note|['"]?thank you['"]?\s+sign|signage|sign|worn|creased)\b/i.test(prompt) ||
     /(?:shop|store|brand|company|business)['’]?\s+logo|\blogo\s+(?:in|at|on|near|as)\b/i.test(prompt);
+}
+
+function imagePromptHasUnsafeTextFieldOrnament(prompt) {
+  return /\b(?:central|center(?:ed)?|middle|behind|under|around)\s+(?:medallion|halo|radial burst|starburst|sunburst|ornate frame|decorative ring)\b/i.test(prompt) ||
+    /\b(?:medallion|halo|ornate frame|decorative ring)\s+(?:behind|under|around|inside|in the center|around copy|around the text|around typography)\b/i.test(prompt) ||
+    /\b(?:fake|pseudo|decorative|glyph-like|signature-like|micro)\s+(?:glyphs?|text|lettering|script|calligraphy|marks?|strokes?)\b/i.test(prompt);
 }
 
 function imagePromptLeaksAppCopy(prompt) {
@@ -2051,6 +2062,15 @@ function normalizeImageNegativePrompt(value) {
         ...String(value || "").split(","),
         "readable text",
         "fake text",
+        "hands",
+        "product photo",
+        "central medallion",
+        "ornate frame around copy",
+        "glyph-like marks",
+        "halo behind text",
+        "decorative ring under typography",
+        "rays behind copy",
+        "busy text-safe field",
         "pseudo text",
         "gibberish text",
         "letters",
@@ -2090,7 +2110,9 @@ function normalizeImageNegativePrompt(value) {
         "hands",
         "people",
         "face",
-        "portrait"
+        "portrait",
+        "pseudo lettering",
+        "decorative micro-lettering"
       ]
         .map((item) => cleanText(item).toLowerCase())
         .filter(Boolean)

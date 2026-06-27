@@ -52,9 +52,9 @@ export const typographyExperimentSpec = {
       headline: "For Moments That Matter",
       body: "Wishing you strength and peace on your day.",
       composition:
-        "deep charcoal field, warm gold radial sunburst, ivory accent details, generous margins, front-cover hierarchy",
+        "solid deep charcoal flat print field, no ornament, generous margins, front-cover hierarchy",
       modeCHint:
-        "Place a broad opaque plain deep-charcoal text-safe field in the central 60% of the panel. Treat this field as a real solid print area, not transparent negative space. Keep all rays, ornaments, bright marks, fake glyphs, and high-contrast details outside it. Put sunburst detail only as edge-only corner or margin ornaments; do not use a centered radial burst, halo, medallion, or rays crossing behind the field."
+        "Make the whole panel a solid deep-charcoal flat print field. Treat the central 60% as a real solid print area, not transparent negative space. Best result: plain solid color with no decorative motif anywhere. Do not use gold accents, borders, edge rules, rays, ornaments, bright marks, fake glyphs, faces, figures, sunbursts, ovals, arches, rings, centered radial bursts, halos, medallions, physical frames, portraits, or rays crossing behind the field."
     },
     "inside-left": {
       id: "inside-left",
@@ -63,9 +63,9 @@ export const typographyExperimentSpec = {
       headline: "A Quiet Honor",
       body: "May this space hold steadiness, light, and the care surrounding you today.",
       composition:
-        "warm ivory note-sheet field, thin gold border, sparse sunburst echo along outer edge, quiet center, paired with inside-right",
+        "solid warm ivory flat print field, no ornament, quiet center, paired with inside-right",
       modeCHint:
-        "Make this an interior writing panel, not another cover. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-left edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field."
+        "Make the whole panel a solid warm-ivory flat print field, not another cover, physical page, supply scene, or object layout. Best result: plain solid color with no decorative motif anywhere. Do not draw gold accents, borders, edge rules, stationery supplies, brushes, boxes, paper stacks, physical frames, prop objects, radial sunbursts, halos, medallions, circles, or rays behind the field."
     },
     "inside-right": {
       id: "inside-right",
@@ -74,18 +74,18 @@ export const typographyExperimentSpec = {
       headline: "With Respect and Warmth",
       body: "For the moments that ask for courage, may you feel supported, seen, and held in peace.",
       composition:
-        "matching warm ivory note-sheet field, thin gold border, sparse sunburst echo mirrored from inside-left, quiet center, paired with inside-left",
+        "matching solid warm ivory flat print field, no ornament, quiet center, paired with inside-left",
       modeCHint:
-        "Make this the matching interior message panel. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-right edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field."
+        "Make the whole panel a solid warm-ivory flat print field, not a physical page, supply scene, or object layout. Best result: plain solid color with no decorative motif anywhere. Do not draw gold accents, borders, edge rules, stationery supplies, brushes, boxes, paper stacks, physical frames, prop objects, radial sunbursts, halos, medallions, circles, or rays behind the field."
     },
     back: {
       id: "back",
       panelType: "Back Cover",
       role: "coordinating no-text back panel",
       composition:
-        "mostly deep charcoal negative space, thin gold border echo, one small gold sunburst mark near lower edge, no card copy",
+        "solid deep charcoal negative space, no ornament, no card copy",
       modeCHint:
-        "Back cover must be at least 85% plain deep charcoal. Use only one tiny warm-gold sun mark near the lower third. Do not create a large radial halo, full-panel burst, centered sunburst, decorative typography, or any text-like marks."
+        "Back cover must be plain solid deep charcoal. Do not add a logo, sun mark, border, halo, burst, decorative typography, or any text-like marks."
     }
   }
 };
@@ -1781,13 +1781,19 @@ export function buildTypographyExperimentPrompt(modeId, spec = typographyExperim
     composition: `${spec.palette}; ${spec.motif}`
   };
   const hasPanelText = Boolean(panel.headline && panel.body);
+  const promptSize = modeId === "mode-c-hybrid-reserved-layout"
+    ? String(spec.size || "").replace(/\bportrait\b/gi, "vertical")
+    : spec.size;
+  const promptStyle = modeId === "mode-c-hybrid-reserved-layout"
+    ? "Minimal flat solid-color print field"
+    : spec.style;
   const motif = typographyMotifRequirement(modeId, panel, spec, hasPanelText);
   const palette = typographyPaletteRequirement(modeId, panel, spec, hasPanelText);
   const sharedSpec = [
     `Panel Type: ${panel.panelType || spec.panelType}`,
-    `Size: ${spec.size}`,
+    `Size: ${promptSize}`,
     `Output: ${spec.output}`,
-    `Style: ${spec.style}`,
+    `Style: ${promptStyle}`,
     `Palette: ${palette}`,
     `Motif: ${motif}`,
     `Mood: ${spec.mood}`,
@@ -1901,9 +1907,9 @@ export function buildTypographyExperimentPrompt(modeId, spec = typographyExperim
           `Body length: ${countSentences(panel.body)} short sentence.`,
           "Reserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.",
           "Text-safe field requirement: create one continuous opaque plain field for app-rendered typography.",
-          "The field must read as solid matte paper or ink, with edge-only ornaments around it.",
+          "The field must read as flat editorial print design: solid matte paper or ink, integrated into the panel, with no ornament required.",
           "Do not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.",
-          "For this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.",
+          "For this text-bearing panel, the center must be quiet and plain. Use no sunburst motif, no central medallion, no ornate frame around copy, no decorative ring, no oval, no arch, and no rays behind copy.",
           panel.modeCHint,
           panelPairingInstruction(panel)
         ].join("\n")
@@ -1930,7 +1936,7 @@ export function buildTypographyExperimentPrompt(modeId, spec = typographyExperim
     panelId: panel.id,
     renderTextInApp: hasPanelText,
     prompt: [
-      `Create one artwork-only 5x7 portrait ${panel.panelType || "greeting card"} panel for a premium greeting card.`,
+      `Create one artwork-only 5x7 vertical ${panel.panelType || "greeting card"} panel as a minimal flat print field.`,
       "This is an artwork layer, not a finished panel.",
       sharedSpec,
       reserveInstruction,
@@ -1938,10 +1944,12 @@ export function buildTypographyExperimentPrompt(modeId, spec = typographyExperim
       modeId === "mode-a-current-overlay" && hasPanelText ? panelPairingInstruction(panel) : "",
       typographySystemInstruction(modeId, panel, hasPanelText),
       "Keep generous safe margins and a clear, uncluttered type-safe area.",
-      "Render flat abstract stationery artwork only, not a photographed object scene.",
+      "Render flat editorial print-design artwork only, not a photographed object scene or a scene of stationery supplies.",
+      "Use simple flat graphic fills only; do not create borders, edge rules, 3D relief, shadows, physical frames, photographed paper, brushes, boxes, paper stacks, or objects sitting in a scene.",
+      "Keep ornament edge-led and sparse: no central medallion, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.",
       "Do not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.",
       "Do not add tiny decorative strokes that resemble glyphs or a signature.",
-      "No people, faces, bodies, hands, portraits, characters, envelopes, boxes, framed paintings, product scenes, or display props.",
+      "No people, faces, eyes, hair, bodies, hands, portraits, characters, envelopes, boxes, picture frames, framed paintings, product scenes, or display props.",
       "No mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
     ].join("\n"),
     negativePrompt: typographyNegativePrompt(modeId, panel)
@@ -1951,13 +1959,13 @@ export function buildTypographyExperimentPrompt(modeId, spec = typographyExperim
 function typographyMotifRequirement(modeId, panel, spec, hasPanelText) {
   if (modeId !== "mode-c-hybrid-reserved-layout") return spec.motif;
   if (hasPanelText && panel?.id === "front") {
-    return "edge-only warm-gold corner rays and thin border accents; no central radial sunburst, no halo, no medallion, no rays behind copy";
+    return "none; plain solid color only, no ornament, no gold accents, no sunburst, no corner rays, no border, no edge rule, no central radial motif, no halo, no medallion, no ornate frame around copy, no rays behind copy";
   }
   if (hasPanelText && (panel?.id === "inside-left" || panel?.id === "inside-right")) {
-    return "quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion";
+    return "none; quiet plain solid warm-ivory interior print field only, no ornament, no gold accents, no border, no edge rule, no stationery supplies, no central radial motif, no halo, no medallion, no ornate frame around copy";
   }
   if (panel?.id === "back") {
-    return "mostly plain deep-charcoal back cover with one tiny lower-edge gold sun mark; no centered or full-panel radial burst";
+    return "none; plain solid deep-charcoal back cover only, no mark, no border, no centered or full-panel radial burst";
   }
   return "edge-only warm-gold accents; no centered radial burst";
 }
@@ -1965,33 +1973,33 @@ function typographyMotifRequirement(modeId, panel, spec, hasPanelText) {
 function typographyPaletteRequirement(modeId, panel, spec, hasPanelText) {
   if (modeId !== "mode-c-hybrid-reserved-layout") return spec.palette;
   if (hasPanelText && panel?.id === "front") {
-    return "deep charcoal main field with warm gold and ivory accents kept outside the central text field";
+    return "solid deep charcoal only; no warm-gold accents, no ivory accents, no border, no ornament";
   }
   if (hasPanelText && (panel?.id === "inside-left" || panel?.id === "inside-right")) {
-    return "warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands";
+    return "solid warm ivory only; no warm-gold accents, no border, no edge rule, no object props, no full-width dark bands";
   }
   if (panel?.id === "back") {
-    return "deep charcoal main field with one tiny warm-gold lower-edge mark only; no ivory panel, no cream wave, no large light area";
+    return "solid deep charcoal only; no warm-gold mark, no ivory panel, no cream wave, no large light area";
   }
   return spec.palette;
 }
 
 function typographySystemInstruction(modeId, panel, hasPanelText) {
   if (modeId === "mode-c-hybrid-reserved-layout" && hasPanelText) {
-    return "Use the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.";
+    return "Use only flat solid print fields: deep charcoal for the front, warm ivory for interiors. Keep every text field plain and avoid all decorative objects.";
   }
   if (modeId === "mode-c-hybrid-reserved-layout" && panel?.id === "back") {
-    return "Use the same deep charcoal, warm gold, ivory-accent card system with only one small lower-edge sun mark on the back cover.";
+    return "Use only a plain solid deep-charcoal field on the back cover.";
   }
   return "Use the same deep charcoal, warm gold, ivory-accent sunburst card system across the folded card.";
 }
 
 function typographyNegativePrompt(modeId, panel) {
   const base =
-    "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, portrait, character, body, hands, fingers, envelope, box, framed painting, display prop, product scene, photorealistic scene";
+    "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, signature, glyphs, pseudo text, mockups, folded card renderings, physical paper texture, stock photo, people, person, face, eyes, hair, woman, girl, portrait, character, human figure, body, hands, fingers, envelope, box, open box, packaging, stationery supplies, paper stack, paintbrush, brush, pencil, fabric, parchment, picture frame, ornate gold frame, baroque frame, framed painting, display prop, product scene, physical object, 3d render, relief sculpture, statue, gray wall, cast shadow, photorealistic scene";
   if (modeId !== "mode-c-hybrid-reserved-layout") return base;
   const shared =
-    "central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center";
+    "central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, gold accents, decorative border, floral border, filigree, border, edge rule, full-page radial burst, centered radial burst, oval, arch, ring, halo behind text, medallion behind text, central medallion, ornate frame around copy, decorative ring under typography, fake glyph-like marks, stationery supplies, paintbrush, brush, pencil, paper stack, open box, packaging, fabric, parchment, ornament under typography, pattern under text-safe field, rays crossing center";
   if (panel?.id === "back") {
     return `${base}, large sunburst, full radial halo, full-page radial burst, rays across the whole panel, centered halo, busy back cover, ivory wave, cream lower half, large cream area, white panel`;
   }
@@ -2004,16 +2012,16 @@ function typographyNegativePrompt(modeId, panel) {
 function panelCompositionRequirement(panel, modeId) {
   if (modeId === "mode-c-hybrid-reserved-layout") {
     if (panel?.id === "front") {
-      return "Panel-specific composition: deep charcoal field, thin warm-gold border, small edge or corner rays only, and a plain central text-safe field; no central radial burst.";
+      return "Panel-specific composition: solid deep charcoal flat print-design field and a plain central text-safe field; no gold accents, no border, no edge rule, no figure, no face, no sunburst, no oval, no ring, no central radial burst, no medallion, no ornate frame around copy.";
     }
     if (panel?.id === "inside-left") {
-      return "Panel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-left edge accent only, quiet plain center, paired with inside-right.";
+      return "Panel-specific composition: solid warm ivory flat print-design field, quiet plain center, paired with inside-right; no gold accents, no border, no edge rule, no stationery supplies, no physical frame, no prop, no central medallion or ornate frame.";
     }
     if (panel?.id === "inside-right") {
-      return "Panel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-right edge accent only, quiet plain center, paired with inside-left.";
+      return "Panel-specific composition: solid warm ivory flat print-design field, quiet plain center, paired with inside-left; no gold accents, no border, no edge rule, no stationery supplies, no physical frame, no prop, no central medallion or ornate frame.";
     }
     if (panel?.id === "back") {
-      return "Panel-specific composition: mostly deep charcoal negative space, thin gold border echo, one small lower-edge sun mark, no card copy.";
+      return "Panel-specific composition: solid deep charcoal negative space, no mark, no border, no card copy.";
     }
   }
   return `Panel-specific composition: ${panel.composition || "coordinated premium greeting-card stationery"}.`;
@@ -2785,7 +2793,7 @@ function productionTextGeneratedAutoChecks({ panels, panelFiles, providerCalls }
         metadataInputs.some(
           (inputs) =>
             inputs.panel_id === file.panelId &&
-            inputs.artwork_guard_style === "box" &&
+            metadataHasExpectedArtworkGuard(inputs, file.panelId) &&
             Number(inputs.artwork_guard_opacity) > 0 &&
             Number(inputs.artwork_guard_opacity) <= 1
         )
@@ -2900,7 +2908,7 @@ export function productionTextAutoChecks({ promptPlans, panelCopies, providerCal
     metadataInputs.some(
       (inputs) =>
         inputs.panel_id === plan.panelId &&
-        inputs.artwork_guard_style === "box" &&
+        metadataHasExpectedArtworkGuard(inputs, plan.panelId) &&
         Number(inputs.artwork_guard_opacity) > 0 &&
         Number(inputs.artwork_guard_opacity) <= 1 &&
         Number(inputs.artwork_guard?.width) > 0 &&
@@ -2926,6 +2934,14 @@ export function productionTextAutoChecks({ promptPlans, panelCopies, providerCal
     note:
       "Production text phase treats Comfy output as the final text-composited panel. Automated checks prove request metadata and image materialization, including soft text-hug safe-field and artwork-guard inputs; visual text quality still requires inspection."
   };
+}
+
+function metadataHasExpectedArtworkGuard(inputs, panelId) {
+  return inputs.artwork_guard_style === productionTextExpectedArtworkGuardStyle(panelId);
+}
+
+function productionTextExpectedArtworkGuardStyle(panelId) {
+  return panelId === "back" ? "box" : "panel";
 }
 
 function providerCallBodyObject(call) {
