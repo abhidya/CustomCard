@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T05:45:00.211Z",
+  "createdAtIso": "2026-06-27T06:00:57.651Z",
   "status": "blocked",
   "promotionReady": false,
   "evidenceRoot": "docs/evidence/generated-card-comparisons",
@@ -10,6 +10,7 @@
     "modelCoverage": "docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current/local-model-coverage.json",
     "rerunPlan": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-gpu-proof/production-text-rerun-plan.json",
     "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-planner-preflight.json",
+    "plannerGpuFeasibility": "docs/evidence/generated-card-comparisons/production-text-planner-gpu-feasibility-20260627-magistral-5013/production-text-planner-gpu-feasibility.json",
     "plannerThroughputProbe": "docs/evidence/generated-card-comparisons/production-text-planner-throughput-20260627-magistral-5013-5min/production-text-planner-throughput.json",
     "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260627T040924Z/production-text-preflight.json",
     "dryRun": "docs/evidence/generated-card-comparisons/production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json",
@@ -21,6 +22,7 @@
     "Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.",
     "Latest dry-run planning proof keeps the full production card-copy JSON contract on koboldcpp/gemma-4-31B-it-Q4_K_M with 8192+ context, 3200 output tokens, and 1200000ms timeout across aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you.",
     "Latest planner preflight passed with koboldcpp/Magistral-Small-2509-Q4_K_M.",
+    "Latest planner GPU feasibility is blocked for koboldcpp/Magistral-Small-2509-Q4_K_M: Planner model alone is 13670 MiB, larger than assigned GPU capacity 8192 MiB; this implies partial CPU offload under the current local runtime.",
     "Latest planner throughput probe is blocked for koboldcpp/Magistral-Small-2509-Q4_K_M: Planner throughput request timed out after 300000ms.",
     "Installed production planner candidates found locally: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
     "Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
@@ -32,6 +34,7 @@
     "Latest manual grade checklist is blocked: 0/0 generated run(s) graded, 0 failed before image generation."
   ],
   "nextSteps": [
+    "Run the production-text planner GPU feasibility report and use a planner that fully fits the assigned GPU, or switch to a hosted/self-hosted production endpoint.",
     "Run the production-text planner throughput probe before spending another full Comfy image benchmark on a local planner candidate.",
     "Run production-text planner preflight and benchmark evidence against installed production planner candidate(s): gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
     "Resolve local model pull queue if the installed planner is too slow: qwen3-14b-instruct.",
@@ -64,17 +67,18 @@
   "rerunPlans": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-gpu-proof/production-text-rerun-plan.json",
-      "createdAtIso": "2026-06-27T05:43:11.782Z",
+      "createdAtIso": "2026-06-27T06:00:44.370Z",
       "status": "rerun-required",
       "promotionReady": false,
       "failedRequirements": [
+        "local planner GPU-only fit is proven",
         "LLM-planned customer request matrix completed",
         "final images came from Comfy text composer",
         "planner preserved required terms and avoided forbidden terms",
         "manual grade checklist is promotion-ready",
         "manual aggregate is promotion-ready"
       ],
-      "commandCount": 11,
+      "commandCount": 12,
       "plannerModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
       "plannerClassification": "production-suitable",
       "nextBenchmarkOutput": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner"
@@ -405,6 +409,42 @@
         "Start or point to an OpenAI-compatible planner endpoint before collecting production evidence.",
         "Use a production planner such as koboldcpp/gemma-4-31B-it-Q4_K_M, koboldcpp/Magistral-Small-2509-Q4_K_M, koboldcpp/Qwen3-14B-Q4_K_M with 8192+ context tokens.",
         "Keep the full creative planner contract; use -AllowSmallPlanner only for smoke/failure evidence."
+      ]
+    }
+  ],
+  "plannerGpuFeasibilityReports": [
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-planner-gpu-feasibility-20260627-magistral-5013/production-text-planner-gpu-feasibility.json",
+      "createdAtIso": "2026-06-27T05:57:15.000Z",
+      "status": "blocked",
+      "promotionReady": false,
+      "gpuOnlyReady": false,
+      "baseUrl": "http://127.0.0.1:5013/v1",
+      "requestedModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+      "activeModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+      "activeModelPath": "D:\\models\\lmstudio-community\\Magistral-Small-2509-GGUF\\Magistral-Small-2509-Q4_K_M.gguf",
+      "activeModelSizeMiB": 13670,
+      "activePid": 46488,
+      "activeAssignedGpuIds": [
+        1
+      ],
+      "activeGpuPidListed": true,
+      "assignedGpuModelFits": false,
+      "assignedGpuEstimatedFits": false,
+      "assignedGpuTotalMiB": 8192,
+      "estimatedRequiredMiB": 14694,
+      "gpuOnlyCandidateIds": [],
+      "hardwareBlockedCandidateIds": [
+        "gemma-4-31b-it",
+        "magistral-small-2509",
+        "deepseek-v4-flash"
+      ],
+      "blockers": [
+        "Planner model alone is 13670 MiB, larger than assigned GPU capacity 8192 MiB; this implies partial CPU offload under the current local runtime."
+      ],
+      "blockerCount": 1,
+      "nextSteps": [
+        "Use a hosted/self-hosted production planner or a production-floor local model that fully fits a single assigned GPU; do not collect promotion evidence from partial CPU offload."
       ]
     }
   ],

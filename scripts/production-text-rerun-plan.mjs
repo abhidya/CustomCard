@@ -57,6 +57,7 @@ export function buildProductionTextRerunPlan(args = {}) {
     scheduler: String(args.scheduler || "sgm_uniform")
   };
   const paths = {
+    plannerGpuFeasibilityOutput: `docs/evidence/generated-card-comparisons/production-text-planner-gpu-feasibility-${reportDate}-production-planner`,
     plannerPreflightOutput: `docs/evidence/generated-card-comparisons/production-text-planner-preflight-${reportDate}-production-planner`,
     plannerThroughputOutput: `docs/evidence/generated-card-comparisons/production-text-planner-throughput-${reportDate}-production-planner`,
     liveComfyPreflightOutput: `docs/evidence/generated-card-comparisons/production-text-preflight-${reportDate}-production-planner`,
@@ -116,6 +117,7 @@ export function buildProductionTextRerunPlan(args = {}) {
     commands,
     acceptanceChecks: [
       "planner preflight is production-ready",
+      "local planner GPU-only fit is proven",
       "planner throughput probe completes the full JSON contract",
       "planner preflight matches benchmark runtime",
       "live ComfyUI proof is current",
@@ -146,60 +148,66 @@ function buildCommands({ recommended, paths }) {
     },
     {
       step: 2,
+      title: "Check planner GPU-only fit",
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-gpu-feasibility.mjs --base-url ${recommended.plannerBaseUrl} --model ${recommended.plannerModel} --model-path ${recommended.plannerModelPath} --gpu-id ${recommended.gpuId} --output-dir ${paths.plannerGpuFeasibilityOutput}`,
+      why: "Blocks partial CPU-offload evidence by checking the active planner model size against the assigned GPU before planner preflight or throughput work."
+    },
+    {
+      step: 3,
       title: "Write planner preflight evidence",
       command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-preflight.mjs --base-url ${recommended.plannerBaseUrl} --model ${recommended.plannerModel} --reported-context-tokens ${recommended.contextTokens} --max-output-tokens ${recommended.maxOutputTokens} --output-dir ${paths.plannerPreflightOutput}`,
       why: "Proves the planner model, context budget, and output cap before image work starts."
     },
     {
-      step: 3,
+      step: 4,
       title: "Probe planner throughput",
       command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-throughput-probe.mjs --base-url ${recommended.plannerBaseUrl} --model ${recommended.plannerModel} --reported-context-tokens ${recommended.contextTokens} --max-output-tokens ${recommended.maxOutputTokens} --request-timeout-ms ${recommended.requestTimeoutMs} --output-dir ${paths.plannerThroughputOutput}`,
       why: "Uses the full card-copy prompt to prove the planner can finish valid JSON before spending Comfy image work."
     },
     {
-      step: 4,
+      step: 5,
       title: "Refresh live Comfy preflight",
       command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/comfyui-production-text-preflight.mjs --require-live true --report-dir ${paths.liveComfyPreflightOutput}`,
       why: "Proves the current ComfyUI runtime is reachable and has CustomCardTextComposer loaded before readiness or image work rely on it."
     },
     {
-      step: 5,
+      step: 6,
       title: "Refresh readiness",
       command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-readiness-doctor.mjs --advisory --local-llm-base-url ${recommended.plannerBaseUrl} --planner-context-tokens ${recommended.contextTokens} --planner-max-output-tokens ${recommended.maxOutputTokens} --output-dir ${paths.readinessOutput}`,
       why: "Confirms Comfy, the custom text node, aggregate state, model inventory, and the configured planner endpoint with the production context/output budget."
     },
     {
-      step: 6,
+      step: 7,
       title: "Run full production-text matrix",
       command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl ${recommended.plannerBaseUrl} -LocalLlmModel ${recommended.plannerModel} -OutputDir ${paths.benchmarkOutput} -Checkpoint ${recommended.checkpoint} -Steps ${recommended.steps} -Cfg ${recommended.cfg} -Sampler ${recommended.sampler} -Scheduler ${recommended.scheduler} -PlannerMaxTokens ${recommended.maxOutputTokens} -PlannerContextSize ${recommended.contextTokens} -PlannerRequestTimeoutMs ${recommended.requestTimeoutMs} -PlannerGpuId ${recommended.gpuId} -PlannerGpuLayers ${recommended.gpuLayers} -ProductionPlannerModelPath ${recommended.plannerModelPath}`,
       why: "Runs aquarium/koi/dog customer requests through the production Comfy text workflow with LLM-owned theme/copy/layout; when the dedicated local planner port is missing, the wrapper starts the configured GPU-backed planner before the live run."
     },
     {
-      step: 7,
+      step: 8,
       title: "Manually grade every run",
       command: `${paths.benchmarkOutput}/production-text-workflow/*/manual-grade-template.md`,
       why: "Fill each template and save manual-visual-grade.json before aggregating promotion evidence."
     },
     {
-      step: 8,
+      step: 9,
       title: "Write manual grade checklist",
       command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-manual-grade-checklist.mjs --advisory --input ${paths.benchmarkOutput} --output-dir ${paths.manualGradeChecklistOutput}`,
       why: "Summarizes generated runs, missing/invalid manual grades, blocked grades, and failed-before-image stories before aggregation."
     },
     {
-      step: 9,
+      step: 10,
       title: "Aggregate production-text results",
       command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/model-benchmark-aggregate.mjs --input ${paths.benchmarkOutput} --output-dir ${paths.aggregateOutput} --phase local-production-text`,
       why: "Builds the ranked aggregate used by the promotion gate."
     },
     {
-      step: 10,
+      step: 11,
       title: "Refresh tracked evidence index",
       command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-evidence-index.mjs --output-dir ${paths.evidenceIndexOutput}`,
       why: "Aggregates tracked planner/readiness/preflight/benchmark/aggregate evidence after the rerun artifacts are committed."
     },
     {
-      step: 11,
+      step: 12,
       title: "Run final promotion gate",
       command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-promotion-gate.mjs --advisory --output-dir ${paths.promotionGateOutput} --index-output-dir ${paths.evidenceIndexOutput}`,
       why: "Shows whether every production-text requirement now passes. Remove --advisory only when a pass is expected."

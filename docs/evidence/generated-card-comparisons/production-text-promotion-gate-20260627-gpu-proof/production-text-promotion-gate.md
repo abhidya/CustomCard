@@ -1,6 +1,6 @@
 # Production Text Promotion Gate
 
-Created: 2026-06-27T05:45:00.214Z
+Created: 2026-06-27T06:00:57.653Z
 Status: blocked
 Promotion ready: no
 Evidence index: docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-gpu-proof
@@ -13,6 +13,7 @@ Evidence index: docs/evidence/generated-card-comparisons/production-text-evidenc
 | live ComfyUI proof is current | ok | {"preflight":"docs/evidence/generated-card-comparisons/production-text-preflight-20260627T040924Z/production-text-preflight.json","preflightCreatedAtIso":"2026-06-27T04:09:25.120Z","readiness":"docs/evidence/generated-card-comparisons/production-text-readiness-20260627-gpu-proof-magistral-5013/production-text-readiness.json","readinessCreatedAtIso":"2026-06-27T04:08:18.667Z","preflightLiveComfyReachable":true,"preflightLiveNodeAvailable":true,"readinessComfyReachable":true,"readinessHasTextComposer":true,"staleReason":""} |
 | planner preflight is production-ready | ok | {"plannerPreflight":"docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-planner-preflight.json","activeModel":"koboldcpp/Magistral-Small-2509-Q4_K_M","classification":"production-suitable","reportedContextTokens":8192,"maxOutputTokens":3200,"blockers":[]} |
 | local planner GPU residency is proven | ok | {"plannerPreflight":"docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-planner-preflight.json","localGpuResidency":{"required":true,"ok":true,"status":"gpu-backed","baseUrl":"http://127.0.0.1:5013/v1","port":5013,"pids":[46488],"candidatePids":[44156,46488],"nvidiaProcessIds":[38428,46528,39752,1632,46488]}} |
+| local planner GPU-only fit is proven | fail | {"plannerGpuFeasibility":"docs/evidence/generated-card-comparisons/production-text-planner-gpu-feasibility-20260627-magistral-5013/production-text-planner-gpu-feasibility.json","activeModel":"koboldcpp/Magistral-Small-2509-Q4_K_M","activeModelSizeMiB":13670,"assignedGpuIds":[1],"assignedGpuTotalMiB":8192,"estimatedRequiredMiB":14694,"blockers":["Planner model alone is 13670 MiB, larger than assigned GPU capacity 8192 MiB; this implies partial CPU offload under the current local runtime."]} |
 | planner preflight matches benchmark runtime | ok | {"preflight":{"path":"docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-planner-preflight.json","baseUrl":"http://127.0.0.1:5013/v1","model":"koboldcpp/Magistral-Small-2509-Q4_K_M"},"benchmark":{"path":"docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json","plannerBaseUrls":["http://127.0.0.1:5013/v1"],"textModels":["koboldcpp/Magistral-Small-2509-Q4_K_M"]},"blockers":[]} |
 | readiness doctor is promotion-ready | ok | {"readiness":"docs/evidence/generated-card-comparisons/production-text-readiness-20260627-gpu-proof-magistral-5013/production-text-readiness.json","blockers":[]} |
 | local model coverage is tracked | ok | {"modelCoverage":"docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current/local-model-coverage.json","installedModelFiles":47,"recommendedInstalled":9,"recommendedEvaluated":3,"recommendedMissing":1} |
@@ -27,6 +28,7 @@ Evidence index: docs/evidence/generated-card-comparisons/production-text-evidenc
 
 ## Next Steps
 
+- Run production-text planner GPU feasibility and use a planner that fully fits the assigned GPU, or switch to a hosted/self-hosted production endpoint; do not promote partial CPU-offload evidence.
 - Run the full aquarium/koi/dog production-text matrix to completion.
 - Keep the full prompt and correct planner runtime; retry/repair planner output until must_include and must_avoid checks pass before Comfy work.
 - Run the manual grade checklist after grading every generated run, then resolve missing/invalid/blocked grades before aggregation.

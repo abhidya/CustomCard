@@ -40,6 +40,7 @@ export function buildProductionTextResearchRollup(args = {}) {
   const rerun = readJson(rerunPath) || {};
   const latest = index.latest || {};
   const latestPlanner = first(index.plannerPreflights);
+  const latestPlannerGpuFeasibility = first(index.plannerGpuFeasibilityReports);
   const latestPlannerThroughput = first(index.plannerThroughputProbes);
   const latestReadiness = first(index.readinessReports);
   const latestModelCoverage = first(index.modelCoverageReports);
@@ -103,6 +104,20 @@ export function buildProductionTextResearchRollup(args = {}) {
         missingMustInclude: latestPlannerThroughput?.missingMustInclude || [],
         mustAvoidFailures: latestPlannerThroughput?.mustAvoidFailures || [],
         blockers: latestPlannerThroughput?.blockers || []
+      },
+      plannerGpuFeasibility: {
+        path: latestPlannerGpuFeasibility?.path || "",
+        status: latestPlannerGpuFeasibility?.status || "missing",
+        gpuOnlyReady: Boolean(latestPlannerGpuFeasibility?.gpuOnlyReady),
+        activeModel: latestPlannerGpuFeasibility?.activeModel || "",
+        activeModelPath: latestPlannerGpuFeasibility?.activeModelPath || "",
+        activeModelSizeMiB: latestPlannerGpuFeasibility?.activeModelSizeMiB ?? null,
+        activePid: latestPlannerGpuFeasibility?.activePid ?? null,
+        activeAssignedGpuIds: latestPlannerGpuFeasibility?.activeAssignedGpuIds || [],
+        assignedGpuTotalMiB: latestPlannerGpuFeasibility?.assignedGpuTotalMiB ?? null,
+        estimatedRequiredMiB: latestPlannerGpuFeasibility?.estimatedRequiredMiB ?? null,
+        hardwareBlockedCandidateIds: latestPlannerGpuFeasibility?.hardwareBlockedCandidateIds || [],
+        blockers: latestPlannerGpuFeasibility?.blockers || []
       },
       plannerEvidenceAlignment: {
         path: index.plannerEvidenceAlignment?.path || "",
@@ -208,6 +223,7 @@ export function buildProductionTextResearchRollup(args = {}) {
     findings: buildFindings({
       index,
       latestPlanner,
+      latestPlannerGpuFeasibility,
       latestPlannerThroughput,
       latestReadiness,
       latestDryRun,
@@ -232,6 +248,7 @@ export function buildProductionTextResearchRollup(args = {}) {
 function buildFindings({
   index,
   latestPlanner,
+  latestPlannerGpuFeasibility,
   latestPlannerThroughput,
   latestReadiness,
   latestDryRun,
@@ -262,6 +279,13 @@ function buildFindings({
   if (latestPlannerThroughput && !latestPlannerThroughput.throughputReady) {
     const blocker = latestPlannerThroughput.providerFailure || latestPlannerThroughput.blockers?.[0] || "unknown blocker";
     findings.push(`Planner throughput probe is blocked for ${latestPlannerThroughput.model || "unknown model"}: ${blocker}`);
+  }
+  if (latestPlannerGpuFeasibility?.gpuOnlyReady) {
+    findings.push(`Planner GPU feasibility proves ${latestPlannerGpuFeasibility.activeModel || "the active planner"} fits assigned GPU capacity.`);
+  }
+  if (latestPlannerGpuFeasibility && !latestPlannerGpuFeasibility.gpuOnlyReady) {
+    const blocker = latestPlannerGpuFeasibility.blockers?.[0] || "unknown GPU-only blocker";
+    findings.push(`Planner GPU-only feasibility is blocked for ${latestPlannerGpuFeasibility.activeModel || "unknown model"}: ${blocker}`);
   }
   if (latestReadiness && !latestReadiness.productionSuitablePlannerReachable) {
     findings.push("A production-suitable planner endpoint is not currently reachable.");
@@ -343,6 +367,7 @@ function buildMarkdown(result) {
   lines.push("| --- | --- | --- | --- |");
   lines.push(evidenceRow("Comfy text composer", result.evidenceSummary.liveComfyTextComposerProof, (item) => `comfy=${yesNo(item.liveComfyReachable)} node=${yesNo(item.liveNodeAvailable)}`));
   lines.push(evidenceRow("Planner", result.evidenceSummary.planner, (item) => `${item.classification || "n/a"} ${item.activeModel || "n/a"}; context=${item.reportedContextTokens ?? "n/a"}; max=${item.maxOutputTokens ?? "n/a"}`));
+  lines.push(evidenceRow("Planner GPU feasibility", result.evidenceSummary.plannerGpuFeasibility, (item) => `${item.gpuOnlyReady ? "gpu-only ready" : "blocked"} ${item.activeModel || "n/a"}; size=${item.activeModelSizeMiB ?? "n/a"}MiB; assigned=${item.assignedGpuTotalMiB ?? "n/a"}MiB; blocker=${item.blockers?.[0] || "none"}`));
   lines.push(evidenceRow("Planner throughput", result.evidenceSummary.plannerThroughput, (item) => `${item.throughputReady ? "ready" : "blocked"} ${item.model || "n/a"}; fixture=${item.fixtureId || "n/a"}; duration=${item.durationMs ?? "n/a"}ms; failure=${item.providerFailure || item.blockers?.[0] || "none"}`));
   lines.push(evidenceRow("Planner/runtime alignment", result.evidenceSummary.plannerEvidenceAlignment, (item) => `checked=${yesNo(item.checked)} ok=${yesNo(item.ok)}; preflight=${item.preflight.baseUrl || "n/a"}; benchmark=${(item.benchmark.plannerBaseUrls || []).join(", ") || "n/a"}; blockers=${item.blockers.length}`));
   lines.push(evidenceRow("Readiness", result.evidenceSummary.readiness, (item) => `production planner reachable=${yesNo(item.productionSuitablePlannerReachable)}; blockers=${item.blockers.length}`));

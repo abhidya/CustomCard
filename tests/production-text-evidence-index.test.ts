@@ -75,6 +75,29 @@ describe("production text evidence index", () => {
       },
       blockers: ["Planner stopped with finish_reason=length before completing the full card-copy JSON."]
     });
+    writeJson(join(root, "production-text-planner-gpu-feasibility.json"), {
+      createdAtIso: "2026-06-26T05:06:30.000Z",
+      status: "blocked",
+      gpuOnlyReady: false,
+      baseUrl: "http://127.0.0.1:5001/v1",
+      requestedModel: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+      activePlanner: {
+        model: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+        modelPath: "D:\\models\\Qwen3-4B-Instruct-2507-Q4_K_S.gguf",
+        modelSizeMiB: 2500,
+        pid: 1234,
+        assignedGpuIds: [0],
+        gpuPidListed: true,
+        gpuFit: {
+          assignedGpuModelFits: false,
+          assignedGpuEstimatedFits: false,
+          assignedGpuTotalMiB: 2048,
+          estimatedRequiredMiB: 3524
+        }
+      },
+      hardwareBlockedCandidateIds: ["qwen3-4b-instruct"],
+      blockers: ["Planner estimated VRAM need is 3524 MiB, above assigned GPU capacity 2048 MiB."]
+    });
     writeJson(join(root, "production-text-rerun-plan.json"), {
       createdAtIso: "2026-06-26T05:10:00.000Z",
       status: "rerun-required",
@@ -282,6 +305,7 @@ describe("production text evidence index", () => {
     expect(report.promotionReady).toBe(false);
     expect(report.rerunPlans).toHaveLength(1);
     expect(report.plannerPreflights).toHaveLength(1);
+    expect(report.plannerGpuFeasibilityReports).toHaveLength(1);
     expect(report.plannerThroughputProbes).toHaveLength(1);
     expect(report.readinessReports).toHaveLength(1);
     expect(report.modelCoverageReports).toHaveLength(1);
@@ -300,6 +324,13 @@ describe("production text evidence index", () => {
       fixtureId: "aquarium-lover-birthday",
       finishReason: "length",
       gpuResidencyProven: true
+    });
+    expect(report.plannerGpuFeasibilityReports[0]).toMatchObject({
+      status: "blocked",
+      gpuOnlyReady: false,
+      activeModel: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+      assignedGpuEstimatedFits: false,
+      assignedGpuTotalMiB: 2048
     });
     expect(report.rerunPlans[0]).toMatchObject({
       status: "rerun-required",
@@ -364,6 +395,7 @@ describe("production text evidence index", () => {
     expect(report.findings.join("\n")).toContain("known-small smoke model");
     expect(report.findings.join("\n")).toContain("Latest dry-run planning proof keeps the full production card-copy JSON contract");
     expect(report.findings.join("\n")).toContain("Latest planner preflight is blocked");
+    expect(report.findings.join("\n")).toContain("Latest planner GPU feasibility is blocked");
     expect(report.findings.join("\n")).toContain("Latest planner throughput probe is blocked");
     expect(report.findings.join("\n")).toContain("Installed production planner candidates found locally");
     expect(report.findings.join("\n")).toContain("Installed production planner candidates still need local production-text evaluation");
@@ -374,6 +406,7 @@ describe("production text evidence index", () => {
     expect(report.nextSteps.join("\n")).toContain("installed production planner candidate");
     expect(report.nextSteps.join("\n")).toContain("local model pull queue");
     expect(report.nextSteps.join("\n")).toContain("planner preflight");
+    expect(report.nextSteps.join("\n")).toContain("planner GPU feasibility");
     expect(report.nextSteps.join("\n")).toContain("planner throughput probe");
     expect(report.nextSteps.join("\n")).toContain("exact endpoint/model used by the latest benchmark");
     expect(report.nextSteps.join("\n")).toContain("manual grade checklist blockers");

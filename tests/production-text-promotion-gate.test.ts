@@ -72,6 +72,28 @@ function writeBaseEvidence(root: string, options: { ready: boolean }) {
     },
     blockers: options.ready ? [] : ["Planner model is smoke-only."]
   });
+  writeJson(join(root, "production-text-planner-gpu-feasibility.json"), {
+    createdAtIso: "2026-06-26T05:06:00.000Z",
+    status: "gpu-only-ready",
+    gpuOnlyReady: true,
+    baseUrl: options.ready ? "http://127.0.0.1:5003/v1" : "http://127.0.0.1:5001/v1",
+    requestedModel: textModel,
+    activePlanner: {
+      model: textModel,
+      modelPath: options.ready ? "D:\\models\\gemma-4-31B-it-Q4_K_M.gguf" : "D:\\models\\Qwen3-4B-Instruct-2507-Q4_K_S.gguf",
+      modelSizeMiB: options.ready ? 7000 : 2500,
+      pid: 1234,
+      assignedGpuIds: [0],
+      gpuPidListed: true,
+      gpuFit: {
+        assignedGpuModelFits: true,
+        assignedGpuEstimatedFits: true,
+        assignedGpuTotalMiB: 16384,
+        estimatedRequiredMiB: options.ready ? 7600 : 3100
+      }
+    },
+    blockers: []
+  });
   writeJson(join(root, "local-model-coverage.json"), {
     createdAtIso: "2026-06-26T05:07:00.000Z",
     status: "action-needed",

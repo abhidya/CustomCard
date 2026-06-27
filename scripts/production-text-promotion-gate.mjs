@@ -29,6 +29,7 @@ export function runProductionTextPromotionGate(args = {}) {
     "include-untracked": args["include-untracked"]
   });
   const latestPlannerPreflight = index.plannerPreflights[0];
+  const latestPlannerGpuFeasibility = index.plannerGpuFeasibilityReports?.[0];
   const latestReadiness = index.readinessReports[0];
   const latestModelCoverage = index.modelCoverageReports[0];
   const latestPreflight = index.preflights[0];
@@ -67,6 +68,15 @@ export function runProductionTextPromotionGate(args = {}) {
     requirement("local planner GPU residency is proven", !latestPlannerPreflight?.localGpuResidency?.required || latestPlannerPreflight.localGpuResidency.ok, {
       plannerPreflight: latestPlannerPreflight?.path || "",
       localGpuResidency: latestPlannerPreflight?.localGpuResidency || null
+    }),
+    requirement("local planner GPU-only fit is proven", !latestPlannerPreflight?.localGpuResidency?.required || latestPlannerGpuFeasibility?.gpuOnlyReady, {
+      plannerGpuFeasibility: latestPlannerGpuFeasibility?.path || "",
+      activeModel: latestPlannerGpuFeasibility?.activeModel || "",
+      activeModelSizeMiB: latestPlannerGpuFeasibility?.activeModelSizeMiB ?? null,
+      assignedGpuIds: latestPlannerGpuFeasibility?.activeAssignedGpuIds || [],
+      assignedGpuTotalMiB: latestPlannerGpuFeasibility?.assignedGpuTotalMiB ?? null,
+      estimatedRequiredMiB: latestPlannerGpuFeasibility?.estimatedRequiredMiB ?? null,
+      blockers: latestPlannerGpuFeasibility?.blockers || []
     }),
     requirement("planner preflight matches benchmark runtime", !plannerEvidenceAlignment.checked || plannerEvidenceAlignment.ok, {
       preflight: plannerEvidenceAlignment.preflight || {},
@@ -203,6 +213,9 @@ function buildNextSteps(requirements, indexedNextSteps) {
   }
   if (failed.has("local planner GPU residency is proven")) {
     steps.push("Restart local KoboldCPP through tools/start-local-card-planner.ps1 with -GpuId and -GpuLayers so the planner PID appears in nvidia-smi, then refresh planner preflight/readiness.");
+  }
+  if (failed.has("local planner GPU-only fit is proven")) {
+    steps.push("Run production-text planner GPU feasibility and use a planner that fully fits the assigned GPU, or switch to a hosted/self-hosted production endpoint; do not promote partial CPU-offload evidence.");
   }
   if (failed.has("planner preflight matches benchmark runtime")) {
     steps.push("Refresh planner preflight against the exact endpoint/model used by the latest benchmark before treating planner evidence as current.");

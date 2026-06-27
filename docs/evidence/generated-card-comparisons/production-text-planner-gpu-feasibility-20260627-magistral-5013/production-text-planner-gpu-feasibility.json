@@ -1,0 +1,285 @@
+{
+  "createdAtIso": "2026-06-27T05:57:15.000Z",
+  "status": "blocked",
+  "gpuOnlyReady": false,
+  "promotionReady": false,
+  "advisory": false,
+  "baseUrl": "http://127.0.0.1:5013/v1",
+  "requestedModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+  "modelRoot": "D:\\models",
+  "overheadMiB": 1024,
+  "gpus": [
+    {
+      "index": 0,
+      "name": "NVIDIA GeForce GTX 1080 Ti",
+      "memoryTotalMiB": 11264,
+      "memoryUsedMiB": 7713,
+      "utilizationGpuPercent": 0
+    },
+    {
+      "index": 1,
+      "name": "NVIDIA GeForce GTX 1080",
+      "memoryTotalMiB": 8192,
+      "memoryUsedMiB": 7926,
+      "utilizationGpuPercent": 100
+    }
+  ],
+  "nvidiaProcessIds": [
+    38428,
+    46528,
+    39752,
+    38428,
+    1632,
+    46528,
+    46488,
+    16444,
+    0
+  ],
+  "activePlanner": {
+    "baseUrl": "http://127.0.0.1:5013/v1",
+    "endpointLocal": true,
+    "endpointPort": 5013,
+    "requestedModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+    "model": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+    "modelPath": "D:\\models\\lmstudio-community\\Magistral-Small-2509-GGUF\\Magistral-Small-2509-Q4_K_M.gguf",
+    "modelSizeMiB": 13670,
+    "pid": 46488,
+    "commandLine": "\"D:\\models\\koboldcpp.exe\" --model D:\\models\\lmstudio-community\\Magistral-Small-2509-GGUF\\Magistral-Small-2509-Q4_K_M.gguf --port 5013 --host 127.0.0.1 --skiplauncher --contextsize 8192 --threads 8 --jinja --singleinstance --quiet --usecuda 1 --maingpu 1 --gpulayers 999 ",
+    "assignedGpuIds": [
+      1
+    ],
+    "gpuPidListed": true,
+    "gpuFit": {
+      "fileExists": true,
+      "modelSizeMiB": 13670,
+      "modelSizeGiB": 13.35,
+      "overheadMiB": 1024,
+      "estimatedRequiredMiB": 14694,
+      "maxSingleGpuTotalMiB": 11264,
+      "assignedGpuIds": [
+        1
+      ],
+      "assignedGpuTotalMiB": 8192,
+      "currentFreeMiB": 266,
+      "singleGpuModelFits": false,
+      "singleGpuEstimatedFits": false,
+      "assignedGpuModelFits": false,
+      "assignedGpuEstimatedFits": false,
+      "currentlyStartableOnAssignedGpu": false
+    }
+  },
+  "candidates": [
+    {
+      "id": "gemma-4-31b-it",
+      "model": "koboldcpp/gemma-4-31B-it-Q4_K_M",
+      "note": "Quality local planner candidate, but only valid for GPU-only promotion if the selected GGUF fits the assigned GPU.",
+      "installed": true,
+      "installedFiles": [
+        {
+          "path": "D:\\models\\gemma-4-31B-it-Q4_K_M.gguf",
+          "name": "gemma-4-31B-it-Q4_K_M.gguf",
+          "normalizedName": "gemma431bitq4km",
+          "sizeBytes": 18323730976,
+          "sizeMiB": 17475,
+          "sizeGiB": 17.07,
+          "gpuFit": {
+            "fileExists": true,
+            "modelSizeMiB": 17475,
+            "modelSizeGiB": 17.07,
+            "overheadMiB": 1024,
+            "estimatedRequiredMiB": 18499,
+            "maxSingleGpuTotalMiB": 11264,
+            "assignedGpuIds": [],
+            "assignedGpuTotalMiB": 11264,
+            "currentFreeMiB": 3551,
+            "singleGpuModelFits": false,
+            "singleGpuEstimatedFits": false,
+            "assignedGpuModelFits": false,
+            "assignedGpuEstimatedFits": false,
+            "currentlyStartableOnAssignedGpu": false
+          }
+        },
+        {
+          "path": "D:\\models\\lmstudio-community\\gemma-4-31B-it-QAT-GGUF\\gemma-4-31B-it-QAT-Q4_0.gguf",
+          "name": "gemma-4-31B-it-QAT-Q4_0.gguf",
+          "normalizedName": "gemma431bitqatq40",
+          "sizeBytes": 17651000768,
+          "sizeMiB": 16834,
+          "sizeGiB": 16.44,
+          "gpuFit": {
+            "fileExists": true,
+            "modelSizeMiB": 16834,
+            "modelSizeGiB": 16.44,
+            "overheadMiB": 1024,
+            "estimatedRequiredMiB": 17858,
+            "maxSingleGpuTotalMiB": 11264,
+            "assignedGpuIds": [],
+            "assignedGpuTotalMiB": 11264,
+            "currentFreeMiB": 3551,
+            "singleGpuModelFits": false,
+            "singleGpuEstimatedFits": false,
+            "assignedGpuModelFits": false,
+            "assignedGpuEstimatedFits": false,
+            "currentlyStartableOnAssignedGpu": false
+          }
+        }
+      ],
+      "bestFile": {
+        "path": "D:\\models\\lmstudio-community\\gemma-4-31B-it-QAT-GGUF\\gemma-4-31B-it-QAT-Q4_0.gguf",
+        "sizeMiB": 16834,
+        "sizeGiB": 16.44,
+        "gpuFit": {
+          "fileExists": true,
+          "modelSizeMiB": 16834,
+          "modelSizeGiB": 16.44,
+          "overheadMiB": 1024,
+          "estimatedRequiredMiB": 17858,
+          "maxSingleGpuTotalMiB": 11264,
+          "assignedGpuIds": [],
+          "assignedGpuTotalMiB": 11264,
+          "currentFreeMiB": 3551,
+          "singleGpuModelFits": false,
+          "singleGpuEstimatedFits": false,
+          "assignedGpuModelFits": false,
+          "assignedGpuEstimatedFits": false,
+          "currentlyStartableOnAssignedGpu": false
+        }
+      },
+      "gpuOnlyCandidate": false,
+      "hardwareBlocked": true
+    },
+    {
+      "id": "magistral-small-2509",
+      "model": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+      "note": "Current GPU-backed runtime candidate; file size must fit the assigned GPU to avoid partial CPU offload.",
+      "installed": true,
+      "installedFiles": [
+        {
+          "path": "D:\\models\\lmstudio-community\\Magistral-Small-2509-GGUF\\Magistral-Small-2509-Q4_K_M.gguf",
+          "name": "Magistral-Small-2509-Q4_K_M.gguf",
+          "normalizedName": "magistralsmall2509q4km",
+          "sizeBytes": 14333911104,
+          "sizeMiB": 13670,
+          "sizeGiB": 13.35,
+          "gpuFit": {
+            "fileExists": true,
+            "modelSizeMiB": 13670,
+            "modelSizeGiB": 13.35,
+            "overheadMiB": 1024,
+            "estimatedRequiredMiB": 14694,
+            "maxSingleGpuTotalMiB": 11264,
+            "assignedGpuIds": [],
+            "assignedGpuTotalMiB": 11264,
+            "currentFreeMiB": 3551,
+            "singleGpuModelFits": false,
+            "singleGpuEstimatedFits": false,
+            "assignedGpuModelFits": false,
+            "assignedGpuEstimatedFits": false,
+            "currentlyStartableOnAssignedGpu": false
+          }
+        }
+      ],
+      "bestFile": {
+        "path": "D:\\models\\lmstudio-community\\Magistral-Small-2509-GGUF\\Magistral-Small-2509-Q4_K_M.gguf",
+        "sizeMiB": 13670,
+        "sizeGiB": 13.35,
+        "gpuFit": {
+          "fileExists": true,
+          "modelSizeMiB": 13670,
+          "modelSizeGiB": 13.35,
+          "overheadMiB": 1024,
+          "estimatedRequiredMiB": 14694,
+          "maxSingleGpuTotalMiB": 11264,
+          "assignedGpuIds": [],
+          "assignedGpuTotalMiB": 11264,
+          "currentFreeMiB": 3551,
+          "singleGpuModelFits": false,
+          "singleGpuEstimatedFits": false,
+          "assignedGpuModelFits": false,
+          "assignedGpuEstimatedFits": false,
+          "currentlyStartableOnAssignedGpu": false
+        }
+      },
+      "gpuOnlyCandidate": false,
+      "hardwareBlocked": true
+    },
+    {
+      "id": "deepseek-v4-flash",
+      "model": "koboldcpp/DeepSeekV4-Flash-158B-Q4_K_M",
+      "note": "Heavyweight local planner candidate; treat as hardware-blocked unless a full-GPU fit is proven.",
+      "installed": true,
+      "installedFiles": [
+        {
+          "path": "D:\\models\\DeepSeekV4-Flash-158B-Q4_K_M.gguf",
+          "name": "DeepSeekV4-Flash-158B-Q4_K_M.gguf",
+          "normalizedName": "deepseekv4flash158bq4km",
+          "sizeBytes": 14956904448,
+          "sizeMiB": 14265,
+          "sizeGiB": 13.93,
+          "gpuFit": {
+            "fileExists": true,
+            "modelSizeMiB": 14265,
+            "modelSizeGiB": 13.93,
+            "overheadMiB": 1024,
+            "estimatedRequiredMiB": 15289,
+            "maxSingleGpuTotalMiB": 11264,
+            "assignedGpuIds": [],
+            "assignedGpuTotalMiB": 11264,
+            "currentFreeMiB": 3551,
+            "singleGpuModelFits": false,
+            "singleGpuEstimatedFits": false,
+            "assignedGpuModelFits": false,
+            "assignedGpuEstimatedFits": false,
+            "currentlyStartableOnAssignedGpu": false
+          }
+        }
+      ],
+      "bestFile": {
+        "path": "D:\\models\\DeepSeekV4-Flash-158B-Q4_K_M.gguf",
+        "sizeMiB": 14265,
+        "sizeGiB": 13.93,
+        "gpuFit": {
+          "fileExists": true,
+          "modelSizeMiB": 14265,
+          "modelSizeGiB": 13.93,
+          "overheadMiB": 1024,
+          "estimatedRequiredMiB": 15289,
+          "maxSingleGpuTotalMiB": 11264,
+          "assignedGpuIds": [],
+          "assignedGpuTotalMiB": 11264,
+          "currentFreeMiB": 3551,
+          "singleGpuModelFits": false,
+          "singleGpuEstimatedFits": false,
+          "assignedGpuModelFits": false,
+          "assignedGpuEstimatedFits": false,
+          "currentlyStartableOnAssignedGpu": false
+        }
+      },
+      "gpuOnlyCandidate": false,
+      "hardwareBlocked": true
+    },
+    {
+      "id": "qwen3-14b-instruct",
+      "model": "koboldcpp/Qwen3-14B-Q4_K_M",
+      "note": "Minimum production-floor fallback if a rights-clean 14B GGUF is installed and fits VRAM.",
+      "installed": false,
+      "installedFiles": [],
+      "bestFile": null,
+      "gpuOnlyCandidate": false,
+      "hardwareBlocked": false
+    }
+  ],
+  "gpuOnlyCandidateIds": [],
+  "hardwareBlockedCandidateIds": [
+    "gemma-4-31b-it",
+    "magistral-small-2509",
+    "deepseek-v4-flash"
+  ],
+  "blockers": [
+    "Planner model alone is 13670 MiB, larger than assigned GPU capacity 8192 MiB; this implies partial CPU offload under the current local runtime."
+  ],
+  "nextSteps": [
+    "Use a hosted/self-hosted production planner or a production-floor local model that fully fits a single assigned GPU; do not collect promotion evidence from partial CPU offload."
+  ],
+  "reportDir": "docs/evidence/generated-card-comparisons/production-text-planner-gpu-feasibility-20260627-magistral-5013"
+}

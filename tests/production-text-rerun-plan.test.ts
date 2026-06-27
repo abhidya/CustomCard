@@ -94,6 +94,7 @@ describe("production text rerun plan", () => {
     });
     expect(plan.commands.map((item) => item.title)).toEqual([
       "Start or configure production planner",
+      "Check planner GPU-only fit",
       "Write planner preflight evidence",
       "Probe planner throughput",
       "Refresh live Comfy preflight",
@@ -105,24 +106,28 @@ describe("production text rerun plan", () => {
       "Refresh tracked evidence index",
       "Run final promotion gate"
     ]);
-    expect(plan.commands[2].command).toContain("production-text-planner-throughput-probe.mjs");
-    expect(plan.commands[2].command).toContain("--request-timeout-ms 1200000");
-    expect(plan.commands[3].command).toContain("comfyui-production-text-preflight.mjs");
-    expect(plan.commands[3].command).toContain("--require-live true");
-    expect(plan.commands[4].command).toContain("--planner-context-tokens 8192");
-    expect(plan.commands[4].command).toContain("--planner-max-output-tokens 3200");
+    expect(plan.commands[1].command).toContain("production-text-planner-gpu-feasibility.mjs");
+    expect(plan.commands[1].command).toContain("--gpu-id 0");
+    expect(plan.commands[2].command).toContain("production-text-planner-preflight.mjs");
+    expect(plan.commands[3].command).toContain("production-text-planner-throughput-probe.mjs");
+    expect(plan.commands[3].command).toContain("--request-timeout-ms 1200000");
+    expect(plan.commands[4].command).toContain("comfyui-production-text-preflight.mjs");
+    expect(plan.commands[4].command).toContain("--require-live true");
+    expect(plan.commands[5].command).toContain("--planner-context-tokens 8192");
+    expect(plan.commands[5].command).toContain("--planner-max-output-tokens 3200");
     expect(plan.commands[0].command).toContain("-GpuId 0");
     expect(plan.commands[0].command).toContain("-GpuLayers 999");
     expect(plan.commands[0].command).toContain("-Port 5013");
     expect(plan.commands[0].command).toContain("-ModelPath D:\\models\\gemma-4-31B-it-Q4_K_M.gguf");
-    expect(plan.commands[5].command).toContain("-PlannerMaxTokens 3200");
-    expect(plan.commands[5].command).toContain("-PlannerRequestTimeoutMs 1200000");
-    expect(plan.commands[5].command).toContain("-PlannerGpuId 0");
-    expect(plan.commands[5].command).toContain("-PlannerGpuLayers 999");
-    expect(plan.commands[5].command).toContain("-ProductionPlannerModelPath D:\\models\\gemma-4-31B-it-Q4_K_M.gguf");
-    expect(plan.commands[5].command).not.toContain("-AllowSmallPlanner");
-    expect(plan.commands[7].command).toContain("production-text-manual-grade-checklist.mjs");
+    expect(plan.commands[6].command).toContain("-PlannerMaxTokens 3200");
+    expect(plan.commands[6].command).toContain("-PlannerRequestTimeoutMs 1200000");
+    expect(plan.commands[6].command).toContain("-PlannerGpuId 0");
+    expect(plan.commands[6].command).toContain("-PlannerGpuLayers 999");
+    expect(plan.commands[6].command).toContain("-ProductionPlannerModelPath D:\\models\\gemma-4-31B-it-Q4_K_M.gguf");
+    expect(plan.commands[6].command).not.toContain("-AllowSmallPlanner");
+    expect(plan.commands[8].command).toContain("production-text-manual-grade-checklist.mjs");
     expect(plan.acceptanceChecks).toContain("planner preflight is production-ready");
+    expect(plan.acceptanceChecks).toContain("local planner GPU-only fit is proven");
     expect(plan.acceptanceChecks).toContain("planner throughput probe completes the full JSON contract");
     expect(plan.acceptanceChecks).toContain("planner preflight matches benchmark runtime");
     expect(plan.acceptanceChecks).toContain("live ComfyUI proof is current");
@@ -162,7 +167,9 @@ describe("production text rerun plan", () => {
 
     expect(plan.productionPlannerContract.requiredLocalGpu.gpuId).toBe(1);
     expect(plan.commands[0].command).toContain(`-ModelPath ${modelPath}`);
-    expect(plan.commands[5].command).toContain(`-ProductionPlannerModelPath ${modelPath}`);
-    expect(plan.commands[5].command).toContain("-PlannerGpuId 1");
+    expect(plan.commands[1].command).toContain(`--model-path ${modelPath}`);
+    expect(plan.commands[1].command).toContain("--gpu-id 1");
+    expect(plan.commands[6].command).toContain(`-ProductionPlannerModelPath ${modelPath}`);
+    expect(plan.commands[6].command).toContain("-PlannerGpuId 1");
   });
 });

@@ -51,6 +51,22 @@ describe("production text research rollup", () => {
           blockers: ["Planner context 4096 is below the production minimum 8192."]
         }
       ],
+      plannerGpuFeasibilityReports: [
+        {
+          path: "docs/evidence/generated-card-comparisons/production-text-planner-gpu-feasibility-current/production-text-planner-gpu-feasibility.json",
+          status: "blocked",
+          gpuOnlyReady: false,
+          activeModel: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+          activeModelPath: "D:\\models\\Qwen3-4B-Instruct-2507-Q4_K_S.gguf",
+          activeModelSizeMiB: 2500,
+          activePid: 1234,
+          activeAssignedGpuIds: [0],
+          assignedGpuTotalMiB: 2048,
+          estimatedRequiredMiB: 3524,
+          hardwareBlockedCandidateIds: ["qwen3-4b-instruct"],
+          blockers: ["Planner estimated VRAM need is 3524 MiB, above assigned GPU capacity 2048 MiB."]
+        }
+      ],
       plannerThroughputProbes: [
         {
           path: "docs/evidence/generated-card-comparisons/production-text-planner-throughput-current/production-text-planner-throughput.json",
@@ -240,6 +256,12 @@ describe("production text research rollup", () => {
       fixtureId: "aquarium-lover-birthday",
       finishReason: "length"
     });
+    expect(report.evidenceSummary.plannerGpuFeasibility).toMatchObject({
+      status: "blocked",
+      gpuOnlyReady: false,
+      activeModel: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+      assignedGpuTotalMiB: 2048
+    });
     expect(report.evidenceSummary.manualGrades).toMatchObject({
       gradedGeneratedRuns: 2,
       gradableRuns: 2,
@@ -278,6 +300,7 @@ describe("production text research rollup", () => {
     expect(report.findings.join("\n")).toContain("runtime failure");
     expect(report.findings.join("\n")).toContain("ECONNREFUSED");
     expect(report.findings.join("\n")).toContain("preflight and benchmark runtime evidence do not align");
+    expect(report.findings.join("\n")).toContain("Planner GPU-only feasibility is blocked");
     expect(report.findings.join("\n")).toContain("Planner throughput probe is blocked");
     expect(report.findings.join("\n")).toContain("Dry-run planning proof records the full-quality production planner path");
     expect(report.findings.join("\n")).toContain("switch the runtime, not the prompt quality");

@@ -15,6 +15,7 @@ if (isMainModule()) {
     reportDir: result.reportDir,
     rerunPlans: result.rerunPlans.length,
     plannerPreflights: result.plannerPreflights.length,
+    plannerGpuFeasibilityReports: result.plannerGpuFeasibilityReports.length,
     readinessReports: result.readinessReports.length,
     modelCoverageReports: result.modelCoverageReports.length,
     dryRunReports: result.dryRunReports.length,
@@ -45,6 +46,11 @@ export function buildProductionTextEvidenceIndex(args = {}) {
   const plannerThroughputProbes = files
     .filter((file) => basename(file) === "production-text-planner-throughput.json")
     .map(plannerThroughputEntry)
+    .filter(Boolean)
+    .sort(newestFirst);
+  const plannerGpuFeasibilityReports = files
+    .filter((file) => basename(file) === "production-text-planner-gpu-feasibility.json")
+    .map(plannerGpuFeasibilityEntry)
     .filter(Boolean)
     .sort(newestFirst);
   const readinessReports = files
@@ -91,6 +97,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
   const latestRerunPlan = rerunPlans[0];
   const latestPlannerPreflight = plannerPreflights[0];
   const latestPlannerThroughputProbe = plannerThroughputProbes[0];
+  const latestPlannerGpuFeasibility = plannerGpuFeasibilityReports[0];
   const latestReadiness = readinessReports[0];
   const latestModelCoverage = modelCoverageReports[0];
   const latestAggregate = aggregates.find((entry) => entry.kind === "llm-planned") || aggregates[0];
@@ -102,6 +109,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
   const promotionReady = Boolean(
     latestReadiness?.promotionReady &&
     latestPlannerPreflight?.promotionReady &&
+    latestPlannerGpuFeasibility?.gpuOnlyReady &&
     plannerEvidenceAlignment.ok &&
     latestManualGradeChecklist?.promotionReady &&
     latestAggregate?.promotionReady &&
@@ -112,6 +120,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
   const findings = buildFindings({
     latestPlannerPreflight,
     latestPlannerThroughputProbe,
+    latestPlannerGpuFeasibility,
     latestReadiness,
     latestModelCoverage,
     latestAggregate,
@@ -124,6 +133,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
   const nextSteps = buildNextSteps({
     latestPlannerPreflight,
     latestPlannerThroughputProbe,
+    latestPlannerGpuFeasibility,
     latestReadiness,
     latestModelCoverage,
     latestAggregate,
@@ -145,6 +155,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
       modelCoverage: latestModelCoverage?.path || "",
       rerunPlan: latestRerunPlan?.path || "",
       plannerPreflight: latestPlannerPreflight?.path || "",
+      plannerGpuFeasibility: latestPlannerGpuFeasibility?.path || "",
       plannerThroughputProbe: latestPlannerThroughputProbe?.path || "",
       preflight: latestPreflight?.path || "",
       dryRun: latestDryRun?.path || "",
@@ -157,6 +168,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     plannerEvidenceAlignment,
     rerunPlans,
     plannerPreflights,
+    plannerGpuFeasibilityReports,
     plannerThroughputProbes,
     readinessReports,
     modelCoverageReports,
@@ -227,6 +239,7 @@ function isEvidenceCandidate(filePath) {
     name === "local-model-coverage.json" ||
     name === "production-text-readiness.json" ||
     name === "production-text-planner-preflight.json" ||
+    name === "production-text-planner-gpu-feasibility.json" ||
     name === "production-text-planner-throughput.json" ||
     name === "production-text-preflight.json" ||
     (name.endsWith("-dry-run.json") && rel.includes("production-text")) ||
@@ -282,6 +295,37 @@ function plannerPreflightEntry(filePath) {
     blockerCount: blockers.length,
     blockers,
     warnings: payload.warnings || [],
+    nextSteps: payload.nextSteps || []
+  };
+}
+
+function plannerGpuFeasibilityEntry(filePath) {
+  const payload = readJson(filePath);
+  if (!payload) return undefined;
+  const active = payload.activePlanner || {};
+  const fit = active.gpuFit || {};
+  return {
+    path: relativePath(filePath),
+    createdAtIso: payload.createdAtIso || fileMtime(filePath),
+    status: payload.status || "unknown",
+    promotionReady: false,
+    gpuOnlyReady: Boolean(payload.gpuOnlyReady),
+    baseUrl: payload.baseUrl || "",
+    requestedModel: payload.requestedModel || "",
+    activeModel: active.model || active.requestedModel || "",
+    activeModelPath: active.modelPath || "",
+    activeModelSizeMiB: active.modelSizeMiB ?? null,
+    activePid: active.pid ?? null,
+    activeAssignedGpuIds: active.assignedGpuIds || [],
+    activeGpuPidListed: Boolean(active.gpuPidListed),
+    assignedGpuModelFits: Boolean(fit.assignedGpuModelFits),
+    assignedGpuEstimatedFits: Boolean(fit.assignedGpuEstimatedFits),
+    assignedGpuTotalMiB: fit.assignedGpuTotalMiB ?? null,
+    estimatedRequiredMiB: fit.estimatedRequiredMiB ?? null,
+    gpuOnlyCandidateIds: payload.gpuOnlyCandidateIds || [],
+    hardwareBlockedCandidateIds: payload.hardwareBlockedCandidateIds || [],
+    blockers: payload.blockers || [],
+    blockerCount: (payload.blockers || []).length,
     nextSteps: payload.nextSteps || []
   };
 }
@@ -641,6 +685,7 @@ function normalizeBaseUrl(value) {
 function buildFindings({
   latestPlannerPreflight,
   latestPlannerThroughputProbe,
+  latestPlannerGpuFeasibility,
   latestReadiness,
   latestModelCoverage,
   latestAggregate,
@@ -670,6 +715,13 @@ function buildFindings({
   }
   if (latestPlannerPreflight?.localGpuResidency?.required && !latestPlannerPreflight.localGpuResidency.ok) {
     findings.push("Latest local planner preflight does not prove GPU residency.");
+  }
+  if (latestPlannerGpuFeasibility?.gpuOnlyReady) {
+    findings.push(`Latest planner GPU feasibility proves ${latestPlannerGpuFeasibility.activeModel || "the active planner"} fits assigned GPU(s) without CPU offload.`);
+  }
+  if (latestPlannerGpuFeasibility && !latestPlannerGpuFeasibility.gpuOnlyReady) {
+    const blocker = latestPlannerGpuFeasibility.blockers?.[0] || "unknown GPU-only blocker";
+    findings.push(`Latest planner GPU feasibility is blocked for ${latestPlannerGpuFeasibility.activeModel || "unknown model"}: ${blocker}`);
   }
   if (latestPlannerThroughputProbe?.throughputReady) {
     findings.push(`Latest planner throughput probe completed the full card-copy prompt on ${latestPlannerThroughputProbe.model} in ${latestPlannerThroughputProbe.durationMs}ms.`);
@@ -723,6 +775,7 @@ function buildFindings({
 function buildNextSteps({
   latestPlannerPreflight,
   latestPlannerThroughputProbe,
+  latestPlannerGpuFeasibility,
   latestReadiness,
   latestModelCoverage,
   latestAggregate,
@@ -738,6 +791,9 @@ function buildNextSteps({
   }
   if (!latestPlannerPreflight?.promotionReady) {
     steps.push("Run production-text planner preflight with a production-suitable GPU-backed model, 8192+ context, and the full output budget.");
+  }
+  if (!latestPlannerGpuFeasibility?.gpuOnlyReady) {
+    steps.push("Run the production-text planner GPU feasibility report and use a planner that fully fits the assigned GPU, or switch to a hosted/self-hosted production endpoint.");
   }
   if (!latestPlannerThroughputProbe?.throughputReady) {
     steps.push("Run the production-text planner throughput probe before spending another full Comfy image benchmark on a local planner candidate.");
@@ -795,6 +851,7 @@ function buildMarkdown(result) {
   lines.push("| --- | --- | --- | --- |");
   lines.push(latestRow("Rerun Plan", result.rerunPlans[0], rerunPlanSummary));
   lines.push(latestRow("Planner", result.plannerPreflights[0], plannerSummary));
+  lines.push(latestRow("Planner GPU Feasibility", result.plannerGpuFeasibilityReports[0], plannerGpuFeasibilitySummary));
   lines.push(latestRow("Planner Throughput", result.plannerThroughputProbes[0], plannerThroughputSummary));
   lines.push(latestRow("Planner/Benchmark Alignment", result.plannerEvidenceAlignment, plannerEvidenceAlignmentSummary));
   lines.push(latestRow("Readiness", result.readinessReports[0], readinessSummary));
@@ -840,6 +897,10 @@ function plannerSummary(entry) {
     ? entry.localGpuResidency.ok ? "gpu=yes" : "gpu=no"
     : "gpu=n/a";
   return `${entry.classification}; model=${entry.activeModel || "none"}; context=${entry.reportedContextTokens ?? "n/a"}; ${gpu}`;
+}
+
+function plannerGpuFeasibilitySummary(entry) {
+  return `${entry.gpuOnlyReady ? "gpu-only=yes" : "gpu-only=no"}; model=${entry.activeModel || "none"}; assigned=${entry.activeAssignedGpuIds.join(",") || "n/a"}; size=${entry.activeModelSizeMiB ?? "n/a"}MiB; gpu=${entry.assignedGpuTotalMiB ?? "n/a"}MiB`;
 }
 
 function plannerThroughputSummary(entry) {
