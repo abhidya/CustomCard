@@ -88,6 +88,8 @@
     "provider:setup": "node scripts/provider-control.mjs setup",
     "provider:status": "node scripts/provider-control.mjs status",
     "provider:dashboard": "node scripts/provider-dashboard.mjs",
+    "provider:dashboard:open": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/open-provider-queue-dashboard.ps1",
+    "provider:dashboard:shortcut": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/install-provider-queue-dashboard-shortcuts.ps1",
     "provider:doctor": "node scripts/provider-control.mjs doctor",
     "provider:start": "node scripts/provider-control.mjs start",
     "provider:once": "node scripts/provider-control.mjs once",
