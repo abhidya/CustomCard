@@ -1,5 +1,6 @@
 import { lookup as lookupDns } from "node:dns/promises";
 import { existsSync, readFileSync } from "node:fs";
+import { request as httpRequest } from "node:http";
 import { isIP } from "node:net";
 import { resolve } from "node:path";
 import {
@@ -32,6 +33,7 @@ export const aiChatRespondRoute = "/api/ai/chat/respond";
 
 const maxMaterializedImageBytes = 8_000_000;
 const materializedImageFetchTimeoutMs = 15_000;
+const defaultLocalLlmRequestTimeoutMs = 1_200_000;
 const aiCardDraftPolicy = createAiCardDraftPolicy({ buildDraftId });
 const embeddedAssetDataUrlCache = new Map();
 
@@ -804,6 +806,9 @@ async function executeGoogleGeminiChat({ flow, env, fetchImpl, systemPrompt, use
 async function executeOpenAiCompatibleTextProvider({ flow, fetchImpl, systemPrompt, userPrompt, responseFormat }, compatible) {
   const data = await postJson(fetchImpl, compatible.url, {
     headers: compatible.headers,
+    localProvider: Boolean(compatible.localProvider),
+    timeoutLabel: compatible.timeoutLabel,
+    timeoutMs: compatible.timeoutMs,
     body: {
       model: flow.model,
       messages: buildMessages(systemPrompt, userPrompt),
@@ -1611,7 +1616,10 @@ function openAiCompatibleAdapter(adapterId, env) {
     const apiKey = firstUsableEnv(env, ["CUSTOMCARD_LOCAL_LLM_API_KEY", "LMSTUDIO_API_KEY", "KOBOLDCPP_API_KEY"]);
     return {
       url: localOpenAiChatCompletionsUrl(env),
-      headers: apiKey ? { authorization: `Bearer ${apiKey}` } : {}
+      headers: apiKey ? { authorization: `Bearer ${apiKey}` } : {},
+      localProvider: true,
+      timeoutLabel: "Local LLM chat completion request",
+      timeoutMs: localLlmRequestTimeoutMs(env)
     };
   }
   const config = adapters[adapterId];
@@ -1622,8 +1630,9 @@ function openAiCompatibleAdapter(adapterId, env) {
   };
 }
 
-async function postJson(fetchImpl, url, { headers = {}, body }) {
-  const response = await fetchImpl(url, {
+async function postJson(fetchImpl, url, { headers = {}, body, localProvider = false, timeoutLabel = "Provider request", timeoutMs = 0 }) {
+  const requestFetch = localProvider ? localProviderFetch(fetchImpl, { timeoutLabel, timeoutMs }) : fetchImpl;
+  const response = await requestFetch(url, {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -1637,6 +1646,29 @@ async function postJson(fetchImpl, url, { headers = {}, body }) {
     throw new Error(data?.errors?.[0]?.message || "AI provider rejected the request.");
   }
   return data;
+}
+
+function localLlmRequestTimeoutMs(env) {
+  return boundedIntegerEnv(
+    firstUsableEnv(env, [
+      "CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS",
+      "LMSTUDIO_REQUEST_TIMEOUT_MS",
+      "KOBOLDCPP_REQUEST_TIMEOUT_MS"
+    ]),
+    10_000,
+    3_600_000,
+    defaultLocalLlmRequestTimeoutMs
+  );
+}
+
+function localProviderFetch(fetchImpl, { timeoutLabel, timeoutMs }) {
+  if (typeof fetchImpl?.localProviderFetch === "function") {
+    return (url, init) => fetchImpl.localProviderFetch(url, init, { timeoutLabel, timeoutMs });
+  }
+  if (fetchImpl === globalThis.fetch) {
+    return (url, init) => fetchLocalHttpProvider(url, init, { timeoutLabel, timeoutMs });
+  }
+  return (url, init) => fetchWithTimeout(fetchImpl, url, init, timeoutMs, timeoutLabel);
 }
 
 async function fetchWithProviderBackoff(fetchImpl, url, options, { retries = 0, baseDelayMs = 1000, maxDelayMs = 5000 } = {}) {
@@ -3492,11 +3524,106 @@ function normalizeGeneratedImageHost(value) {
   return String(value ?? "").trim().toLowerCase().replace(/^\.+|\.+$/g, "");
 }
 
-async function fetchWithTimeout(fetchImpl, url, init, timeoutMs) {
+export async function fetchLocalHttpProvider(url, init = {}, { timeoutLabel = "Local provider request", timeoutMs = defaultLocalLlmRequestTimeoutMs } = {}) {
+  const parsed = assertLocalProviderBaseUrl(url, timeoutLabel);
+  const timeout = boundedIntegerEnv(timeoutMs, 10_000, 3_600_000, defaultLocalLlmRequestTimeoutMs);
+  const body = init.body === undefined || init.body === null
+    ? undefined
+    : Buffer.isBuffer(init.body)
+      ? init.body
+      : Buffer.from(String(init.body), "utf8");
+  const headers = normalizedHeaderObject(init.headers);
+  if (body && !hasHeader(headers, "content-length")) headers["content-length"] = String(body.length);
+  const hostname = parsed.hostname.replace(/^\[|\]$/g, "");
+
+  return new Promise((resolveResponse, rejectResponse) => {
+    let timedOut = false;
+    const request = httpRequest(
+      {
+        protocol: "http:",
+        hostname,
+        port: parsed.port || 80,
+        path: `${parsed.pathname}${parsed.search}`,
+        method: init.method || "GET",
+        headers
+      },
+      (response) => {
+        const chunks = [];
+        response.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
+        response.on("end", () => {
+          clearTimeout(timer);
+          resolveResponse(
+            new Response(Buffer.concat(chunks), {
+              status: response.statusCode || 500,
+              statusText: response.statusMessage || "",
+              headers: responseHeaders(response.headers)
+            })
+          );
+        });
+      }
+    );
+    const timer = setTimeout(() => {
+      timedOut = true;
+      request.destroy(new Error(`${timeoutLabel} timed out after ${timeout}ms.`));
+    }, timeout);
+    request.on("error", (error) => {
+      clearTimeout(timer);
+      rejectResponse(timedOut ? new Error(`${timeoutLabel} timed out after ${timeout}ms.`) : error);
+    });
+    if (init.signal) {
+      if (init.signal.aborted) {
+        clearTimeout(timer);
+        request.destroy(new Error(`${timeoutLabel} was aborted.`));
+        return;
+      }
+      init.signal.addEventListener(
+        "abort",
+        () => {
+          clearTimeout(timer);
+          request.destroy(new Error(`${timeoutLabel} was aborted.`));
+        },
+        { once: true }
+      );
+    }
+    if (body) request.write(body);
+    request.end();
+  });
+}
+
+function normalizedHeaderObject(headers = {}) {
+  const entries = headers instanceof Headers
+    ? Array.from(headers.entries())
+    : Array.isArray(headers)
+      ? headers
+      : Object.entries(headers || {});
+  return Object.fromEntries(entries.filter(([, value]) => value !== undefined && value !== null).map(([key, value]) => [key, String(value)]));
+}
+
+function hasHeader(headers, name) {
+  const normalized = String(name).toLowerCase();
+  return Object.keys(headers).some((key) => key.toLowerCase() === normalized);
+}
+
+function responseHeaders(headers) {
+  const result = new Headers();
+  for (const [key, value] of Object.entries(headers || {})) {
+    if (Array.isArray(value)) {
+      for (const item of value) result.append(key, String(item));
+    } else if (value !== undefined) {
+      result.set(key, String(value));
+    }
+  }
+  return result;
+}
+
+async function fetchWithTimeout(fetchImpl, url, init, timeoutMs, timeoutLabel = "Fetch request") {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
     return await fetchImpl(url, { ...init, signal: controller.signal });
+  } catch (error) {
+    if (controller.signal.aborted) throw new Error(`${timeoutLabel} timed out after ${timeoutMs}ms.`);
+    throw error;
   } finally {
     clearTimeout(timeout);
   }

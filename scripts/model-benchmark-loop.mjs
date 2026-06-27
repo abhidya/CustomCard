@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, extname, resolve } from "node:path";
 import sharp from "sharp";
-import { createAiCardGenerationService, loadLocalAiEnvFiles } from "./ai-card-generator.mjs";
+import { createAiCardGenerationService, fetchLocalHttpProvider, loadLocalAiEnvFiles } from "./ai-card-generator.mjs";
 import { hasUsableAiEnvValue, resolveAiFlowConfigs } from "../src/aiFlowConfigData.mjs";
 import {
   interpolateLocalComfyTemplate,
@@ -3045,30 +3045,56 @@ function loadBenchmarkEnv() {
 }
 
 function createLoggingFetch(logs, env, { localOnly = false } = {}) {
-  return async function loggingFetch(url, options = {}) {
+  const loggingFetch = async function loggingFetch(url, options = {}) {
+    return fetchAndLogProviderRequest(url, options);
+  };
+  loggingFetch.localProviderFetch = async (url, options = {}, timeoutOptions = {}) =>
+    fetchAndLogProviderRequest(url, options, { localProvider: true, ...timeoutOptions });
+  return loggingFetch;
+
+  async function fetchAndLogProviderRequest(url, options = {}, { localProvider = false, timeoutLabel, timeoutMs } = {}) {
     if (localOnly) assertLocalBenchmarkUrl(url);
     const started = Date.now();
-    const response = await fetch(url, options);
-    const buffer = Buffer.from(await response.arrayBuffer());
-    const contentType = response.headers?.get?.("content-type") || "";
-    logs.push({
-      url: redactUrl(String(url), env),
-      method: options.method || "GET",
-      request: {
-        headers: redactHeaders(options.headers || {}, env),
-        body: sanitize(parseBody(options.body), env)
-      },
-      response: {
-        status: response.status,
-        ok: response.ok,
-        contentType,
-        byteLength: buffer.length,
-        body: contentType.includes("application/json") ? sanitize(parseJson(buffer.toString("utf8")), env) : undefined
-      },
-      durationMs: Date.now() - started
-    });
-    return new Response(buffer, { status: response.status, statusText: response.statusText, headers: response.headers });
-  };
+    try {
+      const response = localProvider
+        ? await fetchLocalHttpProvider(url, options, { timeoutLabel, timeoutMs })
+        : await fetch(url, options);
+      const buffer = Buffer.from(await response.arrayBuffer());
+      const contentType = response.headers?.get?.("content-type") || "";
+      logs.push({
+        url: redactUrl(String(url), env),
+        method: options.method || "GET",
+        request: {
+          headers: redactHeaders(options.headers || {}, env),
+          body: sanitize(parseBody(options.body), env)
+        },
+        response: {
+          status: response.status,
+          ok: response.ok,
+          contentType,
+          byteLength: buffer.length,
+          body: contentType.includes("application/json") ? sanitize(parseJson(buffer.toString("utf8")), env) : undefined
+        },
+        durationMs: Date.now() - started
+      });
+      return new Response(buffer, { status: response.status, statusText: response.statusText, headers: response.headers });
+    } catch (error) {
+      logs.push({
+        url: redactUrl(String(url), env),
+        method: options.method || "GET",
+        request: {
+          headers: redactHeaders(options.headers || {}, env),
+          body: sanitize(parseBody(options.body), env)
+        },
+        response: {
+          ok: false,
+          error: errorMessage(error)
+        },
+        durationMs: Date.now() - started
+      });
+      throw error;
+    }
+  }
 }
 
 function assertLocalBenchmarkUrl(value) {

@@ -46,6 +46,7 @@ export function buildProductionTextRerunPlan(args = {}) {
     plannerModel: String(args["planner-model"] || productionTextPlannerPolicy.recommendedModels[0]),
     contextTokens: numberOr(args["context-tokens"], productionTextPlannerPolicy.minContextTokens),
     maxOutputTokens: numberOr(args["max-output-tokens"], productionTextPlannerPolicy.recommendedOutputTokens),
+    requestTimeoutMs: numberOr(args["request-timeout-ms"], 1_200_000),
     checkpoint: String(args.checkpoint || "sd_xl_turbo_1.0_fp16.safetensors"),
     steps: numberOr(args.steps, 2),
     cfg: numberOr(args.cfg, 1.5),
@@ -92,6 +93,7 @@ export function buildProductionTextRerunPlan(args = {}) {
       minContextTokens: productionTextPlannerPolicy.minContextTokens,
       minOutputTokens: productionTextPlannerPolicy.minOutputTokens,
       recommendedOutputTokens: productionTextPlannerPolicy.recommendedOutputTokens,
+      recommendedRequestTimeoutMs: recommended.requestTimeoutMs,
       recommendedModels: productionTextPlannerPolicy.recommendedModels,
       disallowedForPromotion: [
         "Qwen3-4B/8B and other 1.5B/3B/4B/7B/8B local planners",
@@ -151,7 +153,7 @@ function buildCommands({ recommended, paths }) {
     {
       step: 5,
       title: "Run full production-text matrix",
-      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl ${recommended.plannerBaseUrl} -LocalLlmModel ${recommended.plannerModel} -OutputDir ${paths.benchmarkOutput} -Checkpoint ${recommended.checkpoint} -Steps ${recommended.steps} -Cfg ${recommended.cfg} -Sampler ${recommended.sampler} -Scheduler ${recommended.scheduler} -PlannerMaxTokens ${recommended.maxOutputTokens} -PlannerContextSize ${recommended.contextTokens}`,
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl ${recommended.plannerBaseUrl} -LocalLlmModel ${recommended.plannerModel} -OutputDir ${paths.benchmarkOutput} -Checkpoint ${recommended.checkpoint} -Steps ${recommended.steps} -Cfg ${recommended.cfg} -Sampler ${recommended.sampler} -Scheduler ${recommended.scheduler} -PlannerMaxTokens ${recommended.maxOutputTokens} -PlannerContextSize ${recommended.contextTokens} -PlannerRequestTimeoutMs ${recommended.requestTimeoutMs}`,
       why: "Runs aquarium/koi/dog customer requests through the production Comfy text workflow with LLM-owned theme/copy/layout."
     },
     {
@@ -213,6 +215,7 @@ function buildMarkdown(plan) {
   lines.push(`- Minimum planner class: ${plan.productionPlannerContract.minimumOpenWeightPlannerClass}`);
   lines.push(`- Minimum context tokens: ${plan.productionPlannerContract.minContextTokens}`);
   lines.push(`- Recommended output tokens: ${plan.productionPlannerContract.recommendedOutputTokens}`);
+  lines.push(`- Recommended local request timeout: ${plan.productionPlannerContract.recommendedRequestTimeoutMs}ms`);
   lines.push(`- Recommended models: ${plan.productionPlannerContract.recommendedModels.join(", ")}`);
   lines.push("");
   lines.push("Do not use for promotion:");

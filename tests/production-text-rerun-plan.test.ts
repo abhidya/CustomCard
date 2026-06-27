@@ -76,6 +76,7 @@ describe("production text rerun plan", () => {
       "manual aggregate is promotion-ready"
     ]);
     expect(plan.productionPlannerContract.minContextTokens).toBe(8192);
+    expect(plan.productionPlannerContract.recommendedRequestTimeoutMs).toBe(1200000);
     expect(plan.productionPlannerContract.minimumOpenWeightPlannerClass).toContain("14B+");
     expect(plan.productionPlannerContract.disallowedForPromotion.join("\n")).toContain("Qwen3-4B");
     expect(plan.productionPlannerContract.disallowedForPromotion.join("\n")).toContain("8B");
@@ -102,6 +103,7 @@ describe("production text rerun plan", () => {
     expect(plan.commands[3].command).toContain("--planner-context-tokens 8192");
     expect(plan.commands[3].command).toContain("--planner-max-output-tokens 3200");
     expect(plan.commands[4].command).toContain("-PlannerMaxTokens 3200");
+    expect(plan.commands[4].command).toContain("-PlannerRequestTimeoutMs 1200000");
     expect(plan.commands[4].command).not.toContain("-AllowSmallPlanner");
     expect(plan.commands[6].command).toContain("production-text-manual-grade-checklist.mjs");
     expect(plan.acceptanceChecks).toContain("planner preflight is production-ready");

@@ -361,6 +361,10 @@ Comfy template variables exposed by the local adapter include:
   - Accepts `-PlannerMaxTokens` and `-PlannerContextSize` while keeping the full
     planner prompt. Do not shrink the creative contract to fit a 4096-context
     local model.
+  - Accepts `-PlannerRequestTimeoutMs` and exports
+    `CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS`; the default is `1200000` so a
+    production-size local planner can finish the full JSON contract instead of
+    hitting Node's five-minute response-header ceiling.
   - Rejects known-small local planners such as Qwen3-4B/8B for production
     evidence. Use `-AllowSmallPlanner` only for exploratory failure evidence.
   - Fails fast when no production planner is available. Use
@@ -470,7 +474,10 @@ recorded at
 it passed live Comfy and Gemma planner preflights, wrote partial benchmark
 evidence for aquarium and koi, and both completed records failed before image
 generation with text provider `fetch failed`; dog had started but did not
-finish before the CPU-only Gemma worker was stopped for throughput. Gate 9's
+finish before the CPU-only Gemma worker was stopped for throughput. Treat that
+as runtime-budget evidence: rerun with `-PlannerRequestTimeoutMs 1200000`,
+more offload, or a stronger hosted/self-hosted endpoint before reducing the
+creative contract. Gate 9's
 older live LLM-planned matrix ran through
 KoboldCPP Qwen3-4B and local Comfy, then failed quality review: aquarium scored
 38/100, dog scored 34/100, and koi failed before image generation because the

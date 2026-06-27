@@ -271,6 +271,59 @@ describe("AI card generator service", () => {
     expect(payload.images.every((image) => image.width === 512 && image.height === 704)).toBe(true);
   });
 
+  it("uses the configured local LLM request timeout for OpenAI-compatible planner calls", async () => {
+    const localProviderFetch = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit, timeoutOptions?: { timeoutLabel?: string; timeoutMs?: number }) => {
+      const body = JSON.parse(String(init?.body));
+      const userPrompt = JSON.parse(body.messages[1].content);
+
+      expect(timeoutOptions).toMatchObject({
+        timeoutLabel: "Local LLM chat completion request",
+        timeoutMs: 123456
+      });
+      expect(body.max_tokens).toBe(3200);
+      expect(userPrompt.task).toContain("The LLM owns the creative concept");
+      return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      });
+    });
+    const fetchImpl = Object.assign(
+      vi.fn(async () => {
+        throw new Error("Unexpected generic fetch for local planner");
+      }),
+      { localProviderFetch }
+    );
+    const service = createAiCardGenerationService({
+      env: {
+        CUSTOMCARD_LOCAL_LLM_BASE_URL: "http://127.0.0.1:1234/v1",
+        CUSTOMCARD_LOCAL_LLM_MODEL: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+        CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS: "123456"
+      },
+      fetchImpl,
+      aiFlowAdminConfig: buildDefaultAiFlowAdminConfigs().map((config) => {
+        if (config.flowId === "card-copy") {
+          return {
+            ...config,
+            primaryAdapterId: "local-openai-compatible-chat",
+            fallbackAdapterId: "",
+            model: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+            liveProviderCallsEnabled: true,
+            maxTokens: 3200
+          };
+        }
+        if (config.flowId === "card-image") return { ...config, liveProviderCallsEnabled: false };
+        return config;
+      })
+    });
+
+    const result = await service.generateCard(cardRequest, { rateKey: "test-local-planner-timeout" });
+
+    expect(result.statusCode).toBe(200);
+    expect(localProviderFetch).toHaveBeenCalledTimes(1);
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(JSON.stringify(result.payload)).toContain("Happy Birthday Sara");
+  });
+
   it("passes trusted local Comfy workflow templates, ids, and input metadata from worker env", async () => {
     const tempDir = mkdtempSync(join(tmpdir(), "customcard-comfy-workflow-"));
     const workflowPath = join(tempDir, "workflow.json");

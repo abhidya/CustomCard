@@ -19,6 +19,7 @@ param(
   [int]$LocalLlmPreflightTimeoutSec = 5,
   [int]$PlannerMaxTokens = 3200,
   [int]$PlannerContextSize = 8192,
+  [int]$PlannerRequestTimeoutMs = 1200000,
   [string]$ProductionPlannerModelPath = "D:\models\gemma-4-31B-it-Q4_K_M.gguf",
   [int]$PlannerPort = 5003,
   [int]$PlannerThreads = 8,
@@ -91,6 +92,7 @@ if (-not [string]::IsNullOrWhiteSpace($LocalLlmApiKey)) {
   $env:CUSTOMCARD_LOCAL_LLM_API_KEY = $LocalLlmApiKey
 }
 $env:CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS = [string]$PlannerMaxTokens
+$env:CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS = [string]$PlannerRequestTimeoutMs
 
 function Test-UsableEnvValue {
   param([string]$Value)
@@ -151,6 +153,7 @@ if (-not [string]::IsNullOrWhiteSpace($Checkpoint)) {
 }
 if ($HasLocalLlm) {
   Write-Host "Local LLM planner: enabled"
+  Write-Host "Local LLM planner request timeout: $PlannerRequestTimeoutMs ms"
 }
 if ($AllowCompositorFixtureFallback -and -not $HasLocalLlm) {
   Write-Host "Local LLM planner: missing; compositor fixture fallback explicitly allowed"
