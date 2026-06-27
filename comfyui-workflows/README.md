@@ -289,8 +289,9 @@ Latest live evidence:
   - Main blocker: local Qwen3-4B planner misses customer themes/must-include
     terms and can emit truncated invalid JSON. Current code now passes
     `must_include`/`must_avoid` into the planner, retries invalid or incomplete
-    card-copy output before Comfy, and refuses Qwen3-4B/8B for production evidence
-    unless `-AllowSmallPlanner` is explicit.
+    card-copy output before Comfy, keeps aquarium/koi/dog fallback
+    theme/copy/cue/visual-brief repair request-aware, and refuses Qwen3-4B/8B
+    for production evidence unless `-AllowSmallPlanner` is explicit.
 - Current readiness doctor:
   `docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current`
   - Previous live preflight proves `CustomCardTextComposer` worked, but the

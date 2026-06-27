@@ -577,6 +577,170 @@ describe("AI card generator service", () => {
     expect(JSON.stringify(payload.card_copy)).not.toContain("Morning Garden");
   });
 
+  it("retries aquarium benchmark copy before image work when required request facts are missing", async () => {
+    const weakAquariumResponse = {
+      theme_guide: {
+        theme_title: "Aquatic ritual quietness",
+        palette: ["soft aquarium blue", "freshwater green", "warm paper"],
+        motifs: ["aquarium glass", "tiny fish", "aquatic plants"],
+        border_style: "thin ripple border",
+        front_back_pairing: "front and back share one tiny fish mark",
+        interior_pairing: "interiors share quiet aquarium light"
+      },
+      panels: cardCopyResponse.panels.map((panel) => ({
+        ...panel,
+        body: "A small birthday note.",
+        image_prompt:
+          "Premium 5x7 vertical aquarium birthday stationery for Nina with soft aquarium light, tiny fish detail, freshwater plant motif, quiet text-safe space, no readable text."
+      })),
+      memory_citations: ["Nina loves freshwater aquariums."]
+    };
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ result: { response: weakAquariumResponse } }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ result: { response: aquariumLooseResponse } }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        })
+      );
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel
+      },
+      fetchImpl,
+      aiFlowAdminConfig: buildDefaultAiFlowAdminConfigs().map((config) =>
+        config.flowId === "card-image" ? { ...config, liveProviderCallsEnabled: false } : config
+      )
+    });
+
+    const result = await service.generateCard(
+      {
+        ...cardRequest,
+        sender: "Riley",
+        recipient: "Nina",
+        occasion: "birthday",
+        style: "premium folded greeting card for an aquarium lover",
+        personal_note: "Make a birthday card for Nina, who relaxes by tending her freshwater aquarium.",
+        memory_notes: ["Nina loves freshwater aquariums, aquatic plants, tiny fish, and calm tank care."],
+        must_include: ["Nina", "birthday", "aquarium"],
+        must_avoid: ["green trails", "good coffee", "generic balloons"]
+      },
+      { rateKey: "test-aquarium-repair-facts" }
+    );
+    const copyText = JSON.stringify((result.payload as { card_copy: unknown }).card_copy);
+    const requestBodies = fetchImpl.mock.calls.map((call) => JSON.parse(String((call as unknown as [RequestInfo | URL, RequestInit?])[1]?.body)));
+    const retryPrompt = JSON.parse(requestBodies[1].messages[1].content);
+
+    expect(result.statusCode).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(retryPrompt.input.planner_retry.issues).toContain("Missing required term: Nina");
+    expect(copyText).toContain("aquarium");
+    expect(copyText).toContain("birthday");
+    expect(copyText).not.toContain("green trails");
+    expect(copyText).not.toContain("good coffee");
+  });
+
+  it("retries dog-lover thank-you copy instead of spending images on plant-watering drift", async () => {
+    const weakDogResponse = {
+      theme_guide: {
+        theme_title: "Dog-neighbor harmony",
+        palette: ["warm sidewalk gray", "leash blue", "soft cream"],
+        motifs: ["single leash curve", "dog tag mark", "neighborly doorstep"],
+        border_style: "quiet fine-rule border",
+        front_back_pairing: "front and back share the dog tag mark",
+        interior_pairing: "interiors share the leash curve"
+      },
+      panels: cardCopyResponse.panels.map((panel) => ({
+        ...panel,
+        body: "Thanks for helping with the plant watering.",
+        image_prompt:
+          "Premium 5x7 vertical dog-lover thank-you plant stationery for Morgan with one abstract leash curve, neighborly doorstep detail, quiet text-safe space, no readable text."
+      })),
+      memory_citations: ["Morgan loves dogs and helped while Avery was away."]
+    };
+    const cleanDogResponse = {
+      theme_guide: "Dog-neighbor harmony: a thank-you card for Morgan built around dog-trust and neighborly care.",
+      copy: {
+        front_headline: "Thanks, Morgan",
+        inside_left_body: "Thank you, Morgan, for helping while Avery was away in exactly the steady way a good dog-loving neighbor would.",
+        inside_right_body:
+          "I am grateful for the care, the noticing, and the kind of trust that makes a neighbor feel like someone a dog would choose too. With thanks, Avery.",
+        back_body: "A quiet thank-you for Morgan, from Avery."
+      },
+      image_prompt: {
+        front:
+          "Premium 5x7 vertical flat print panel with an abstract dog leash curve beside a neighborly doorstep, clean lower text-safe area, no readable text.",
+        inside_left:
+          "Premium 5x7 vertical inside-left panel with a tiny dog-shaped shadow near the lower edge and generous center text-safe area.",
+        inside_right:
+          "Premium 5x7 vertical inside-right panel with a quiet sidewalk path and dog-trust motif, clean text-safe center.",
+        back: "Premium 5x7 vertical back panel, mostly negative space with one small dog-tag-shaped abstract mark, no readable text."
+      },
+      image_negative_prompt: "readable text, fake text, letters, people, face, portrait, hands, folded card mockup"
+    };
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ result: { response: weakDogResponse } }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ result: { response: cleanDogResponse } }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        })
+      );
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel
+      },
+      fetchImpl,
+      aiFlowAdminConfig: buildDefaultAiFlowAdminConfigs().map((config) =>
+        config.flowId === "card-image" ? { ...config, liveProviderCallsEnabled: false } : config
+      )
+    });
+
+    const result = await service.generateCard(
+      {
+        ...cardRequest,
+        sender: "Avery",
+        recipient: "Morgan",
+        occasion: "thank-you card",
+        style: "premium folded greeting card for a dog lover",
+        personal_note: "Thank Morgan for helping while Avery was away and for being a dog-loving neighbor.",
+        memory_notes: ["Morgan loves dogs and often mentions how a good neighbor is the kind of person a dog trusts."],
+        must_include: ["Morgan", "thank", "dog"],
+        must_avoid: ["plant", "watering"]
+      },
+      { rateKey: "test-dog-repair-facts" }
+    );
+    const copyText = JSON.stringify((result.payload as { card_copy: unknown }).card_copy);
+    const requestBodies = fetchImpl.mock.calls.map((call) => JSON.parse(String((call as unknown as [RequestInfo | URL, RequestInit?])[1]?.body)));
+    const retryPrompt = JSON.parse(requestBodies[1].messages[1].content);
+
+    expect(result.statusCode, JSON.stringify(result.payload)).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(retryPrompt.input.planner_retry.issues).toEqual(
+      expect.arrayContaining(["Missing required term: Morgan", "Forbidden term present: plant"])
+    );
+    expect(copyText).toContain("dog");
+    expect(copyText).toContain("Morgan");
+    expect(copyText).not.toContain("watering the plants");
+    expect(copyText).not.toContain("plants and I");
+  });
+
   it("retries card-copy planning when required customer terms are missing before image generation", async () => {
     const weakResponse = {
       theme_guide: {
@@ -660,7 +824,7 @@ describe("AI card generator service", () => {
     expect(result.statusCode).toBe(200);
     expect(fetchImpl).toHaveBeenCalledTimes(2);
     expect(retryPrompt.input.planner_retry.issues).toEqual(
-      expect.arrayContaining(["Missing required term: Morgan", "Missing required term: dog"])
+      expect.arrayContaining(["Missing required term: Morgan"])
     );
     expect(JSON.stringify(result.payload)).toContain("Dog-neighbor harmony");
     expect(JSON.stringify(result.payload)).toContain("Morgan");

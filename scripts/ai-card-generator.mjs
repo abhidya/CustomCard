@@ -2055,6 +2055,16 @@ function normalizePanelImageNegativePrompt(value, input) {
 
 function buildVisualBrief(input, panel) {
   const source = `${input.occasion} ${input.tone} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")} ${panel.art_direction} ${panel.visual_cue || panel.visualCue || ""}`.toLowerCase();
+  const contract = `${source} ${(input.must_include || []).join(" ")}`.toLowerCase();
+  if (/\b(aquarium|freshwater|fish tank|tank care|aquatic plants?|tiny fish)\b/.test(contract)) {
+    return "Elegant aquarium stationery: soft freshwater blue and warm ivory, one tiny fish path, sparse aquatic plant silhouettes, gentle ripple linework, refined text-safe fields, no full-tank scene, no generic birthday balloons.";
+  }
+  if (/\b(koi|backyard pond|pond ripples?|fish move through the water)\b/.test(contract)) {
+    return "Serene koi encouragement stationery: muted pond green, warm ivory, one slow koi arc, quiet water ripples, generous negative space, restrained hopeful mood, no birthday language or dense ornamental fish pattern.";
+  }
+  if (/\b(dog|dogs|dog-loving|dog lover|dog-trust|leash|good neighbor)\b/.test(contract)) {
+    return "Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story.";
+  }
   if (/\b(med|medical|doctor|physician|md|white[- ]coat|stethoscope)\b/.test(source)) {
     return "Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons.";
   }
@@ -2076,7 +2086,7 @@ function buildVisualBrief(input, panel) {
   if (/\b(anniversary|years together|spouse|balcony basil|sunday morning walks?)\b/.test(source)) {
     return "Sentimental botanical anniversary stationery: balcony basil sprig, Sunday-walk path line, warm cream and deep green palette, tender negative space, quiet paired motifs, intimate but not vow-like.";
   }
-  if (/\b(thank|grateful|appreciat|water(?:ed|ing) the plants?|neighbor)\b/.test(source) && !/\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source)) {
+  if (/\b(water(?:ed|ing)? the plants?|plant care|looked after .*plants?|neighbor plant|away.*plants?)\b/.test(source) && !/\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source)) {
     return "Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language.";
   }
   if (/\b(graduat|class year|diploma|school)\b/.test(source)) {
@@ -2088,10 +2098,10 @@ function buildVisualBrief(input, panel) {
   if (/\b(father|dad|fix|repair|tool|workshop|handy)\b/.test(source)) {
     return "Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy.";
   }
-  if (/\b(birthday|cake|candles|party)\b/.test(source)) {
+  if (/\b(birthday|cake|candles|party)\b/.test(source) && !/\b(aquarium|freshwater|koi|pond|dog)\b/.test(contract)) {
     return "Warm birthday stationery: botanical greenery and soft flowers as elegant side or corner border, small candle accents, morning-light palette, generous blank field, no dense confetti wallpaper.";
   }
-  if (/\b(thank|grateful|appreciat)\b/.test(source)) {
+  if (/\b(thank|grateful|appreciat)\b/.test(source) && !/\b(aquarium|freshwater|koi|pond|dog)\b/.test(contract)) {
     return "Elegant thank-you stationery: ribbon curves, botanical sprigs, soft paper texture, warm accents, border-first layout, quiet premium composition, large clean message field.";
   }
   return `Original ${truncate(input.occasion || "celebration", 80)} theme in a ${truncate(input.style || "refined", 120)} style with specific symbolic motifs, coordinated palette, and emotional tone: ${truncate(input.tone || "warm", 120)}.`;
@@ -2189,6 +2199,31 @@ function isSafeThemePaletteValue(value) {
 
 function buildThemeGuide(input) {
   const source = `${input.occasion} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")}`.toLowerCase();
+  const contract = `${source} ${(input.must_include || []).join(" ")}`.toLowerCase();
+  if (/\b(aquarium|freshwater|fish tank|tank care|aquatic plants?|tiny fish)\b/.test(contract)) {
+    return themeGuide({
+      title: "Aquarium Birthday Stillness",
+      palette: ["soft aquarium blue", "freshwater green", "warm paper ivory"],
+      motifs: ["tiny fish path", "aquatic plant silhouette", "ripple line", "aquarium-glass highlight"],
+      border: "refined freshwater stationery border with sparse ripple corners and a calm text-safe field"
+    });
+  }
+  if (/\b(koi|backyard pond|pond ripples?|fish move through the water)\b/.test(contract)) {
+    return themeGuide({
+      title: "Koi Pond Encouragement",
+      palette: ["muted pond green", "warm ivory", "soft koi orange"],
+      motifs: ["slow koi arc", "pond ripple", "single scale mark", "quiet water path"],
+      border: "restrained pond-ripple border with one koi accent and generous negative space"
+    });
+  }
+  if (/\b(dog|dogs|dog-loving|dog lover|dog-trust|leash|good neighbor)\b/.test(contract)) {
+    return themeGuide({
+      title: "Dog-Trust Thank You",
+      palette: ["warm cream", "sidewalk gray", "leash blue"],
+      motifs: ["single leash curve", "dog tag mark", "neighborly doorstep", "quiet sidewalk line"],
+      border: "minimal neighborly border with one leash curve and no paw-print wallpaper"
+    });
+  }
   if (/\b(med|medical|doctor|physician|md|white[- ]coat|stethoscope)\b/.test(source)) {
     return themeGuide({
       title: "From Dream to Doctor",
@@ -2245,7 +2280,7 @@ function buildThemeGuide(input) {
       border: "sentimental botanical border with paired basil details and quiet path linework"
     });
   }
-  if (/\b(thank|grateful|appreciat|water(?:ed|ing) the plants?|neighbor)\b/.test(source) && !/\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source)) {
+  if (/\b(water(?:ed|ing)? the plants?|plant care|looked after .*plants?|neighbor plant|away.*plants?)\b/.test(source) && !/\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source)) {
     return themeGuide({
       title: "Plain Thanks",
       palette: ["clean white", "warm ivory", "leaf green"],
@@ -2269,7 +2304,7 @@ function buildThemeGuide(input) {
       border: "blueprint-line border with sparse tool icons tucked into corners"
     });
   }
-  if (/\b(birthday|botanical|fern|flower|trail|hike)\b/.test(source)) {
+  if (/\b(botanical|fern|flower|trail|hike)\b/.test(source) || (/\bbirthday\b/.test(source) && !/\b(aquarium|freshwater|koi|pond|dog)\b/.test(contract))) {
     return themeGuide({
       title: "Morning Garden",
       palette: ["warm cream", "deep green", "morning gold"],
@@ -2328,6 +2363,34 @@ function visualCueNeedsRepair(value) {
 
 function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)) {
   const source = `${input.occasion} ${input.tone} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")}`.toLowerCase();
+  const contract = `${source} ${(input.must_include || []).join(" ")}`.toLowerCase();
+  if (/\b(aquarium|freshwater|fish tank|tank care|aquatic plants?|tiny fish)\b/.test(contract)) {
+    const cues = {
+      front: "Elegant aquarium birthday cover with soft tank light, one tiny fish path, freshwater plant silhouettes, and a clean upper text-safe field; refined print stationery, not aquarium merchandise.",
+      "inside-left": "Quiet left interior with pale freshwater blue wash, sparse aquatic plant border, one tiny fish detail near the lower edge, and generous center-left message space.",
+      "inside-right": "Matching right interior with a soft ripple line and small aquarium-glass highlight, restrained negative space for the main message, no busy full-tank scene.",
+      back: "Minimal back cover with one tiny fish or ripple mark on warm paper, mostly negative space, and no visible copy."
+    };
+    return cues[panelId];
+  }
+  if (/\b(koi|backyard pond|pond ripples?|fish move through the water)\b/.test(contract)) {
+    const cues = {
+      front: "Serene koi encouragement cover with one slow koi arc beneath a wide quiet water field, muted pond green and warm ivory palette, and clean upper text-safe area.",
+      "inside-left": "Left interior with sparse pond-ripple border, a single koi-scale accent, and calm center-left writing space; steady and hopeful, not decorative wallpaper.",
+      "inside-right": "Matching right interior with soft water rings and one small koi silhouette near the lower edge, broad open message field, restrained encouragement tone.",
+      back: "Minimal back cover with one small koi-ripple mark, mostly untouched paper, and quiet lower text-safe space."
+    };
+    return cues[panelId];
+  }
+  if (/\b(dog|dogs|dog-loving|dog lover|dog-trust|leash|good neighbor)\b/.test(contract)) {
+    const cues = {
+      front: "Dog-lover thank-you cover with one abstract leash curve beside a neighborly doorstep, warm cream paper, and clean lower text-safe space; no dog portrait and no paw-print wallpaper.",
+      "inside-left": "Left interior with a tiny dog-tag-shaped mark, subtle sidewalk line, and generous blank center for the opening thank-you.",
+      "inside-right": "Matching right interior with a quiet leash-curve border and neighborly trust motif near the bottom, broad open field for the main message.",
+      back: "Minimal back cover with one small dog-tag mark and mostly negative space."
+    };
+    return cues[panelId];
+  }
   if (/\b(med|medical|doctor|physician|md|residen(?:cy|t)|white[- ]coat|stethoscope)\b/.test(source)) {
     const cues = {
       front:
@@ -2395,7 +2458,7 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
     };
     return cues[panelId];
   }
-  if (/\b(thank|grateful|appreciat|water(?:ed|ing) the plants?|neighbor)\b/.test(source) && !/\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source)) {
+  if (/\b(water(?:ed|ing)? the plants?|plant care|looked after .*plants?|neighbor plant|away.*plants?)\b/.test(source) && !/\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source)) {
     const cues = {
       front: "Simple minimal thank-you cover with one small plant mark, clean white and warm ivory field, fine leaf-green rule, and lower text-safe space.",
       "inside-left": "Minimal left interior with a tiny water-drop mark, fine rule, generous blank center, and no floral pattern.",
@@ -2422,7 +2485,7 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
     };
     return cues[panelId];
   }
-  if (/\b(birthday|botanical|fern|flower|trail|hike|coffee)\b/.test(source)) {
+  if (/\b(botanical|fern|flower|trail|hike|coffee)\b/.test(source) || (/\bbirthday\b/.test(source) && !/\b(aquarium|freshwater|koi|pond|dog)\b/.test(contract))) {
     const cues = {
       front: "Botanical birthday cover with fern fronds, tiny trail flowers, morning light, and a clean central text-safe field.",
       "inside-left": "Soft cream interior with pressed-fern corner border, gentle coffee-steam curve, and open center-left note area.",
@@ -2640,6 +2703,9 @@ function validateCardCopyContract(cardCopy, input) {
   for (const term of input.must_include || []) {
     if (!textContains(serialized, term)) issues.push(`Missing required term: ${term}`);
   }
+  for (const term of input.must_avoid || []) {
+    if (textContains(serialized, term)) issues.push(`Forbidden term present: ${term}`);
+  }
   return {
     ok: issues.length === 0,
     issues
@@ -2659,8 +2725,7 @@ function cardCopyValidationText(cardCopy) {
       panel.body,
       panel.art_direction,
       panel.visual_cue,
-      panel.image_prompt,
-      panel.image_negative_prompt
+      panel.image_prompt
     ])
   ].join(" ");
 }
@@ -2936,8 +3001,72 @@ function panelBodyNeedsRepair(body, panelId, input) {
 
 function buildCopyRepairPlan(input, themeGuide) {
   const source = `${input.occasion} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")}`.toLowerCase();
+  const contract = `${source} ${(input.must_include || []).join(" ")}`.toLowerCase();
   const sender = truncate(input.sender || "Your friend", 80);
   const recipient = truncate(input.recipient || "you", 80);
+  if (/\b(aquarium|freshwater|fish tank|tank care|aquatic plants?|tiny fish)\b/.test(contract)) {
+    const title = themeGuide.theme_title || "Aquarium Birthday Stillness";
+    return {
+      front: {
+        headline: `Happy Birthday, ${recipient}`,
+        body: `For a birthday with the calm of an aquarium: tiny fish, clean water, and the quiet ritual of noticing what others miss.`
+      },
+      "inside-left": {
+        headline: "Small Worlds, Big Calm",
+        body: `${recipient}, your aquarium care has its own kind of patience: freshwater plants settling in, tiny fish moving like little sparks, and the whole tank becoming calmer because you keep tending it.`
+      },
+      "inside-right": {
+        headline: `From ${sender}`,
+        body: `I hope this birthday gives you the same steady joy you find beside the aquarium: a clear moment, a few beautiful details, and the feeling that the small things are thriving. With warm wishes, ${sender}.`
+      },
+      back: {
+        headline: title,
+        body: `A quiet birthday note for ${recipient}, made with aquarium calm and freshwater detail.`
+      }
+    };
+  }
+  if (/\b(koi|backyard pond|pond ripples?|fish move through the water)\b/.test(contract)) {
+    const title = themeGuide.theme_title || "Koi Pond Encouragement";
+    return {
+      front: {
+        headline: `For ${recipient}`,
+        body: "An encouragement card with the patience of koi moving through still water."
+      },
+      "inside-left": {
+        headline: "Steady Water",
+        body: `${recipient}, I keep thinking about the way koi move through a pond: unhurried, resilient, still finding a path through the water. That feels right for this hard stretch.`
+      },
+      "inside-right": {
+        headline: `From ${sender}`,
+        body: `I hope this encouragement reaches you gently. No loud speech, no forced brightness; just a reminder that patience can still be strength, and that I am wishing you steadier water ahead. With care, ${sender}.`
+      },
+      back: {
+        headline: title,
+        body: `For koi, quiet ripples, and the kind of encouragement that stays steady.`
+      }
+    };
+  }
+  if (/\b(dog|dogs|dog-loving|dog lover|dog-trust|leash|good neighbor)\b/.test(contract)) {
+    const title = themeGuide.theme_title || "Dog-Trust Thank You";
+    return {
+      front: {
+        headline: `Thank You, ${recipient}`,
+        body: "For helping in the steady, noticing way a good dog-loving neighbor understands."
+      },
+      "inside-left": {
+        headline: "That Help Mattered",
+        body: `${recipient}, thank you for helping while I was away. You noticed what needed doing with the same loyal, practical kindness that makes dogs trust a person quickly.`
+      },
+      "inside-right": {
+        headline: `From ${sender}`,
+        body: `I appreciate the care, the trust, and the neighborly attention you gave so freely. This thank-you is simple on purpose: you helped, it mattered, and a dog would absolutely approve. With thanks, ${sender}.`
+      },
+      back: {
+        headline: title,
+        body: `A quiet thank-you for ${recipient}, with dog-lover warmth and neighborly trust.`
+      }
+    };
+  }
   if (/\b(med|medical|doctor|physician|md|white[- ]coat|stethoscope)\b/.test(source)) {
     const title = themeGuide.theme_title || "From Dream to Doctor";
     return {

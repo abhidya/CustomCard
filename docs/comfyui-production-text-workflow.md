@@ -89,8 +89,9 @@ quality.
   - Follow-up code keeps the full planner prompt, passes benchmark
     `must_include`/`must_avoid` terms into card-copy input, validates and
     retries card-copy output before Comfy, preserves useful loose LLM JSON
-    shapes, and blocks known-small planners such as Qwen3-4B/8B for production
-    evidence unless `-AllowSmallPlanner` is explicit.
+    shapes, gives aquarium/koi/dog fallback theme/copy/cue/visual-brief repair their own
+    request-aware branches, and blocks known-small planners such as Qwen3-4B/8B
+    for production evidence unless `-AllowSmallPlanner` is explicit.
   - `tools/start-local-card-planner.ps1` starts the installed Gemma 31B
     KoboldCPP planner with 8k context. It loaded on this machine, but CPU
     decoding did not finish the first benchmark planner response in a practical
@@ -117,9 +118,13 @@ still does not prove production card quality. The live LLM-planned matrix proves
 the runtime can reach local text plus local Comfy, but it exposes planner
 blockers: missing required customer-theme terms, invented unrelated plant motifs,
 one invalid JSON response, and back panels that still carry visible copy. The
-node update proves a stronger architecture: Comfy can own deterministic text and
-deterministic readability fields, while the image model only supplies
-surrounding art. The planner contract now needs the next repair.
+code now catches missing required terms and forbidden terms before Comfy work,
+and the generic plant/botanical repair fallbacks no longer hijack aquarium,
+koi, or dog customer-interest requests across theme, copy, visual cue, or
+visual brief. The node update proves a stronger
+architecture: Comfy can own deterministic text and deterministic readability
+fields, while the image model only supplies surrounding art. The remaining proof
+needs a fresh run with the correct planner/runtime.
 
 ## Research Summary
 
@@ -491,10 +496,11 @@ text compositor.
   through Gemma 31B with GPU/offload, Qwen3 14B+ or Magistral Small for routine
   local loops, or a hosted larger planner. Use Qwen3-4B/8B only for
   smoke/failure evidence with `-AllowSmallPlanner`.
-- Continue tightening planner output handling: preserve `must_include` terms in
-  copy/theme/prompt output, reject or retry omissions before Comfy image
-  generation, preserve useful loose JSON shapes instead of falling back to
-  generic themes, and add JSON repair only as a post-response guard.
+- Prove the tightened planner output handling in a fresh run: preserve
+  `must_include` terms in copy/theme/prompt output, reject or retry
+  `must_avoid` violations before Comfy image generation, preserve useful loose
+  JSON shapes instead of falling back to generic themes, and keep JSON repair
+  only as a post-response guard.
 - Test a flatter illustration/stationery checkpoint, masks, or stricter workflow
   controls so the surrounding artwork stays restrained instead of dense
   ornamental fill or object/mockup scenes.
