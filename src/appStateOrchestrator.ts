@@ -47,6 +47,7 @@ import {
 } from "./panelEdits";
 import { buildBrowserIdempotencyKey, buildBrowserRequestHeaders, fetchBrowser } from "./browserRequestAdapter";
 import { resolveCardGenerationEndpoint } from "./browserGatePolicy";
+import { normalizeBrowserImageUrl } from "./browserImageUrl";
 // --- Bootstrap constants (canonical home; reviewerBootstrap.ts re-exports these) ---
 
 export interface ReviewerAuthForm {
@@ -609,7 +610,7 @@ export async function readAiGenerationResponse(response: Response): Promise<AiGe
   if (!payload || !Array.isArray((payload.card_copy as { panels?: unknown } | undefined)?.panels)) {
     throw new Error("AI card generation returned an unexpected response.");
   }
-  return payload as AiGenerationApiResult;
+  return normalizeAiGenerationResultPayload(payload);
 }
 
 export async function readAiGenerationJobStatusResponse(response: Response): Promise<AiGenerationJobPollResult> {
@@ -694,9 +695,26 @@ function readCompletedAiGenerationPayload(payload: Record<string, unknown>): AiG
   if (!candidate || !Array.isArray((candidate.card_copy as { panels?: unknown } | undefined)?.panels)) return undefined;
   return {
     ...candidate,
+    ...normalizeAiGenerationResultPayload(candidate),
     job_id: readOptionalString(payload.job_id ?? payload.jobId),
     queue_status: readOptionalString(payload.queue_status ?? payload.queueStatus),
     result_available: true
+  } as AiGenerationApiResult;
+}
+
+function normalizeAiGenerationResultPayload(payload: Record<string, unknown>): AiGenerationApiResult {
+  if (!Array.isArray(payload.images)) return payload as AiGenerationApiResult;
+  return {
+    ...payload,
+    images: payload.images.map((image) => {
+      if (!image || typeof image !== "object" || Array.isArray(image)) return image;
+      const imageRecord = image as Record<string, unknown>;
+      const imageUrl = normalizeBrowserImageUrl(String(imageRecord.image_url ?? imageRecord.imageUrl ?? ""));
+      return {
+        ...imageRecord,
+        image_url: imageUrl ?? ""
+      };
+    })
   } as AiGenerationApiResult;
 }
 
