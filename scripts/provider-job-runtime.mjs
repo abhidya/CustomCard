@@ -84,7 +84,7 @@ export function createProviderJobRuntime({
       const leaseSeconds = providerLeaseSeconds(env);
       const result = await pool.query(
         `WITH scoped_jobs AS (
-           SELECT status, created_at, updated_at, locked_at, attempt_count, max_attempts
+           SELECT status, created_at, updated_at, locked_at, attempt_count, max_attempts, result
            FROM api_jobs
            WHERE route_id = ANY($1::text[])
          )

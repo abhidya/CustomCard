@@ -214,6 +214,7 @@ describe("provider job runtime", () => {
 
     expect(status.payload.metrics.dead_lettered_total).toBe(1);
     expect(queries.some((query) => query.sql.includes("result->>'status' = 'dead_lettered'"))).toBe(true);
+    expect(queries.some((query) => query.sql.includes("max_attempts, result FROM api_jobs"))).toBe(true);
   });
 });
 
