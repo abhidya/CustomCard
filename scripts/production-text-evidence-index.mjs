@@ -20,6 +20,7 @@ if (isMainModule()) {
     modelCoverageReports: result.modelCoverageReports.length,
     dryRunReports: result.dryRunReports.length,
     manualGradeChecklists: result.manualGradeChecklists.length,
+    visualQaGates: result.visualQaGates.length,
     benchmarkSummaries: result.benchmarkSummaries.length,
     aggregates: result.aggregates.length
   }, null, 2));
@@ -80,6 +81,11 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     .map(manualGradeChecklistEntry)
     .filter(Boolean)
     .sort(newestFirst);
+  const visualQaGates = files
+    .filter((file) => basename(file) === "production-text-visual-qa-gate.json")
+    .map(visualQaGateEntry)
+    .filter(Boolean)
+    .sort(newestFirst);
   const aggregates = files
     .filter((file) => basename(file) === "benchmark-aggregate.json")
     .filter((file) => relativePath(file).includes("production-text"))
@@ -105,6 +111,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
   const latestPreflight = preflights[0];
   const latestDryRun = dryRunReports[0];
   const latestManualGradeChecklist = manualGradeChecklists[0];
+  const latestVisualQaGate = visualQaGates[0];
   const plannerEvidenceAlignment = comparePlannerEvidence(latestPlannerPreflight, latestBenchmark);
   const promotionReady = Boolean(
     latestReadiness?.promotionReady &&
@@ -112,6 +119,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     latestPlannerGpuFeasibility?.gpuOnlyReady &&
     plannerEvidenceAlignment.ok &&
     latestManualGradeChecklist?.promotionReady &&
+    latestVisualQaGate?.promotionReady &&
     latestAggregate?.promotionReady &&
     latestBenchmark?.failedRuns === 0 &&
     latestBenchmark?.completedRuns >= 3
@@ -128,6 +136,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     latestPreflight,
     latestDryRun,
     latestManualGradeChecklist,
+    latestVisualQaGate,
     plannerEvidenceAlignment
   });
   const nextSteps = buildNextSteps({
@@ -141,6 +150,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     latestPreflight,
     latestDryRun,
     latestManualGradeChecklist,
+    latestVisualQaGate,
     plannerEvidenceAlignment
   });
   const result = {
@@ -160,6 +170,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
       preflight: latestPreflight?.path || "",
       dryRun: latestDryRun?.path || "",
       manualGradeChecklist: latestManualGradeChecklist?.path || "",
+      visualQaGate: latestVisualQaGate?.path || "",
       aggregate: latestAggregate?.path || "",
       benchmark: latestBenchmark?.path || ""
     },
@@ -175,6 +186,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     preflights,
     dryRunReports,
     manualGradeChecklists,
+    visualQaGates,
     aggregates,
     benchmarkSummaries
   };
@@ -244,6 +256,7 @@ function isEvidenceCandidate(filePath) {
     name === "production-text-preflight.json" ||
     (name.endsWith("-dry-run.json") && rel.includes("production-text")) ||
     name === "production-text-manual-grade-checklist.json" ||
+    name === "production-text-visual-qa-gate.json" ||
     (name === "benchmark-aggregate.json" && rel.includes("production-text")) ||
     (name.endsWith("-summary.json") && rel.includes("production-text"));
 }
@@ -510,6 +523,31 @@ function manualGradeChecklistEntry(filePath) {
   };
 }
 
+function visualQaGateEntry(filePath) {
+  const payload = readJson(filePath);
+  if (!payload) return undefined;
+  return {
+    path: relativePath(filePath),
+    createdAtIso: payload.createdAtIso || fileMtime(filePath),
+    status: payload.status || "unknown",
+    promotionReady: Boolean(payload.promotionReady),
+    benchmarkSummary: payload.benchmarkSummary || "",
+    totalRuns: Number(payload.summary?.totalRuns || 0),
+    requiredFixtures: Number(payload.summary?.requiredFixtures || 0),
+    requiredPassingFixtures: Number(payload.summary?.requiredPassingFixtures || 0),
+    generatedRuns: Number(payload.summary?.generatedRuns || 0),
+    qaExpectedRuns: Number(payload.summary?.qaExpectedRuns || 0),
+    qaCheckedRuns: Number(payload.summary?.qaCheckedRuns || 0),
+    qaPassingRuns: Number(payload.summary?.qaPassingRuns || 0),
+    missingManualGrades: Number(payload.summary?.missingManualGrades || 0),
+    missingStructuredQa: Number(payload.summary?.missingStructuredQa || 0),
+    failingQaRuns: Number(payload.summary?.failingQaRuns || 0),
+    failedBeforeImageGeneration: Number(payload.summary?.failedBeforeImageGeneration || 0),
+    blockers: payload.blockers || [],
+    nextSteps: payload.nextSteps || []
+  };
+}
+
 function aggregateEntry(filePath) {
   const payload = readJson(filePath);
   if (!payload) return undefined;
@@ -693,6 +731,7 @@ function buildFindings({
   latestPreflight,
   latestDryRun,
   latestManualGradeChecklist,
+  latestVisualQaGate,
   plannerEvidenceAlignment
 }) {
   const findings = [];
@@ -768,6 +807,14 @@ function buildFindings({
       `Latest manual grade checklist is blocked: ${latestManualGradeChecklist.gradedGeneratedRuns}/${latestManualGradeChecklist.gradableRuns} generated run(s) graded, ${latestManualGradeChecklist.failedBeforeImageGeneration} failed before image generation.`
     );
   }
+  if (latestVisualQaGate?.promotionReady) {
+    findings.push(`Latest production visual QA gate passed ${latestVisualQaGate.qaPassingRuns}/${latestVisualQaGate.requiredFixtures} required fixture run(s).`);
+  }
+  if (latestVisualQaGate && !latestVisualQaGate.promotionReady) {
+    findings.push(
+      `Latest production visual QA gate is blocked: ${latestVisualQaGate.qaPassingRuns}/${latestVisualQaGate.requiredFixtures} required fixture run(s) passed QA, ${latestVisualQaGate.missingStructuredQa} missing structured QA, ${latestVisualQaGate.failingQaRuns} failing QA.`
+    );
+  }
   if (!findings.length) findings.push("No production-text evidence was found.");
   return findings;
 }
@@ -783,6 +830,7 @@ function buildNextSteps({
   latestPreflight,
   latestDryRun,
   latestManualGradeChecklist,
+  latestVisualQaGate,
   plannerEvidenceAlignment
 }) {
   const steps = [];
@@ -825,6 +873,9 @@ function buildNextSteps({
   if (latestManualGradeChecklist && !latestManualGradeChecklist.promotionReady) {
     steps.push("Resolve the latest manual grade checklist blockers before treating the aggregate as promotion evidence.");
   }
+  if (!latestVisualQaGate?.promotionReady) {
+    steps.push("Run production-text visual QA after manual grading and resolve missing/failing productionTextQa checks before promotion.");
+  }
   return unique(steps);
 }
 
@@ -859,6 +910,7 @@ function buildMarkdown(result) {
   lines.push(latestRow("Preflight", result.preflights[0], preflightSummary));
   lines.push(latestRow("Dry Run", result.dryRunReports[0], dryRunSummary));
   lines.push(latestRow("Manual Grades", result.manualGradeChecklists[0], manualGradeChecklistSummary));
+  lines.push(latestRow("Visual QA", result.visualQaGates[0], visualQaGateSummary));
   lines.push(latestRow("Aggregate", result.aggregates[0], aggregateSummary));
   lines.push(latestRow("Benchmark", result.benchmarkSummaries[0], benchmarkSummary));
   lines.push("");
@@ -937,6 +989,10 @@ function dryRunSummary(entry) {
 
 function manualGradeChecklistSummary(entry) {
   return `${entry.gradedGeneratedRuns}/${entry.gradableRuns} generated graded; manual-grades=${entry.gradedRuns}; missing=${entry.missingGrades}; failed-before-image=${entry.failedBeforeImageGeneration}`;
+}
+
+function visualQaGateSummary(entry) {
+  return `${entry.requiredPassingFixtures}/${entry.requiredFixtures} required passed; checked=${entry.qaCheckedRuns}/${entry.qaExpectedRuns}; missing-qa=${entry.missingStructuredQa}; failing=${entry.failingQaRuns}`;
 }
 
 function aggregateSummary(entry) {

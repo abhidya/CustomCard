@@ -66,6 +66,7 @@ export function buildProductionTextRerunPlan(args = {}) {
     readinessOutput: `docs/evidence/generated-card-comparisons/production-text-readiness-${reportDate}-production-planner`,
     benchmarkOutput: `docs/evidence/generated-card-comparisons/production-text-workflow-${reportDate}-production-planner`,
     manualGradeChecklistOutput: `docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-${reportDate}-production-planner`,
+    visualQaOutput: `docs/evidence/generated-card-comparisons/production-text-visual-qa-${reportDate}-production-planner`,
     aggregateOutput: `docs/evidence/generated-card-comparisons/benchmark-aggregate-${reportDate}-production-text-production-planner`,
     evidenceIndexOutput: `docs/evidence/generated-card-comparisons/production-text-evidence-index-${reportDate}-production-planner`,
     promotionGateOutput: `docs/evidence/generated-card-comparisons/production-text-promotion-gate-${reportDate}-production-planner`
@@ -143,6 +144,7 @@ export function buildProductionTextRerunPlan(args = {}) {
       "final images came from Comfy text composer",
       "planner preserved required terms and avoided forbidden terms",
       "manual grade checklist is promotion-ready",
+      "production visual QA gate is promotion-ready",
       "manual aggregate is promotion-ready"
     ]
   };
@@ -218,18 +220,24 @@ function buildLocalCommands({ recommended, paths }) {
     },
     {
       step: 10,
+      title: "Run production visual QA gate",
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-visual-qa-gate.mjs --advisory --input ${paths.benchmarkOutput} --output-dir ${paths.visualQaOutput}`,
+      why: "Requires structured productionTextQa checks for text overflow, missing text, fake/pseudo text, mockup/object leakage, people/hands/faces, low contrast, and Comfy text composer proof before aggregation."
+    },
+    {
+      step: 11,
       title: "Aggregate production-text results",
       command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/model-benchmark-aggregate.mjs --input ${paths.benchmarkOutput} --output-dir ${paths.aggregateOutput} --phase local-production-text`,
       why: "Builds the ranked aggregate used by the promotion gate."
     },
     {
-      step: 11,
+      step: 12,
       title: "Refresh tracked evidence index",
       command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-evidence-index.mjs --output-dir ${paths.evidenceIndexOutput}`,
       why: "Aggregates tracked planner/readiness/preflight/benchmark/aggregate evidence after the rerun artifacts are committed."
     },
     {
-      step: 12,
+      step: 13,
       title: "Run final promotion gate",
       command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-promotion-gate.mjs --advisory --output-dir ${paths.promotionGateOutput} --index-output-dir ${paths.evidenceIndexOutput}`,
       why: "Shows whether every production-text requirement now passes. Remove --advisory only when a pass is expected."
@@ -291,18 +299,24 @@ function buildHostedCommands({ recommended, paths }) {
     },
     {
       step: 9,
+      title: "Run production visual QA gate",
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-visual-qa-gate.mjs --advisory --input ${paths.benchmarkOutput} --output-dir ${paths.visualQaOutput}`,
+      why: "Requires structured productionTextQa checks for text overflow, missing text, fake/pseudo text, mockup/object leakage, people/hands/faces, low contrast, and Comfy text composer proof before aggregation."
+    },
+    {
+      step: 10,
       title: "Aggregate production-text results",
       command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/model-benchmark-aggregate.mjs --input ${paths.benchmarkOutput} --output-dir ${paths.aggregateOutput} --phase local-production-text`,
       why: "Builds the ranked aggregate used by the promotion gate."
     },
     {
-      step: 10,
+      step: 11,
       title: "Refresh tracked evidence index",
       command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-evidence-index.mjs --output-dir ${paths.evidenceIndexOutput}`,
       why: "Aggregates tracked planner/readiness/preflight/benchmark/aggregate evidence after the rerun artifacts are committed."
     },
     {
-      step: 11,
+      step: 12,
       title: "Run final promotion gate",
       command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-promotion-gate.mjs --advisory --output-dir ${paths.promotionGateOutput} --index-output-dir ${paths.evidenceIndexOutput}`,
       why: "Shows whether every production-text requirement now passes. Remove --advisory only when a pass is expected."

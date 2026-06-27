@@ -1,6 +1,6 @@
 # Production Text Rerun Plan
 
-Created: 2026-06-27T06:12:32.447Z
+Created: 2026-06-27T06:26:18.412Z
 Status: rerun-required
 Gate: docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-gpu-proof/production-text-promotion-gate.json
 Evidence index: docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-gpu-proof/production-text-evidence-index.json
@@ -12,6 +12,7 @@ Evidence index: docs/evidence/generated-card-comparisons/production-text-evidenc
 - final images came from Comfy text composer
 - planner preserved required terms and avoided forbidden terms
 - manual grade checklist is promotion-ready
+- production visual QA gate is promotion-ready
 - manual aggregate is promotion-ready
 
 ## Planner Contract
@@ -109,7 +110,15 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 Summarizes generated runs, missing/invalid manual grades, blocked grades, and failed-before-image stories before aggregation.
 
-### 9. Aggregate production-text results
+### 9. Run production visual QA gate
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-visual-qa-gate.mjs --advisory --input docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner --output-dir docs/evidence/generated-card-comparisons/production-text-visual-qa-20260627-production-planner
+```
+
+Requires structured productionTextQa checks for text overflow, missing text, fake/pseudo text, mockup/object leakage, people/hands/faces, low contrast, and Comfy text composer proof before aggregation.
+
+### 10. Aggregate production-text results
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/model-benchmark-aggregate.mjs --input docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner --output-dir docs/evidence/generated-card-comparisons/benchmark-aggregate-20260627-production-text-production-planner --phase local-production-text
@@ -117,7 +126,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 Builds the ranked aggregate used by the promotion gate.
 
-### 10. Refresh tracked evidence index
+### 11. Refresh tracked evidence index
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-evidence-index.mjs --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner
@@ -125,7 +134,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 Aggregates tracked planner/readiness/preflight/benchmark/aggregate evidence after the rerun artifacts are committed.
 
-### 11. Run final promotion gate
+### 12. Run final promotion gate
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-promotion-gate.mjs --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-production-planner --index-output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner
@@ -147,4 +156,5 @@ Shows whether every production-text requirement now passes. Remove --advisory on
 - final images came from Comfy text composer
 - planner preserved required terms and avoided forbidden terms
 - manual grade checklist is promotion-ready
+- production visual QA gate is promotion-ready
 - manual aggregate is promotion-ready

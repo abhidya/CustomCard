@@ -102,6 +102,7 @@ describe("production text rerun plan", () => {
       "Run full production-text matrix",
       "Manually grade every run",
       "Write manual grade checklist",
+      "Run production visual QA gate",
       "Aggregate production-text results",
       "Refresh tracked evidence index",
       "Run final promotion gate"
@@ -126,6 +127,8 @@ describe("production text rerun plan", () => {
     expect(plan.commands[6].command).toContain("-ProductionPlannerModelPath D:\\models\\gemma-4-31B-it-Q4_K_M.gguf");
     expect(plan.commands[6].command).not.toContain("-AllowSmallPlanner");
     expect(plan.commands[8].command).toContain("production-text-manual-grade-checklist.mjs");
+    expect(plan.commands[9].command).toContain("production-text-visual-qa-gate.mjs");
+    expect(plan.commands[9].command).toContain("--input docs/evidence/generated-card-comparisons/production-text-workflow-20260626-production-planner");
     expect(plan.acceptanceChecks).toContain("planner preflight is production-ready");
     expect(plan.acceptanceChecks).toContain("planner runtime is hosted/self-hosted GPU capacity or local GPU-only fit is proven");
     expect(plan.acceptanceChecks).toContain("planner throughput probe completes the full JSON contract");
@@ -133,6 +136,7 @@ describe("production text rerun plan", () => {
     expect(plan.acceptanceChecks).toContain("live ComfyUI proof is current");
     expect(plan.acceptanceChecks).toContain("final images came from Comfy text composer");
     expect(plan.acceptanceChecks).toContain("manual grade checklist is promotion-ready");
+    expect(plan.acceptanceChecks).toContain("production visual QA gate is promotion-ready");
     expect(existsSync(join(outputDir, "production-text-rerun-plan.json"))).toBe(true);
     expect(existsSync(join(outputDir, "production-text-rerun-plan.md"))).toBe(true);
   });
@@ -250,6 +254,7 @@ describe("production text rerun plan", () => {
       "Run full production-text matrix",
       "Manually grade every run",
       "Write manual grade checklist",
+      "Run production visual QA gate",
       "Aggregate production-text results",
       "Refresh tracked evidence index",
       "Run final promotion gate"

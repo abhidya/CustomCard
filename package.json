@@ -106,6 +106,7 @@
     "comfy:production-text:evidence": "node scripts/production-text-evidence-index.mjs",
     "comfy:production-text:gate": "node scripts/production-text-promotion-gate.mjs",
     "comfy:production-text:manual-grades": "node scripts/production-text-manual-grade-checklist.mjs",
+    "comfy:production-text:visual-qa": "node scripts/production-text-visual-qa-gate.mjs",
     "comfy:production-text:research": "node scripts/production-text-research-rollup.mjs",
     "comfy:production-text:rerun-plan": "node scripts/production-text-rerun-plan.mjs",
     "comfy:production-text:benchmark": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1",

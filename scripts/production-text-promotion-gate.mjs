@@ -36,6 +36,7 @@ export function runProductionTextPromotionGate(args = {}) {
   const latestAggregate = index.aggregates.find((entry) => entry.kind === "llm-planned") || index.aggregates[0];
   const latestBenchmark = index.benchmarkSummaries.find((entry) => entry.llmGeneratedRuns > 0) || index.benchmarkSummaries[0];
   const latestManualGradeChecklist = index.manualGradeChecklists[0];
+  const latestVisualQaGate = index.visualQaGates?.[0];
   const plannerEvidenceAlignment = index.plannerEvidenceAlignment || {};
   const requiredFixtures = parseList(args.fixtures || "aquarium-lover-birthday,koi-fish-lover-encouragement,dog-lover-thank-you");
   const liveComfyProofCurrent = isLiveComfyProofCurrent(latestPreflight, latestReadiness);
@@ -150,6 +151,18 @@ export function runProductionTextPromotionGate(args = {}) {
       failedBeforeImageGeneration: latestManualGradeChecklist?.failedBeforeImageGeneration ?? 0,
       blockers: latestManualGradeChecklist?.blockers || []
     }),
+    requirement("production visual QA gate is promotion-ready", latestVisualQaGate?.promotionReady, {
+      visualQaGate: latestVisualQaGate?.path || "",
+      requiredFixtures: latestVisualQaGate?.requiredFixtures ?? 0,
+      requiredPassingFixtures: latestVisualQaGate?.requiredPassingFixtures ?? 0,
+      qaExpectedRuns: latestVisualQaGate?.qaExpectedRuns ?? 0,
+      qaCheckedRuns: latestVisualQaGate?.qaCheckedRuns ?? 0,
+      qaPassingRuns: latestVisualQaGate?.qaPassingRuns ?? 0,
+      missingStructuredQa: latestVisualQaGate?.missingStructuredQa ?? 0,
+      failingQaRuns: latestVisualQaGate?.failingQaRuns ?? 0,
+      failedBeforeImageGeneration: latestVisualQaGate?.failedBeforeImageGeneration ?? 0,
+      blockers: latestVisualQaGate?.blockers || []
+    }),
     requirement("manual aggregate is promotion-ready", latestAggregate?.promotionReady && latestAggregate?.totalRuns >= requiredFixtures.length, {
       aggregate: latestAggregate?.path || "",
       totalRuns: latestAggregate?.totalRuns ?? 0,
@@ -240,6 +253,9 @@ function buildNextSteps(requirements, indexedNextSteps) {
   }
   if (failed.has("manual grade checklist is promotion-ready")) {
     steps.push("Run the manual grade checklist after grading every generated run, then resolve missing/invalid/blocked grades before aggregation.");
+  }
+  if (failed.has("production visual QA gate is promotion-ready")) {
+    steps.push("Run production-text visual QA after manual grading and fix missing/failing productionTextQa checks before aggregation.");
   }
   if (failed.has("manual aggregate is promotion-ready")) {
     steps.push("Manually grade every run and regenerate the aggregate only after all candidates pass.");

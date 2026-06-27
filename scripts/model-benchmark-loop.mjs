@@ -3027,6 +3027,28 @@ function buildTypographyManualGradeTemplate(result, run, promptPlans) {
   const appRenderedPanels = (Array.isArray(promptPlans) ? promptPlans : [])
     .filter((plan) => plan.renderTextInApp)
     .map((plan) => plan.panelId);
+  const productionTextQa = run.phase === "local-production-text"
+    ? [
+        "",
+        "## productionTextQa JSON",
+        "",
+        "Copy this object into manual-visual-grade.json and set each boolean from visual inspection:",
+        "",
+        "```json",
+        JSON.stringify({
+          productionTextQa: {
+            allPanelsRendered: false,
+            textMissing: false,
+            textOverflow: false,
+            fakeTextOrGlyphsInArtwork: false,
+            mockupOrObjectSceneLeakage: false,
+            lowContrast: false,
+            peopleHandsOrFaces: false
+          }
+        }, null, 2),
+        "```"
+      ]
+    : [];
   return [
     `# Manual Grade: ${run.typographyMode.label}`,
     "",
@@ -3050,6 +3072,7 @@ function buildTypographyManualGradeTemplate(result, run, promptPlans) {
     "- Blocking failures:",
     "- Smallest prompt/config fix:",
     "- Production recommendation:",
+    ...productionTextQa,
     "",
     "## Notes",
     ""

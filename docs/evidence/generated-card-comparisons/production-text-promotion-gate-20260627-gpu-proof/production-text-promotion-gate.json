@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T06:00:57.653Z",
+  "createdAtIso": "2026-06-27T06:26:12.173Z",
   "status": "blocked",
   "promotionReady": false,
   "advisory": true,
@@ -19,6 +19,7 @@
     "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260627T040924Z/production-text-preflight.json",
     "dryRun": "docs/evidence/generated-card-comparisons/production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json",
     "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-gpu-proof-magistral-5013-rerun/production-text-manual-grade-checklist.json",
+    "visualQaGate": "docs/evidence/generated-card-comparisons/production-text-visual-qa-20260627-gpu-proof-magistral-5013-rerun/production-text-visual-qa-gate.json",
     "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-20260627-production-text-gpu-proof-magistral-5013-rerun/benchmark-aggregate.json",
     "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json"
   },
@@ -255,6 +256,25 @@
       }
     },
     {
+      "name": "production visual QA gate is promotion-ready",
+      "ok": false,
+      "details": {
+        "visualQaGate": "docs/evidence/generated-card-comparisons/production-text-visual-qa-20260627-gpu-proof-magistral-5013-rerun/production-text-visual-qa-gate.json",
+        "requiredFixtures": 3,
+        "requiredPassingFixtures": 0,
+        "qaExpectedRuns": 0,
+        "qaCheckedRuns": 0,
+        "qaPassingRuns": 0,
+        "missingStructuredQa": 0,
+        "failingQaRuns": 0,
+        "failedBeforeImageGeneration": 3,
+        "blockers": [
+          "0/3 required fixture(s) have passing production visual QA.",
+          "3 run(s) failed before image generation."
+        ]
+      }
+    },
+    {
       "name": "manual aggregate is promotion-ready",
       "ok": false,
       "details": {
@@ -273,6 +293,7 @@
     "Run the full aquarium/koi/dog production-text matrix to completion.",
     "Keep the full prompt and correct planner runtime; retry/repair planner output until must_include and must_avoid checks pass before Comfy work.",
     "Run the manual grade checklist after grading every generated run, then resolve missing/invalid/blocked grades before aggregation.",
+    "Run production-text visual QA after manual grading and fix missing/failing productionTextQa checks before aggregation.",
     "Manually grade every run and regenerate the aggregate only after all candidates pass."
   ],
   "reportDir": "docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-gpu-proof"

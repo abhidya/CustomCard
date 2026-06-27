@@ -1,6 +1,6 @@
 # Production Text Research Rollup
 
-Created: 2026-06-27T06:12:40.304Z
+Created: 2026-06-27T06:26:25.739Z
 Status: blocked
 Promotion ready: no
 
@@ -25,6 +25,7 @@ Promotion ready: no
 - Planner/theme adherence is still failing required terms: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog.
 - Latest aggregate is blocked: best score 73 across 3 run(s).
 - Latest manual grade checklist is blocked: 0/0 generated run(s) graded, 0 failed before image generation.
+- Latest production visual QA gate is blocked: 0/3 required fixture run(s) passed QA, 0 missing structured QA, 0 failing QA.
 - Production planner contract: Keep the full creative planner prompt and switch the runtime, not the prompt quality.
 - Reduced creative prompt contracts are disallowed for promotion evidence; fix finish_reason=length by using the correct planner runtime.
 - Planner throughput probe is blocked for koboldcpp/Magistral-Small-2509-Q4_K_M: Planner throughput request timed out after 300000ms.
@@ -34,8 +35,9 @@ Promotion ready: no
 - Optional production planner pull queue remains: qwen3-14b-instruct.
 - Required customer terms still missing: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog.
 - Manual grade readiness is blocked: 0 blocked grade(s), 0 run(s) failed before image generation.
+- Production visual QA is blocked: 0/3 required fixture run(s) passed, 0 missing structured QA, 0 failing QA.
 - Best current LLM-planned score is 73/100 and remains blocked.
-- Promotion gate currently fails 6 requirement(s): local planner GPU-only fit is proven, LLM-planned customer request matrix completed, final images came from Comfy text composer, planner preserved required terms and avoided forbidden terms, manual grade checklist is promotion-ready, manual aggregate is promotion-ready.
+- Promotion gate currently fails 7 requirement(s): local planner GPU-only fit is proven, LLM-planned customer request matrix completed, final images came from Comfy text composer, planner preserved required terms and avoided forbidden terms, manual grade checklist is promotion-ready, production visual QA gate is promotion-ready, manual aggregate is promotion-ready.
 
 ## Evidence Summary
 
@@ -51,6 +53,7 @@ Promotion ready: no
 | Model coverage | action-needed | 9 recommended installed; unevaluated planners=gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash | [open](../local-model-coverage-20260627-current/local-model-coverage.json) |
 | Benchmark | blocked | 0/3 completed; failed=3; failed-before-image=3; provider=aquarium-lover-birthday: text provider Local LLM chat completion request timed out after 1200000ms.; koi-fish-lover-encouragement: text provider Local LLM chat completion request timed out after 1200000ms.; missing=Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog | [open](../production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json) |
 | Manual grades | blocked | 0/0 generated graded; blocked=0; failed-before-image=0 | [open](../production-text-manual-grade-checklist-20260627-gpu-proof-magistral-5013-rerun/production-text-manual-grade-checklist.json) |
+| Visual QA | blocked | 0/3 required passed; checked=0/0; missing-qa=0; failing=0 | [open](../production-text-visual-qa-20260627-gpu-proof-magistral-5013-rerun/production-text-visual-qa-gate.json) |
 | Aggregate | blocked | 3 run(s); best=73; statuses={"status-502":3} | [open](../benchmark-aggregate-20260627-production-text-gpu-proof-magistral-5013-rerun/benchmark-aggregate.json) |
 
 ## Promotion Gate
@@ -61,6 +64,7 @@ Failed requirements:
 - final images came from Comfy text composer
 - planner preserved required terms and avoided forbidden terms
 - manual grade checklist is promotion-ready
+- production visual QA gate is promotion-ready
 - manual aggregate is promotion-ready
 
 Passed requirements:
@@ -141,7 +145,15 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 Summarizes generated runs, missing/invalid manual grades, blocked grades, and failed-before-image stories before aggregation.
 
-### 9. Aggregate production-text results
+### 9. Run production visual QA gate
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-visual-qa-gate.mjs --advisory --input docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner --output-dir docs/evidence/generated-card-comparisons/production-text-visual-qa-20260627-production-planner
+```
+
+Requires structured productionTextQa checks for text overflow, missing text, fake/pseudo text, mockup/object leakage, people/hands/faces, low contrast, and Comfy text composer proof before aggregation.
+
+### 10. Aggregate production-text results
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/model-benchmark-aggregate.mjs --input docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner --output-dir docs/evidence/generated-card-comparisons/benchmark-aggregate-20260627-production-text-production-planner --phase local-production-text
@@ -149,7 +161,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 Builds the ranked aggregate used by the promotion gate.
 
-### 10. Refresh tracked evidence index
+### 11. Refresh tracked evidence index
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-evidence-index.mjs --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner
@@ -157,7 +169,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 Aggregates tracked planner/readiness/preflight/benchmark/aggregate evidence after the rerun artifacts are committed.
 
-### 11. Run final promotion gate
+### 12. Run final promotion gate
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-promotion-gate.mjs --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-production-planner --index-output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner
@@ -174,8 +186,10 @@ Shows whether every production-text requirement now passes. Remove --advisory on
 - Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.
 - Manually grade every production-text run and aggregate only after all candidates pass.
 - Resolve the latest manual grade checklist blockers before treating the aggregate as promotion evidence.
+- Run production-text visual QA after manual grading and resolve missing/failing productionTextQa checks before promotion.
 - Run production-text planner GPU feasibility and use a planner that fully fits the assigned GPU, or switch to a hosted/self-hosted production endpoint; do not promote partial CPU-offload evidence.
 - Run the full aquarium/koi/dog production-text matrix to completion.
 - Keep the full prompt and correct planner runtime; retry/repair planner output until must_include and must_avoid checks pass before Comfy work.
 - Run the manual grade checklist after grading every generated run, then resolve missing/invalid/blocked grades before aggregation.
+- Run production-text visual QA after manual grading and fix missing/failing productionTextQa checks before aggregation.
 - Manually grade every run and regenerate the aggregate only after all candidates pass.

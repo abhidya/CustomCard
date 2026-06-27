@@ -223,6 +223,31 @@ describe("production text evidence index", () => {
       blockers: ["3 manual grade(s) are blocked or failed.", "1 run(s) failed before image generation."],
       nextSteps: ["Rerun failed stories only after the planner preflight proves a production-floor model and output budget."]
     });
+    writeJson(join(root, "production-text-visual-qa-gate.json"), {
+      createdAtIso: "2026-06-26T04:26:00.000Z",
+      status: "blocked",
+      promotionReady: false,
+      benchmarkSummary: "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
+      summary: {
+        totalRuns: 3,
+        requiredFixtures: 3,
+        requiredPassingFixtures: 0,
+        generatedRuns: 2,
+        qaExpectedRuns: 2,
+        qaCheckedRuns: 1,
+        qaPassingRuns: 0,
+        missingManualGrades: 0,
+        missingStructuredQa: 1,
+        failingQaRuns: 1,
+        failedBeforeImageGeneration: 1
+      },
+      blockers: [
+        "0/3 required fixture(s) have passing production visual QA.",
+        "1 generated run(s) are missing structured productionTextQa.",
+        "Production visual QA failed: koi-fish-lover-encouragement."
+      ],
+      nextSteps: ["Run production-text visual QA after manual grading and resolve missing/failing productionTextQa checks before promotion."]
+    });
     writeJson(join(root, "benchmark-aggregate.json"), {
       createdAtIso: "2026-06-26T04:30:00.000Z",
       totalRuns: 2,
@@ -311,6 +336,7 @@ describe("production text evidence index", () => {
     expect(report.modelCoverageReports).toHaveLength(1);
     expect(report.dryRunReports).toHaveLength(1);
     expect(report.manualGradeChecklists).toHaveLength(1);
+    expect(report.visualQaGates).toHaveLength(1);
     expect(report.plannerPreflights[0]).toMatchObject({
       activeModel: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
       classification: "smoke-only",
@@ -368,6 +394,19 @@ describe("production text evidence index", () => {
       failedBeforeImageGeneration: 1,
       promotionReady: false
     });
+    expect(report.visualQaGates[0]).toMatchObject({
+      totalRuns: 3,
+      requiredFixtures: 3,
+      requiredPassingFixtures: 0,
+      generatedRuns: 2,
+      qaExpectedRuns: 2,
+      qaCheckedRuns: 1,
+      qaPassingRuns: 0,
+      missingStructuredQa: 1,
+      failingQaRuns: 1,
+      failedBeforeImageGeneration: 1,
+      promotionReady: false
+    });
     expect(report.benchmarkSummaries[0]).toMatchObject({
       totalRuns: 2,
       completedRuns: 1,
@@ -400,6 +439,7 @@ describe("production text evidence index", () => {
     expect(report.findings.join("\n")).toContain("Installed production planner candidates found locally");
     expect(report.findings.join("\n")).toContain("Installed production planner candidates still need local production-text evaluation");
     expect(report.findings.join("\n")).toContain("Latest manual grade checklist is blocked");
+    expect(report.findings.join("\n")).toContain("Latest production visual QA gate is blocked");
     expect(report.findings.join("\n")).toContain("failed runtime run");
     expect(report.findings.join("\n")).toContain("read ECONNRESET");
     expect(report.nextSteps.join("\n")).toContain("production-suitable planner endpoint");
@@ -410,6 +450,7 @@ describe("production text evidence index", () => {
     expect(report.nextSteps.join("\n")).toContain("planner throughput probe");
     expect(report.nextSteps.join("\n")).toContain("exact endpoint/model used by the latest benchmark");
     expect(report.nextSteps.join("\n")).toContain("manual grade checklist blockers");
+    expect(report.nextSteps.join("\n")).toContain("production-text visual QA");
   });
 
   it("does not credit Comfy final images when every benchmark run fails before image generation", () => {

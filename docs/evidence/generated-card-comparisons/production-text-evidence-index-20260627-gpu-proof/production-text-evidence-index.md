@@ -1,6 +1,6 @@
 # Production Text Evidence Index
 
-Created: 2026-06-27T06:00:57.651Z
+Created: 2026-06-27T06:26:12.170Z
 Status: blocked
 Promotion ready: no
 
@@ -19,6 +19,7 @@ Promotion ready: no
 - Planner/theme adherence is still failing required terms: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog.
 - Latest aggregate is blocked: best score 73 across 3 run(s).
 - Latest manual grade checklist is blocked: 0/0 generated run(s) graded, 0 failed before image generation.
+- Latest production visual QA gate is blocked: 0/3 required fixture run(s) passed QA, 0 missing structured QA, 0 failing QA.
 
 ## Next Steps
 
@@ -29,12 +30,13 @@ Promotion ready: no
 - Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.
 - Manually grade every production-text run and aggregate only after all candidates pass.
 - Resolve the latest manual grade checklist blockers before treating the aggregate as promotion evidence.
+- Run production-text visual QA after manual grading and resolve missing/failing productionTextQa checks before promotion.
 
 ## Latest Evidence
 
 | Type | Path | Status | Key result |
 | --- | --- | --- | --- |
-| Rerun Plan | [open](../production-text-rerun-plan-20260627-gpu-proof/production-text-rerun-plan.json) | rerun-required | 6 failed requirement(s); commands=12 |
+| Rerun Plan | [open](../production-text-rerun-plan-20260627-gpu-proof/production-text-rerun-plan.json) | rerun-required | 6 failed requirement(s); commands=11 |
 | Planner | [open](../production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-planner-preflight.json) | promotion-ready | production-suitable; model=koboldcpp/Magistral-Small-2509-Q4_K_M; context=8192; gpu=yes |
 | Planner GPU Feasibility | [open](../production-text-planner-gpu-feasibility-20260627-magistral-5013/production-text-planner-gpu-feasibility.json) | blocked | gpu-only=no; model=koboldcpp/Magistral-Small-2509-Q4_K_M; assigned=1; size=13670MiB; gpu=8192MiB |
 | Planner Throughput | [open](../production-text-planner-throughput-20260627-magistral-5013-5min/production-text-planner-throughput.json) | blocked | blocked; model=koboldcpp/Magistral-Small-2509-Q4_K_M; fixture=aquarium-lover-birthday; duration=300056ms; gpu=yes |
@@ -44,6 +46,7 @@ Promotion ready: no
 | Preflight | [open](../production-text-preflight-20260627T040924Z/production-text-preflight.json) | promotion-ready | comfy=yes node=yes |
 | Dry Run | [open](../production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json) | planning-proof | production-suitable koboldcpp/gemma-4-31B-it-Q4_K_M; planned=3; contract=full-production-card-copy-json |
 | Manual Grades | [open](../production-text-manual-grade-checklist-20260627-gpu-proof-magistral-5013-rerun/production-text-manual-grade-checklist.json) | blocked | 0/0 generated graded; manual-grades=0; missing=0; failed-before-image=0 |
+| Visual QA | [open](../production-text-visual-qa-20260627-gpu-proof-magistral-5013-rerun/production-text-visual-qa-gate.json) | blocked | 0/3 required passed; checked=0/0; missing-qa=0; failing=0 |
 | Aggregate | [open](../benchmark-aggregate-20260627-production-text-gpu-proof-magistral-5013-rerun/benchmark-aggregate.json) | blocked | 3 run(s); best=73; ready=no |
 | Benchmark | [open](../production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json) | blocked | 0/3 completed; failed=3; failed-before-image=3 |
 

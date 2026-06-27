@@ -154,6 +154,31 @@ function writeBaseEvidence(root: string, options: { ready: boolean }) {
     },
     blockers: options.ready ? [] : ["3 manual grade(s) are blocked or failed.", "1 run(s) failed before image generation."]
   });
+  writeJson(join(root, "production-text-visual-qa-gate.json"), {
+    createdAtIso: "2026-06-26T04:33:00.000Z",
+    status: options.ready ? "promotion-ready" : "blocked",
+    promotionReady: options.ready,
+    summary: {
+      totalRuns: fixtures.length,
+      requiredFixtures: fixtures.length,
+      requiredPassingFixtures: options.ready ? fixtures.length : 0,
+      generatedRuns: options.ready ? fixtures.length : 2,
+      qaExpectedRuns: options.ready ? fixtures.length : 2,
+      qaCheckedRuns: options.ready ? fixtures.length : 1,
+      qaPassingRuns: options.ready ? fixtures.length : 0,
+      missingManualGrades: 0,
+      missingStructuredQa: options.ready ? 0 : 1,
+      failingQaRuns: options.ready ? 0 : 1,
+      failedBeforeImageGeneration: options.ready ? 0 : 1
+    },
+    blockers: options.ready
+      ? []
+      : [
+          "0/3 required fixture(s) have passing production visual QA.",
+          "1 generated run(s) are missing structured productionTextQa.",
+          "Production visual QA failed: aquarium-lover-birthday."
+        ]
+  });
   writeJson(join(root, "production-text-workflow-summary.json"), {
     createdAtIso: "2026-06-26T04:15:00.000Z",
     phase: "local-production-text",
@@ -198,6 +223,7 @@ describe("production text promotion gate", () => {
       "LLM-planned customer request matrix completed",
       "planner preserved required terms and avoided forbidden terms",
       "manual grade checklist is promotion-ready",
+      "production visual QA gate is promotion-ready",
       "manual aggregate is promotion-ready"
     ]);
     expect(report.requirements.find((item) => item.name === "local model coverage is tracked")?.ok).toBe(true);
@@ -249,6 +275,7 @@ describe("production text promotion gate", () => {
     expect(report.requirements.map((item) => item.name)).toContain("local model coverage is tracked");
     expect(report.requirements.map((item) => item.name)).toContain("production planner candidate is available");
     expect(report.requirements.map((item) => item.name)).toContain("manual grade checklist is promotion-ready");
+    expect(report.requirements.map((item) => item.name)).toContain("production visual QA gate is promotion-ready");
   });
 
   it("blocks when planner preflight and benchmark runtime use different endpoints", () => {

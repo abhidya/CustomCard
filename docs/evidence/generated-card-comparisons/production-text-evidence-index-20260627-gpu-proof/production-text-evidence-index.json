@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T06:00:57.651Z",
+  "createdAtIso": "2026-06-27T06:26:12.170Z",
   "status": "blocked",
   "promotionReady": false,
   "evidenceRoot": "docs/evidence/generated-card-comparisons",
@@ -15,6 +15,7 @@
     "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260627T040924Z/production-text-preflight.json",
     "dryRun": "docs/evidence/generated-card-comparisons/production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json",
     "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-gpu-proof-magistral-5013-rerun/production-text-manual-grade-checklist.json",
+    "visualQaGate": "docs/evidence/generated-card-comparisons/production-text-visual-qa-20260627-gpu-proof-magistral-5013-rerun/production-text-visual-qa-gate.json",
     "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-20260627-production-text-gpu-proof-magistral-5013-rerun/benchmark-aggregate.json",
     "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json"
   },
@@ -31,7 +32,8 @@
     "Latest LLM-planned benchmark has 3 failed runtime run(s), including 3 before image generation. Latest provider failure(s): aquarium-lover-birthday: text provider Local LLM chat completion request timed out after 1200000ms.; koi-fish-lover-encouragement: text provider Local LLM chat completion request timed out after 1200000ms.; dog-lover-thank-you: text provider Local LLM chat completion request timed out after 1200000ms..",
     "Planner/theme adherence is still failing required terms: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog.",
     "Latest aggregate is blocked: best score 73 across 3 run(s).",
-    "Latest manual grade checklist is blocked: 0/0 generated run(s) graded, 0 failed before image generation."
+    "Latest manual grade checklist is blocked: 0/0 generated run(s) graded, 0 failed before image generation.",
+    "Latest production visual QA gate is blocked: 0/3 required fixture run(s) passed QA, 0 missing structured QA, 0 failing QA."
   ],
   "nextSteps": [
     "Run the production-text planner GPU feasibility report and use a planner that fully fits the assigned GPU, or switch to a hosted/self-hosted production endpoint.",
@@ -40,7 +42,8 @@
     "Resolve local model pull queue if the installed planner is too slow: qwen3-14b-instruct.",
     "Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.",
     "Manually grade every production-text run and aggregate only after all candidates pass.",
-    "Resolve the latest manual grade checklist blockers before treating the aggregate as promotion evidence."
+    "Resolve the latest manual grade checklist blockers before treating the aggregate as promotion evidence.",
+    "Run production-text visual QA after manual grading and resolve missing/failing productionTextQa checks before promotion."
   ],
   "plannerEvidenceAlignment": {
     "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json",
@@ -67,7 +70,7 @@
   "rerunPlans": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-gpu-proof/production-text-rerun-plan.json",
-      "createdAtIso": "2026-06-27T06:00:44.370Z",
+      "createdAtIso": "2026-06-27T06:12:32.447Z",
       "status": "rerun-required",
       "promotionReady": false,
       "failedRequirements": [
@@ -78,7 +81,7 @@
         "manual grade checklist is promotion-ready",
         "manual aggregate is promotion-ready"
       ],
-      "commandCount": 12,
+      "commandCount": 11,
       "plannerModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
       "plannerClassification": "production-suitable",
       "nextBenchmarkOutput": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner"
@@ -1069,6 +1072,33 @@
       "nextSteps": [
         "Rerun failed stories only after the planner preflight proves a production-floor model and output budget.",
         "Fix planner contract adherence before spending more Comfy image work."
+      ]
+    }
+  ],
+  "visualQaGates": [
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-visual-qa-20260627-gpu-proof-magistral-5013-rerun/production-text-visual-qa-gate.json",
+      "createdAtIso": "2026-06-27T06:25:39.962Z",
+      "status": "blocked",
+      "promotionReady": false,
+      "benchmarkSummary": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json",
+      "totalRuns": 3,
+      "requiredFixtures": 3,
+      "requiredPassingFixtures": 0,
+      "generatedRuns": 0,
+      "qaExpectedRuns": 0,
+      "qaCheckedRuns": 0,
+      "qaPassingRuns": 0,
+      "missingManualGrades": 0,
+      "missingStructuredQa": 0,
+      "failingQaRuns": 0,
+      "failedBeforeImageGeneration": 3,
+      "blockers": [
+        "0/3 required fixture(s) have passing production visual QA.",
+        "3 run(s) failed before image generation."
+      ],
+      "nextSteps": [
+        "Rerun failed stories with a production-class planner before visual QA can pass."
       ]
     }
   ],

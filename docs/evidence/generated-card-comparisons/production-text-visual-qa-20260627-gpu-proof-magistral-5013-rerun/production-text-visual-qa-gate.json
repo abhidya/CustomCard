@@ -1,0 +1,154 @@
+{
+  "createdAtIso": "2026-06-27T06:25:39.962Z",
+  "status": "blocked",
+  "promotionReady": false,
+  "advisory": true,
+  "benchmarkSummary": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json",
+  "benchmarkCreatedAtIso": "2026-06-27T04:09:27.438Z",
+  "phase": "local-production-text",
+  "phaseDir": "production-text-workflow",
+  "requiredFixtures": [
+    "aquarium-lover-birthday",
+    "koi-fish-lover-encouragement",
+    "dog-lover-thank-you"
+  ],
+  "qaContract": {
+    "field": "productionTextQa",
+    "requiredChecks": [
+      {
+        "key": "allPanelsRendered",
+        "expected": true,
+        "label": "all panels rendered"
+      },
+      {
+        "key": "textMissing",
+        "expected": false,
+        "label": "no text missing"
+      },
+      {
+        "key": "textOverflow",
+        "expected": false,
+        "label": "no text overflow"
+      },
+      {
+        "key": "fakeTextOrGlyphsInArtwork",
+        "expected": false,
+        "label": "no fake/pseudo text in artwork"
+      },
+      {
+        "key": "mockupOrObjectSceneLeakage",
+        "expected": false,
+        "label": "no mockup/object-scene leakage"
+      },
+      {
+        "key": "lowContrast",
+        "expected": false,
+        "label": "text contrast meets print threshold"
+      },
+      {
+        "key": "peopleHandsOrFaces",
+        "expected": false,
+        "label": "no people, hands, or faces"
+      }
+    ]
+  },
+  "summary": {
+    "totalRuns": 3,
+    "requiredFixtures": 3,
+    "requiredPassingFixtures": 0,
+    "missingRequiredFixtures": [],
+    "generatedRuns": 0,
+    "completedPanelRuns": 0,
+    "failedBeforeImageGeneration": 3,
+    "qaExpectedRuns": 0,
+    "qaCheckedRuns": 0,
+    "qaPassingRuns": 0,
+    "missingManualGrades": 0,
+    "missingStructuredQa": 0,
+    "failingQaRuns": 0,
+    "finalComfyRuns": 0,
+    "deterministicTextComposerRuns": 0
+  },
+  "blockers": [
+    "0/3 required fixture(s) have passing production visual QA.",
+    "3 run(s) failed before image generation."
+  ],
+  "runs": [
+    {
+      "storyId": "aquarium-lover-birthday",
+      "textModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+      "imageModel": "",
+      "runDir": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow/aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui",
+      "panelCount": 0,
+      "status": "",
+      "statusCode": 502,
+      "generatedVisuals": false,
+      "failedBeforeImageGeneration": true,
+      "contactSheet": "",
+      "manualGradePath": "",
+      "manualGradePresent": false,
+      "manualGradePassed": false,
+      "manualGradeStatus": "",
+      "manualBlockingFailures": [],
+      "qaExpected": false,
+      "qaPresent": false,
+      "qaPassed": false,
+      "qaChecks": [],
+      "qaFailures": [],
+      "finalImagesRenderedByComfy": true,
+      "deterministicTextComposerUsed": true
+    },
+    {
+      "storyId": "koi-fish-lover-encouragement",
+      "textModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+      "imageModel": "",
+      "runDir": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow/koi-fish-lover-encouragement__text-local-openai-compatible__image-local-comfyui",
+      "panelCount": 0,
+      "status": "",
+      "statusCode": 502,
+      "generatedVisuals": false,
+      "failedBeforeImageGeneration": true,
+      "contactSheet": "",
+      "manualGradePath": "",
+      "manualGradePresent": false,
+      "manualGradePassed": false,
+      "manualGradeStatus": "",
+      "manualBlockingFailures": [],
+      "qaExpected": false,
+      "qaPresent": false,
+      "qaPassed": false,
+      "qaChecks": [],
+      "qaFailures": [],
+      "finalImagesRenderedByComfy": true,
+      "deterministicTextComposerUsed": true
+    },
+    {
+      "storyId": "dog-lover-thank-you",
+      "textModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+      "imageModel": "",
+      "runDir": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow/dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui",
+      "panelCount": 0,
+      "status": "",
+      "statusCode": 502,
+      "generatedVisuals": false,
+      "failedBeforeImageGeneration": true,
+      "contactSheet": "",
+      "manualGradePath": "",
+      "manualGradePresent": false,
+      "manualGradePassed": false,
+      "manualGradeStatus": "",
+      "manualBlockingFailures": [],
+      "qaExpected": false,
+      "qaPresent": false,
+      "qaPassed": false,
+      "qaChecks": [],
+      "qaFailures": [],
+      "finalImagesRenderedByComfy": true,
+      "deterministicTextComposerUsed": true
+    }
+  ],
+  "nextSteps": [
+    "Rerun failed stories with a production-class planner before visual QA can pass."
+  ],
+  "reportDir": "docs/evidence/generated-card-comparisons/production-text-visual-qa-20260627-gpu-proof-magistral-5013-rerun"
+}

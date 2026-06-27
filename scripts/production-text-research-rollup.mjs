@@ -48,6 +48,7 @@ export function buildProductionTextResearchRollup(args = {}) {
   const latestDryRun = first(index.dryRunReports);
   const latestBenchmark = first(index.benchmarkSummaries);
   const latestManualChecklist = first(index.manualGradeChecklists);
+  const latestVisualQaGate = first(index.visualQaGates);
   const latestAggregate = (index.aggregates || []).find((entry) => entry.kind === "llm-planned") || first(index.aggregates);
   const requirements = Array.isArray(gate.requirements) ? gate.requirements : [];
   const failedRequirements = requirements.filter((item) => !item.ok).map(requirementSummary);
@@ -193,6 +194,20 @@ export function buildProductionTextResearchRollup(args = {}) {
         blockedGrades: latestManualChecklist?.blockedGrades ?? 0,
         blockers: latestManualChecklist?.blockers || []
       },
+      visualQa: {
+        path: latestVisualQaGate?.path || "",
+        status: latestVisualQaGate?.status || "missing",
+        promotionReady: Boolean(latestVisualQaGate?.promotionReady),
+        requiredFixtures: latestVisualQaGate?.requiredFixtures ?? 0,
+        requiredPassingFixtures: latestVisualQaGate?.requiredPassingFixtures ?? 0,
+        qaExpectedRuns: latestVisualQaGate?.qaExpectedRuns ?? 0,
+        qaCheckedRuns: latestVisualQaGate?.qaCheckedRuns ?? 0,
+        qaPassingRuns: latestVisualQaGate?.qaPassingRuns ?? 0,
+        missingStructuredQa: latestVisualQaGate?.missingStructuredQa ?? 0,
+        failingQaRuns: latestVisualQaGate?.failingQaRuns ?? 0,
+        failedBeforeImageGeneration: latestVisualQaGate?.failedBeforeImageGeneration ?? 0,
+        blockers: latestVisualQaGate?.blockers || []
+      },
       aggregate: {
         path: latestAggregate?.path || "",
         kind: latestAggregate?.kind || "",
@@ -230,6 +245,7 @@ export function buildProductionTextResearchRollup(args = {}) {
       latestModelCoverage,
       latestBenchmark,
       latestManualChecklist,
+      latestVisualQaGate,
       latestAggregate,
       failedRequirements,
       productionPlannerContract: rerun.productionPlannerContract || {},
@@ -255,6 +271,7 @@ function buildFindings({
   latestModelCoverage,
   latestBenchmark,
   latestManualChecklist,
+  latestVisualQaGate,
   latestAggregate,
   failedRequirements,
   productionPlannerContract,
@@ -320,6 +337,14 @@ function buildFindings({
   if (latestManualChecklist && !latestManualChecklist.promotionReady) {
     findings.push(`Manual grade readiness is blocked: ${latestManualChecklist.blockedGrades} blocked grade(s), ${latestManualChecklist.failedBeforeImageGeneration} run(s) failed before image generation.`);
   }
+  if (latestVisualQaGate?.promotionReady) {
+    findings.push(`Production visual QA passed ${latestVisualQaGate.requiredPassingFixtures}/${latestVisualQaGate.requiredFixtures} required fixture run(s).`);
+  }
+  if (latestVisualQaGate && !latestVisualQaGate.promotionReady) {
+    findings.push(
+      `Production visual QA is blocked: ${latestVisualQaGate.requiredPassingFixtures}/${latestVisualQaGate.requiredFixtures} required fixture run(s) passed, ${latestVisualQaGate.missingStructuredQa} missing structured QA, ${latestVisualQaGate.failingQaRuns} failing QA.`
+    );
+  }
   if (latestAggregate && !latestAggregate.promotionReady) {
     findings.push(`Best current LLM-planned score is ${latestAggregate.bestScore ?? "n/a"}/100 and remains blocked.`);
   }
@@ -375,6 +400,7 @@ function buildMarkdown(result) {
   lines.push(evidenceRow("Model coverage", result.evidenceSummary.modelCoverage, (item) => `${item.recommendedInstalled} recommended installed; unevaluated planners=${item.unevaluatedProductionPlanners.join(", ") || "none"}`));
   lines.push(evidenceRow("Benchmark", result.evidenceSummary.benchmark, (item) => `${item.completedRuns}/${item.totalRuns} completed; failed=${item.failedRuns}; failed-before-image=${item.failedBeforeImageGeneration}; provider=${item.providerFailures.slice(0, 2).join("; ") || "none"}; missing=${item.missingMustInclude.join(", ") || "none"}`));
   lines.push(evidenceRow("Manual grades", result.evidenceSummary.manualGrades, (item) => `${item.gradedGeneratedRuns}/${item.gradableRuns} generated graded; blocked=${item.blockedGrades}; failed-before-image=${item.failedBeforeImageGeneration}`));
+  lines.push(evidenceRow("Visual QA", result.evidenceSummary.visualQa, (item) => `${item.requiredPassingFixtures}/${item.requiredFixtures} required passed; checked=${item.qaCheckedRuns}/${item.qaExpectedRuns}; missing-qa=${item.missingStructuredQa}; failing=${item.failingQaRuns}`));
   lines.push(evidenceRow("Aggregate", result.evidenceSummary.aggregate, (item) => `${item.totalRuns} run(s); best=${item.bestScore ?? "n/a"}; statuses=${JSON.stringify(item.statuses)}`));
   lines.push("");
   lines.push("## Promotion Gate");

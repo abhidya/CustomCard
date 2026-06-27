@@ -1,6 +1,6 @@
 # Production Text Promotion Gate
 
-Created: 2026-06-27T06:00:57.653Z
+Created: 2026-06-27T06:26:12.173Z
 Status: blocked
 Promotion ready: no
 Evidence index: docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-gpu-proof
@@ -24,6 +24,7 @@ Evidence index: docs/evidence/generated-card-comparisons/production-text-evidenc
 | final images came from Comfy text composer | fail | {"benchmark":"docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json","completedRuns":0,"failedRuns":3,"failedBeforeImageGeneration":3,"finalImagesRenderedByComfy":false,"deterministicTextComposerUsed":false} |
 | planner preserved required terms and avoided forbidden terms | fail | {"benchmark":"docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json","missingMustInclude":["Nina","birthday","aquarium","Uncle Ken","koi","encouragement","Morgan","thank","dog"],"mustAvoidFailures":[]} |
 | manual grade checklist is promotion-ready | fail | {"manualGradeChecklist":"docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-gpu-proof-magistral-5013-rerun/production-text-manual-grade-checklist.json","totalRuns":3,"gradableRuns":0,"gradedGeneratedRuns":0,"missingGrades":0,"invalidGrades":0,"failedBeforeImageGeneration":0,"blockers":["Automated must_include checks failed for: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog."]} |
+| production visual QA gate is promotion-ready | fail | {"visualQaGate":"docs/evidence/generated-card-comparisons/production-text-visual-qa-20260627-gpu-proof-magistral-5013-rerun/production-text-visual-qa-gate.json","requiredFixtures":3,"requiredPassingFixtures":0,"qaExpectedRuns":0,"qaCheckedRuns":0,"qaPassingRuns":0,"missingStructuredQa":0,"failingQaRuns":0,"failedBeforeImageGeneration":3,"blockers":["0/3 required fixture(s) have passing production visual QA.","3 run(s) failed before image generation."]} |
 | manual aggregate is promotion-ready | fail | {"aggregate":"docs/evidence/generated-card-comparisons/benchmark-aggregate-20260627-production-text-gpu-proof-magistral-5013-rerun/benchmark-aggregate.json","totalRuns":3,"statuses":{"status-502":3},"bestScore":73,"blockingFailures":[]} |
 
 ## Next Steps
@@ -32,4 +33,5 @@ Evidence index: docs/evidence/generated-card-comparisons/production-text-evidenc
 - Run the full aquarium/koi/dog production-text matrix to completion.
 - Keep the full prompt and correct planner runtime; retry/repair planner output until must_include and must_avoid checks pass before Comfy work.
 - Run the manual grade checklist after grading every generated run, then resolve missing/invalid/blocked grades before aggregation.
+- Run production-text visual QA after manual grading and fix missing/failing productionTextQa checks before aggregation.
 - Manually grade every run and regenerate the aggregate only after all candidates pass.

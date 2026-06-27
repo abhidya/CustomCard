@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T06:12:32.447Z",
+  "createdAtIso": "2026-06-27T06:26:18.412Z",
   "status": "rerun-required",
   "promotionReady": false,
   "reportDir": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-gpu-proof",
@@ -117,6 +117,24 @@
       }
     },
     {
+      "name": "production visual QA gate is promotion-ready",
+      "details": {
+        "visualQaGate": "docs/evidence/generated-card-comparisons/production-text-visual-qa-20260627-gpu-proof-magistral-5013-rerun/production-text-visual-qa-gate.json",
+        "requiredFixtures": 3,
+        "requiredPassingFixtures": 0,
+        "qaExpectedRuns": 0,
+        "qaCheckedRuns": 0,
+        "qaPassingRuns": 0,
+        "missingStructuredQa": 0,
+        "failingQaRuns": 0,
+        "failedBeforeImageGeneration": 3,
+        "blockers": [
+          "0/3 required fixture(s) have passing production visual QA.",
+          "3 run(s) failed before image generation."
+        ]
+      }
+    },
+    {
       "name": "manual aggregate is promotion-ready",
       "details": {
         "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-20260627-production-text-gpu-proof-magistral-5013-rerun/benchmark-aggregate.json",
@@ -179,6 +197,7 @@
     "readinessOutput": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner",
     "benchmarkOutput": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner",
     "manualGradeChecklistOutput": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-production-planner",
+    "visualQaOutput": "docs/evidence/generated-card-comparisons/production-text-visual-qa-20260627-production-planner",
     "aggregateOutput": "docs/evidence/generated-card-comparisons/benchmark-aggregate-20260627-production-text-production-planner",
     "evidenceIndexOutput": "docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner",
     "promotionGateOutput": "docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-production-planner"
@@ -234,18 +253,24 @@
     },
     {
       "step": 9,
+      "title": "Run production visual QA gate",
+      "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-visual-qa-gate.mjs --advisory --input docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner --output-dir docs/evidence/generated-card-comparisons/production-text-visual-qa-20260627-production-planner",
+      "why": "Requires structured productionTextQa checks for text overflow, missing text, fake/pseudo text, mockup/object leakage, people/hands/faces, low contrast, and Comfy text composer proof before aggregation."
+    },
+    {
+      "step": 10,
       "title": "Aggregate production-text results",
       "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/model-benchmark-aggregate.mjs --input docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner --output-dir docs/evidence/generated-card-comparisons/benchmark-aggregate-20260627-production-text-production-planner --phase local-production-text",
       "why": "Builds the ranked aggregate used by the promotion gate."
     },
     {
-      "step": 10,
+      "step": 11,
       "title": "Refresh tracked evidence index",
       "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-evidence-index.mjs --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner",
       "why": "Aggregates tracked planner/readiness/preflight/benchmark/aggregate evidence after the rerun artifacts are committed."
     },
     {
-      "step": 11,
+      "step": 12,
       "title": "Run final promotion gate",
       "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-promotion-gate.mjs --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-production-planner --index-output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner",
       "why": "Shows whether every production-text requirement now passes. Remove --advisory only when a pass is expected."
@@ -264,6 +289,7 @@
     "final images came from Comfy text composer",
     "planner preserved required terms and avoided forbidden terms",
     "manual grade checklist is promotion-ready",
+    "production visual QA gate is promotion-ready",
     "manual aggregate is promotion-ready"
   ]
 }

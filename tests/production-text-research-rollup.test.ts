@@ -173,6 +173,22 @@ describe("production text research rollup", () => {
           blockers: ["3 manual grade(s) are blocked or failed."]
         }
       ],
+      visualQaGates: [
+        {
+          path: "docs/evidence/generated-card-comparisons/production-text-visual-qa-current/production-text-visual-qa-gate.json",
+          status: "blocked",
+          promotionReady: false,
+          requiredFixtures: 3,
+          requiredPassingFixtures: 0,
+          qaExpectedRuns: 2,
+          qaCheckedRuns: 1,
+          qaPassingRuns: 0,
+          missingStructuredQa: 1,
+          failingQaRuns: 1,
+          failedBeforeImageGeneration: 1,
+          blockers: ["0/3 required fixture(s) have passing production visual QA."]
+        }
+      ],
       aggregates: [
         {
           path: "docs/evidence/generated-card-comparisons/benchmark-aggregate-current/benchmark-aggregate.json",
@@ -193,7 +209,8 @@ describe("production text research rollup", () => {
       requirements: [
         { name: "live ComfyUI preflight passed", ok: true },
         { name: "planner preflight is production-ready", ok: false },
-        { name: "manual grade checklist is promotion-ready", ok: false }
+        { name: "manual grade checklist is promotion-ready", ok: false },
+        { name: "production visual QA gate is promotion-ready", ok: false }
       ],
       nextSteps: ["Use Qwen3-4B/8B only for smoke/failure evidence."]
     });
@@ -242,7 +259,8 @@ describe("production text research rollup", () => {
     expect(report.promotionReady).toBe(false);
     expect(report.promotionGate.failedRequirements.map((item) => item.name)).toEqual([
       "planner preflight is production-ready",
-      "manual grade checklist is promotion-ready"
+      "manual grade checklist is promotion-ready",
+      "production visual QA gate is promotion-ready"
     ]);
     expect(report.evidenceSummary.planner).toMatchObject({
       activeModel: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
@@ -267,6 +285,17 @@ describe("production text research rollup", () => {
       gradableRuns: 2,
       failedBeforeImageGeneration: 1,
       blockedGrades: 3
+    });
+    expect(report.evidenceSummary.visualQa).toMatchObject({
+      status: "blocked",
+      promotionReady: false,
+      requiredFixtures: 3,
+      requiredPassingFixtures: 0,
+      qaCheckedRuns: 1,
+      qaExpectedRuns: 2,
+      missingStructuredQa: 1,
+      failingQaRuns: 1,
+      failedBeforeImageGeneration: 1
     });
     expect(report.evidenceSummary.modelCoverage).toMatchObject({
       status: "action-needed",
@@ -307,7 +336,8 @@ describe("production text research rollup", () => {
     expect(report.findings.join("\n")).toContain("Reduced creative prompt contracts are disallowed");
     expect(report.findings.join("\n")).toContain("Production planner files are installed but not yet evaluated");
     expect(report.findings.join("\n")).toContain("Optional production planner pull queue remains");
-    expect(report.findings.join("\n")).toContain("Promotion gate currently fails 2 requirement");
+    expect(report.findings.join("\n")).toContain("Production visual QA is blocked");
+    expect(report.findings.join("\n")).toContain("Promotion gate currently fails 3 requirement");
     expect(report.nextSteps).toEqual(
       expect.arrayContaining([
         "Run production-text planner preflight with a production-suitable model.",

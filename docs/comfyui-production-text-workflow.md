@@ -348,6 +348,12 @@ Comfy template variables exposed by the local adapter include:
     and which stories failed before image generation.
   - Use this before refreshing aggregate/gate evidence so blocked visual grades
     and planner failures are visible without opening every run directory.
+- `scripts/production-text-visual-qa-gate.mjs`
+  - Requires structured `productionTextQa` checks from each manual grade before
+    production-text evidence can promote.
+  - Blocks missing panels, missing or overflowing text, fake/pseudo text in
+    artwork, mockup/object-scene leakage, low contrast, people/hands/faces, and
+    runs that did not finish through `CustomCardTextComposer`.
 - `scripts/production-text-promotion-gate.mjs`
   - Blocking promotion gate over the indexed production-text evidence.
   - Requires live Comfy/text-node proof, a production-ready planner preflight, a
@@ -355,7 +361,8 @@ Comfy template variables exposed by the local adapter include:
     production planner candidate, a production-suitable planner endpoint,
     planner preflight endpoint/model alignment with the benchmark runtime, a
     completed aquarium/koi/dog matrix, no small smoke planner evidence,
-    preserved required terms, and passing manual aggregate grades.
+    preserved required terms, passing manual grades, passing production visual
+    QA, and passing manual aggregate grades.
 - `scripts/local-comfy-production-text.mjs`
   - Shared adapter contract for Comfy template variables, deterministic
     typography boxes, soft safe fields, artwork guards, and metadata summaries.
@@ -447,32 +454,33 @@ customer-theme quality.
    be satisfied by Qwen3-4B/8B smoke planners or by a model name without
    context/output proof. For protected hosted endpoints, set
    `CUSTOMCARD_LOCAL_LLM_API_KEY` or pass `--local-llm-api-key`.
-7. Run `npm run comfy:production-text:rerun-plan -- --output-dir docs/evidence/generated-card-comparisons/production-text-rerun-plan-YYYYMMDD-current`
+7. Run `npm run comfy:production-text:planner-throughput -- --base-url ... --model ... --reported-context-tokens 8192 --max-output-tokens 3200 --request-timeout-ms 1200000`
+   and confirm the planner can finish the full card-copy JSON contract before
+   spending Comfy image work.
+8. Run `npm run comfy:production-text:rerun-plan -- --output-dir docs/evidence/generated-card-comparisons/production-text-rerun-plan-YYYYMMDD-current`
    to write the exact command chain for the next production-suitable rerun.
-8. Run `npm run comfy:production-text:model-coverage -- --output-dir docs/evidence/generated-card-comparisons/local-model-coverage-YYYYMMDD-current`
+9. Run `npm run comfy:production-text:model-coverage -- --output-dir docs/evidence/generated-card-comparisons/local-model-coverage-YYYYMMDD-current`
    to refresh installed/evaluated planner and Comfy model coverage. Commit or
    stage this artifact before the tracked evidence index if it should count.
-9. Run `npm run comfy:production-text:evidence -- --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-YYYYMMDD-current`
-   to refresh the tracked evidence index before deciding what to run next.
-10. Run `npm run comfy:production-text:gate -- --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-YYYYMMDD-current`
-   and confirm every requirement passes before promoting.
-11. Run the production overlay workflow against the LLM-planned customer request
+10. Run the production overlay workflow against the LLM-planned customer request
    matrix through `tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl ...`
    and manually grade every run. Use `-AllowCompositorFixtureFallback` only for
    compositor/node smoke evidence. For hosted/self-hosted endpoints, pass
    `-NoAutoStartPlanner` so the wrapper cannot fall back to a local
    hardware-blocked KoboldCPP process.
-12. Run `npm run comfy:production-text:manual-grades -- --advisory --input <benchmark-output-dir> --output-dir docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-YYYYMMDD-current`
+11. Run `npm run comfy:production-text:manual-grades -- --advisory --input <benchmark-output-dir> --output-dir docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-YYYYMMDD-current`
    and confirm generated runs have valid manual grades while failed-before-image
    stories are tracked separately.
-13. Add an overflow/contrast QA gate. Minimum acceptable gate:
-   - all panels rendered
-   - no text missing
-   - no fake text in artwork-only areas
-   - no people/mockup/object-scene leakage
-   - text contrast meets print/readability threshold
-14. Promote only after aggregate benchmark evidence beats the current
-   app-compositor baseline.
+12. Run `npm run comfy:production-text:visual-qa -- --advisory --input <benchmark-output-dir> --output-dir docs/evidence/generated-card-comparisons/production-text-visual-qa-YYYYMMDD-current`
+   and confirm the structured `productionTextQa` checks pass for every
+   required aquarium/koi/dog fixture.
+13. Run `npm run card:benchmark:aggregate -- --input <benchmark-output-dir> --output-dir docs/evidence/generated-card-comparisons/benchmark-aggregate-YYYYMMDD-production-text --phase local-production-text`
+   and confirm aggregate benchmark evidence beats the current app-compositor
+   baseline.
+14. Run `npm run comfy:production-text:evidence -- --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-YYYYMMDD-current`
+   to refresh the tracked evidence index.
+15. Run `npm run comfy:production-text:gate -- --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-YYYYMMDD-current`
+   and confirm every requirement passes before promoting.
 
 Current status: the 2026-06-27 GPU-backed evidence proves the correct runtime
 path but still blocks promotion on planner GPU-only fit and throughput. The current planner
@@ -560,5 +568,5 @@ single assigned GPU, pass explicit rerun-plan planner args and prove it with
 - Add per-panel seed offsets when `CUSTOMCARD_COMFYUI_SEED` is set.
 - Add OCR or local vision-review evidence to catch pseudo-text and object-scene
   failures automatically.
-- Promote only after a benchmark aggregate includes a passing manual or local
-  vision visual grade for every production-text candidate run.
+- Promote only after a benchmark aggregate and the production visual QA gate
+  pass for every required production-text candidate run.
