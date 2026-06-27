@@ -1,0 +1,60 @@
+{
+  "sender": "Mara",
+  "recipient": "Uncle Ken",
+  "relationship": "niece to uncle",
+  "occasion": "encouragement card",
+  "tone": "serene, resilient, sincere, not sentimental-heavy",
+  "style": "premium folded greeting card for a koi fish lover; the LLM must invent the finished visual system and panel-specific layouts from the request",
+  "language": "English",
+  "personal_note": "Create an encouragement card for Uncle Ken, who loves his backyard koi pond and finds patience in watching the fish move through the water. Keep the message steady and hopeful without sounding like a motivational poster.",
+  "memory_notes": [
+    "Uncle Ken loves koi fish, quiet pond ripples, and the patience of tending a backyard pond.",
+    "The card is for encouragement during a hard stretch, not a birthday or sympathy card.",
+    "The final artwork should use restrained visual symbolism and leave text-safe space for deterministic Comfy typography."
+  ],
+  "must_include": [
+    "Uncle Ken",
+    "koi",
+    "encouragement"
+  ],
+  "must_avoid": [
+    "lorem ipsum",
+    "placeholder",
+    "extra words",
+    "fake lettering",
+    "mockup",
+    "birthday"
+  ],
+  "aiFlowConfig": [
+    {
+      "flowId": "card-copy",
+      "primaryAdapterId": "local-openai-compatible-chat",
+      "fallbackAdapterId": "",
+      "model": "koboldcpp/gemma-4-31B-it-Q4_K_M",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": false,
+      "rateLimitPerMinute": 4,
+      "monthlyBudgetCents": 5000,
+      "perRequestBudgetCents": 5,
+      "maxRetries": 1,
+      "maxTokens": 3200,
+      "temperature": 0.62
+    },
+    {
+      "flowId": "card-image",
+      "primaryAdapterId": "local-comfyui-api-image",
+      "fallbackAdapterId": "",
+      "model": "sd_xl_turbo_1.0_fp16.safetensors",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": false,
+      "rateLimitPerMinute": 4,
+      "monthlyBudgetCents": 4000,
+      "perRequestBudgetCents": 1,
+      "maxRetries": 1,
+      "maxTokens": 0,
+      "temperature": 0
+    }
+  ]
+}

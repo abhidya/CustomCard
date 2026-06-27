@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T01:42:43.911Z",
+  "createdAtIso": "2026-06-27T02:58:47.550Z",
   "status": "blocked",
   "promotionReady": false,
   "evidenceRoot": "docs/evidence/generated-card-comparisons",
@@ -23,7 +23,8 @@
     "Installed production planner candidates found locally: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
     "Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
     "Recommended production planner candidates still missing locally: qwen3-14b-instruct.",
-    "Planner/theme adherence is still failing required terms: Nina, birthday, aquarium, Uncle Ken, koi, encouragement.",
+    "The latest LLM-planned benchmark covers 3 customer request runs.",
+    "Planner/theme adherence is still failing required terms: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog.",
     "Latest aggregate is blocked: best score 38 across 3 run(s).",
     "Latest manual grade checklist is blocked: 0/0 generated run(s) graded, 0 failed before image generation."
   ],
@@ -37,19 +38,23 @@
   "rerunPlans": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-production-planner/production-text-rerun-plan.json",
-      "createdAtIso": "2026-06-27T01:23:10.727Z",
+      "createdAtIso": "2026-06-27T02:58:27.354Z",
       "status": "rerun-required",
       "promotionReady": false,
       "failedRequirements": [
+        "live ComfyUI proof is current",
+        "planner preflight is production-ready",
         "readiness doctor is promotion-ready",
+        "production-suitable planner endpoint is reachable",
+        "no small smoke planner is active or used",
         "LLM-planned customer request matrix completed",
         "planner preserved required terms and avoided forbidden terms",
         "manual grade checklist is promotion-ready",
         "manual aggregate is promotion-ready"
       ],
       "commandCount": 10,
-      "plannerModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
-      "plannerClassification": "production-suitable",
+      "plannerModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+      "plannerClassification": "smoke-only",
       "nextBenchmarkOutput": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner"
     },
     {
@@ -99,7 +104,7 @@
   "plannerPreflights": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner/production-text-planner-preflight.json",
-      "createdAtIso": "2026-06-27T00:37:22.225Z",
+      "createdAtIso": "2026-06-27T02:01:59.264Z",
       "status": "promotion-ready",
       "promotionReady": true,
       "runAllowed": true,
@@ -180,7 +185,7 @@
   "readinessReports": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json",
-      "createdAtIso": "2026-06-27T00:43:47.817Z",
+      "createdAtIso": "2026-06-27T01:49:05.479Z",
       "status": "blocked",
       "promotionReady": false,
       "blockerCount": 1,
@@ -435,7 +440,7 @@
   "preflights": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-preflight-20260627-production-planner/production-text-preflight.json",
-      "createdAtIso": "2026-06-27T00:43:40.184Z",
+      "createdAtIso": "2026-06-27T01:49:04.402Z",
       "status": "promotion-ready",
       "promotionReady": true,
       "liveComfyReachable": true,
@@ -935,17 +940,18 @@
   "benchmarkSummaries": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json",
-      "createdAtIso": "2026-06-27T00:49:34.101Z",
+      "createdAtIso": "2026-06-27T01:49:31.900Z",
       "phase": "local-production-text",
       "totalPlannedRuns": 3,
-      "totalRuns": 2,
+      "totalRuns": 3,
       "completedRuns": 0,
       "failedRuns": 0,
-      "llmGeneratedRuns": 2,
+      "llmGeneratedRuns": 3,
       "fixtureRuns": 0,
       "fixtures": [
         "aquarium-lover-birthday",
-        "koi-fish-lover-encouragement"
+        "koi-fish-lover-encouragement",
+        "dog-lover-thank-you"
       ],
       "textModels": [
         "koboldcpp/gemma-4-31B-it-Q4_K_M"
@@ -958,7 +964,10 @@
         "aquarium",
         "Uncle Ken",
         "koi",
-        "encouragement"
+        "encouragement",
+        "Morgan",
+        "thank",
+        "dog"
       ],
       "mustAvoidFailures": [],
       "finalImagesRenderedByComfy": true,

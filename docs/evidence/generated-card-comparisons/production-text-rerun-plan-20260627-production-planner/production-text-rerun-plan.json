@@ -1,18 +1,18 @@
 {
-  "createdAtIso": "2026-06-27T01:23:10.727Z",
+  "createdAtIso": "2026-06-27T02:58:27.354Z",
   "status": "rerun-required",
   "promotionReady": false,
   "reportDir": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-production-planner",
   "inputs": {
-    "gateReport": "docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-production-planner/production-text-promotion-gate.json",
-    "evidenceIndex": "docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner/production-text-evidence-index.json"
+    "gateReport": "docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current/production-text-promotion-gate.json",
+    "evidenceIndex": "docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current/production-text-evidence-index.json"
   },
   "currentEvidence": {
-    "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner/production-text-planner-preflight.json",
-    "plannerClassification": "production-suitable",
-    "plannerModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
-    "plannerContextTokens": 8192,
-    "localModelCoverage": "docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current/local-model-coverage.json",
+    "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current/production-text-planner-preflight.json",
+    "plannerClassification": "smoke-only",
+    "plannerModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+    "plannerContextTokens": 4096,
+    "localModelCoverage": "docs/evidence/generated-card-comparisons/local-model-coverage-20260626-current/local-model-coverage.json",
     "installedProductionPlanners": [
       "gemma-4-31b-it",
       "magistral-small-2509",
@@ -26,24 +26,74 @@
     "missingProductionPlanners": [
       "qwen3-14b-instruct"
     ],
-    "latestBenchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json",
+    "latestBenchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
     "latestAggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
     "bestScore": 38
   },
   "failedRequirements": [
     {
+      "name": "live ComfyUI proof is current",
+      "details": {
+        "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260626T042126Z/production-text-preflight.json",
+        "preflightCreatedAtIso": "2026-06-26T04:21:27.154Z",
+        "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
+        "readinessCreatedAtIso": "2026-06-26T23:10:59.401Z",
+        "preflightLiveComfyReachable": true,
+        "preflightLiveNodeAvailable": true,
+        "readinessComfyReachable": false,
+        "readinessHasTextComposer": false,
+        "staleReason": "newer readiness evidence reports live ComfyUI or CustomCardTextComposer unavailable"
+      }
+    },
+    {
+      "name": "planner preflight is production-ready",
+      "details": {
+        "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current/production-text-planner-preflight.json",
+        "activeModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+        "classification": "smoke-only",
+        "reportedContextTokens": 4096,
+        "maxOutputTokens": 3200,
+        "blockers": [
+          "Planner /models preflight failed: fetch failed",
+          "Planner model 'koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S' is below the production model floor for production text and is smoke-only; use Gemma 31B, Magistral Small, Qwen3 14B+, or a stronger hosted planner.",
+          "Planner context 4096 is below the production minimum 8192; 4096-token local runs are smoke-only."
+        ]
+      }
+    },
+    {
       "name": "readiness doctor is promotion-ready",
       "details": {
-        "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json",
+        "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
         "blockers": [
-          "latest LLM-planned aggregate is passing"
+          "live ComfyUI reachable",
+          "live ComfyUI exposes CustomCardTextComposer",
+          "latest LLM-planned aggregate is passing",
+          "configured production planner endpoint is reachable",
+          "configured production planner endpoint is production-suitable"
+        ]
+      }
+    },
+    {
+      "name": "production-suitable planner endpoint is reachable",
+      "details": {
+        "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current/production-text-readiness.json",
+        "activePlannerModels": []
+      }
+    },
+    {
+      "name": "no small smoke planner is active or used",
+      "details": {
+        "readinessSmallPlannerActive": false,
+        "benchmarkSmallPlannerUsed": true,
+        "textModels": [
+          "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
         ]
       }
     },
     {
       "name": "LLM-planned customer request matrix completed",
       "details": {
-        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json",
+        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
         "requiredFixtures": [
           "aquarium-lover-birthday",
           "koi-fish-lover-encouragement",
@@ -51,39 +101,43 @@
         ],
         "fixtures": [
           "aquarium-lover-birthday",
-          "koi-fish-lover-encouragement"
+          "koi-fish-lover-encouragement",
+          "dog-lover-thank-you"
         ],
-        "completedRuns": 0,
-        "failedRuns": 0
+        "completedRuns": 2,
+        "failedRuns": 1
       }
     },
     {
       "name": "planner preserved required terms and avoided forbidden terms",
       "details": {
-        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json",
+        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
         "missingMustInclude": [
           "Nina",
-          "birthday",
           "aquarium",
-          "Uncle Ken",
-          "koi",
-          "encouragement"
+          "Morgan",
+          "dog"
         ],
-        "mustAvoidFailures": []
+        "mustAvoidFailures": [
+          "mockup"
+        ]
       }
     },
     {
       "name": "manual grade checklist is promotion-ready",
       "details": {
-        "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-production-planner/production-text-manual-grade-checklist.json",
-        "totalRuns": 2,
-        "gradableRuns": 0,
-        "gradedGeneratedRuns": 0,
+        "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current/production-text-manual-grade-checklist.json",
+        "totalRuns": 3,
+        "gradableRuns": 2,
+        "gradedGeneratedRuns": 2,
         "missingGrades": 0,
         "invalidGrades": 0,
-        "failedBeforeImageGeneration": 0,
+        "failedBeforeImageGeneration": 1,
         "blockers": [
-          "Automated must_include checks failed for: Nina, birthday, aquarium, Uncle Ken, koi, encouragement."
+          "3 manual grade(s) are blocked or failed.",
+          "1 run(s) failed before image generation.",
+          "Automated must_include checks failed for: Nina, aquarium, Morgan, dog.",
+          "Automated must_avoid checks failed for: mockup."
         ]
       }
     },
@@ -117,6 +171,11 @@
     "minOutputTokens": 3200,
     "recommendedOutputTokens": 3200,
     "recommendedRequestTimeoutMs": 1200000,
+    "requiredLocalGpu": {
+      "gpuId": 0,
+      "gpuLayers": 999,
+      "note": "Local KoboldCPP production planner commands must use CUDA/Vulkan/HIP with nonzero GPU offload. GpuLayers 999 requests full GPU offload and lets KoboldCPP cap at what the runtime can use."
+    },
     "recommendedModels": [
       "koboldcpp/gemma-4-31B-it-Q4_K_M",
       "koboldcpp/Magistral-Small-2509-Q4_K_M",
@@ -127,6 +186,7 @@
       "Qwen3-4B/8B and other 1.5B/3B/4B/7B/8B local planners",
       "4096-context planner runs",
       "Reduced creative prompt contracts used only to fit small local models",
+      "CPU-only KoboldCPP planner runs or --gpulayers 0",
       "-AllowSmallPlanner except when collecting explicit smoke/failure evidence"
     ]
   },
@@ -144,13 +204,13 @@
     {
       "step": 1,
       "title": "Start or configure production planner",
-      "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/start-local-card-planner.ps1 -ModelPath D:\\models\\gemma-4-31B-it-Q4_K_M.gguf -Port 5003 -ContextSize 8192",
-      "why": "Starts a production-suitable local planner when GPU/offload resources are available. Use an equivalent hosted/self-hosted HTTPS OpenAI-compatible endpoint if local CPU decoding is too slow."
+      "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/start-local-card-planner.ps1 -ModelPath D:\\models\\gemma-4-31B-it-Q4_K_M.gguf -Port 5013 -ContextSize 8192 -GpuId 0 -GpuLayers 999",
+      "why": "Starts a production-suitable local planner with GPU offload. Use an equivalent hosted/self-hosted HTTPS OpenAI-compatible endpoint if local VRAM cannot run the planner."
     },
     {
       "step": 2,
       "title": "Write planner preflight evidence",
-      "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-preflight.mjs --base-url http://127.0.0.1:5003/v1 --model koboldcpp/gemma-4-31B-it-Q4_K_M --reported-context-tokens 8192 --max-output-tokens 3200 --output-dir docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner",
+      "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-preflight.mjs --base-url http://127.0.0.1:5013/v1 --model koboldcpp/gemma-4-31B-it-Q4_K_M --reported-context-tokens 8192 --max-output-tokens 3200 --output-dir docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner",
       "why": "Proves the planner model, context budget, and output cap before image work starts."
     },
     {
@@ -162,13 +222,13 @@
     {
       "step": 4,
       "title": "Refresh readiness",
-      "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-readiness-doctor.mjs --advisory --local-llm-base-url http://127.0.0.1:5003/v1 --planner-context-tokens 8192 --planner-max-output-tokens 3200 --output-dir docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner",
+      "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-readiness-doctor.mjs --advisory --local-llm-base-url http://127.0.0.1:5013/v1 --planner-context-tokens 8192 --planner-max-output-tokens 3200 --output-dir docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner",
       "why": "Confirms Comfy, the custom text node, aggregate state, model inventory, and the configured planner endpoint with the production context/output budget."
     },
     {
       "step": 5,
       "title": "Run full production-text matrix",
-      "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5003/v1 -LocalLlmModel koboldcpp/gemma-4-31B-it-Q4_K_M -OutputDir docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 3200 -PlannerContextSize 8192 -PlannerRequestTimeoutMs 1200000",
+      "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5013/v1 -LocalLlmModel koboldcpp/gemma-4-31B-it-Q4_K_M -OutputDir docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 3200 -PlannerContextSize 8192 -PlannerRequestTimeoutMs 1200000 -PlannerGpuId 0 -PlannerGpuLayers 999",
       "why": "Runs aquarium/koi/dog customer requests through the production Comfy text workflow with LLM-owned theme/copy/layout."
     },
     {

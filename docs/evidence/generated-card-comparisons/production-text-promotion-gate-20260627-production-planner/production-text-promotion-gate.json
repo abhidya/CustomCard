@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T01:42:43.914Z",
+  "createdAtIso": "2026-06-27T02:58:47.552Z",
   "status": "blocked",
   "promotionReady": false,
   "advisory": true,
@@ -26,7 +26,7 @@
       "ok": true,
       "details": {
         "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260627-production-planner/production-text-preflight.json",
-        "preflightCreatedAtIso": "2026-06-27T00:43:40.184Z",
+        "preflightCreatedAtIso": "2026-06-27T01:49:04.402Z",
         "liveComfyReachable": true,
         "liveNodeAvailable": true
       }
@@ -36,9 +36,9 @@
       "ok": true,
       "details": {
         "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260627-production-planner/production-text-preflight.json",
-        "preflightCreatedAtIso": "2026-06-27T00:43:40.184Z",
+        "preflightCreatedAtIso": "2026-06-27T01:49:04.402Z",
         "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json",
-        "readinessCreatedAtIso": "2026-06-27T00:43:47.817Z",
+        "readinessCreatedAtIso": "2026-06-27T01:49:05.479Z",
         "preflightLiveComfyReachable": true,
         "preflightLiveNodeAvailable": true,
         "readinessComfyReachable": true,
@@ -134,7 +134,8 @@
         ],
         "fixtures": [
           "aquarium-lover-birthday",
-          "koi-fish-lover-encouragement"
+          "koi-fish-lover-encouragement",
+          "dog-lover-thank-you"
         ],
         "completedRuns": 0,
         "failedRuns": 0
@@ -160,7 +161,10 @@
           "aquarium",
           "Uncle Ken",
           "koi",
-          "encouragement"
+          "encouragement",
+          "Morgan",
+          "thank",
+          "dog"
         ],
         "mustAvoidFailures": []
       }

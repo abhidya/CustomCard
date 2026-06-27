@@ -1,7 +1,7 @@
 {
   "status": "provider-unavailable",
-  "detail": "fetch failed",
-  "error": "fetch failed",
+  "detail": "read ECONNRESET",
+  "error": "read ECONNRESET",
   "user_content_only": false,
   "ai_flow": {
     "card_copy": {
@@ -17,13 +17,13 @@
       "fallback_queue_enabled": false,
       "ready_for_live_calls": true,
       "blocked_reasons": [],
-      "provider_failure": "fetch failed"
+      "provider_failure": "read ECONNRESET"
     }
   },
   "provider_call_events": [
     {
-      "id": "provider-call-1e38c5f1",
-      "tenant_id": "model-benchmark-aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui-1782521374103",
+      "id": "provider-call-6e8b0d78",
+      "tenant_id": "model-benchmark-aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui-1782524971907",
       "route_id": "/api/ai/card/generate",
       "flow_id": "card-copy",
       "adapter_id": "local-openai-compatible-chat",
@@ -34,7 +34,7 @@
       "month_bucket": "2026-06",
       "request_units": 1,
       "estimated_cost_cents": 5,
-      "rate_limit_window_start": "2026-06-27T00:49:00.000Z",
+      "rate_limit_window_start": "2026-06-27T01:49:00.000Z",
       "live_network_call": true,
       "metadata": {
         "phase": "card-copy",
@@ -48,8 +48,8 @@
       }
     },
     {
-      "id": "provider-call-a2737bae",
-      "tenant_id": "model-benchmark-aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui-1782521374103",
+      "id": "provider-call-6d7c379f",
+      "tenant_id": "model-benchmark-aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui-1782524971907",
       "route_id": "/api/ai/card/generate",
       "flow_id": "card-copy",
       "adapter_id": "local-openai-compatible-chat",
@@ -60,7 +60,7 @@
       "month_bucket": "2026-06",
       "request_units": 1,
       "estimated_cost_cents": 5,
-      "rate_limit_window_start": "2026-06-27T00:49:00.000Z",
+      "rate_limit_window_start": "2026-06-27T01:49:00.000Z",
       "live_network_call": true,
       "metadata": {
         "phase": "card-copy",
@@ -71,7 +71,7 @@
         "fallbackAdapterId": "cloudflare-workers-ai-chat",
         "localAdapter": false,
         "costGateEvent": true,
-        "providerFailure": "fetch failed"
+        "providerFailure": "read ECONNRESET"
       }
     }
   ],

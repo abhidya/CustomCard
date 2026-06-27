@@ -77,9 +77,14 @@ describe("production text rerun plan", () => {
     ]);
     expect(plan.productionPlannerContract.minContextTokens).toBe(8192);
     expect(plan.productionPlannerContract.recommendedRequestTimeoutMs).toBe(1200000);
+    expect(plan.productionPlannerContract.requiredLocalGpu).toMatchObject({
+      gpuId: 0,
+      gpuLayers: 999
+    });
     expect(plan.productionPlannerContract.minimumOpenWeightPlannerClass).toContain("14B+");
     expect(plan.productionPlannerContract.disallowedForPromotion.join("\n")).toContain("Qwen3-4B");
     expect(plan.productionPlannerContract.disallowedForPromotion.join("\n")).toContain("8B");
+    expect(plan.productionPlannerContract.disallowedForPromotion.join("\n")).toContain("gpulayers 0");
     expect(plan.currentEvidence).toMatchObject({
       localModelCoverage: "docs/evidence/generated-card-comparisons/local-model-coverage-20260626-current/local-model-coverage.json",
       installedProductionPlanners: ["gemma-4-31b-it", "magistral-small-2509"],
@@ -102,8 +107,13 @@ describe("production text rerun plan", () => {
     expect(plan.commands[2].command).toContain("--require-live true");
     expect(plan.commands[3].command).toContain("--planner-context-tokens 8192");
     expect(plan.commands[3].command).toContain("--planner-max-output-tokens 3200");
+    expect(plan.commands[0].command).toContain("-GpuId 0");
+    expect(plan.commands[0].command).toContain("-GpuLayers 999");
+    expect(plan.commands[0].command).toContain("-Port 5013");
     expect(plan.commands[4].command).toContain("-PlannerMaxTokens 3200");
     expect(plan.commands[4].command).toContain("-PlannerRequestTimeoutMs 1200000");
+    expect(plan.commands[4].command).toContain("-PlannerGpuId 0");
+    expect(plan.commands[4].command).toContain("-PlannerGpuLayers 999");
     expect(plan.commands[4].command).not.toContain("-AllowSmallPlanner");
     expect(plan.commands[6].command).toContain("production-text-manual-grade-checklist.mjs");
     expect(plan.acceptanceChecks).toContain("planner preflight is production-ready");

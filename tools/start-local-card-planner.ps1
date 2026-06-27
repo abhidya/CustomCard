@@ -109,6 +109,7 @@ $Args = @(
   "--contextsize", [string]$ContextSize,
   "--threads", [string]$Threads,
   "--jinja",
+  "--singleinstance",
   "--quiet"
 )
 

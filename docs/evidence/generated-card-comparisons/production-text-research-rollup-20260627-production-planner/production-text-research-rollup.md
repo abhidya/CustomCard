@@ -1,6 +1,6 @@
 # Production Text Research Rollup
 
-Created: 2026-06-27T01:42:51.899Z
+Created: 2026-06-27T02:58:59.050Z
 Status: blocked
 Promotion ready: no
 
@@ -18,7 +18,8 @@ Promotion ready: no
 - Installed production planner candidates found locally: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Recommended production planner candidates still missing locally: qwen3-14b-instruct.
-- Planner/theme adherence is still failing required terms: Nina, birthday, aquarium, Uncle Ken, koi, encouragement.
+- The latest LLM-planned benchmark covers 3 customer request runs.
+- Planner/theme adherence is still failing required terms: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog.
 - Latest aggregate is blocked: best score 38 across 3 run(s).
 - Latest manual grade checklist is blocked: 0/0 generated run(s) graded, 0 failed before image generation.
 - Production planner contract: Keep the full creative planner prompt and switch the runtime, not the prompt quality.
@@ -26,7 +27,7 @@ Promotion ready: no
 - Dry-run planning proof records the full-quality production planner path: koboldcpp/gemma-4-31B-it-Q4_K_M with 8192+ context, 3200 output tokens, 1200000ms timeout, and aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you planned.
 - Production planner files are installed but not yet evaluated in local production-text evidence: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Optional production planner pull queue remains: qwen3-14b-instruct.
-- Required customer terms still missing: Nina, birthday, aquarium, Uncle Ken, koi, encouragement.
+- Required customer terms still missing: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog.
 - Manual grade readiness is blocked: 0 blocked grade(s), 0 run(s) failed before image generation.
 - Best current LLM-planned score is 38/100 and remains blocked.
 - Promotion gate currently fails 5 requirement(s): readiness doctor is promotion-ready, LLM-planned customer request matrix completed, planner preserved required terms and avoided forbidden terms, manual grade checklist is promotion-ready, manual aggregate is promotion-ready.
@@ -40,7 +41,7 @@ Promotion ready: no
 | Readiness | blocked | production planner reachable=yes; blockers=1 | [open](../production-text-readiness-20260627-production-planner/production-text-readiness.json) |
 | Dry run | planning-proof | 3 planned; production-suitable koboldcpp/gemma-4-31B-it-Q4_K_M; context=8192; max=3200 | [open](../production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json) |
 | Model coverage | action-needed | 9 recommended installed; unevaluated planners=gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash | [open](../local-model-coverage-20260627-current/local-model-coverage.json) |
-| Benchmark | blocked | 0/2 completed; failed=0; missing=Nina, birthday, aquarium, Uncle Ken, koi, encouragement | [open](../production-text-workflow-20260627-production-planner/production-text-workflow-summary.json) |
+| Benchmark | blocked | 0/3 completed; failed=0; missing=Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog | [open](../production-text-workflow-20260627-production-planner/production-text-workflow-summary.json) |
 | Manual grades | blocked | 0/0 generated graded; blocked=0; failed-before-image=0 | [open](../production-text-manual-grade-checklist-20260627-production-planner/production-text-manual-grade-checklist.json) |
 | Aggregate | blocked | 3 run(s); best=38; statuses={"blocked":2,"failed":1} | [open](../benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json) |
 
@@ -68,15 +69,15 @@ Passed requirements:
 ### 1. Start or configure production planner
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/start-local-card-planner.ps1 -ModelPath D:\models\gemma-4-31B-it-Q4_K_M.gguf -Port 5003 -ContextSize 8192
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/start-local-card-planner.ps1 -ModelPath D:\models\gemma-4-31B-it-Q4_K_M.gguf -Port 5013 -ContextSize 8192 -GpuId 0 -GpuLayers 999
 ```
 
-Starts a production-suitable local planner when GPU/offload resources are available. Use an equivalent hosted/self-hosted HTTPS OpenAI-compatible endpoint if local CPU decoding is too slow.
+Starts a production-suitable local planner with GPU offload. Use an equivalent hosted/self-hosted HTTPS OpenAI-compatible endpoint if local VRAM cannot run the planner.
 
 ### 2. Write planner preflight evidence
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-preflight.mjs --base-url http://127.0.0.1:5003/v1 --model koboldcpp/gemma-4-31B-it-Q4_K_M --reported-context-tokens 8192 --max-output-tokens 3200 --output-dir docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-preflight.mjs --base-url http://127.0.0.1:5013/v1 --model koboldcpp/gemma-4-31B-it-Q4_K_M --reported-context-tokens 8192 --max-output-tokens 3200 --output-dir docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner
 ```
 
 Proves the planner model, context budget, and output cap before image work starts.
@@ -92,7 +93,7 @@ Proves the current ComfyUI runtime is reachable and has CustomCardTextComposer l
 ### 4. Refresh readiness
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-readiness-doctor.mjs --advisory --local-llm-base-url http://127.0.0.1:5003/v1 --planner-context-tokens 8192 --planner-max-output-tokens 3200 --output-dir docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-readiness-doctor.mjs --advisory --local-llm-base-url http://127.0.0.1:5013/v1 --planner-context-tokens 8192 --planner-max-output-tokens 3200 --output-dir docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner
 ```
 
 Confirms Comfy, the custom text node, aggregate state, model inventory, and the configured planner endpoint with the production context/output budget.
@@ -100,7 +101,7 @@ Confirms Comfy, the custom text node, aggregate state, model inventory, and the 
 ### 5. Run full production-text matrix
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5003/v1 -LocalLlmModel koboldcpp/gemma-4-31B-it-Q4_K_M -OutputDir docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 3200 -PlannerContextSize 8192 -PlannerRequestTimeoutMs 1200000
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5013/v1 -LocalLlmModel koboldcpp/gemma-4-31B-it-Q4_K_M -OutputDir docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 3200 -PlannerContextSize 8192 -PlannerRequestTimeoutMs 1200000 -PlannerGpuId 0 -PlannerGpuLayers 999
 ```
 
 Runs aquarium/koi/dog customer requests through the production Comfy text workflow with LLM-owned theme/copy/layout.

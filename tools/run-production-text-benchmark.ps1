@@ -21,9 +21,10 @@ param(
   [int]$PlannerContextSize = 8192,
   [int]$PlannerRequestTimeoutMs = 1200000,
   [string]$ProductionPlannerModelPath = "D:\models\gemma-4-31B-it-Q4_K_M.gguf",
-  [int]$PlannerPort = 5003,
+  [int]$PlannerPort = 5013,
   [int]$PlannerThreads = 8,
-  [int]$PlannerGpuLayers = 0,
+  [int]$PlannerGpuId = 0,
+  [int]$PlannerGpuLayers = 999,
   [int]$PlannerStartupTimeoutSec = 120,
   [switch]$NoAutoStartPlanner,
   [switch]$AllowUnknownProductionPlanner,
@@ -34,6 +35,14 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+if ($PlannerGpuId -lt 0) {
+  [Console]::Error.WriteLine("PlannerGpuId must be 0 or greater.")
+  exit 2
+}
+if ($PlannerGpuLayers -le 0) {
+  [Console]::Error.WriteLine("PlannerGpuLayers $PlannerGpuLayers can allow CPU-backed AI. Use -PlannerGpuLayers 999 to request full GPU offload.")
+  exit 2
+}
 $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 $ResolvedWorkflowPath = Resolve-Path (Join-Path $RepoRoot $WorkflowPath)
 $NodeWrapper = Join-Path $PSScriptRoot "node.ps1"
@@ -94,6 +103,7 @@ if (-not [string]::IsNullOrWhiteSpace($LocalLlmApiKey)) {
 $env:CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS = [string]$PlannerMaxTokens
 $env:CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS = [string]$PlannerContextSize
 $env:CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS = [string]$PlannerRequestTimeoutMs
+$env:CUSTOMCARD_LOCAL_LLM_REQUIRE_MODEL_MATCH = "true"
 if ($AllowSmallPlanner) {
   $env:CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER = "true"
 }
@@ -120,6 +130,70 @@ function Get-FirstUsableEnvValue {
   return ""
 }
 
+function Get-EndpointUri {
+  param([string]$BaseUrl)
+  try {
+    return [Uri]$BaseUrl
+  } catch {
+    return $null
+  }
+}
+
+function Test-LocalEndpoint {
+  param([Uri]$Uri)
+  if ($null -eq $Uri) {
+    return $false
+  }
+  return $Uri.Host -eq "127.0.0.1" -or
+    $Uri.Host -eq "localhost" -or
+    $Uri.Host -eq "::1"
+}
+
+function Get-LocalKoboldPlannerProcess {
+  param([int]$Port)
+  $PortPattern = "(^|\s)--port\s+$Port(\s|$)"
+  return @(Get-CimInstance Win32_Process | Where-Object {
+    $_.Name -ieq "koboldcpp.exe" -and
+    $_.CommandLine -match $PortPattern
+  })
+}
+
+function Test-KoboldPlannerUsesGpu {
+  param([string]$CommandLine)
+  if ([string]::IsNullOrWhiteSpace($CommandLine)) {
+    return $false
+  }
+  $UsesGpuBackend = $CommandLine -match "(^|\s)--use(cuda|cublas|hipblas|vulkan)(\s|$)"
+  $ExplicitGpuLayers = $CommandLine -match "(^|\s)--(gpulayers|gpu-layers|n-gpu-layers|ngl)\s+[1-9][0-9]*(\s|$)"
+  $CpuOnly = $CommandLine -match "(^|\s)--usecpu(\s|$)"
+  $ZeroGpuLayers = $CommandLine -match "(^|\s)--(gpulayers|gpu-layers|n-gpu-layers|ngl)\s+0(\s|$)"
+  return $UsesGpuBackend -and $ExplicitGpuLayers -and -not $CpuOnly -and -not $ZeroGpuLayers
+}
+
+function Assert-LocalKoboldPlannerUsesGpu {
+  param([string]$BaseUrl)
+  $Uri = Get-EndpointUri $BaseUrl
+  if (-not (Test-LocalEndpoint $Uri)) {
+    return
+  }
+  $Port = $Uri.Port
+  if ($Port -le 0) {
+    return
+  }
+  $PlannerProcesses = Get-LocalKoboldPlannerProcess $Port
+  if ($PlannerProcesses.Count -eq 0) {
+    return
+  }
+  $GpuBackedPlanner = @($PlannerProcesses | Where-Object {
+    Test-KoboldPlannerUsesGpu $_.CommandLine
+  })
+  if ($GpuBackedPlanner.Count -eq 0) {
+    $ExistingCommand = ($PlannerProcesses | Select-Object -First 1).CommandLine
+    throw "Refusing to run production-text benchmark against CPU-backed local KoboldCPP on $BaseUrl. Stop that process and restart with -GpuId/-GpuLayers. CommandLine: $ExistingCommand"
+  }
+  Write-Host "Local Kobold GPU check: port $Port uses GPU offload."
+}
+
 $ResolvedLocalLlmBaseUrl = Get-FirstUsableEnvValue @(
   "CUSTOMCARD_LOCAL_LLM_BASE_URL",
   "LMSTUDIO_BASE_URL",
@@ -135,6 +209,7 @@ if (-not $HasLocalLlm -and -not $AllowCompositorFixtureFallback -and -not $NoAut
       -Port $PlannerPort `
       -ContextSize $PlannerContextSize `
       -Threads $PlannerThreads `
+      -GpuId $PlannerGpuId `
       -GpuLayers $PlannerGpuLayers `
       -StartupTimeoutSec $PlannerStartupTimeoutSec
     if ($LASTEXITCODE -ne 0) {
@@ -154,6 +229,10 @@ if (-not $HasLocalLlm -and -not $AllowCompositorFixtureFallback) {
   exit 2
 }
 
+if ($HasLocalLlm) {
+  Assert-LocalKoboldPlannerUsesGpu $ResolvedLocalLlmBaseUrl
+}
+
 Write-Host "Production text benchmark output: $OutputDir"
 if (-not [string]::IsNullOrWhiteSpace($Checkpoint)) {
   Write-Host "Checkpoint override: $Checkpoint"
@@ -161,6 +240,7 @@ if (-not [string]::IsNullOrWhiteSpace($Checkpoint)) {
 if ($HasLocalLlm) {
   Write-Host "Local LLM planner: enabled"
   Write-Host "Local LLM planner request timeout: $PlannerRequestTimeoutMs ms"
+  Write-Host "Local Kobold planner GPU requirement: GPU $PlannerGpuId, gpulayers $PlannerGpuLayers"
 }
 if ($AllowCompositorFixtureFallback -and -not $HasLocalLlm) {
   Write-Host "Local LLM planner: missing; compositor fixture fallback explicitly allowed"

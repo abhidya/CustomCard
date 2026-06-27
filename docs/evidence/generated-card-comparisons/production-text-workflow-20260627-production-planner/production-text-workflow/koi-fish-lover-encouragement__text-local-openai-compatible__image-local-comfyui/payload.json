@@ -1,7 +1,7 @@
 {
   "status": "provider-unavailable",
-  "detail": "fetch failed",
-  "error": "fetch failed",
+  "detail": "connect ECONNREFUSED 127.0.0.1:5003",
+  "error": "connect ECONNREFUSED 127.0.0.1:5003",
   "user_content_only": false,
   "ai_flow": {
     "card_copy": {
@@ -17,13 +17,13 @@
       "fallback_queue_enabled": false,
       "ready_for_live_calls": true,
       "blocked_reasons": [],
-      "provider_failure": "fetch failed"
+      "provider_failure": "connect ECONNREFUSED 127.0.0.1:5003"
     }
   },
   "provider_call_events": [
     {
-      "id": "provider-call-e7bb535a",
-      "tenant_id": "model-benchmark-koi-fish-lover-encouragement__text-local-openai-compatible__image-local-comfyui-1782521680659",
+      "id": "provider-call-df8d9a81",
+      "tenant_id": "model-benchmark-koi-fish-lover-encouragement__text-local-openai-compatible__image-local-comfyui-1782525193601",
       "route_id": "/api/ai/card/generate",
       "flow_id": "card-copy",
       "adapter_id": "local-openai-compatible-chat",
@@ -34,7 +34,7 @@
       "month_bucket": "2026-06",
       "request_units": 1,
       "estimated_cost_cents": 5,
-      "rate_limit_window_start": "2026-06-27T00:54:00.000Z",
+      "rate_limit_window_start": "2026-06-27T01:53:00.000Z",
       "live_network_call": true,
       "metadata": {
         "phase": "card-copy",
@@ -48,8 +48,8 @@
       }
     },
     {
-      "id": "provider-call-8ead4e5d",
-      "tenant_id": "model-benchmark-koi-fish-lover-encouragement__text-local-openai-compatible__image-local-comfyui-1782521680659",
+      "id": "provider-call-b7e5113e",
+      "tenant_id": "model-benchmark-koi-fish-lover-encouragement__text-local-openai-compatible__image-local-comfyui-1782525193601",
       "route_id": "/api/ai/card/generate",
       "flow_id": "card-copy",
       "adapter_id": "local-openai-compatible-chat",
@@ -60,7 +60,7 @@
       "month_bucket": "2026-06",
       "request_units": 1,
       "estimated_cost_cents": 5,
-      "rate_limit_window_start": "2026-06-27T00:54:00.000Z",
+      "rate_limit_window_start": "2026-06-27T01:53:00.000Z",
       "live_network_call": true,
       "metadata": {
         "phase": "card-copy",
@@ -71,7 +71,7 @@
         "fallbackAdapterId": "cloudflare-workers-ai-chat",
         "localAdapter": false,
         "costGateEvent": true,
-        "providerFailure": "fetch failed"
+        "providerFailure": "connect ECONNREFUSED 127.0.0.1:5003"
       }
     }
   ],

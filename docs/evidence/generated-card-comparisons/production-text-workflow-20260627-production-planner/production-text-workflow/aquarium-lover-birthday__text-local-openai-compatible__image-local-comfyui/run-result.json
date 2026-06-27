@@ -12,17 +12,17 @@
   "typographyModeLabel": "CustomCard production text composer",
   "typographyStrategy": "llm-planned-copy-comfy-deterministic-text",
   "runDir": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-production-planner\\production-text-workflow\\aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui",
-  "startedAt": "2026-06-27T00:49:34.102Z",
-  "finishedAt": "2026-06-27T00:54:40.654Z",
+  "startedAt": "2026-06-27T01:49:31.905Z",
+  "finishedAt": "2026-06-27T01:53:13.595Z",
   "statusCode": 502,
   "cardCopyModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
   "providerFailures": {
-    "text": "fetch failed"
+    "text": "read ECONNRESET"
   },
   "panelCount": 0,
   "panelFiles": [],
   "effectiveProviderRequests": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-production-planner\\production-text-workflow\\aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui\\effective-provider-requests.json",
-  "providerCallCount": 0,
+  "providerCallCount": 1,
   "autoChecks": {
     "advisoryOnly": true,
     "checks": {
@@ -30,7 +30,7 @@
       "noProviderFailure": false,
       "mustIncludeCovered": false,
       "mustAvoidClean": true,
-      "providerCalls": 0,
+      "providerCalls": 1,
       "productionTextGeneratedCopy": true,
       "finalImagesRenderedByComfy": true,
       "benchmarkPreviewOverlayBypassed": true,

@@ -1,0 +1,87 @@
+{
+  "status": "provider-unavailable",
+  "detail": "connect ECONNREFUSED 127.0.0.1:5013",
+  "error": "connect ECONNREFUSED 127.0.0.1:5013",
+  "user_content_only": false,
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "local-openai-compatible-chat",
+      "primary_adapter_id": "local-openai-compatible-chat",
+      "fallback_adapter_id": "cloudflare-workers-ai-chat",
+      "model": "koboldcpp/gemma-4-31B-it-Q4_K_M",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 5000,
+      "per_request_budget_cents": 5,
+      "queue_enabled": false,
+      "fallback_queue_enabled": false,
+      "ready_for_live_calls": true,
+      "blocked_reasons": [],
+      "provider_failure": "connect ECONNREFUSED 127.0.0.1:5013"
+    }
+  },
+  "provider_call_events": [
+    {
+      "id": "provider-call-f79ad091",
+      "tenant_id": "model-benchmark-dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui-1782526853023",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "local-openai-compatible-chat",
+      "provider": "AI provider",
+      "capability": "text-chat",
+      "status": "reserved",
+      "fallback_from_adapter_id": "local-openai-compatible-chat",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 5,
+      "rate_limit_window_start": "2026-06-27T02:20:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "providerAttempt": 1,
+        "fallbackAttempt": false,
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "local-openai-compatible-chat",
+        "fallbackAdapterId": "cloudflare-workers-ai-chat",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-808f0c4e",
+      "tenant_id": "model-benchmark-dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui-1782526853023",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "local-openai-compatible-chat",
+      "provider": "AI provider",
+      "capability": "text-chat",
+      "status": "failed",
+      "fallback_from_adapter_id": "local-openai-compatible-chat",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 5,
+      "rate_limit_window_start": "2026-06-27T02:20:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "providerAttempt": 1,
+        "fallbackAttempt": false,
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "local-openai-compatible-chat",
+        "fallbackAdapterId": "cloudflare-workers-ai-chat",
+        "localAdapter": false,
+        "costGateEvent": true,
+        "providerFailure": "connect ECONNREFUSED 127.0.0.1:5013"
+      }
+    }
+  ],
+  "ai_cost_gate": {
+    "event_count": 2,
+    "reserved_or_spent_cents": 5,
+    "actual_spend_cents": 0,
+    "request_units": 1,
+    "live_network_calls": true,
+    "blocked_reasons": []
+  },
+  "fallback_queued": false
+}

@@ -42,11 +42,13 @@ export function buildProductionTextRerunPlan(args = {}) {
   const latestBenchmark = index.benchmarkSummaries?.[0] || {};
   const latestAggregate = (index.aggregates || []).find((entry) => entry.kind === "llm-planned") || index.aggregates?.[0] || {};
   const recommended = {
-    plannerBaseUrl: String(args["planner-base-url"] || "http://127.0.0.1:5003/v1"),
+    plannerBaseUrl: String(args["planner-base-url"] || "http://127.0.0.1:5013/v1"),
     plannerModel: String(args["planner-model"] || productionTextPlannerPolicy.recommendedModels[0]),
     contextTokens: numberOr(args["context-tokens"], productionTextPlannerPolicy.minContextTokens),
     maxOutputTokens: numberOr(args["max-output-tokens"], productionTextPlannerPolicy.recommendedOutputTokens),
     requestTimeoutMs: numberOr(args["request-timeout-ms"], 1_200_000),
+    gpuId: numberOr(args["gpu-id"], 0),
+    gpuLayers: numberOr(args["gpu-layers"], 999),
     checkpoint: String(args.checkpoint || "sd_xl_turbo_1.0_fp16.safetensors"),
     steps: numberOr(args.steps, 2),
     cfg: numberOr(args.cfg, 1.5),
@@ -94,11 +96,17 @@ export function buildProductionTextRerunPlan(args = {}) {
       minOutputTokens: productionTextPlannerPolicy.minOutputTokens,
       recommendedOutputTokens: productionTextPlannerPolicy.recommendedOutputTokens,
       recommendedRequestTimeoutMs: recommended.requestTimeoutMs,
+      requiredLocalGpu: {
+        gpuId: recommended.gpuId,
+        gpuLayers: recommended.gpuLayers,
+        note: "Local KoboldCPP production planner commands must use CUDA/Vulkan/HIP with nonzero GPU offload. GpuLayers 999 requests full GPU offload and lets KoboldCPP cap at what the runtime can use."
+      },
       recommendedModels: productionTextPlannerPolicy.recommendedModels,
       disallowedForPromotion: [
         "Qwen3-4B/8B and other 1.5B/3B/4B/7B/8B local planners",
         "4096-context planner runs",
         "Reduced creative prompt contracts used only to fit small local models",
+        "CPU-only KoboldCPP planner runs or --gpulayers 0",
         "-AllowSmallPlanner except when collecting explicit smoke/failure evidence"
       ]
     },
@@ -129,8 +137,8 @@ function buildCommands({ recommended, paths }) {
     {
       step: 1,
       title: "Start or configure production planner",
-      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/start-local-card-planner.ps1 -ModelPath D:\\models\\${modelLeaf}.gguf -Port 5003 -ContextSize ${recommended.contextTokens}`,
-      why: "Starts a production-suitable local planner when GPU/offload resources are available. Use an equivalent hosted/self-hosted HTTPS OpenAI-compatible endpoint if local CPU decoding is too slow."
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/start-local-card-planner.ps1 -ModelPath D:\\models\\${modelLeaf}.gguf -Port 5013 -ContextSize ${recommended.contextTokens} -GpuId ${recommended.gpuId} -GpuLayers ${recommended.gpuLayers}`,
+      why: "Starts a production-suitable local planner with GPU offload. Use an equivalent hosted/self-hosted HTTPS OpenAI-compatible endpoint if local VRAM cannot run the planner."
     },
     {
       step: 2,
@@ -153,7 +161,7 @@ function buildCommands({ recommended, paths }) {
     {
       step: 5,
       title: "Run full production-text matrix",
-      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl ${recommended.plannerBaseUrl} -LocalLlmModel ${recommended.plannerModel} -OutputDir ${paths.benchmarkOutput} -Checkpoint ${recommended.checkpoint} -Steps ${recommended.steps} -Cfg ${recommended.cfg} -Sampler ${recommended.sampler} -Scheduler ${recommended.scheduler} -PlannerMaxTokens ${recommended.maxOutputTokens} -PlannerContextSize ${recommended.contextTokens} -PlannerRequestTimeoutMs ${recommended.requestTimeoutMs}`,
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl ${recommended.plannerBaseUrl} -LocalLlmModel ${recommended.plannerModel} -OutputDir ${paths.benchmarkOutput} -Checkpoint ${recommended.checkpoint} -Steps ${recommended.steps} -Cfg ${recommended.cfg} -Sampler ${recommended.sampler} -Scheduler ${recommended.scheduler} -PlannerMaxTokens ${recommended.maxOutputTokens} -PlannerContextSize ${recommended.contextTokens} -PlannerRequestTimeoutMs ${recommended.requestTimeoutMs} -PlannerGpuId ${recommended.gpuId} -PlannerGpuLayers ${recommended.gpuLayers}`,
       why: "Runs aquarium/koi/dog customer requests through the production Comfy text workflow with LLM-owned theme/copy/layout."
     },
     {
@@ -216,6 +224,7 @@ function buildMarkdown(plan) {
   lines.push(`- Minimum context tokens: ${plan.productionPlannerContract.minContextTokens}`);
   lines.push(`- Recommended output tokens: ${plan.productionPlannerContract.recommendedOutputTokens}`);
   lines.push(`- Recommended local request timeout: ${plan.productionPlannerContract.recommendedRequestTimeoutMs}ms`);
+  lines.push(`- Required local GPU: device ${plan.productionPlannerContract.requiredLocalGpu.gpuId}, gpulayers ${plan.productionPlannerContract.requiredLocalGpu.gpuLayers}`);
   lines.push(`- Recommended models: ${plan.productionPlannerContract.recommendedModels.join(", ")}`);
   lines.push("");
   lines.push("Do not use for promotion:");

@@ -1,0 +1,14 @@
+[
+  {
+    "url": "http://127.0.0.1:5013/v1/models",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "ok": false,
+      "error": "connect ECONNREFUSED 127.0.0.1:5013"
+    },
+    "durationMs": 3
+  }
+]

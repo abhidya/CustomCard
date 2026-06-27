@@ -93,10 +93,10 @@ quality.
     request-aware branches, and blocks known-small planners such as Qwen3-4B/8B
     for production evidence unless `-AllowSmallPlanner` is explicit.
   - `tools/start-local-card-planner.ps1` starts the installed Gemma 31B
-    KoboldCPP planner with 8k context. It loaded on this machine, but CPU
-    decoding did not finish the first benchmark planner response in a practical
-    window; promotion evidence needs GPU/offload or a hosted/self-hosted larger
-    planner.
+    KoboldCPP planner with 8k context and GPU offload by default
+    (`-GpuId 0 -GpuLayers 999`). CPU-only KoboldCPP runs and `--gpulayers 0`
+    are invalid for promotion evidence; `tools/run-production-text-benchmark.ps1`
+    refuses a local KoboldCPP planner when it can see those CPU-only flags.
   - Aggregate:
     `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-rankings.md`
 - Soft safe-field proof:
@@ -350,11 +350,11 @@ Comfy template variables exposed by the local adapter include:
   - Accepts `-LocalLlmBaseUrl`, `-LocalLlmModel`, and `-LocalLlmApiKey` so the
     LLM-planned customer request matrix can be run without brittle shell env
     setup.
-  - Auto-starts the default Gemma 31B planner on port `5003` when no planner URL
+  - Auto-starts the default Gemma 31B planner on dedicated port `5013` when no planner URL
     is configured and the local model files exist; pass `-NoAutoStartPlanner`
     when a hosted/self-hosted endpoint should be used instead.
-  - Accepts either a root planner URL such as `http://127.0.0.1:5003` or a `/v1`
-    URL such as `http://127.0.0.1:5003/v1`, then runs the production planner
+  - Accepts either a root planner URL such as `http://127.0.0.1:5013` or a `/v1`
+    URL such as `http://127.0.0.1:5013/v1`, then runs the production planner
     preflight before live runs.
   - The preflight must see the requested `-LocalLlmModel` in `/v1/models`;
     mismatched stale servers are blocked instead of trusted.
@@ -448,7 +448,7 @@ the target ComfyUI server is reachable and `CustomCardTextComposer` is loaded.
 The current planner preflight report is
 `docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner`:
 Gemma 31B is promotion-ready with 8192 context and 3200 output tokens at the
-configured `5003` `/models` endpoint. The current readiness report is
+configured planner `/models` endpoint. The current readiness report is
 `docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner`:
 local Comfy and the production planner endpoint are both reachable; readiness
 still blocks on the stale failed Qwen3-4B LLM-planned aggregate. The current
@@ -470,14 +470,20 @@ Together they keep promotion blocked on readiness, full matrix completion,
 must-include/must-avoid adherence, manual grade checklist readiness, and manual
 aggregate readiness: 5 failed requirements total. A full matrix attempt is
 recorded at
-`docs/evidence/generated-card-comparisons/production-text-runtime-attempt-20260627-production-planner`:
-it passed live Comfy and Gemma planner preflights, wrote partial benchmark
-evidence for aquarium and koi, and both completed records failed before image
-generation with text provider `fetch failed`; dog had started but did not
-finish before the CPU-only Gemma worker was stopped for throughput. Treat that
-as runtime-budget evidence: rerun with `-PlannerRequestTimeoutMs 1200000`,
-more offload, or a stronger hosted/self-hosted endpoint before reducing the
-creative contract. Gate 9's
+`docs/evidence/generated-card-comparisons/production-text-runtime-attempt-20260627-production-planner`
+and
+`docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu`:
+the first attempt exposed CPU-only Gemma startup and the GPU attempt proved
+CUDA offload, but a stale Qwen3-8B Kobold worker on port `5003` stole the port
+mid-request and produced `ECONNRESET`/`ECONNREFUSED` text-provider failures
+before image generation. Treat those as runtime-isolation evidence, not prompt
+quality evidence: use the dedicated `5013` production planner port, require
+`/models` to match the requested planner, keep `-PlannerRequestTimeoutMs
+1200000`, and switch hosted/self-hosted only if local GPU throughput remains
+too slow. A follow-up isolated-port Gemma run on `5013` still reset the
+connection during the first full-contract JSON response; a Magistral Small
+GPU run on `5013` proved `24/41` layers offloaded but was still stuck before
+the first provider response after the practical benchmark window. Gate 9's
 older live LLM-planned matrix ran through
 KoboldCPP Qwen3-4B and local Comfy, then failed quality review: aquarium scored
 38/100, dog scored 34/100, and koi failed before image generation because the

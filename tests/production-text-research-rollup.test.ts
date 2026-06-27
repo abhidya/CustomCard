@@ -154,6 +154,10 @@ describe("production text research rollup", () => {
       productionPlannerContract: {
         summary: "Keep the full creative planner prompt and switch the runtime, not the prompt quality.",
         minimumOpenWeightPlannerClass: "14B+ dense/open-weight planner or stronger hosted model",
+        requiredLocalGpu: {
+          gpuId: 0,
+          gpuLayers: 999
+        },
         disallowedForPromotion: [
           "Reduced creative prompt contracts used only to fit small local models"
         ]
@@ -162,13 +166,13 @@ describe("production text research rollup", () => {
         {
           step: 1,
           title: "Start or configure production planner",
-          command: "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/start-local-card-planner.ps1 -ModelPath D:\\models\\gemma-4-31B-it-Q4_K_M.gguf -Port 5003 -ContextSize 8192",
+          command: "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/start-local-card-planner.ps1 -ModelPath D:\\models\\gemma-4-31B-it-Q4_K_M.gguf -Port 5013 -ContextSize 8192 -GpuId 0 -GpuLayers 999",
           why: "Use the correct planner runtime."
         },
         {
           step: 2,
           title: "Write planner preflight evidence",
-          command: "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-preflight.mjs --base-url http://127.0.0.1:5003/v1 --model koboldcpp/gemma-4-31B-it-Q4_K_M --reported-context-tokens 8192 --max-output-tokens 3200",
+          command: "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-preflight.mjs --base-url http://127.0.0.1:5013/v1 --model koboldcpp/gemma-4-31B-it-Q4_K_M --reported-context-tokens 8192 --max-output-tokens 3200",
           why: "Proves the loaded model and budget."
         }
       ]
