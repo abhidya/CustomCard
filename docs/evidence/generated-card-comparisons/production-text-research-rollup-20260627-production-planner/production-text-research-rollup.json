@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T02:58:59.050Z",
+  "createdAtIso": "2026-06-27T03:06:24.614Z",
   "status": "blocked",
   "promotionReady": false,
   "reportDir": "docs/evidence/generated-card-comparisons/production-text-research-rollup-20260627-production-planner",
@@ -17,7 +17,7 @@
     "dryRun": "docs/evidence/generated-card-comparisons/production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json",
     "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-production-planner/production-text-manual-grade-checklist.json",
     "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
-    "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json"
+    "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json"
   },
   "evidenceSummary": {
     "liveComfyTextComposerProof": {
@@ -98,10 +98,24 @@
       ]
     },
     "benchmark": {
-      "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json",
+      "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
       "totalRuns": 3,
       "completedRuns": 0,
-      "failedRuns": 0,
+      "failedRuns": 3,
+      "failedBeforeImageGeneration": 3,
+      "failedFixtures": [
+        "aquarium-lover-birthday",
+        "koi-fish-lover-encouragement",
+        "dog-lover-thank-you"
+      ],
+      "providerFailures": [
+        "aquarium-lover-birthday: text provider read ECONNRESET",
+        "koi-fish-lover-encouragement: text provider connect ECONNREFUSED 127.0.0.1:5013",
+        "dog-lover-thank-you: text provider connect ECONNREFUSED 127.0.0.1:5013"
+      ],
+      "plannerBaseUrls": [
+        "http://127.0.0.1:5013/v1"
+      ],
       "fixtures": [
         "aquarium-lover-birthday",
         "koi-fish-lover-encouragement",
@@ -178,7 +192,7 @@
       {
         "name": "LLM-planned customer request matrix completed",
         "details": {
-          "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json",
+          "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
           "requiredFixtures": [
             "aquarium-lover-birthday",
             "koi-fish-lover-encouragement",
@@ -190,13 +204,13 @@
             "dog-lover-thank-you"
           ],
           "completedRuns": 0,
-          "failedRuns": 0
+          "failedRuns": 3
         }
       },
       {
         "name": "planner preserved required terms and avoided forbidden terms",
         "details": {
-          "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json",
+          "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
           "missingMustInclude": [
             "Nina",
             "birthday",
@@ -337,7 +351,7 @@
       {
         "name": "final images came from Comfy text composer",
         "details": {
-          "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json",
+          "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
           "finalImagesRenderedByComfy": true,
           "deterministicTextComposerUsed": true
         }
@@ -416,6 +430,7 @@
     "Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
     "Recommended production planner candidates still missing locally: qwen3-14b-instruct.",
     "The latest LLM-planned benchmark covers 3 customer request runs.",
+    "Latest LLM-planned benchmark has 3 failed runtime run(s), including 3 before image generation. Latest provider failure(s): aquarium-lover-birthday: text provider read ECONNRESET; koi-fish-lover-encouragement: text provider connect ECONNREFUSED 127.0.0.1:5013; dog-lover-thank-you: text provider connect ECONNREFUSED 127.0.0.1:5013.",
     "Planner/theme adherence is still failing required terms: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog.",
     "Latest aggregate is blocked: best score 38 across 3 run(s).",
     "Latest manual grade checklist is blocked: 0/0 generated run(s) graded, 0 failed before image generation.",

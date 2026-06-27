@@ -132,6 +132,10 @@ export function buildProductionTextResearchRollup(args = {}) {
         totalRuns: latestBenchmark?.totalRuns ?? 0,
         completedRuns: latestBenchmark?.completedRuns ?? 0,
         failedRuns: latestBenchmark?.failedRuns ?? 0,
+        failedBeforeImageGeneration: latestBenchmark?.failedBeforeImageGeneration ?? 0,
+        failedFixtures: latestBenchmark?.failedFixtures || [],
+        providerFailures: latestBenchmark?.providerFailures || [],
+        plannerBaseUrls: latestBenchmark?.plannerBaseUrls || [],
         fixtures: latestBenchmark?.fixtures || [],
         smallPlannerUsed: Boolean(latestBenchmark?.smallPlannerUsed),
         missingMustInclude: latestBenchmark?.missingMustInclude || [],
@@ -240,6 +244,13 @@ function buildFindings({
   if (latestBenchmark?.smallPlannerUsed) {
     findings.push("The latest LLM-planned matrix is smoke/failure evidence because it used a known-small planner.");
   }
+  const hasRuntimeFailureFinding = findings.some((finding) => /runtime failure|failed runtime run|provider failure/i.test(finding));
+  if (latestBenchmark?.failedRuns > 0 && !hasRuntimeFailureFinding) {
+    const failures = latestBenchmark.providerFailures?.length
+      ? ` Latest provider failure(s): ${latestBenchmark.providerFailures.slice(0, 3).join("; ")}.`
+      : "";
+    findings.push(`The latest LLM-planned matrix has ${latestBenchmark.failedRuns} runtime failure(s), including ${latestBenchmark.failedBeforeImageGeneration || 0} before image generation.${failures}`);
+  }
   if (latestBenchmark?.missingMustInclude?.length) {
     findings.push(`Required customer terms still missing: ${latestBenchmark.missingMustInclude.join(", ")}.`);
   }
@@ -296,7 +307,7 @@ function buildMarkdown(result) {
   lines.push(evidenceRow("Readiness", result.evidenceSummary.readiness, (item) => `production planner reachable=${yesNo(item.productionSuitablePlannerReachable)}; blockers=${item.blockers.length}`));
   lines.push(evidenceRow("Dry run", result.evidenceSummary.dryRun, (item) => `${item.plannedRunCount} planned; ${item.plannerClassification || "n/a"} ${item.plannerModel || "n/a"}; context=${item.contextTokens ?? "n/a"}; max=${item.maxOutputTokens ?? "n/a"}`));
   lines.push(evidenceRow("Model coverage", result.evidenceSummary.modelCoverage, (item) => `${item.recommendedInstalled} recommended installed; unevaluated planners=${item.unevaluatedProductionPlanners.join(", ") || "none"}`));
-  lines.push(evidenceRow("Benchmark", result.evidenceSummary.benchmark, (item) => `${item.completedRuns}/${item.totalRuns} completed; failed=${item.failedRuns}; missing=${item.missingMustInclude.join(", ") || "none"}`));
+  lines.push(evidenceRow("Benchmark", result.evidenceSummary.benchmark, (item) => `${item.completedRuns}/${item.totalRuns} completed; failed=${item.failedRuns}; failed-before-image=${item.failedBeforeImageGeneration}; provider=${item.providerFailures.slice(0, 2).join("; ") || "none"}; missing=${item.missingMustInclude.join(", ") || "none"}`));
   lines.push(evidenceRow("Manual grades", result.evidenceSummary.manualGrades, (item) => `${item.gradedGeneratedRuns}/${item.gradableRuns} generated graded; blocked=${item.blockedGrades}; failed-before-image=${item.failedBeforeImageGeneration}`));
   lines.push(evidenceRow("Aggregate", result.evidenceSummary.aggregate, (item) => `${item.totalRuns} run(s); best=${item.bestScore ?? "n/a"}; statuses=${JSON.stringify(item.statuses)}`));
   lines.push("");

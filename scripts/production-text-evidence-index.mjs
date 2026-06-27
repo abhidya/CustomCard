@@ -430,13 +430,15 @@ function benchmarkSummaryEntry(filePath) {
   const runs = payload.runs;
   const plannedRuns = Array.isArray(payload.plannedRuns) ? payload.plannedRuns : [];
   const completedRuns = runs.filter((run) => run.statusCode === 200 || run.panelCount > 0).length;
-  const failedRuns = runs.filter((run) => run.status === "failed" || run.error).length;
+  const failedRunEntries = runs.filter(isFailedBenchmarkRun);
+  const failedRuns = failedRunEntries.length;
   const missingMustInclude = unique(runs.flatMap((run) => run.autoChecks?.missingMustInclude || []));
   const mustAvoidFailures = unique(runs.flatMap((run) => run.autoChecks?.avoidedFailures || []));
   const textModels = unique([
     ...plannedRuns.map((run) => run.textModel),
     ...runs.map((run) => run.textModel || run.cardCopyModel)
   ].filter(Boolean));
+  const providerFailures = unique(failedRunEntries.flatMap(benchmarkRunFailureMessages));
   return {
     path: relativePath(filePath),
     createdAtIso: payload.createdAtIso || fileMtime(filePath),
@@ -445,6 +447,10 @@ function benchmarkSummaryEntry(filePath) {
     totalRuns: runs.length,
     completedRuns,
     failedRuns,
+    failedBeforeImageGeneration: failedRunEntries.filter((run) => Number(run.panelCount || 0) <= 0).length,
+    failedFixtures: unique(failedRunEntries.map((run) => run.storyId).filter(Boolean)),
+    providerFailures,
+    plannerBaseUrls: plannerBaseUrlsFromSummary(payload),
     llmGeneratedRuns: runs.filter((run) => run.productionTextMode === "llm-generated-copy").length,
     fixtureRuns: runs.filter((run) => run.textAdapterId === "fixture").length,
     fixtures: unique(runs.map((run) => run.storyId).filter(Boolean)),
@@ -456,6 +462,47 @@ function benchmarkSummaryEntry(filePath) {
     finalImagesRenderedByComfy: runs.every((run) => run.status === "failed" || run.autoChecks?.checks?.finalImagesRenderedByComfy === true),
     deterministicTextComposerUsed: runs.some((run) => run.typographyModeId === "customcard-production-text-composer")
   };
+}
+
+function isFailedBenchmarkRun(run) {
+  return run?.status === "failed" ||
+    Boolean(run?.error) ||
+    Number(run?.statusCode || 0) >= 400 ||
+    Object.keys(run?.providerFailures || {}).length > 0;
+}
+
+function benchmarkRunFailureMessages(run) {
+  const prefix = run?.storyId ? `${run.storyId}: ` : "";
+  const messages = [];
+  for (const [provider, error] of Object.entries(run?.providerFailures || {})) {
+    if (error) messages.push(`${prefix}${provider} provider ${error}`);
+  }
+  if (run?.error) messages.push(`${prefix}${run.error}`);
+  if (Number(run?.statusCode || 0) >= 400 && !messages.length) {
+    messages.push(`${prefix}HTTP ${run.statusCode}`);
+  }
+  return messages;
+}
+
+function plannerBaseUrlsFromSummary(payload) {
+  return unique([
+    payload.envRouting?.productionTextPlannerRuntime?.baseUrl,
+    ...(Array.isArray(payload.providerHttp) ? payload.providerHttp.map((entry) => openAiBaseUrl(entry.url)) : [])
+  ].filter(Boolean));
+}
+
+function openAiBaseUrl(value) {
+  try {
+    const url = new URL(value);
+    const marker = "/v1/";
+    const markerIndex = url.pathname.indexOf(marker);
+    if (markerIndex >= 0) {
+      return `${url.origin}${url.pathname.slice(0, markerIndex + 3)}`;
+    }
+    return url.origin;
+  } catch {
+    return "";
+  }
 }
 
 function buildFindings({
@@ -503,6 +550,12 @@ function buildFindings({
   }
   if (latestBenchmark?.totalRuns >= 3) {
     findings.push(`The latest LLM-planned benchmark covers ${latestBenchmark.totalRuns} customer request runs.`);
+  }
+  if (latestBenchmark?.failedRuns > 0) {
+    const failures = latestBenchmark.providerFailures?.length
+      ? ` Latest provider failure(s): ${latestBenchmark.providerFailures.slice(0, 3).join("; ")}.`
+      : "";
+    findings.push(`Latest LLM-planned benchmark has ${latestBenchmark.failedRuns} failed runtime run(s), including ${latestBenchmark.failedBeforeImageGeneration || 0} before image generation.${failures}`);
   }
   if (latestBenchmark?.missingMustInclude?.length) {
     findings.push(`Planner/theme adherence is still failing required terms: ${latestBenchmark.missingMustInclude.join(", ")}.`);
@@ -658,7 +711,7 @@ function aggregateSummary(entry) {
 }
 
 function benchmarkSummary(entry) {
-  return `${entry.completedRuns}/${entry.totalRuns} completed; failed=${entry.failedRuns}`;
+  return `${entry.completedRuns}/${entry.totalRuns} completed; failed=${entry.failedRuns}; failed-before-image=${entry.failedBeforeImageGeneration || 0}`;
 }
 
 function readJson(filePath) {

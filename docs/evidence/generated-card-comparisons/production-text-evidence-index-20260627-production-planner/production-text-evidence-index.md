@@ -1,6 +1,6 @@
 # Production Text Evidence Index
 
-Created: 2026-06-27T02:58:47.550Z
+Created: 2026-06-27T03:05:42.875Z
 Status: blocked
 Promotion ready: no
 
@@ -13,6 +13,7 @@ Promotion ready: no
 - Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Recommended production planner candidates still missing locally: qwen3-14b-instruct.
 - The latest LLM-planned benchmark covers 3 customer request runs.
+- Latest LLM-planned benchmark has 3 failed runtime run(s), including 3 before image generation. Latest provider failure(s): aquarium-lover-birthday: text provider read ECONNRESET; koi-fish-lover-encouragement: text provider connect ECONNREFUSED 127.0.0.1:5013; dog-lover-thank-you: text provider connect ECONNREFUSED 127.0.0.1:5013.
 - Planner/theme adherence is still failing required terms: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog.
 - Latest aggregate is blocked: best score 38 across 3 run(s).
 - Latest manual grade checklist is blocked: 0/0 generated run(s) graded, 0 failed before image generation.
@@ -37,7 +38,7 @@ Promotion ready: no
 | Dry Run | [open](../production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json) | planning-proof | production-suitable koboldcpp/gemma-4-31B-it-Q4_K_M; planned=3; contract=full-production-card-copy-json |
 | Manual Grades | [open](../production-text-manual-grade-checklist-20260627-production-planner/production-text-manual-grade-checklist.json) | blocked | 0/0 generated graded; manual-grades=0; missing=0; failed-before-image=0 |
 | Aggregate | [open](../benchmark-aggregate-20260627-production-text-production-planner/benchmark-aggregate.json) | blocked | 2 run(s); best=73; ready=no |
-| Benchmark | [open](../production-text-workflow-20260627-production-planner/production-text-workflow-summary.json) | blocked | 0/3 completed; failed=0 |
+| Benchmark | [open](../production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json) | blocked | 0/3 completed; failed=3; failed-before-image=3 |
 
 ## Aggregates
 
@@ -52,7 +53,9 @@ Promotion ready: no
 
 | Created | Runs | Completed | Failed | Fixtures | Text models | Path |
 | --- | ---:| ---:| ---:| --- | --- | --- |
-| 2026-06-27T01:49:31.900Z | 3 | 0 | 0 | aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you | koboldcpp/gemma-4-31B-it-Q4_K_M | [open](../production-text-workflow-20260627-production-planner/production-text-workflow-summary.json) |
+| 2026-06-27T02:19:19.090Z | 3 | 0 | 3 | aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you | koboldcpp/gemma-4-31B-it-Q4_K_M | [open](../production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json) |
+| 2026-06-27T02:02:58.139Z | 3 | 0 | 3 | aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you | koboldcpp/gemma-4-31B-it-Q4_K_M | [open](../production-text-workflow-20260627-production-planner-gpu/production-text-workflow-summary.json) |
+| 2026-06-27T01:49:31.900Z | 3 | 0 | 3 | aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you | koboldcpp/gemma-4-31B-it-Q4_K_M | [open](../production-text-workflow-20260627-production-planner/production-text-workflow-summary.json) |
 | 2026-06-26T04:21:27.749Z | 3 | 2 | 1 | aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you | koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S | [open](../production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json) |
 | 2026-06-26T02:50:06.234Z | 1 | 1 | 0 | folded-card-sunburst-typography | n/a | [open](../production-text-workflow-20260626-sdxl-turbo-cfg15-artwork-guard-v2/production-text-workflow-summary.json) |
 | 2026-06-26T02:27:14.553Z | 1 | 1 | 0 | folded-card-sunburst-typography | n/a | [open](../production-text-workflow-20260626-sdxl-turbo-cfg15-soft-fields/production-text-workflow-summary.json) |

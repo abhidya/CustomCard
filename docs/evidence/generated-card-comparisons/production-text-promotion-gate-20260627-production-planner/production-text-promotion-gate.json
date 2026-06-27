@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T02:58:47.552Z",
+  "createdAtIso": "2026-06-27T03:05:43.074Z",
   "status": "blocked",
   "promotionReady": false,
   "advisory": true,
@@ -18,7 +18,7 @@
     "dryRun": "docs/evidence/generated-card-comparisons/production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json",
     "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-production-planner/production-text-manual-grade-checklist.json",
     "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
-    "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json"
+    "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json"
   },
   "requirements": [
     {
@@ -126,7 +126,7 @@
       "name": "LLM-planned customer request matrix completed",
       "ok": false,
       "details": {
-        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json",
+        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
         "requiredFixtures": [
           "aquarium-lover-birthday",
           "koi-fish-lover-encouragement",
@@ -138,14 +138,14 @@
           "dog-lover-thank-you"
         ],
         "completedRuns": 0,
-        "failedRuns": 0
+        "failedRuns": 3
       }
     },
     {
       "name": "final images came from Comfy text composer",
       "ok": true,
       "details": {
-        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json",
+        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
         "finalImagesRenderedByComfy": true,
         "deterministicTextComposerUsed": true
       }
@@ -154,7 +154,7 @@
       "name": "planner preserved required terms and avoided forbidden terms",
       "ok": false,
       "details": {
-        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json",
+        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
         "missingMustInclude": [
           "Nina",
           "birthday",

@@ -1,6 +1,6 @@
 # Production Text Research Rollup
 
-Created: 2026-06-27T02:58:59.050Z
+Created: 2026-06-27T03:06:24.614Z
 Status: blocked
 Promotion ready: no
 
@@ -19,6 +19,7 @@ Promotion ready: no
 - Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Recommended production planner candidates still missing locally: qwen3-14b-instruct.
 - The latest LLM-planned benchmark covers 3 customer request runs.
+- Latest LLM-planned benchmark has 3 failed runtime run(s), including 3 before image generation. Latest provider failure(s): aquarium-lover-birthday: text provider read ECONNRESET; koi-fish-lover-encouragement: text provider connect ECONNREFUSED 127.0.0.1:5013; dog-lover-thank-you: text provider connect ECONNREFUSED 127.0.0.1:5013.
 - Planner/theme adherence is still failing required terms: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog.
 - Latest aggregate is blocked: best score 38 across 3 run(s).
 - Latest manual grade checklist is blocked: 0/0 generated run(s) graded, 0 failed before image generation.
@@ -41,7 +42,7 @@ Promotion ready: no
 | Readiness | blocked | production planner reachable=yes; blockers=1 | [open](../production-text-readiness-20260627-production-planner/production-text-readiness.json) |
 | Dry run | planning-proof | 3 planned; production-suitable koboldcpp/gemma-4-31B-it-Q4_K_M; context=8192; max=3200 | [open](../production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json) |
 | Model coverage | action-needed | 9 recommended installed; unevaluated planners=gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash | [open](../local-model-coverage-20260627-current/local-model-coverage.json) |
-| Benchmark | blocked | 0/3 completed; failed=0; missing=Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog | [open](../production-text-workflow-20260627-production-planner/production-text-workflow-summary.json) |
+| Benchmark | blocked | 0/3 completed; failed=3; failed-before-image=3; provider=aquarium-lover-birthday: text provider read ECONNRESET; koi-fish-lover-encouragement: text provider connect ECONNREFUSED 127.0.0.1:5013; missing=Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog | [open](../production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json) |
 | Manual grades | blocked | 0/0 generated graded; blocked=0; failed-before-image=0 | [open](../production-text-manual-grade-checklist-20260627-production-planner/production-text-manual-grade-checklist.json) |
 | Aggregate | blocked | 3 run(s); best=38; statuses={"blocked":2,"failed":1} | [open](../benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json) |
 

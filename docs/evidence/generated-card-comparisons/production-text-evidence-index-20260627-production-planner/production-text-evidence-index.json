@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T02:58:47.550Z",
+  "createdAtIso": "2026-06-27T03:05:42.875Z",
   "status": "blocked",
   "promotionReady": false,
   "evidenceRoot": "docs/evidence/generated-card-comparisons",
@@ -14,7 +14,7 @@
     "dryRun": "docs/evidence/generated-card-comparisons/production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json",
     "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-production-planner/production-text-manual-grade-checklist.json",
     "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
-    "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json"
+    "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json"
   },
   "findings": [
     "Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.",
@@ -24,6 +24,7 @@
     "Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
     "Recommended production planner candidates still missing locally: qwen3-14b-instruct.",
     "The latest LLM-planned benchmark covers 3 customer request runs.",
+    "Latest LLM-planned benchmark has 3 failed runtime run(s), including 3 before image generation. Latest provider failure(s): aquarium-lover-birthday: text provider read ECONNRESET; koi-fish-lover-encouragement: text provider connect ECONNREFUSED 127.0.0.1:5013; dog-lover-thank-you: text provider connect ECONNREFUSED 127.0.0.1:5013.",
     "Planner/theme adherence is still failing required terms: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog.",
     "Latest aggregate is blocked: best score 38 across 3 run(s).",
     "Latest manual grade checklist is blocked: 0/0 generated run(s) graded, 0 failed before image generation."
@@ -939,13 +940,125 @@
   ],
   "benchmarkSummaries": [
     {
+      "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
+      "createdAtIso": "2026-06-27T02:19:19.090Z",
+      "phase": "local-production-text",
+      "totalPlannedRuns": 3,
+      "totalRuns": 3,
+      "completedRuns": 0,
+      "failedRuns": 3,
+      "failedBeforeImageGeneration": 3,
+      "failedFixtures": [
+        "aquarium-lover-birthday",
+        "koi-fish-lover-encouragement",
+        "dog-lover-thank-you"
+      ],
+      "providerFailures": [
+        "aquarium-lover-birthday: text provider read ECONNRESET",
+        "koi-fish-lover-encouragement: text provider connect ECONNREFUSED 127.0.0.1:5013",
+        "dog-lover-thank-you: text provider connect ECONNREFUSED 127.0.0.1:5013"
+      ],
+      "plannerBaseUrls": [
+        "http://127.0.0.1:5013/v1"
+      ],
+      "llmGeneratedRuns": 3,
+      "fixtureRuns": 0,
+      "fixtures": [
+        "aquarium-lover-birthday",
+        "koi-fish-lover-encouragement",
+        "dog-lover-thank-you"
+      ],
+      "textModels": [
+        "koboldcpp/gemma-4-31B-it-Q4_K_M"
+      ],
+      "smallPlannerUsed": false,
+      "imageModels": [],
+      "missingMustInclude": [
+        "Nina",
+        "birthday",
+        "aquarium",
+        "Uncle Ken",
+        "koi",
+        "encouragement",
+        "Morgan",
+        "thank",
+        "dog"
+      ],
+      "mustAvoidFailures": [],
+      "finalImagesRenderedByComfy": true,
+      "deterministicTextComposerUsed": true
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu/production-text-workflow-summary.json",
+      "createdAtIso": "2026-06-27T02:02:58.139Z",
+      "phase": "local-production-text",
+      "totalPlannedRuns": 3,
+      "totalRuns": 3,
+      "completedRuns": 0,
+      "failedRuns": 3,
+      "failedBeforeImageGeneration": 3,
+      "failedFixtures": [
+        "aquarium-lover-birthday",
+        "koi-fish-lover-encouragement",
+        "dog-lover-thank-you"
+      ],
+      "providerFailures": [
+        "aquarium-lover-birthday: text provider read ECONNRESET",
+        "koi-fish-lover-encouragement: text provider connect ECONNREFUSED 127.0.0.1:5003",
+        "dog-lover-thank-you: text provider connect ECONNREFUSED 127.0.0.1:5003"
+      ],
+      "plannerBaseUrls": [
+        "http://127.0.0.1:5003/v1"
+      ],
+      "llmGeneratedRuns": 3,
+      "fixtureRuns": 0,
+      "fixtures": [
+        "aquarium-lover-birthday",
+        "koi-fish-lover-encouragement",
+        "dog-lover-thank-you"
+      ],
+      "textModels": [
+        "koboldcpp/gemma-4-31B-it-Q4_K_M"
+      ],
+      "smallPlannerUsed": false,
+      "imageModels": [],
+      "missingMustInclude": [
+        "Nina",
+        "birthday",
+        "aquarium",
+        "Uncle Ken",
+        "koi",
+        "encouragement",
+        "Morgan",
+        "thank",
+        "dog"
+      ],
+      "mustAvoidFailures": [],
+      "finalImagesRenderedByComfy": true,
+      "deterministicTextComposerUsed": true
+    },
+    {
       "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json",
       "createdAtIso": "2026-06-27T01:49:31.900Z",
       "phase": "local-production-text",
       "totalPlannedRuns": 3,
       "totalRuns": 3,
       "completedRuns": 0,
-      "failedRuns": 0,
+      "failedRuns": 3,
+      "failedBeforeImageGeneration": 3,
+      "failedFixtures": [
+        "aquarium-lover-birthday",
+        "koi-fish-lover-encouragement",
+        "dog-lover-thank-you"
+      ],
+      "providerFailures": [
+        "aquarium-lover-birthday: text provider read ECONNRESET",
+        "koi-fish-lover-encouragement: text provider connect ECONNREFUSED 127.0.0.1:5003",
+        "dog-lover-thank-you: text provider connect ECONNREFUSED 127.0.0.1:5003"
+      ],
+      "plannerBaseUrls": [
+        "http://127.0.0.1:5003/v1"
+      ],
       "llmGeneratedRuns": 3,
       "fixtureRuns": 0,
       "fixtures": [
@@ -981,6 +1094,17 @@
       "totalRuns": 3,
       "completedRuns": 2,
       "failedRuns": 1,
+      "failedBeforeImageGeneration": 1,
+      "failedFixtures": [
+        "koi-fish-lover-encouragement"
+      ],
+      "providerFailures": [
+        "koi-fish-lover-encouragement: Expected ',' or '}' after property value in JSON at position 5353 (line 55 column 4)"
+      ],
+      "plannerBaseUrls": [
+        "http://127.0.0.1:5001/v1",
+        "http://127.0.0.1:8188"
+      ],
       "llmGeneratedRuns": 3,
       "fixtureRuns": 0,
       "fixtures": [
@@ -1015,6 +1139,12 @@
       "totalRuns": 1,
       "completedRuns": 1,
       "failedRuns": 0,
+      "failedBeforeImageGeneration": 0,
+      "failedFixtures": [],
+      "providerFailures": [],
+      "plannerBaseUrls": [
+        "http://127.0.0.1:8188"
+      ],
       "llmGeneratedRuns": 0,
       "fixtureRuns": 1,
       "fixtures": [
@@ -1038,6 +1168,12 @@
       "totalRuns": 1,
       "completedRuns": 1,
       "failedRuns": 0,
+      "failedBeforeImageGeneration": 0,
+      "failedFixtures": [],
+      "providerFailures": [],
+      "plannerBaseUrls": [
+        "http://127.0.0.1:8188"
+      ],
       "llmGeneratedRuns": 0,
       "fixtureRuns": 1,
       "fixtures": [
@@ -1061,6 +1197,12 @@
       "totalRuns": 1,
       "completedRuns": 1,
       "failedRuns": 0,
+      "failedBeforeImageGeneration": 0,
+      "failedFixtures": [],
+      "providerFailures": [],
+      "plannerBaseUrls": [
+        "http://127.0.0.1:8188"
+      ],
       "llmGeneratedRuns": 0,
       "fixtureRuns": 1,
       "fixtures": [
@@ -1084,6 +1226,12 @@
       "totalRuns": 1,
       "completedRuns": 1,
       "failedRuns": 0,
+      "failedBeforeImageGeneration": 0,
+      "failedFixtures": [],
+      "providerFailures": [],
+      "plannerBaseUrls": [
+        "http://127.0.0.1:8188"
+      ],
       "llmGeneratedRuns": 0,
       "fixtureRuns": 1,
       "fixtures": [
@@ -1107,6 +1255,12 @@
       "totalRuns": 1,
       "completedRuns": 1,
       "failedRuns": 0,
+      "failedBeforeImageGeneration": 0,
+      "failedFixtures": [],
+      "providerFailures": [],
+      "plannerBaseUrls": [
+        "http://127.0.0.1:8188"
+      ],
       "llmGeneratedRuns": 0,
       "fixtureRuns": 1,
       "fixtures": [
@@ -1130,6 +1284,12 @@
       "totalRuns": 1,
       "completedRuns": 1,
       "failedRuns": 0,
+      "failedBeforeImageGeneration": 0,
+      "failedFixtures": [],
+      "providerFailures": [],
+      "plannerBaseUrls": [
+        "http://127.0.0.1:8188"
+      ],
       "llmGeneratedRuns": 0,
       "fixtureRuns": 1,
       "fixtures": [

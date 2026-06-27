@@ -228,8 +228,11 @@ describe("production text evidence index", () => {
           storyId: "koi-fish-lover-encouragement",
           productionTextMode: "llm-generated-copy",
           textModel: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
-          status: "failed",
-          error: "invalid JSON"
+          statusCode: 502,
+          panelCount: 0,
+          providerFailures: {
+            text: "read ECONNRESET"
+          }
         }
       ]
     });
@@ -297,6 +300,9 @@ describe("production text evidence index", () => {
       totalRuns: 2,
       completedRuns: 1,
       failedRuns: 1,
+      failedBeforeImageGeneration: 1,
+      failedFixtures: ["koi-fish-lover-encouragement"],
+      providerFailures: ["koi-fish-lover-encouragement: text provider read ECONNRESET"],
       smallPlannerUsed: true,
       missingMustInclude: ["Nina", "aquarium"]
     });
@@ -306,6 +312,8 @@ describe("production text evidence index", () => {
     expect(report.findings.join("\n")).toContain("Installed production planner candidates found locally");
     expect(report.findings.join("\n")).toContain("Installed production planner candidates still need local production-text evaluation");
     expect(report.findings.join("\n")).toContain("Latest manual grade checklist is blocked");
+    expect(report.findings.join("\n")).toContain("failed runtime run");
+    expect(report.findings.join("\n")).toContain("read ECONNRESET");
     expect(report.nextSteps.join("\n")).toContain("production-suitable planner endpoint");
     expect(report.nextSteps.join("\n")).toContain("installed production planner candidate");
     expect(report.nextSteps.join("\n")).toContain("local model pull queue");

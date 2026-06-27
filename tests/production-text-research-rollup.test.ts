@@ -101,6 +101,10 @@ describe("production text research rollup", () => {
           totalRuns: 3,
           completedRuns: 2,
           failedRuns: 1,
+          failedBeforeImageGeneration: 1,
+          failedFixtures: ["dog-lover-thank-you"],
+          providerFailures: ["dog-lover-thank-you: text provider connect ECONNREFUSED 127.0.0.1:5013"],
+          plannerBaseUrls: ["http://127.0.0.1:5013/v1"],
           fixtures: ["aquarium-lover-birthday", "koi-fish-lover-encouragement", "dog-lover-thank-you"],
           smallPlannerUsed: true,
           missingMustInclude: ["Nina", "aquarium", "Morgan", "dog"],
@@ -220,7 +224,16 @@ describe("production text research rollup", () => {
       requestTimeoutMs: 1200000,
       creativeContract: "full-production-card-copy-json"
     });
+    expect(report.evidenceSummary.benchmark).toMatchObject({
+      failedRuns: 1,
+      failedBeforeImageGeneration: 1,
+      failedFixtures: ["dog-lover-thank-you"],
+      providerFailures: ["dog-lover-thank-you: text provider connect ECONNREFUSED 127.0.0.1:5013"],
+      plannerBaseUrls: ["http://127.0.0.1:5013/v1"]
+    });
     expect(report.findings.join("\n")).toContain("known-small planner");
+    expect(report.findings.join("\n")).toContain("runtime failure");
+    expect(report.findings.join("\n")).toContain("ECONNREFUSED");
     expect(report.findings.join("\n")).toContain("Dry-run planning proof records the full-quality production planner path");
     expect(report.findings.join("\n")).toContain("switch the runtime, not the prompt quality");
     expect(report.findings.join("\n")).toContain("Reduced creative prompt contracts are disallowed");
