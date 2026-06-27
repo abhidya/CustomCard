@@ -1,6 +1,8 @@
 param(
   [string]$Url = "",
   [string]$LogDir = "",
+  [int]$ComfyStartupTimeoutSec = 600,
+  [int]$RetryDelaySec = 30,
   [switch]$SkipComfyStart
 )
 
@@ -54,18 +56,20 @@ Write-WorkerLog "Starting CustomCard provider queue worker."
 Write-WorkerLog "Repo: $RepoRoot"
 Write-WorkerLog "URL: $Url"
 
-try {
-  if (-not $SkipComfyStart) {
-    Write-WorkerLog "Ensuring local ComfyUI is running."
-    & (Join-Path $RepoRoot "tools\start-local-comfyui.ps1") -StartupTimeoutSec 180 *>> $LogPath
+while ($true) {
+  try {
+    if (-not $SkipComfyStart) {
+      Write-WorkerLog "Ensuring local ComfyUI is running."
+      & (Join-Path $RepoRoot "tools\start-local-comfyui.ps1") -StartupTimeoutSec $ComfyStartupTimeoutSec *>> $LogPath
+    }
+
+    Write-WorkerLog "Starting provider queue loop."
+    & (Join-Path $RepoRoot "tools\node.ps1") "scripts/provider-control.mjs" start "--url=$Url" *>> $LogPath
+    $ExitCode = $LASTEXITCODE
+    Write-WorkerLog "Provider queue loop exited with code $ExitCode. Restarting in $RetryDelaySec seconds."
+  } catch {
+    Write-WorkerLog "Worker supervisor iteration failed: $($_.Exception.Message). Restarting in $RetryDelaySec seconds."
   }
 
-  Write-WorkerLog "Starting provider queue loop."
-  & (Join-Path $RepoRoot "tools\node.ps1") "scripts/provider-control.mjs" start "--url=$Url" *>> $LogPath
-  $ExitCode = $LASTEXITCODE
-  Write-WorkerLog "Provider queue loop exited with code $ExitCode."
-  exit $ExitCode
-} catch {
-  Write-WorkerLog "Fatal error: $($_.Exception.Message)"
-  throw
+  Start-Sleep -Seconds $RetryDelaySec
 }
