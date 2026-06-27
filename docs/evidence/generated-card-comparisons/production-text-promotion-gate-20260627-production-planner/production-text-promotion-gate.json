@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T03:05:43.074Z",
+  "createdAtIso": "2026-06-27T03:11:28.159Z",
   "status": "blocked",
   "promotionReady": false,
   "advisory": true,
@@ -56,6 +56,29 @@
         "reportedContextTokens": 8192,
         "maxOutputTokens": 3200,
         "blockers": []
+      }
+    },
+    {
+      "name": "planner preflight matches benchmark runtime",
+      "ok": false,
+      "details": {
+        "preflight": {
+          "path": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner/production-text-planner-preflight.json",
+          "baseUrl": "http://127.0.0.1:5003/v1",
+          "model": "koboldcpp/gemma-4-31B-it-Q4_K_M"
+        },
+        "benchmark": {
+          "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
+          "plannerBaseUrls": [
+            "http://127.0.0.1:5013/v1"
+          ],
+          "textModels": [
+            "koboldcpp/gemma-4-31B-it-Q4_K_M"
+          ]
+        },
+        "blockers": [
+          "Planner preflight endpoint http://127.0.0.1:5003/v1 does not match benchmark planner endpoint(s): http://127.0.0.1:5013/v1."
+        ]
       }
     },
     {
@@ -210,6 +233,7 @@
     }
   ],
   "nextSteps": [
+    "Refresh planner preflight against the exact endpoint/model used by the latest benchmark before treating planner evidence as current.",
     "Run the planner preflight and readiness doctor after starting a production-suitable planner endpoint with 8192+ context.",
     "Run the full aquarium/koi/dog production-text matrix to completion.",
     "Keep the full prompt and correct planner runtime; retry/repair planner output until must_include and must_avoid checks pass before Comfy work.",

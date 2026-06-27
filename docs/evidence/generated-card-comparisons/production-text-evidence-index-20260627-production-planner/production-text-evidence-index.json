@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T03:05:42.875Z",
+  "createdAtIso": "2026-06-27T03:11:28.157Z",
   "status": "blocked",
   "promotionReady": false,
   "evidenceRoot": "docs/evidence/generated-card-comparisons",
@@ -20,6 +20,7 @@
     "Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.",
     "Latest dry-run planning proof keeps the full production card-copy JSON contract on koboldcpp/gemma-4-31B-it-Q4_K_M with 8192+ context, 3200 output tokens, and 1200000ms timeout across aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you.",
     "Latest planner preflight passed with koboldcpp/gemma-4-31B-it-Q4_K_M.",
+    "Planner preflight and benchmark runtime evidence do not align: Planner preflight endpoint http://127.0.0.1:5003/v1 does not match benchmark planner endpoint(s): http://127.0.0.1:5013/v1.",
     "Installed production planner candidates found locally: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
     "Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
     "Recommended production planner candidates still missing locally: qwen3-14b-instruct.",
@@ -30,12 +31,37 @@
     "Latest manual grade checklist is blocked: 0/0 generated run(s) graded, 0 failed before image generation."
   ],
   "nextSteps": [
+    "Refresh planner preflight against the exact endpoint/model used by the latest benchmark before treating planner evidence as current.",
     "Run production-text planner preflight and benchmark evidence against installed production planner candidate(s): gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
     "Resolve local model pull queue if the installed planner is too slow: qwen3-14b-instruct.",
     "Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.",
     "Manually grade every production-text run and aggregate only after all candidates pass.",
     "Resolve the latest manual grade checklist blockers before treating the aggregate as promotion evidence."
   ],
+  "plannerEvidenceAlignment": {
+    "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
+    "status": "blocked",
+    "promotionReady": false,
+    "checked": true,
+    "ok": false,
+    "preflight": {
+      "path": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner/production-text-planner-preflight.json",
+      "baseUrl": "http://127.0.0.1:5003/v1",
+      "model": "koboldcpp/gemma-4-31B-it-Q4_K_M"
+    },
+    "benchmark": {
+      "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
+      "plannerBaseUrls": [
+        "http://127.0.0.1:5013/v1"
+      ],
+      "textModels": [
+        "koboldcpp/gemma-4-31B-it-Q4_K_M"
+      ]
+    },
+    "blockers": [
+      "Planner preflight endpoint http://127.0.0.1:5003/v1 does not match benchmark planner endpoint(s): http://127.0.0.1:5013/v1."
+    ]
+  },
   "rerunPlans": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-production-planner/production-text-rerun-plan.json",
@@ -1102,8 +1128,7 @@
         "koi-fish-lover-encouragement: Expected ',' or '}' after property value in JSON at position 5353 (line 55 column 4)"
       ],
       "plannerBaseUrls": [
-        "http://127.0.0.1:5001/v1",
-        "http://127.0.0.1:8188"
+        "http://127.0.0.1:5001/v1"
       ],
       "llmGeneratedRuns": 3,
       "fixtureRuns": 0,
@@ -1142,9 +1167,7 @@
       "failedBeforeImageGeneration": 0,
       "failedFixtures": [],
       "providerFailures": [],
-      "plannerBaseUrls": [
-        "http://127.0.0.1:8188"
-      ],
+      "plannerBaseUrls": [],
       "llmGeneratedRuns": 0,
       "fixtureRuns": 1,
       "fixtures": [
@@ -1171,9 +1194,7 @@
       "failedBeforeImageGeneration": 0,
       "failedFixtures": [],
       "providerFailures": [],
-      "plannerBaseUrls": [
-        "http://127.0.0.1:8188"
-      ],
+      "plannerBaseUrls": [],
       "llmGeneratedRuns": 0,
       "fixtureRuns": 1,
       "fixtures": [
@@ -1200,9 +1221,7 @@
       "failedBeforeImageGeneration": 0,
       "failedFixtures": [],
       "providerFailures": [],
-      "plannerBaseUrls": [
-        "http://127.0.0.1:8188"
-      ],
+      "plannerBaseUrls": [],
       "llmGeneratedRuns": 0,
       "fixtureRuns": 1,
       "fixtures": [
@@ -1229,9 +1248,7 @@
       "failedBeforeImageGeneration": 0,
       "failedFixtures": [],
       "providerFailures": [],
-      "plannerBaseUrls": [
-        "http://127.0.0.1:8188"
-      ],
+      "plannerBaseUrls": [],
       "llmGeneratedRuns": 0,
       "fixtureRuns": 1,
       "fixtures": [
@@ -1258,9 +1275,7 @@
       "failedBeforeImageGeneration": 0,
       "failedFixtures": [],
       "providerFailures": [],
-      "plannerBaseUrls": [
-        "http://127.0.0.1:8188"
-      ],
+      "plannerBaseUrls": [],
       "llmGeneratedRuns": 0,
       "fixtureRuns": 1,
       "fixtures": [
@@ -1287,9 +1302,7 @@
       "failedBeforeImageGeneration": 0,
       "failedFixtures": [],
       "providerFailures": [],
-      "plannerBaseUrls": [
-        "http://127.0.0.1:8188"
-      ],
+      "plannerBaseUrls": [],
       "llmGeneratedRuns": 0,
       "fixtureRuns": 1,
       "fixtures": [

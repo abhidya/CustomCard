@@ -35,6 +35,7 @@ export function runProductionTextPromotionGate(args = {}) {
   const latestAggregate = index.aggregates.find((entry) => entry.kind === "llm-planned") || index.aggregates[0];
   const latestBenchmark = index.benchmarkSummaries.find((entry) => entry.llmGeneratedRuns > 0) || index.benchmarkSummaries[0];
   const latestManualGradeChecklist = index.manualGradeChecklists[0];
+  const plannerEvidenceAlignment = index.plannerEvidenceAlignment || {};
   const requiredFixtures = parseList(args.fixtures || "aquarium-lover-birthday,koi-fish-lover-encouragement,dog-lover-thank-you");
   const liveComfyProofCurrent = isLiveComfyProofCurrent(latestPreflight, latestReadiness);
   const requirements = [
@@ -62,6 +63,11 @@ export function runProductionTextPromotionGate(args = {}) {
       reportedContextTokens: latestPlannerPreflight?.reportedContextTokens,
       maxOutputTokens: latestPlannerPreflight?.maxOutputTokens,
       blockers: latestPlannerPreflight?.blockers || []
+    }),
+    requirement("planner preflight matches benchmark runtime", !plannerEvidenceAlignment.checked || plannerEvidenceAlignment.ok, {
+      preflight: plannerEvidenceAlignment.preflight || {},
+      benchmark: plannerEvidenceAlignment.benchmark || {},
+      blockers: plannerEvidenceAlignment.blockers || []
     }),
     requirement("readiness doctor is promotion-ready", latestReadiness?.promotionReady, {
       readiness: latestReadiness?.path || "",
@@ -187,6 +193,9 @@ function buildNextSteps(requirements, indexedNextSteps) {
   }
   if (failed.has("planner preflight is production-ready")) {
     steps.push("Run production-text planner preflight with a production-suitable model, 8192+ context, and the full output budget.");
+  }
+  if (failed.has("planner preflight matches benchmark runtime")) {
+    steps.push("Refresh planner preflight against the exact endpoint/model used by the latest benchmark before treating planner evidence as current.");
   }
   if (failed.has("readiness doctor is promotion-ready") || failed.has("production-suitable planner endpoint is reachable")) {
     steps.push("Run the planner preflight and readiness doctor after starting a production-suitable planner endpoint with 8192+ context.");

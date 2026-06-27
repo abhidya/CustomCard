@@ -89,6 +89,16 @@ export function buildProductionTextResearchRollup(args = {}) {
         maxOutputTokens: latestPlanner?.maxOutputTokens ?? null,
         blockers: latestPlanner?.blockers || []
       },
+      plannerEvidenceAlignment: {
+        path: index.plannerEvidenceAlignment?.path || "",
+        status: index.plannerEvidenceAlignment?.status || "missing",
+        promotionReady: Boolean(index.plannerEvidenceAlignment?.ok),
+        checked: Boolean(index.plannerEvidenceAlignment?.checked),
+        ok: Boolean(index.plannerEvidenceAlignment?.ok),
+        preflight: index.plannerEvidenceAlignment?.preflight || {},
+        benchmark: index.plannerEvidenceAlignment?.benchmark || {},
+        blockers: index.plannerEvidenceAlignment?.blockers || []
+      },
       readiness: {
         path: latestReadiness?.path || "",
         status: latestReadiness?.status || "missing",
@@ -190,7 +200,8 @@ export function buildProductionTextResearchRollup(args = {}) {
       latestManualChecklist,
       latestAggregate,
       failedRequirements,
-      productionPlannerContract: rerun.productionPlannerContract || {}
+      productionPlannerContract: rerun.productionPlannerContract || {},
+      plannerEvidenceAlignment: index.plannerEvidenceAlignment || {}
     }),
     nextSteps: unique([...(index.nextSteps || []), ...(gate.nextSteps || [])]),
     nextCommands
@@ -212,7 +223,8 @@ function buildFindings({
   latestManualChecklist,
   latestAggregate,
   failedRequirements,
-  productionPlannerContract
+  productionPlannerContract,
+  plannerEvidenceAlignment
 }) {
   const findings = [...(Array.isArray(index.findings) ? index.findings : [])];
   if (productionPlannerContract?.summary) {
@@ -223,6 +235,9 @@ function buildFindings({
   }
   if (latestPlanner && !latestPlanner.promotionReady) {
     findings.push(plannerBlockedFinding(latestPlanner));
+  }
+  if (plannerEvidenceAlignment?.checked && !plannerEvidenceAlignment.ok) {
+    findings.push(`Planner preflight and benchmark runtime evidence do not align: ${(plannerEvidenceAlignment.blockers || []).join(" ")}`);
   }
   if (latestReadiness && !latestReadiness.productionSuitablePlannerReachable) {
     findings.push("A production-suitable planner endpoint is not currently reachable.");
@@ -304,6 +319,7 @@ function buildMarkdown(result) {
   lines.push("| --- | --- | --- | --- |");
   lines.push(evidenceRow("Comfy text composer", result.evidenceSummary.liveComfyTextComposerProof, (item) => `comfy=${yesNo(item.liveComfyReachable)} node=${yesNo(item.liveNodeAvailable)}`));
   lines.push(evidenceRow("Planner", result.evidenceSummary.planner, (item) => `${item.classification || "n/a"} ${item.activeModel || "n/a"}; context=${item.reportedContextTokens ?? "n/a"}; max=${item.maxOutputTokens ?? "n/a"}`));
+  lines.push(evidenceRow("Planner/runtime alignment", result.evidenceSummary.plannerEvidenceAlignment, (item) => `checked=${yesNo(item.checked)} ok=${yesNo(item.ok)}; preflight=${item.preflight.baseUrl || "n/a"}; benchmark=${(item.benchmark.plannerBaseUrls || []).join(", ") || "n/a"}; blockers=${item.blockers.length}`));
   lines.push(evidenceRow("Readiness", result.evidenceSummary.readiness, (item) => `production planner reachable=${yesNo(item.productionSuitablePlannerReachable)}; blockers=${item.blockers.length}`));
   lines.push(evidenceRow("Dry run", result.evidenceSummary.dryRun, (item) => `${item.plannedRunCount} planned; ${item.plannerClassification || "n/a"} ${item.plannerModel || "n/a"}; context=${item.contextTokens ?? "n/a"}; max=${item.maxOutputTokens ?? "n/a"}`));
   lines.push(evidenceRow("Model coverage", result.evidenceSummary.modelCoverage, (item) => `${item.recommendedInstalled} recommended installed; unevaluated planners=${item.unevaluatedProductionPlanners.join(", ") || "none"}`));

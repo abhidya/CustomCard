@@ -113,6 +113,22 @@ describe("production text research rollup", () => {
           deterministicTextComposerUsed: true
         }
       ],
+      plannerEvidenceAlignment: {
+        checked: true,
+        ok: false,
+        status: "blocked",
+        preflight: {
+          path: "docs/evidence/generated-card-comparisons/production-text-planner-preflight-current/production-text-planner-preflight.json",
+          baseUrl: "http://127.0.0.1:5001/v1",
+          model: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
+        },
+        benchmark: {
+          path: "docs/evidence/generated-card-comparisons/production-text-workflow-current/production-text-workflow-summary.json",
+          plannerBaseUrls: ["http://127.0.0.1:5013/v1"],
+          textModels: ["koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"]
+        },
+        blockers: ["Planner preflight endpoint http://127.0.0.1:5001/v1 does not match benchmark planner endpoint(s): http://127.0.0.1:5013/v1."]
+      },
       manualGradeChecklists: [
         {
           path: "docs/evidence/generated-card-comparisons/production-text-manual-grade-current/production-text-manual-grade-checklist.json",
@@ -231,9 +247,14 @@ describe("production text research rollup", () => {
       providerFailures: ["dog-lover-thank-you: text provider connect ECONNREFUSED 127.0.0.1:5013"],
       plannerBaseUrls: ["http://127.0.0.1:5013/v1"]
     });
+    expect(report.evidenceSummary.plannerEvidenceAlignment).toMatchObject({
+      checked: true,
+      ok: false
+    });
     expect(report.findings.join("\n")).toContain("known-small planner");
     expect(report.findings.join("\n")).toContain("runtime failure");
     expect(report.findings.join("\n")).toContain("ECONNREFUSED");
+    expect(report.findings.join("\n")).toContain("preflight and benchmark runtime evidence do not align");
     expect(report.findings.join("\n")).toContain("Dry-run planning proof records the full-quality production planner path");
     expect(report.findings.join("\n")).toContain("switch the runtime, not the prompt quality");
     expect(report.findings.join("\n")).toContain("Reduced creative prompt contracts are disallowed");

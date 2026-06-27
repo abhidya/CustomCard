@@ -337,7 +337,8 @@ Comfy template variables exposed by the local adapter include:
   - Blocking promotion gate over the indexed production-text evidence.
   - Requires live Comfy/text-node proof, a production-ready planner preflight, a
     promotion-ready readiness report, tracked local model coverage, an available
-    production planner candidate, a production-suitable planner endpoint, a
+    production planner candidate, a production-suitable planner endpoint,
+    planner preflight endpoint/model alignment with the benchmark runtime, a
     completed aquarium/koi/dog matrix, no small smoke planner evidence,
     preserved required terms, and passing manual aggregate grades.
 - `scripts/local-comfy-production-text.mjs`

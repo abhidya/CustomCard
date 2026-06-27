@@ -207,6 +207,12 @@ describe("production text evidence index", () => {
     writeJson(join(root, "production-text-workflow-summary.json"), {
       createdAtIso: "2026-06-26T04:15:00.000Z",
       phase: "local-production-text",
+      envRouting: {
+        productionTextPlannerRuntime: {
+          baseUrl: "http://127.0.0.1:5002/v1",
+          model: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
+        }
+      },
       plannedRuns: [
         { storyId: "aquarium-lover-birthday", textModel: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S" },
         { storyId: "koi-fish-lover-encouragement", textModel: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S" }
@@ -303,9 +309,21 @@ describe("production text evidence index", () => {
       failedBeforeImageGeneration: 1,
       failedFixtures: ["koi-fish-lover-encouragement"],
       providerFailures: ["koi-fish-lover-encouragement: text provider read ECONNRESET"],
+      plannerBaseUrls: ["http://127.0.0.1:5002/v1"],
       smallPlannerUsed: true,
       missingMustInclude: ["Nina", "aquarium"]
     });
+    expect(report.plannerEvidenceAlignment).toMatchObject({
+      checked: true,
+      ok: false,
+      preflight: {
+        baseUrl: "http://127.0.0.1:5001/v1"
+      },
+      benchmark: {
+        plannerBaseUrls: ["http://127.0.0.1:5002/v1"]
+      }
+    });
+    expect(report.findings.join("\n")).toContain("preflight and benchmark runtime evidence do not align");
     expect(report.findings.join("\n")).toContain("known-small smoke model");
     expect(report.findings.join("\n")).toContain("Latest dry-run planning proof keeps the full production card-copy JSON contract");
     expect(report.findings.join("\n")).toContain("Latest planner preflight is blocked");
@@ -318,6 +336,7 @@ describe("production text evidence index", () => {
     expect(report.nextSteps.join("\n")).toContain("installed production planner candidate");
     expect(report.nextSteps.join("\n")).toContain("local model pull queue");
     expect(report.nextSteps.join("\n")).toContain("planner preflight");
+    expect(report.nextSteps.join("\n")).toContain("exact endpoint/model used by the latest benchmark");
     expect(report.nextSteps.join("\n")).toContain("manual grade checklist blockers");
   });
 });

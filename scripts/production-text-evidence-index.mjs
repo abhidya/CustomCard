@@ -91,9 +91,11 @@ export function buildProductionTextEvidenceIndex(args = {}) {
   const latestPreflight = preflights[0];
   const latestDryRun = dryRunReports[0];
   const latestManualGradeChecklist = manualGradeChecklists[0];
+  const plannerEvidenceAlignment = comparePlannerEvidence(latestPlannerPreflight, latestBenchmark);
   const promotionReady = Boolean(
     latestReadiness?.promotionReady &&
     latestPlannerPreflight?.promotionReady &&
+    plannerEvidenceAlignment.ok &&
     latestManualGradeChecklist?.promotionReady &&
     latestAggregate?.promotionReady &&
     latestBenchmark?.failedRuns === 0 &&
@@ -108,7 +110,8 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     latestBenchmark,
     latestPreflight,
     latestDryRun,
-    latestManualGradeChecklist
+    latestManualGradeChecklist,
+    plannerEvidenceAlignment
   });
   const nextSteps = buildNextSteps({
     latestPlannerPreflight,
@@ -118,7 +121,8 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     latestBenchmark,
     latestPreflight,
     latestDryRun,
-    latestManualGradeChecklist
+    latestManualGradeChecklist,
+    plannerEvidenceAlignment
   });
   const result = {
     createdAtIso: new Date().toISOString(),
@@ -140,6 +144,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     },
     findings,
     nextSteps,
+    plannerEvidenceAlignment,
     rerunPlans,
     plannerPreflights,
     readinessReports,
@@ -499,10 +504,52 @@ function openAiBaseUrl(value) {
     if (markerIndex >= 0) {
       return `${url.origin}${url.pathname.slice(0, markerIndex + 3)}`;
     }
-    return url.origin;
+    if (url.pathname === "/v1" || url.pathname.endsWith("/v1")) {
+      return `${url.origin}${url.pathname}`;
+    }
+    return "";
   } catch {
     return "";
   }
+}
+
+function comparePlannerEvidence(latestPlannerPreflight, latestBenchmark) {
+  const preflightBaseUrl = normalizeBaseUrl(latestPlannerPreflight?.baseUrl || "");
+  const preflightModel = latestPlannerPreflight?.activeModel || "";
+  const benchmarkBaseUrls = unique((latestBenchmark?.plannerBaseUrls || []).map(normalizeBaseUrl));
+  const benchmarkModels = latestBenchmark?.textModels || [];
+  const checked = Boolean(latestPlannerPreflight && latestBenchmark?.llmGeneratedRuns > 0);
+  const baseUrlMatches = !checked || !preflightBaseUrl || !benchmarkBaseUrls.length || benchmarkBaseUrls.includes(preflightBaseUrl);
+  const modelMatches = !checked || !preflightModel || !benchmarkModels.length || benchmarkModels.includes(preflightModel);
+  const blockers = [];
+  if (!baseUrlMatches) {
+    blockers.push(`Planner preflight endpoint ${preflightBaseUrl} does not match benchmark planner endpoint(s): ${benchmarkBaseUrls.join(", ")}.`);
+  }
+  if (!modelMatches) {
+    blockers.push(`Planner preflight model ${preflightModel} does not match benchmark text model(s): ${benchmarkModels.join(", ")}.`);
+  }
+  return {
+    path: latestBenchmark?.path || latestPlannerPreflight?.path || "",
+    status: blockers.length ? "blocked" : checked ? "aligned" : "not-checked",
+    promotionReady: !blockers.length,
+    checked,
+    ok: !blockers.length,
+    preflight: {
+      path: latestPlannerPreflight?.path || "",
+      baseUrl: preflightBaseUrl,
+      model: preflightModel
+    },
+    benchmark: {
+      path: latestBenchmark?.path || "",
+      plannerBaseUrls: benchmarkBaseUrls,
+      textModels: benchmarkModels
+    },
+    blockers
+  };
+}
+
+function normalizeBaseUrl(value) {
+  return String(value || "").replace(/\/+$/, "");
 }
 
 function buildFindings({
@@ -513,7 +560,8 @@ function buildFindings({
   latestBenchmark,
   latestPreflight,
   latestDryRun,
-  latestManualGradeChecklist
+  latestManualGradeChecklist,
+  plannerEvidenceAlignment
 }) {
   const findings = [];
   if (latestPreflight?.liveComfyReachable && latestPreflight?.liveNodeAvailable) {
@@ -532,6 +580,9 @@ function buildFindings({
   }
   if (latestPlannerPreflight && !latestPlannerPreflight.promotionReady) {
     findings.push(`Latest planner preflight is blocked: ${latestPlannerPreflight.classification} model ${latestPlannerPreflight.activeModel || "n/a"}.`);
+  }
+  if (plannerEvidenceAlignment?.checked && !plannerEvidenceAlignment.ok) {
+    findings.push(`Planner preflight and benchmark runtime evidence do not align: ${plannerEvidenceAlignment.blockers.join(" ")}`);
   }
   if (latestReadiness?.smallPlannerActive) {
     findings.push("The currently reachable planner is a known-small smoke model, so current evidence must not be promoted.");
@@ -580,7 +631,8 @@ function buildNextSteps({
   latestBenchmark,
   latestPreflight,
   latestDryRun,
-  latestManualGradeChecklist
+  latestManualGradeChecklist,
+  plannerEvidenceAlignment
 }) {
   const steps = [];
   if (!latestPreflight?.liveComfyReachable || !latestPreflight?.liveNodeAvailable) {
@@ -588,6 +640,9 @@ function buildNextSteps({
   }
   if (!latestPlannerPreflight?.promotionReady) {
     steps.push("Run production-text planner preflight with a production-suitable model, 8192+ context, and the full output budget.");
+  }
+  if (plannerEvidenceAlignment?.checked && !plannerEvidenceAlignment.ok) {
+    steps.push("Refresh planner preflight against the exact endpoint/model used by the latest benchmark before treating planner evidence as current.");
   }
   if (!latestReadiness?.productionSuitablePlannerReachable) {
     steps.push("Run the planner preflight, then start or configure a production-suitable planner endpoint with 8192+ context before collecting promotion evidence.");
@@ -639,6 +694,7 @@ function buildMarkdown(result) {
   lines.push("| --- | --- | --- | --- |");
   lines.push(latestRow("Rerun Plan", result.rerunPlans[0], rerunPlanSummary));
   lines.push(latestRow("Planner", result.plannerPreflights[0], plannerSummary));
+  lines.push(latestRow("Planner/Benchmark Alignment", result.plannerEvidenceAlignment, plannerEvidenceAlignmentSummary));
   lines.push(latestRow("Readiness", result.readinessReports[0], readinessSummary));
   lines.push(latestRow("Model Coverage", result.modelCoverageReports[0], modelCoverageSummary));
   lines.push(latestRow("Preflight", result.preflights[0], preflightSummary));
@@ -679,6 +735,10 @@ function rerunPlanSummary(entry) {
 
 function plannerSummary(entry) {
   return `${entry.classification}; model=${entry.activeModel || "none"}; context=${entry.reportedContextTokens ?? "n/a"}`;
+}
+
+function plannerEvidenceAlignmentSummary(entry) {
+  return `preflight=${entry.preflight?.baseUrl || "n/a"} ${entry.preflight?.model || "n/a"}; benchmark=${(entry.benchmark?.plannerBaseUrls || []).join(", ") || "n/a"} ${(entry.benchmark?.textModels || []).join(", ") || "n/a"}; blockers=${entry.blockers?.length || 0}`;
 }
 
 function latestRow(label, entry, summarize) {

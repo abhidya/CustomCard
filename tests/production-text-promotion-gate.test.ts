@@ -214,4 +214,48 @@ describe("production text promotion gate", () => {
     expect(report.requirements.map((item) => item.name)).toContain("production planner candidate is available");
     expect(report.requirements.map((item) => item.name)).toContain("manual grade checklist is promotion-ready");
   });
+
+  it("blocks when planner preflight and benchmark runtime use different endpoints", () => {
+    const root = mkdtempSync(join(tmpdir(), "production-text-promotion-gate-runtime-mismatch-"));
+    writeBaseEvidence(root, { ready: true });
+    const textModel = "koboldcpp/gemma-4-31B-it-Q4_K_M";
+    writeJson(join(root, "production-text-workflow-summary.json"), {
+      createdAtIso: "2026-06-26T04:15:00.000Z",
+      phase: "local-production-text",
+      envRouting: {
+        productionTextPlannerRuntime: {
+          baseUrl: "http://127.0.0.1:5013/v1",
+          model: textModel
+        }
+      },
+      plannedRuns: fixtures.map((storyId) => ({ storyId, textModel })),
+      runs: fixtures.map((storyId) => ({
+        storyId,
+        productionTextMode: "llm-generated-copy",
+        textModel,
+        statusCode: 200,
+        panelCount: 4,
+        typographyModeId: "customcard-production-text-composer",
+        autoChecks: {
+          missingMustInclude: [],
+          avoidedFailures: [],
+          checks: { finalImagesRenderedByComfy: true }
+        }
+      }))
+    });
+
+    const report = runProductionTextPromotionGate({
+      input: root,
+      "output-dir": join(root, "gate"),
+      "include-untracked": true,
+      advisory: true
+    });
+
+    const alignment = report.requirements.find((item) => item.name === "planner preflight matches benchmark runtime");
+    expect(report.status).toBe("blocked");
+    expect(alignment?.ok).toBe(false);
+    expect(JSON.stringify(alignment?.details)).toContain("5003");
+    expect(JSON.stringify(alignment?.details)).toContain("5013");
+    expect(report.nextSteps.join("\n")).toContain("exact endpoint/model used by the latest benchmark");
+  });
 });
