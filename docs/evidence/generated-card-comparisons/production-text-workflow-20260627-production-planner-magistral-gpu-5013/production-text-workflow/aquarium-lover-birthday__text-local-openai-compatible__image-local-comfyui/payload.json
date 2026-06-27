@@ -1,0 +1,138 @@
+{
+  "status": "provider-unavailable",
+  "detail": "AI text provider returned invalid card-copy output after retry: Forbidden term present: mockup.",
+  "error": "AI text provider returned invalid card-copy output after retry: Forbidden term present: mockup.",
+  "user_content_only": false,
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "local-openai-compatible-chat",
+      "primary_adapter_id": "local-openai-compatible-chat",
+      "fallback_adapter_id": "cloudflare-workers-ai-chat",
+      "model": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 5000,
+      "per_request_budget_cents": 5,
+      "queue_enabled": false,
+      "fallback_queue_enabled": false,
+      "ready_for_live_calls": true,
+      "blocked_reasons": [],
+      "provider_failure": "AI text provider returned invalid card-copy output after retry: Forbidden term present: mockup."
+    }
+  },
+  "provider_call_events": [
+    {
+      "id": "provider-call-f955dcfd",
+      "tenant_id": "model-benchmark-aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui-1782527407693",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "local-openai-compatible-chat",
+      "provider": "AI provider",
+      "capability": "text-chat",
+      "status": "reserved",
+      "fallback_from_adapter_id": "local-openai-compatible-chat",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 5,
+      "rate_limit_window_start": "2026-06-27T02:30:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "providerAttempt": 1,
+        "fallbackAttempt": false,
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "local-openai-compatible-chat",
+        "fallbackAdapterId": "cloudflare-workers-ai-chat",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-cb9639e0",
+      "tenant_id": "model-benchmark-aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui-1782527407693",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "local-openai-compatible-chat",
+      "provider": "AI provider",
+      "capability": "text-chat",
+      "status": "succeeded",
+      "fallback_from_adapter_id": "local-openai-compatible-chat",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 5,
+      "rate_limit_window_start": "2026-06-27T02:30:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "providerAttempt": 1,
+        "fallbackAttempt": false,
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "local-openai-compatible-chat",
+        "fallbackAdapterId": "cloudflare-workers-ai-chat",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-2669641b",
+      "tenant_id": "model-benchmark-aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui-1782527407693",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "local-openai-compatible-chat",
+      "provider": "AI provider",
+      "capability": "text-chat",
+      "status": "reserved",
+      "fallback_from_adapter_id": "local-openai-compatible-chat",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 5,
+      "rate_limit_window_start": "2026-06-27T02:43:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "providerAttempt": 1,
+        "fallbackAttempt": false,
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "local-openai-compatible-chat",
+        "fallbackAdapterId": "cloudflare-workers-ai-chat",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-d3cec876",
+      "tenant_id": "model-benchmark-aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui-1782527407693",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "local-openai-compatible-chat",
+      "provider": "AI provider",
+      "capability": "text-chat",
+      "status": "succeeded",
+      "fallback_from_adapter_id": "local-openai-compatible-chat",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 5,
+      "rate_limit_window_start": "2026-06-27T02:43:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "providerAttempt": 1,
+        "fallbackAttempt": false,
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "local-openai-compatible-chat",
+        "fallbackAdapterId": "cloudflare-workers-ai-chat",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    }
+  ],
+  "ai_cost_gate": {
+    "event_count": 4,
+    "reserved_or_spent_cents": 10,
+    "actual_spend_cents": 0,
+    "request_units": 2,
+    "live_network_calls": true,
+    "blocked_reasons": []
+  },
+  "fallback_queued": false
+}

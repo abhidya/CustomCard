@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T03:35:02.588Z",
+  "createdAtIso": "2026-06-27T03:39:53.932Z",
   "status": "blocked",
   "promotionReady": false,
   "advisory": true,
@@ -13,12 +13,12 @@
     "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json",
     "modelCoverage": "docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current/local-model-coverage.json",
     "rerunPlan": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-production-planner/production-text-rerun-plan.json",
-    "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627T021918Z/production-text-planner-preflight.json",
+    "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627T023006Z/production-text-planner-preflight.json",
     "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260627-production-planner/production-text-preflight.json",
     "dryRun": "docs/evidence/generated-card-comparisons/production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json",
     "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-production-planner/production-text-manual-grade-checklist.json",
     "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
-    "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json"
+    "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-magistral-gpu-5013/production-text-workflow-summary.json"
   },
   "requirements": [
     {
@@ -50,8 +50,8 @@
       "name": "planner preflight is production-ready",
       "ok": true,
       "details": {
-        "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627T021918Z/production-text-planner-preflight.json",
-        "activeModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
+        "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627T023006Z/production-text-planner-preflight.json",
+        "activeModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
         "classification": "production-suitable",
         "reportedContextTokens": 8192,
         "maxOutputTokens": 3200,
@@ -63,17 +63,17 @@
       "ok": true,
       "details": {
         "preflight": {
-          "path": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627T021918Z/production-text-planner-preflight.json",
+          "path": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627T023006Z/production-text-planner-preflight.json",
           "baseUrl": "http://127.0.0.1:5013/v1",
-          "model": "koboldcpp/gemma-4-31B-it-Q4_K_M"
+          "model": "koboldcpp/Magistral-Small-2509-Q4_K_M"
         },
         "benchmark": {
-          "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
+          "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-magistral-gpu-5013/production-text-workflow-summary.json",
           "plannerBaseUrls": [
             "http://127.0.0.1:5013/v1"
           ],
           "textModels": [
-            "koboldcpp/gemma-4-31B-it-Q4_K_M"
+            "koboldcpp/Magistral-Small-2509-Q4_K_M"
           ]
         },
         "blockers": []
@@ -138,7 +138,7 @@
         "readinessSmallPlannerActive": false,
         "benchmarkSmallPlannerUsed": false,
         "textModels": [
-          "koboldcpp/gemma-4-31B-it-Q4_K_M"
+          "koboldcpp/Magistral-Small-2509-Q4_K_M"
         ]
       }
     },
@@ -146,29 +146,27 @@
       "name": "LLM-planned customer request matrix completed",
       "ok": false,
       "details": {
-        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
+        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-magistral-gpu-5013/production-text-workflow-summary.json",
         "requiredFixtures": [
           "aquarium-lover-birthday",
           "koi-fish-lover-encouragement",
           "dog-lover-thank-you"
         ],
         "fixtures": [
-          "aquarium-lover-birthday",
-          "koi-fish-lover-encouragement",
-          "dog-lover-thank-you"
+          "aquarium-lover-birthday"
         ],
         "completedRuns": 0,
-        "failedRuns": 3
+        "failedRuns": 1
       }
     },
     {
       "name": "final images came from Comfy text composer",
       "ok": false,
       "details": {
-        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
+        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-magistral-gpu-5013/production-text-workflow-summary.json",
         "completedRuns": 0,
-        "failedRuns": 3,
-        "failedBeforeImageGeneration": 3,
+        "failedRuns": 1,
+        "failedBeforeImageGeneration": 1,
         "finalImagesRenderedByComfy": false,
         "deterministicTextComposerUsed": false
       }
@@ -177,17 +175,11 @@
       "name": "planner preserved required terms and avoided forbidden terms",
       "ok": false,
       "details": {
-        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
+        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-magistral-gpu-5013/production-text-workflow-summary.json",
         "missingMustInclude": [
           "Nina",
           "birthday",
-          "aquarium",
-          "Uncle Ken",
-          "koi",
-          "encouragement",
-          "Morgan",
-          "thank",
-          "dog"
+          "aquarium"
         ],
         "mustAvoidFailures": []
       }

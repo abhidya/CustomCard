@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T03:35:12.554Z",
+  "createdAtIso": "2026-06-27T03:40:03.493Z",
   "status": "rerun-required",
   "promotionReady": false,
   "reportDir": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-production-planner",
@@ -8,9 +8,9 @@
     "evidenceIndex": "docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner/production-text-evidence-index.json"
   },
   "currentEvidence": {
-    "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627T021918Z/production-text-planner-preflight.json",
+    "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627T023006Z/production-text-planner-preflight.json",
     "plannerClassification": "production-suitable",
-    "plannerModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
+    "plannerModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
     "plannerContextTokens": 8192,
     "localModelCoverage": "docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current/local-model-coverage.json",
     "installedProductionPlanners": [
@@ -26,7 +26,7 @@
     "missingProductionPlanners": [
       "qwen3-14b-instruct"
     ],
-    "latestBenchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
+    "latestBenchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-magistral-gpu-5013/production-text-workflow-summary.json",
     "latestAggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
     "bestScore": 38
   },
@@ -51,28 +51,26 @@
     {
       "name": "LLM-planned customer request matrix completed",
       "details": {
-        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
+        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-magistral-gpu-5013/production-text-workflow-summary.json",
         "requiredFixtures": [
           "aquarium-lover-birthday",
           "koi-fish-lover-encouragement",
           "dog-lover-thank-you"
         ],
         "fixtures": [
-          "aquarium-lover-birthday",
-          "koi-fish-lover-encouragement",
-          "dog-lover-thank-you"
+          "aquarium-lover-birthday"
         ],
         "completedRuns": 0,
-        "failedRuns": 3
+        "failedRuns": 1
       }
     },
     {
       "name": "final images came from Comfy text composer",
       "details": {
-        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
+        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-magistral-gpu-5013/production-text-workflow-summary.json",
         "completedRuns": 0,
-        "failedRuns": 3,
-        "failedBeforeImageGeneration": 3,
+        "failedRuns": 1,
+        "failedBeforeImageGeneration": 1,
         "finalImagesRenderedByComfy": false,
         "deterministicTextComposerUsed": false
       }
@@ -80,17 +78,11 @@
     {
       "name": "planner preserved required terms and avoided forbidden terms",
       "details": {
-        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
+        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-magistral-gpu-5013/production-text-workflow-summary.json",
         "missingMustInclude": [
           "Nina",
           "birthday",
-          "aquarium",
-          "Uncle Ken",
-          "koi",
-          "encouragement",
-          "Morgan",
-          "thank",
-          "dog"
+          "aquarium"
         ],
         "mustAvoidFailures": []
       }

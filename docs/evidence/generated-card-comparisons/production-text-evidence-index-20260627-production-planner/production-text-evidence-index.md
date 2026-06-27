@@ -1,6 +1,6 @@
 # Production Text Evidence Index
 
-Created: 2026-06-27T03:35:02.581Z
+Created: 2026-06-27T03:39:53.929Z
 Status: blocked
 Promotion ready: no
 
@@ -8,14 +8,13 @@ Promotion ready: no
 
 - Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.
 - Latest dry-run planning proof keeps the full production card-copy JSON contract on koboldcpp/gemma-4-31B-it-Q4_K_M with 8192+ context, 3200 output tokens, and 1200000ms timeout across aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you.
-- Latest planner preflight passed with koboldcpp/gemma-4-31B-it-Q4_K_M.
+- Latest planner preflight passed with koboldcpp/Magistral-Small-2509-Q4_K_M.
 - No production-suitable planner endpoint is reachable/configured in the latest readiness report.
 - Installed production planner candidates found locally: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Recommended production planner candidates still missing locally: qwen3-14b-instruct.
-- The latest LLM-planned benchmark covers 3 customer request runs.
-- Latest LLM-planned benchmark has 3 failed runtime run(s), including 3 before image generation. Latest provider failure(s): aquarium-lover-birthday: text provider read ECONNRESET; koi-fish-lover-encouragement: text provider connect ECONNREFUSED 127.0.0.1:5013; dog-lover-thank-you: text provider connect ECONNREFUSED 127.0.0.1:5013.
-- Planner/theme adherence is still failing required terms: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog.
+- Latest LLM-planned benchmark has 1 failed runtime run(s), including 1 before image generation. Latest provider failure(s): aquarium-lover-birthday: text provider AI text provider returned invalid card-copy output after retry: Forbidden term present: mockup..
+- Planner/theme adherence is still failing required terms: Nina, birthday, aquarium.
 - Latest aggregate is blocked: best score 38 across 3 run(s).
 - Latest manual grade checklist is blocked: 0/0 generated run(s) graded, 0 failed before image generation.
 
@@ -32,16 +31,16 @@ Promotion ready: no
 
 | Type | Path | Status | Key result |
 | --- | --- | --- | --- |
-| Rerun Plan | [open](../production-text-rerun-plan-20260627-production-planner/production-text-rerun-plan.json) | rerun-required | 5 failed requirement(s); commands=10 |
-| Planner | [open](../production-text-planner-preflight-20260627T021918Z/production-text-planner-preflight.json) | promotion-ready | production-suitable; model=koboldcpp/gemma-4-31B-it-Q4_K_M; context=8192 |
-| Planner/Benchmark Alignment | [open](../production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json) | aligned | preflight=http://127.0.0.1:5013/v1 koboldcpp/gemma-4-31B-it-Q4_K_M; benchmark=http://127.0.0.1:5013/v1 koboldcpp/gemma-4-31B-it-Q4_K_M; blockers=0 |
+| Rerun Plan | [open](../production-text-rerun-plan-20260627-production-planner/production-text-rerun-plan.json) | rerun-required | 7 failed requirement(s); commands=10 |
+| Planner | [open](../production-text-planner-preflight-20260627T023006Z/production-text-planner-preflight.json) | promotion-ready | production-suitable; model=koboldcpp/Magistral-Small-2509-Q4_K_M; context=8192 |
+| Planner/Benchmark Alignment | [open](../production-text-workflow-20260627-production-planner-magistral-gpu-5013/production-text-workflow-summary.json) | aligned | preflight=http://127.0.0.1:5013/v1 koboldcpp/Magistral-Small-2509-Q4_K_M; benchmark=http://127.0.0.1:5013/v1 koboldcpp/Magistral-Small-2509-Q4_K_M; blockers=0 |
 | Readiness | [open](../production-text-readiness-20260627-production-planner/production-text-readiness.json) | blocked | 2 blocker(s); planner=none |
 | Model Coverage | [open](../local-model-coverage-20260627-current/local-model-coverage.json) | action-needed | 9 recommended installed; unevaluated production planners=gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash |
 | Preflight | [open](../production-text-preflight-20260627-production-planner/production-text-preflight.json) | promotion-ready | comfy=yes node=yes |
 | Dry Run | [open](../production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json) | planning-proof | production-suitable koboldcpp/gemma-4-31B-it-Q4_K_M; planned=3; contract=full-production-card-copy-json |
 | Manual Grades | [open](../production-text-manual-grade-checklist-20260627-production-planner/production-text-manual-grade-checklist.json) | blocked | 0/0 generated graded; manual-grades=0; missing=0; failed-before-image=0 |
 | Aggregate | [open](../benchmark-aggregate-20260627-production-text-production-planner/benchmark-aggregate.json) | blocked | 2 run(s); best=73; ready=no |
-| Benchmark | [open](../production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json) | blocked | 0/3 completed; failed=3; failed-before-image=3 |
+| Benchmark | [open](../production-text-workflow-20260627-production-planner-magistral-gpu-5013/production-text-workflow-summary.json) | blocked | 0/1 completed; failed=1; failed-before-image=1 |
 
 ## Aggregates
 
@@ -56,6 +55,7 @@ Promotion ready: no
 
 | Created | Runs | Completed | Failed | Fixtures | Text models | Path |
 | --- | ---:| ---:| ---:| --- | --- | --- |
+| 2026-06-27T02:30:07.686Z | 1 | 0 | 1 | aquarium-lover-birthday | koboldcpp/Magistral-Small-2509-Q4_K_M | [open](../production-text-workflow-20260627-production-planner-magistral-gpu-5013/production-text-workflow-summary.json) |
 | 2026-06-27T02:19:19.090Z | 3 | 0 | 3 | aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you | koboldcpp/gemma-4-31B-it-Q4_K_M | [open](../production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json) |
 | 2026-06-27T02:02:58.139Z | 3 | 0 | 3 | aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you | koboldcpp/gemma-4-31B-it-Q4_K_M | [open](../production-text-workflow-20260627-production-planner-gpu/production-text-workflow-summary.json) |
 | 2026-06-27T01:49:31.900Z | 3 | 0 | 3 | aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you | koboldcpp/gemma-4-31B-it-Q4_K_M | [open](../production-text-workflow-20260627-production-planner/production-text-workflow-summary.json) |
@@ -65,7 +65,6 @@ Promotion ready: no
 | 2026-06-26T02:05:28.762Z | 1 | 1 | 0 | folded-card-sunburst-typography | n/a | [open](../production-text-workflow-20260626-sdxl-turbo-cfg15-safe-fields/production-text-workflow-summary.json) |
 | 2026-06-26T01:53:56.476Z | 1 | 1 | 0 | folded-card-sunburst-typography | n/a | [open](../production-text-workflow-20260626-sdxl-turbo-cfg15/production-text-workflow-summary.json) |
 | 2026-06-26T01:43:59.340Z | 1 | 1 | 0 | folded-card-sunburst-typography | n/a | [open](../production-text-workflow-20260626-sdxl-turbo/production-text-workflow-summary.json) |
-| 2026-06-26T01:25:39.502Z | 1 | 1 | 0 | folded-card-sunburst-typography | n/a | [open](../production-text-workflow-20260626-live-node/production-text-workflow-summary.json) |
 
 ## Dry Runs
 

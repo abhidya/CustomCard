@@ -453,8 +453,8 @@ current live Comfy preflight is
 `docs/evidence/generated-card-comparisons/production-text-preflight-20260627-production-planner`:
 the target ComfyUI server is reachable and `CustomCardTextComposer` is loaded.
 The current planner preflight report is
-`docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627T021918Z`:
-Gemma 31B is promotion-ready with 8192 context and 3200 output tokens at the
+`docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627T023006Z`:
+Magistral Small is promotion-ready with 8192 context and 3200 output tokens at the
 matching `http://127.0.0.1:5013/v1` benchmark planner endpoint. The current readiness report is
 `docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner`:
 local Comfy is reachable, but the dedicated `5013` production planner endpoint
@@ -462,9 +462,10 @@ is not currently listening; failed aggregate quality is tracked separately from
 runtime readiness. The current
 local model coverage is
 `docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current`;
-Gemma 31B, Magistral Small, and DeepSeek V4 Flash are installed but still need
-local production-text evaluation, while Qwen3 14B remains an optional missing
-fallback if installed planners are too slow. The current rerun plan is
+Gemma 31B, Magistral Small, and DeepSeek V4 Flash are installed; Magistral Small
+now has tracked one-run production-text failure evidence, but none of the
+installed production planners has a passing full-matrix evaluation. Qwen3 14B
+remains an optional missing fallback if installed planners are too slow. The current rerun plan is
 `docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-production-planner`:
 it turns the 7 current failed gate requirements into 10 ordered commands for
 the full production-planner matrix, grading, aggregation, and final gate. The
@@ -491,9 +492,10 @@ quality evidence: use the dedicated `5013` production planner port, require
 `/models` to match the requested planner, keep `-PlannerRequestTimeoutMs
 1200000`, and switch hosted/self-hosted only if local GPU throughput remains
 too slow. A follow-up isolated-port Gemma run on `5013` still reset the
-connection during the first full-contract JSON response; a Magistral Small
-GPU run on `5013` proved `24/41` layers offloaded but was still stuck before
-the first provider response after the practical benchmark window. Gate 9's
+connection during the first full-contract JSON response; the latest tracked
+Magistral Small GPU run on `5013` reached the production planner path but failed
+the first aquarium request before image generation because the planner output
+still contained forbidden `mockup` language after retry. Gate 9's
 older live LLM-planned matrix ran through
 KoboldCPP Qwen3-4B and local Comfy, then failed quality review: aquarium scored
 38/100, dog scored 34/100, and koi failed before image generation because the

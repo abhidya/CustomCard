@@ -1,0 +1,24 @@
+{
+  "advisoryOnly": true,
+  "checks": {
+    "fourPanels": false,
+    "noProviderFailure": false,
+    "mustIncludeCovered": false,
+    "mustAvoidClean": true,
+    "providerCalls": 4,
+    "productionTextGeneratedCopy": true,
+    "finalImagesRenderedByComfy": true,
+    "benchmarkPreviewOverlayBypassed": true,
+    "metadataIncludesExactGeneratedCopy": true,
+    "metadataIncludesSafeBoxes": true,
+    "metadataIncludesArtworkGuards": true,
+    "imagePromptsSuppressExactCopy": true
+  },
+  "missingMustInclude": [
+    "Nina",
+    "birthday",
+    "aquarium"
+  ],
+  "avoidedFailures": [],
+  "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+}

@@ -1,0 +1,60 @@
+{
+  "sender": "Riley",
+  "recipient": "Nina",
+  "relationship": "friend",
+  "occasion": "birthday",
+  "tone": "warm, observant, quietly joyful, polished",
+  "style": "premium folded greeting card for an aquarium lover; the LLM must choose the final visual concept, palette, motifs, panel copy, and four-panel layout",
+  "language": "English",
+  "personal_note": "Make a birthday card for Nina, who relaxes by tending her freshwater aquarium. Avoid generic balloons or a busy full-tank scene; make it feel like elegant print stationery for someone who notices small aquatic details.",
+  "memory_notes": [
+    "Nina loves freshwater aquariums, aquatic plants, tiny fish, and the calm ritual of keeping the tank healthy.",
+    "The card should feel like a birthday card first, not aquarium merchandise.",
+    "The final artwork should leave natural text-safe space because Comfy renders the exact copy after image generation."
+  ],
+  "must_include": [
+    "Nina",
+    "birthday",
+    "aquarium"
+  ],
+  "must_avoid": [
+    "lorem ipsum",
+    "placeholder",
+    "extra words",
+    "fake lettering",
+    "mockup",
+    "generic balloons"
+  ],
+  "aiFlowConfig": [
+    {
+      "flowId": "card-copy",
+      "primaryAdapterId": "local-openai-compatible-chat",
+      "fallbackAdapterId": "",
+      "model": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": false,
+      "rateLimitPerMinute": 4,
+      "monthlyBudgetCents": 5000,
+      "perRequestBudgetCents": 5,
+      "maxRetries": 1,
+      "maxTokens": 3200,
+      "temperature": 0.62
+    },
+    {
+      "flowId": "card-image",
+      "primaryAdapterId": "local-comfyui-api-image",
+      "fallbackAdapterId": "",
+      "model": "sd_xl_turbo_1.0_fp16.safetensors",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": false,
+      "rateLimitPerMinute": 4,
+      "monthlyBudgetCents": 4000,
+      "perRequestBudgetCents": 1,
+      "maxRetries": 1,
+      "maxTokens": 0,
+      "temperature": 0
+    }
+  ]
+}
