@@ -1,0 +1,63 @@
+{
+  "phase": "local-production-text",
+  "phaseDir": "production-text-workflow",
+  "outputDir": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-dry-run-20260627-production-planner",
+  "dryRun": true,
+  "liveProviderCallsEnabled": false,
+  "productionTextPlannerRuntime": {
+    "adapterId": "local-openai-compatible-chat",
+    "baseUrl": "http://127.0.0.1:5003/v1",
+    "model": "koboldcpp/gemma-4-31B-it-Q4_K_M",
+    "contextTokens": 8192,
+    "maxOutputTokens": 3200,
+    "requestTimeoutMs": 1200000,
+    "creativeContract": "full-production-card-copy-json"
+  },
+  "plannedRuns": [
+    {
+      "phase": "local-production-text",
+      "focus": "local-comfy-production-text-generated-copy",
+      "storyId": "aquarium-lover-birthday",
+      "productionTextMode": "llm-generated-copy",
+      "textCandidateId": "text-local-openai-compatible",
+      "textAdapterId": "local-openai-compatible-chat",
+      "textModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
+      "imageCandidateId": "image-local-comfyui",
+      "imageAdapterId": "local-comfyui-api-image",
+      "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+      "typographyModeId": "customcard-production-text-composer",
+      "typographyModeLabel": "CustomCard production text composer",
+      "typographyStrategy": "llm-planned-copy-comfy-deterministic-text"
+    },
+    {
+      "phase": "local-production-text",
+      "focus": "local-comfy-production-text-generated-copy",
+      "storyId": "koi-fish-lover-encouragement",
+      "productionTextMode": "llm-generated-copy",
+      "textCandidateId": "text-local-openai-compatible",
+      "textAdapterId": "local-openai-compatible-chat",
+      "textModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
+      "imageCandidateId": "image-local-comfyui",
+      "imageAdapterId": "local-comfyui-api-image",
+      "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+      "typographyModeId": "customcard-production-text-composer",
+      "typographyModeLabel": "CustomCard production text composer",
+      "typographyStrategy": "llm-planned-copy-comfy-deterministic-text"
+    },
+    {
+      "phase": "local-production-text",
+      "focus": "local-comfy-production-text-generated-copy",
+      "storyId": "dog-lover-thank-you",
+      "productionTextMode": "llm-generated-copy",
+      "textCandidateId": "text-local-openai-compatible",
+      "textAdapterId": "local-openai-compatible-chat",
+      "textModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
+      "imageCandidateId": "image-local-comfyui",
+      "imageAdapterId": "local-comfyui-api-image",
+      "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+      "typographyModeId": "customcard-production-text-composer",
+      "typographyModeLabel": "CustomCard production text composer",
+      "typographyStrategy": "llm-planned-copy-comfy-deterministic-text"
+    }
+  ]
+}

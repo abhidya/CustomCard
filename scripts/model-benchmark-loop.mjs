@@ -788,6 +788,7 @@ export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false } =
       outputDir: relativePath(outputDir),
       dryRun: true,
       liveProviderCallsEnabled: false,
+      productionTextPlannerRuntime: productionTextPlannerRuntimeSummary(env),
       plannedRuns: plannedRuns.map(plannedRunSummary)
     };
     writeJson(resolve(outputDir, `${phaseDirName}-dry-run.json`), dryRunPayload);
@@ -811,6 +812,7 @@ export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false } =
     envRouting: {
       aiEnvSources: [".env.local", "infra/env/.env"].filter((filePath) => existsSync(resolve(repoRoot, filePath))),
       configuredProviderKeys: Object.keys(env).filter(isSafeConfiguredKey).sort(),
+      productionTextPlannerRuntime: productionTextPlannerRuntimeSummary(env),
       secretsRedacted: true
     },
     plannedRuns: plannedRuns.map(plannedRunSummary),
@@ -879,6 +881,32 @@ function missingEnvGroups(groups, env) {
 
 function hasUsableEnvValue(value) {
   return hasUsableAiEnvValue(value);
+}
+
+function productionTextPlannerRuntimeSummary(env) {
+  return {
+    adapterId: "local-openai-compatible-chat",
+    baseUrl: redactValue(firstUsableEnv(env, ["CUSTOMCARD_LOCAL_LLM_BASE_URL", "LMSTUDIO_BASE_URL", "KOBOLDCPP_BASE_URL"]), env),
+    model: firstUsableEnv(env, ["CUSTOMCARD_LOCAL_LLM_MODEL", "LMSTUDIO_MODEL", "KOBOLDCPP_MODEL"]),
+    contextTokens: boundedIntegerEnv(env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS, 0, 1_000_000, 0) || null,
+    maxOutputTokens: boundedIntegerEnv(
+      env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS,
+      productionTextPlannerPolicy.minOutputTokens,
+      4000,
+      productionTextPlannerPolicy.recommendedOutputTokens
+    ),
+    requestTimeoutMs: boundedIntegerEnv(
+      firstUsableEnv(env, [
+        "CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS",
+        "LMSTUDIO_REQUEST_TIMEOUT_MS",
+        "KOBOLDCPP_REQUEST_TIMEOUT_MS"
+      ]),
+      10_000,
+      3_600_000,
+      1_200_000
+    ),
+    creativeContract: "full-production-card-copy-json"
+  };
 }
 
 function plannedRunsForPhase(phase, candidates) {

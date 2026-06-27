@@ -92,6 +92,7 @@ if (-not [string]::IsNullOrWhiteSpace($LocalLlmApiKey)) {
   $env:CUSTOMCARD_LOCAL_LLM_API_KEY = $LocalLlmApiKey
 }
 $env:CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS = [string]$PlannerMaxTokens
+$env:CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS = [string]$PlannerContextSize
 $env:CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS = [string]$PlannerRequestTimeoutMs
 
 function Test-UsableEnvValue {

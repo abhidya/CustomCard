@@ -49,6 +49,9 @@ Current production-text readiness doctor:
 Current production-text runtime attempt:
 `production-text-runtime-attempt-20260627-production-planner/production-text-runtime-attempt.md`.
 
+Current production-text dry-run planning proof:
+`production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json`.
+
 Current production-text rerun plan:
 `production-text-rerun-plan-20260627-production-planner/production-text-rerun-plan.md`.
 

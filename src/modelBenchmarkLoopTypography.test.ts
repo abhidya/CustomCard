@@ -1,3 +1,6 @@
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   buildEffectiveProviderRequests,
@@ -10,6 +13,7 @@ import {
   productionTextCompositorFixtureSpec,
   productionTextRequestFixtures,
   productionTextAutoChecks,
+  runModelBenchmarkLoopFromArgs,
   sanitizeBenchmarkValue,
   stories as benchmarkStories,
   typographyExperimentRuns,
@@ -123,6 +127,56 @@ describe("model benchmark typography experiment", () => {
     expect(runs.find((run) => run.storyId === "dog-lover-thank-you")?.story.request.personal_note).not.toContain(
       "You Showed Up Big"
     );
+  });
+
+  it("writes production planner runtime budget into local-production-text dry-run artifacts", async () => {
+    const outputDir = mkdtempSync(join(tmpdir(), "customcard-production-text-dry-run-"));
+    const previousEnv = {
+      CUSTOMCARD_LOCAL_LLM_BASE_URL: process.env.CUSTOMCARD_LOCAL_LLM_BASE_URL,
+      CUSTOMCARD_LOCAL_LLM_MODEL: process.env.CUSTOMCARD_LOCAL_LLM_MODEL,
+      CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS: process.env.CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS,
+      CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS: process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS,
+      CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS: process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS,
+      CUSTOMCARD_COMFYUI_URL: process.env.CUSTOMCARD_COMFYUI_URL,
+      CUSTOMCARD_COMFYUI_CHECKPOINT: process.env.CUSTOMCARD_COMFYUI_CHECKPOINT
+    };
+    try {
+      process.env.CUSTOMCARD_LOCAL_LLM_BASE_URL = "http://127.0.0.1:5003/v1";
+      process.env.CUSTOMCARD_LOCAL_LLM_MODEL = "koboldcpp/gemma-4-31B-it-Q4_K_M";
+      process.env.CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS = "1200000";
+      process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS = "8192";
+      process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS = "3200";
+      process.env.CUSTOMCARD_COMFYUI_URL = "http://127.0.0.1:8188";
+      process.env.CUSTOMCARD_COMFYUI_CHECKPOINT = "sd_xl_turbo_1.0_fp16.safetensors";
+
+      const result = await runModelBenchmarkLoopFromArgs({
+        phase: "local-production-text",
+        "local-only": "true",
+        "phase-dir": "production-text-workflow",
+        "output-dir": outputDir
+      });
+      const dryRun = JSON.parse(readFileSync(join(outputDir, "production-text-workflow-dry-run.json"), "utf8"));
+
+      expect(result.dryRun).toBe(true);
+      expect(dryRun.productionTextPlannerRuntime).toMatchObject({
+        adapterId: "local-openai-compatible-chat",
+        baseUrl: "http://127.0.0.1:5003/v1",
+        model: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+        contextTokens: 8192,
+        maxOutputTokens: 3200,
+        requestTimeoutMs: 1200000,
+        creativeContract: "full-production-card-copy-json"
+      });
+      expect(dryRun.plannedRuns.map((run: { storyId: string }) => run.storyId)).toEqual(
+        productionTextRequestFixtures.map((story) => story.id)
+      );
+    } finally {
+      for (const [key, value] of Object.entries(previousEnv)) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+      rmSync(outputDir, { force: true, recursive: true });
+    }
   });
 
   it("falls back to a single compositor fixture when no local LLM is configured", () => {
