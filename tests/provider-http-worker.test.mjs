@@ -16,7 +16,7 @@ const providerBaseEnv = {
   CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188"
 };
 
-let tempDirs: string[] = [];
+let tempDirs = [];
 
 afterEach(() => {
   for (const dir of tempDirs) rmSync(dir, { recursive: true, force: true });
