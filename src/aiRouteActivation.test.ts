@@ -88,6 +88,41 @@ describe("AI route activation", () => {
     expect(activation.readyForLiveCalls).toBe(true);
   });
 
+  it("preserves unrelated flows when later sparse sources override only one flow", () => {
+    const activations = resolveAiRouteActivations({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8",
+        DEEPAI_API_KEY: "deepai-token"
+      },
+      serviceAiFlowAdminConfig: [
+        {
+          flowId: "card-copy",
+          primaryAdapterId: "huggingface-chat",
+          liveProviderCallsEnabled: true
+        },
+        {
+          flowId: "card-image",
+          primaryAdapterId: "deepai-text2img-image",
+          liveProviderCallsEnabled: true
+        }
+      ],
+      loadedAiFlowAdminConfig: {
+        ai_flow_configs: [{ flowId: "card-copy", liveProviderCallsEnabled: false }]
+      }
+    });
+
+    expect(activations.find((activation) => activation.flowId === "card-copy")).toMatchObject({
+      selectedAdapterId: "huggingface-chat",
+      readyForLiveCalls: false
+    });
+    expect(activations.find((activation) => activation.flowId === "card-image")).toMatchObject({
+      selectedAdapterId: "deepai-text2img-image",
+      readyForLiveCalls: true
+    });
+  });
+
   it("parses server-scoped env JSON once when resolving multiple route activations", () => {
     let flowConfigReads = 0;
     const env = {

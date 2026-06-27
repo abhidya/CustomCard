@@ -1,4 +1,5 @@
 import type { AiFlowAdminConfig, AiFlowId, ResolvedAiFlowConfig } from "./aiFlowConfigData.mjs";
+import type { AiRoutePolicyId } from "./aiRoutePolicyIds.mjs";
 
 export interface AiRouteActivationRequestContext {
   aiFlowAdminConfig?: Partial<AiFlowAdminConfig>[] | null;
@@ -39,7 +40,7 @@ export interface AiRouteActivation {
   readyForLiveCalls: boolean;
   blockedReasons: string[];
   configuredEnvKeys: string[];
-  controlPlaneRoutePolicyId: string;
+  controlPlaneRoutePolicyId: AiRoutePolicyId | "";
 }
 
 export function createAiRouteActivationContext(input?: AiRouteActivationContextInput): AiRouteActivationContext;
@@ -52,4 +53,4 @@ export function resolveAiRouteActivations(
   input?: AiRouteActivationContext | AiRouteActivationContextInput
 ): AiRouteActivation[];
 export function mergeAiFlowAdminConfigs(...groups: unknown[]): AiFlowAdminConfig[];
-export function serverScopedAiFlowConfig(env?: Record<string, string | undefined>): AiFlowAdminConfig[];
+export function serverScopedAiFlowConfig(env?: Record<string, string | undefined>): Partial<AiFlowAdminConfig>[];

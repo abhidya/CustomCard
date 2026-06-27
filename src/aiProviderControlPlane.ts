@@ -3,6 +3,7 @@ import {
   type BenchmarkResultRecord,
   type BenchmarkResultsModel
 } from "./benchmarkResults";
+import { aiRoutePolicyIdsByFlowId } from "./aiRoutePolicyIds.mjs";
 import { summarizeAiFlowConfigs, type AiFlowConfigSummary } from "./aiFlowConfig";
 import type { ProviderCapability } from "./providerCatalog";
 import type { ProviderCallEvent } from "./providerOperations";
@@ -499,7 +500,7 @@ export const aiPromptProfiles: AiPromptProfile[] = [
 
 export const aiRoutePolicies: AiRoutePolicy[] = [
   {
-    id: "card-copy-route-v1",
+    id: aiRoutePolicyIdsByFlowId["card-copy"] ?? "card-copy-route-v1",
     flowId: "card-copy",
     policyVersion: "2026-06-15",
     status: "active",
@@ -518,7 +519,7 @@ export const aiRoutePolicies: AiRoutePolicy[] = [
     adminChangeMode: "runtime-config"
   },
   {
-    id: "card-image-route-v1",
+    id: aiRoutePolicyIdsByFlowId["card-image"] ?? "card-image-route-v1",
     flowId: "card-image",
     policyVersion: "2026-06-15",
     status: "active",

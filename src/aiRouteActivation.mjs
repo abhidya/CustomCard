@@ -6,12 +6,9 @@ import {
   normalizeAiFlowAdminConfigs,
   resolveAiFlowConfig
 } from "./aiFlowConfigData.mjs";
-import { aiRoutePolicies } from "./aiProviderControlPlane.ts";
+import { aiRoutePolicyIdsByFlowId } from "./aiRoutePolicyIds.mjs";
 
 const serverScopedAiFlowConfigCache = new WeakMap();
-const controlPlaneRoutePolicyIdsByFlowId = new Map(
-  aiRoutePolicies.map((policy) => [policy.flowId, policy.id])
-);
 
 export function createAiRouteActivationContext({
   env = process.env,
@@ -21,11 +18,11 @@ export function createAiRouteActivationContext({
   loadedAiFlowAdminConfig = []
 } = {}) {
   const mergedAiFlowAdminConfig = mergeAiFlowAdminConfigs(
-    normalizeOptionalAiFlowAdminConfigs(serviceAiFlowAdminConfig, env),
+    serviceAiFlowAdminConfig,
     serverScopedAiFlowConfig(env),
-    normalizeOptionalAiFlowAdminConfigs(extractLoadedAiFlowAdminConfigs(loadedAiFlowAdminConfig), env),
-    normalizeOptionalAiFlowAdminConfigs(requestContext?.aiFlowAdminConfig, env),
-    trustedRequestScopedAiFlowConfig(body, env, requestContext)
+    extractLoadedAiFlowAdminConfigs(loadedAiFlowAdminConfig),
+    requestContext?.aiFlowAdminConfig,
+    trustedRequestScopedAiFlowConfig(body, requestContext)
   );
 
   return {
@@ -65,7 +62,7 @@ export function resolveAiRouteActivation(flowId, input = {}) {
     readyForLiveCalls: flow.readyForLiveCalls,
     blockedReasons: [...flow.blockedReasons],
     configuredEnvKeys: configuredEnvKeysForFlow(flow, context.env),
-    controlPlaneRoutePolicyId: controlPlaneRoutePolicyIdsByFlowId.get(flowId) ?? ""
+    controlPlaneRoutePolicyId: aiRoutePolicyIdsByFlowId[flowId] ?? ""
   };
 }
 
@@ -77,9 +74,10 @@ export function resolveAiRouteActivations(input = {}) {
 export function mergeAiFlowAdminConfigs(...groups) {
   const byFlowId = new Map();
   for (const group of groups) {
-    for (const config of Array.isArray(group) ? group : []) {
+    for (const config of sparseAiFlowAdminConfigs(group)) {
       if (!config?.flowId) continue;
-      byFlowId.set(config.flowId, config);
+      const merged = byFlowId.get(config.flowId) ?? { flowId: config.flowId };
+      byFlowId.set(config.flowId, mergeSparseFlowConfig(merged, config));
     }
   }
   if (byFlowId.size === 0) return [];
@@ -91,21 +89,17 @@ export function serverScopedAiFlowConfig(env = process.env) {
   if (serverScopedAiFlowConfigCache.has(env)) return serverScopedAiFlowConfigCache.get(env);
 
   const raw = env.CUSTOMCARD_AI_FLOW_CONFIG_JSON ?? env.CUSTOMCARD_AI_FLOW_ADMIN_CONFIG_JSON ?? "";
-  let normalized = [];
+  let parsedConfigs = [];
   if (raw) {
     try {
-      const parsed = JSON.parse(String(raw));
-      normalized = normalizeAiFlowAdminConfigs(
-        Array.isArray(parsed) ? parsed : parsed.flows ?? parsed.aiFlowConfig ?? parsed.ai_flow_config ?? [],
-        env
-      );
+      parsedConfigs = extractLoadedAiFlowAdminConfigs(JSON.parse(String(raw)));
     } catch {
-      normalized = [];
+      parsedConfigs = [];
     }
   }
 
-  serverScopedAiFlowConfigCache.set(env, normalized);
-  return normalized;
+  serverScopedAiFlowConfigCache.set(env, parsedConfigs);
+  return parsedConfigs;
 }
 
 function isAiRouteActivationContext(input) {
@@ -122,16 +116,36 @@ async function readLoadedAiFlowAdminConfig(loadAiFlowAdminConfig) {
 }
 
 function extractLoadedAiFlowAdminConfigs(input) {
-  return input?.configs ?? input?.aiFlowConfigs ?? input?.flows ?? input ?? [];
+  return (
+    input?.configs ??
+    input?.aiFlowConfigs ??
+    input?.ai_flow_configs ??
+    input?.aiFlowConfig ??
+    input?.ai_flow_config ??
+    input?.flows ??
+    input ??
+    []
+  );
 }
 
-function normalizeOptionalAiFlowAdminConfigs(input, env) {
-  return Array.isArray(input) && input.length > 0 ? normalizeAiFlowAdminConfigs(input, env) : [];
+function sparseAiFlowAdminConfigs(input) {
+  return Array.isArray(input)
+    ? input.filter((config) => config && typeof config === "object" && typeof config.flowId === "string")
+    : [];
 }
 
-function trustedRequestScopedAiFlowConfig(body, env, requestContext = {}) {
+function mergeSparseFlowConfig(base, patch) {
+  const merged = { ...base };
+  for (const [key, value] of Object.entries(patch)) {
+    if (key === "flowId") continue;
+    if (value !== undefined) merged[key] = value;
+  }
+  return merged;
+}
+
+function trustedRequestScopedAiFlowConfig(body, requestContext = {}) {
   if (requestContext?.trustRequestAiFlowConfig !== true) return [];
-  return normalizeAiFlowAdminConfigs(body?.aiFlowConfig ?? body?.ai_flow_config ?? [], env);
+  return extractLoadedAiFlowAdminConfigs(body);
 }
 
 function configuredEnvKeysForFlow(flow, env = {}) {
