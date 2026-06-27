@@ -1,6 +1,6 @@
 # Production Text Research Rollup
 
-Created: 2026-06-27T05:20:11.827Z
+Created: 2026-06-27T05:45:07.234Z
 Status: blocked
 Promotion ready: no
 
@@ -15,6 +15,7 @@ Promotion ready: no
 - Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.
 - Latest dry-run planning proof keeps the full production card-copy JSON contract on koboldcpp/gemma-4-31B-it-Q4_K_M with 8192+ context, 3200 output tokens, and 1200000ms timeout across aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you.
 - Latest planner preflight passed with koboldcpp/Magistral-Small-2509-Q4_K_M.
+- Latest planner throughput probe is blocked for koboldcpp/Magistral-Small-2509-Q4_K_M: Planner throughput request timed out after 300000ms.
 - Installed production planner candidates found locally: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Recommended production planner candidates still missing locally: qwen3-14b-instruct.
@@ -25,6 +26,7 @@ Promotion ready: no
 - Latest manual grade checklist is blocked: 0/0 generated run(s) graded, 0 failed before image generation.
 - Production planner contract: Keep the full creative planner prompt and switch the runtime, not the prompt quality.
 - Reduced creative prompt contracts are disallowed for promotion evidence; fix finish_reason=length by using the correct planner runtime.
+- Planner throughput probe is blocked for koboldcpp/Magistral-Small-2509-Q4_K_M: Planner throughput request timed out after 300000ms.
 - Dry-run planning proof records the full-quality production planner path: koboldcpp/gemma-4-31B-it-Q4_K_M with 8192+ context, 3200 output tokens, 1200000ms timeout, and aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you planned.
 - Production planner files are installed but not yet evaluated in local production-text evidence: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Optional production planner pull queue remains: qwen3-14b-instruct.
@@ -39,6 +41,7 @@ Promotion ready: no
 | --- | --- | --- | --- |
 | Comfy text composer | promotion-ready | comfy=yes node=yes | [open](../production-text-preflight-20260627T040924Z/production-text-preflight.json) |
 | Planner | promotion-ready | production-suitable koboldcpp/Magistral-Small-2509-Q4_K_M; context=8192; max=3200 | [open](../production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-planner-preflight.json) |
+| Planner throughput | blocked | blocked koboldcpp/Magistral-Small-2509-Q4_K_M; fixture=aquarium-lover-birthday; duration=300056ms; failure=Planner throughput request timed out after 300000ms. | [open](../production-text-planner-throughput-20260627-magistral-5013-5min/production-text-planner-throughput.json) |
 | Planner/runtime alignment | promotion-ready | checked=yes ok=yes; preflight=http://127.0.0.1:5013/v1; benchmark=http://127.0.0.1:5013/v1; blockers=0 | [open](../production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json) |
 | Readiness | promotion-ready | production planner reachable=yes; blockers=0 | [open](../production-text-readiness-20260627-gpu-proof-magistral-5013/production-text-readiness.json) |
 | Dry run | planning-proof | 3 planned; production-suitable koboldcpp/gemma-4-31B-it-Q4_K_M; context=8192; max=3200 | [open](../production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json) |
@@ -86,7 +89,15 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 Proves the planner model, context budget, and output cap before image work starts.
 
-### 3. Refresh live Comfy preflight
+### 3. Probe planner throughput
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-throughput-probe.mjs --base-url http://127.0.0.1:5013/v1 --model koboldcpp/Magistral-Small-2509-Q4_K_M --reported-context-tokens 8192 --max-output-tokens 3200 --request-timeout-ms 1200000 --output-dir docs/evidence/generated-card-comparisons/production-text-planner-throughput-20260627-production-planner
+```
+
+Uses the full card-copy prompt to prove the planner can finish valid JSON before spending Comfy image work.
+
+### 4. Refresh live Comfy preflight
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/comfyui-production-text-preflight.mjs --require-live true --report-dir docs/evidence/generated-card-comparisons/production-text-preflight-20260627-production-planner
@@ -94,7 +105,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 Proves the current ComfyUI runtime is reachable and has CustomCardTextComposer loaded before readiness or image work rely on it.
 
-### 4. Refresh readiness
+### 5. Refresh readiness
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-readiness-doctor.mjs --advisory --local-llm-base-url http://127.0.0.1:5013/v1 --planner-context-tokens 8192 --planner-max-output-tokens 3200 --output-dir docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner
@@ -102,7 +113,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 Confirms Comfy, the custom text node, aggregate state, model inventory, and the configured planner endpoint with the production context/output budget.
 
-### 5. Run full production-text matrix
+### 6. Run full production-text matrix
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5013/v1 -LocalLlmModel koboldcpp/Magistral-Small-2509-Q4_K_M -OutputDir docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 3200 -PlannerContextSize 8192 -PlannerRequestTimeoutMs 1200000 -PlannerGpuId 1 -PlannerGpuLayers 999 -ProductionPlannerModelPath D:\models\lmstudio-community\Magistral-Small-2509-GGUF\Magistral-Small-2509-Q4_K_M.gguf
@@ -110,7 +121,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-producti
 
 Runs aquarium/koi/dog customer requests through the production Comfy text workflow with LLM-owned theme/copy/layout; when the dedicated local planner port is missing, the wrapper starts the configured GPU-backed planner before the live run.
 
-### 6. Manually grade every run
+### 7. Manually grade every run
 
 ```powershell
 docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow/*/manual-grade-template.md
@@ -118,7 +129,7 @@ docs/evidence/generated-card-comparisons/production-text-workflow-20260627-produ
 
 Fill each template and save manual-visual-grade.json before aggregating promotion evidence.
 
-### 7. Write manual grade checklist
+### 8. Write manual grade checklist
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-manual-grade-checklist.mjs --advisory --input docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner --output-dir docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-production-planner
@@ -126,7 +137,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 Summarizes generated runs, missing/invalid manual grades, blocked grades, and failed-before-image stories before aggregation.
 
-### 8. Aggregate production-text results
+### 9. Aggregate production-text results
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/model-benchmark-aggregate.mjs --input docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner --output-dir docs/evidence/generated-card-comparisons/benchmark-aggregate-20260627-production-text-production-planner --phase local-production-text
@@ -134,7 +145,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 Builds the ranked aggregate used by the promotion gate.
 
-### 9. Refresh tracked evidence index
+### 10. Refresh tracked evidence index
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-evidence-index.mjs --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner
@@ -142,7 +153,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 
 Aggregates tracked planner/readiness/preflight/benchmark/aggregate evidence after the rerun artifacts are committed.
 
-### 10. Run final promotion gate
+### 11. Run final promotion gate
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-promotion-gate.mjs --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-production-planner --index-output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner
@@ -152,6 +163,7 @@ Shows whether every production-text requirement now passes. Remove --advisory on
 
 ## Next Steps
 
+- Run the production-text planner throughput probe before spending another full Comfy image benchmark on a local planner candidate.
 - Run production-text planner preflight and benchmark evidence against installed production planner candidate(s): gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Resolve local model pull queue if the installed planner is too slow: qwen3-14b-instruct.
 - Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.

@@ -223,7 +223,7 @@ export function pipelineQualityRuns(candidates: {
 
 export function runModelBenchmarkLoopFromArgs(
   args?: Record<string, unknown>,
-  options?: { log?: boolean }
+  options?: { log?: boolean; gpuResidencyProbe?: (args: { baseUrl: string; port: number }) => unknown }
 ): Promise<any>;
 
 export function buildPhaseReadme(summary: BenchmarkPhaseReadmeSummary): string;

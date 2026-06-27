@@ -6,6 +6,7 @@ describe("production text GPU runtime contract", () => {
   it("requires nvidia-smi process evidence for local Kobold planners", () => {
     const benchmarkWrapper = readFileSync("tools/run-production-text-benchmark.ps1", "utf8");
     const plannerWrapper = readFileSync("tools/start-local-card-planner.ps1", "utf8");
+    const benchmarkLoop = readFileSync("scripts/model-benchmark-loop.mjs", "utf8");
 
     for (const source of [benchmarkWrapper, plannerWrapper]) {
       expect(source).toContain("Get-NvidiaSmiProcessIds");
@@ -17,6 +18,8 @@ describe("production text GPU runtime contract", () => {
 
     expect(benchmarkWrapper).toContain("Refusing to run production-text benchmark");
     expect(plannerWrapper).toContain("GPU planner:");
+    expect(benchmarkLoop).toContain("inspectLocalKoboldGpuResidency");
+    expect(benchmarkLoop).toContain("local-production-text benchmark requires a GPU-backed local planner");
   });
 
   it("proves local Kobold residency only when the matching planner PID is in nvidia-smi", () => {

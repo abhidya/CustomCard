@@ -42,6 +42,11 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     .map(plannerPreflightEntry)
     .filter(Boolean)
     .sort(newestFirst);
+  const plannerThroughputProbes = files
+    .filter((file) => basename(file) === "production-text-planner-throughput.json")
+    .map(plannerThroughputEntry)
+    .filter(Boolean)
+    .sort(newestFirst);
   const readinessReports = files
     .filter((file) => basename(file) === "production-text-readiness.json")
     .map(readinessEntry)
@@ -85,6 +90,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
 
   const latestRerunPlan = rerunPlans[0];
   const latestPlannerPreflight = plannerPreflights[0];
+  const latestPlannerThroughputProbe = plannerThroughputProbes[0];
   const latestReadiness = readinessReports[0];
   const latestModelCoverage = modelCoverageReports[0];
   const latestAggregate = aggregates.find((entry) => entry.kind === "llm-planned") || aggregates[0];
@@ -105,6 +111,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
   const status = promotionReady ? "promotion-ready" : "blocked";
   const findings = buildFindings({
     latestPlannerPreflight,
+    latestPlannerThroughputProbe,
     latestReadiness,
     latestModelCoverage,
     latestAggregate,
@@ -116,6 +123,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
   });
   const nextSteps = buildNextSteps({
     latestPlannerPreflight,
+    latestPlannerThroughputProbe,
     latestReadiness,
     latestModelCoverage,
     latestAggregate,
@@ -137,6 +145,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
       modelCoverage: latestModelCoverage?.path || "",
       rerunPlan: latestRerunPlan?.path || "",
       plannerPreflight: latestPlannerPreflight?.path || "",
+      plannerThroughputProbe: latestPlannerThroughputProbe?.path || "",
       preflight: latestPreflight?.path || "",
       dryRun: latestDryRun?.path || "",
       manualGradeChecklist: latestManualGradeChecklist?.path || "",
@@ -148,6 +157,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     plannerEvidenceAlignment,
     rerunPlans,
     plannerPreflights,
+    plannerThroughputProbes,
     readinessReports,
     modelCoverageReports,
     preflights,
@@ -217,6 +227,7 @@ function isEvidenceCandidate(filePath) {
     name === "local-model-coverage.json" ||
     name === "production-text-readiness.json" ||
     name === "production-text-planner-preflight.json" ||
+    name === "production-text-planner-throughput.json" ||
     name === "production-text-preflight.json" ||
     (name.endsWith("-dry-run.json") && rel.includes("production-text")) ||
     name === "production-text-manual-grade-checklist.json" ||
@@ -271,6 +282,45 @@ function plannerPreflightEntry(filePath) {
     blockerCount: blockers.length,
     blockers,
     warnings: payload.warnings || [],
+    nextSteps: payload.nextSteps || []
+  };
+}
+
+function plannerThroughputEntry(filePath) {
+  const payload = readJson(filePath);
+  if (!payload) return undefined;
+  const localGpuResidency = payload.localGpuResidency || missingLocalGpuResidencyEvidence(payload.baseUrl);
+  const blockers = [
+    ...(payload.blockers || []),
+    ...(localGpuResidency.required && !localGpuResidency.ok ? [localGpuResidency.blocker] : [])
+  ].filter(Boolean);
+  return {
+    path: relativePath(filePath),
+    createdAtIso: payload.createdAtIso || fileMtime(filePath),
+    status: payload.status || "unknown",
+    promotionReady: false,
+    throughputReady: Boolean(payload.throughputReady) && (!localGpuResidency.required || localGpuResidency.ok),
+    baseUrl: payload.baseUrl || "",
+    model: payload.model || "",
+    fixtureId: payload.fixtureId || "",
+    requestTimeoutMs: payload.requestTimeoutMs ?? null,
+    reportedContextTokens: payload.reportedContextTokens ?? null,
+    maxOutputTokens: payload.maxOutputTokens ?? null,
+    promptChars: payload.promptChars ?? null,
+    durationMs: payload.durationMs ?? null,
+    finishReason: payload.finishReason || "",
+    responseStatus: payload.responseStatus ?? null,
+    textChars: payload.textChars ?? null,
+    localGpuResidency,
+    gpuResidencyProven: !localGpuResidency.required || localGpuResidency.ok,
+    classification: payload.classification?.classification || "unknown",
+    providerFailure: payload.providerFailure || "",
+    jsonParseOk: Boolean(payload.jsonParseOk),
+    schemaOk: Boolean(payload.schemaOk),
+    missingMustInclude: payload.missingMustInclude || [],
+    mustAvoidFailures: payload.mustAvoidFailures || [],
+    blockerCount: blockers.length,
+    blockers,
     nextSteps: payload.nextSteps || []
   };
 }
@@ -590,6 +640,7 @@ function normalizeBaseUrl(value) {
 
 function buildFindings({
   latestPlannerPreflight,
+  latestPlannerThroughputProbe,
   latestReadiness,
   latestModelCoverage,
   latestAggregate,
@@ -619,6 +670,13 @@ function buildFindings({
   }
   if (latestPlannerPreflight?.localGpuResidency?.required && !latestPlannerPreflight.localGpuResidency.ok) {
     findings.push("Latest local planner preflight does not prove GPU residency.");
+  }
+  if (latestPlannerThroughputProbe?.throughputReady) {
+    findings.push(`Latest planner throughput probe completed the full card-copy prompt on ${latestPlannerThroughputProbe.model} in ${latestPlannerThroughputProbe.durationMs}ms.`);
+  }
+  if (latestPlannerThroughputProbe && !latestPlannerThroughputProbe.throughputReady) {
+    const failure = latestPlannerThroughputProbe.providerFailure || latestPlannerThroughputProbe.blockers?.[0] || "unknown blocker";
+    findings.push(`Latest planner throughput probe is blocked for ${latestPlannerThroughputProbe.model || "unknown model"}: ${failure}`);
   }
   if (plannerEvidenceAlignment?.checked && !plannerEvidenceAlignment.ok) {
     findings.push(`Planner preflight and benchmark runtime evidence do not align: ${plannerEvidenceAlignment.blockers.join(" ")}`);
@@ -664,6 +722,7 @@ function buildFindings({
 
 function buildNextSteps({
   latestPlannerPreflight,
+  latestPlannerThroughputProbe,
   latestReadiness,
   latestModelCoverage,
   latestAggregate,
@@ -679,6 +738,9 @@ function buildNextSteps({
   }
   if (!latestPlannerPreflight?.promotionReady) {
     steps.push("Run production-text planner preflight with a production-suitable GPU-backed model, 8192+ context, and the full output budget.");
+  }
+  if (!latestPlannerThroughputProbe?.throughputReady) {
+    steps.push("Run the production-text planner throughput probe before spending another full Comfy image benchmark on a local planner candidate.");
   }
   if (plannerEvidenceAlignment?.checked && !plannerEvidenceAlignment.ok) {
     steps.push("Refresh planner preflight against the exact endpoint/model used by the latest benchmark before treating planner evidence as current.");
@@ -733,6 +795,7 @@ function buildMarkdown(result) {
   lines.push("| --- | --- | --- | --- |");
   lines.push(latestRow("Rerun Plan", result.rerunPlans[0], rerunPlanSummary));
   lines.push(latestRow("Planner", result.plannerPreflights[0], plannerSummary));
+  lines.push(latestRow("Planner Throughput", result.plannerThroughputProbes[0], plannerThroughputSummary));
   lines.push(latestRow("Planner/Benchmark Alignment", result.plannerEvidenceAlignment, plannerEvidenceAlignmentSummary));
   lines.push(latestRow("Readiness", result.readinessReports[0], readinessSummary));
   lines.push(latestRow("Model Coverage", result.modelCoverageReports[0], modelCoverageSummary));
@@ -777,6 +840,13 @@ function plannerSummary(entry) {
     ? entry.localGpuResidency.ok ? "gpu=yes" : "gpu=no"
     : "gpu=n/a";
   return `${entry.classification}; model=${entry.activeModel || "none"}; context=${entry.reportedContextTokens ?? "n/a"}; ${gpu}`;
+}
+
+function plannerThroughputSummary(entry) {
+  const gpu = entry.localGpuResidency?.required
+    ? entry.localGpuResidency.ok ? "gpu=yes" : "gpu=no"
+    : "gpu=n/a";
+  return `${entry.throughputReady ? "ready" : "blocked"}; model=${entry.model || "none"}; fixture=${entry.fixtureId || "n/a"}; duration=${entry.durationMs ?? "n/a"}ms; ${gpu}`;
 }
 
 function plannerEvidenceAlignmentSummary(entry) {

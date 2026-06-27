@@ -366,6 +366,10 @@ Comfy template variables exposed by the local adapter include:
     prove endpoint/model alignment without chasing timestamped side folders.
   - The preflight must see the requested `-LocalLlmModel` in `/v1/models`;
     mismatched stale servers are blocked instead of trusted.
+  - The underlying Node benchmark loop also rejects direct live
+    `local-production-text` runs when a local KoboldCPP planner cannot prove GPU
+    residency through `nvidia-smi`, so future agents cannot bypass the wrapper
+    and accidentally create CPU benchmark evidence.
   - Accepts `-PlannerMaxTokens` and `-PlannerContextSize` while keeping the full
     planner prompt. Do not shrink the creative contract to fit a 4096-context
     local model.
@@ -471,6 +475,13 @@ because the local LLM chat completion timed out after 1200000ms. This is not a
 CPU fallback, not a small-model benchmark, and not a reduced-prompt run. It is
 evidence that the current local Magistral runtime is too slow for the full
 contract on this hardware.
+
+The planner throughput probe
+`docs/evidence/generated-card-comparisons/production-text-planner-throughput-20260627-magistral-5013-5min`
+uses the same full card-copy prompt before spending Comfy image work. It proved
+local GPU residency for PID `46488` and then timed out after `300000ms`, so the
+correct next step is a faster production-class planner endpoint, not a reduced
+prompt or CPU fallback.
 
 The current evidence index, promotion gate, rerun plan, and research rollup are:
 

@@ -1,9 +1,9 @@
 # Production Text Promotion Gate
 
-Created: 2026-06-27T05:19:56.546Z
+Created: 2026-06-27T05:45:00.214Z
 Status: blocked
 Promotion ready: no
-Evidence index: docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-gpu-proof/evidence-index
+Evidence index: docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-gpu-proof
 
 ## Requirements
 

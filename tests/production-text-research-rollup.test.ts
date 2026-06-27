@@ -51,6 +51,22 @@ describe("production text research rollup", () => {
           blockers: ["Planner context 4096 is below the production minimum 8192."]
         }
       ],
+      plannerThroughputProbes: [
+        {
+          path: "docs/evidence/generated-card-comparisons/production-text-planner-throughput-current/production-text-planner-throughput.json",
+          status: "blocked",
+          throughputReady: false,
+          model: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+          fixtureId: "aquarium-lover-birthday",
+          durationMs: 300000,
+          requestTimeoutMs: 300000,
+          finishReason: "length",
+          providerFailure: "",
+          missingMustInclude: ["Nina", "birthday", "aquarium"],
+          mustAvoidFailures: [],
+          blockers: ["Planner stopped with finish_reason=length before completing the full card-copy JSON."]
+        }
+      ],
       readinessReports: [
         {
           path: "docs/evidence/generated-card-comparisons/production-text-readiness-current/production-text-readiness.json",
@@ -217,6 +233,13 @@ describe("production text research rollup", () => {
       classification: "smoke-only",
       reportedContextTokens: 4096
     });
+    expect(report.evidenceSummary.plannerThroughput).toMatchObject({
+      status: "blocked",
+      throughputReady: false,
+      model: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+      fixtureId: "aquarium-lover-birthday",
+      finishReason: "length"
+    });
     expect(report.evidenceSummary.manualGrades).toMatchObject({
       gradedGeneratedRuns: 2,
       gradableRuns: 2,
@@ -255,6 +278,7 @@ describe("production text research rollup", () => {
     expect(report.findings.join("\n")).toContain("runtime failure");
     expect(report.findings.join("\n")).toContain("ECONNREFUSED");
     expect(report.findings.join("\n")).toContain("preflight and benchmark runtime evidence do not align");
+    expect(report.findings.join("\n")).toContain("Planner throughput probe is blocked");
     expect(report.findings.join("\n")).toContain("Dry-run planning proof records the full-quality production planner path");
     expect(report.findings.join("\n")).toContain("switch the runtime, not the prompt quality");
     expect(report.findings.join("\n")).toContain("Reduced creative prompt contracts are disallowed");

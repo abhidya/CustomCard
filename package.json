@@ -99,6 +99,7 @@
     "comfy:models:setup": "node scripts/setup-comfyui-models.mjs",
     "comfy:production-text:preflight": "node scripts/comfyui-production-text-preflight.mjs",
     "comfy:production-text:planner": "node scripts/production-text-planner-preflight.mjs",
+    "comfy:production-text:planner-throughput": "node scripts/production-text-planner-throughput-probe.mjs",
     "comfy:production-text:doctor": "node scripts/production-text-readiness-doctor.mjs",
     "comfy:production-text:model-coverage": "node scripts/local-model-coverage.mjs",
     "comfy:production-text:evidence": "node scripts/production-text-evidence-index.mjs",

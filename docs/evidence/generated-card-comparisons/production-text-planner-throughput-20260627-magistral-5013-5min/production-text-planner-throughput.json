@@ -1,0 +1,90 @@
+{
+  "createdAtIso": "2026-06-27T05:34:18.357Z",
+  "status": "blocked",
+  "throughputReady": false,
+  "promotionReady": false,
+  "advisory": false,
+  "baseUrl": "http://127.0.0.1:5013/v1",
+  "modelsUrl": "http://127.0.0.1:5013/v1/models",
+  "chatUrl": "http://127.0.0.1:5013/v1/chat/completions",
+  "model": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+  "fixtureId": "aquarium-lover-birthday",
+  "requestTimeoutMs": 300000,
+  "reportedContextTokens": 8192,
+  "maxOutputTokens": 3200,
+  "promptChars": 15313,
+  "durationMs": 300056,
+  "responseStatus": 0,
+  "finishReason": "",
+  "textChars": 0,
+  "localGpuResidency": {
+    "required": true,
+    "ok": true,
+    "status": "gpu-backed",
+    "baseUrl": "http://127.0.0.1:5013/v1",
+    "port": 5013,
+    "pids": [
+      46488
+    ],
+    "candidatePids": [
+      46488
+    ],
+    "nvidiaProcessIds": [
+      38428,
+      46528,
+      39752,
+      1632,
+      46488
+    ]
+  },
+  "classification": {
+    "model": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+    "smallPlanner": false,
+    "qualityPlanner": true,
+    "productionSuitable": true,
+    "classification": "production-suitable",
+    "reportedContextTokens": 8192,
+    "maxOutputTokens": 3200,
+    "minimumOpenWeightPlannerClass": "14B+ dense/open-weight planner or stronger hosted model",
+    "minContextTokens": 8192,
+    "minOutputTokens": 3200,
+    "recommendedOutputTokens": 3200,
+    "recommendedModels": [
+      "koboldcpp/gemma-4-31B-it-Q4_K_M",
+      "koboldcpp/Magistral-Small-2509-Q4_K_M",
+      "koboldcpp/Qwen3-14B-Q4_K_M",
+      "hosted/self-hosted GPT, Claude, Gemini, DeepSeek, Mistral, or Qwen 14B+ endpoint"
+    ],
+    "blockers": [],
+    "warnings": []
+  },
+  "providerFailure": "Planner throughput request timed out after 300000ms.",
+  "jsonParseOk": false,
+  "jsonParseError": "",
+  "schemaOk": false,
+  "missingMustInclude": [
+    "Nina",
+    "birthday",
+    "aquarium"
+  ],
+  "mustAvoidFailures": [],
+  "panelIds": [],
+  "blockers": [
+    "Planner throughput request timed out after 300000ms.",
+    "Planner output is not a JSON object.",
+    "Planner output is missing theme_guide.",
+    "Expected 4 panels, got 0.",
+    "Missing panel front.",
+    "Missing panel inside-left.",
+    "Missing panel inside-right.",
+    "Missing panel back.",
+    "Missing required term: Nina",
+    "Missing required term: birthday",
+    "Missing required term: aquarium"
+  ],
+  "nextSteps": [
+    "Use a faster production-class planner endpoint; do not reduce the full creative card-copy contract.",
+    "Keep the runtime class but retry/repair planner output before spending Comfy image work."
+  ],
+  "reportDir": "docs/evidence/generated-card-comparisons/production-text-planner-throughput-20260627-magistral-5013-5min"
+}

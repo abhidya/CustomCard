@@ -50,6 +50,31 @@ describe("production text evidence index", () => {
       },
       blockers: ["Planner model is smoke-only.", "Planner context 4096 is below the production minimum 8192."]
     });
+    writeJson(join(root, "production-text-planner-throughput.json"), {
+      createdAtIso: "2026-06-26T05:06:00.000Z",
+      status: "blocked",
+      throughputReady: false,
+      baseUrl: "http://127.0.0.1:5001/v1",
+      model: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+      fixtureId: "aquarium-lover-birthday",
+      requestTimeoutMs: 300000,
+      reportedContextTokens: 4096,
+      maxOutputTokens: 3200,
+      durationMs: 300000,
+      finishReason: "length",
+      jsonParseOk: false,
+      schemaOk: false,
+      missingMustInclude: ["Nina", "birthday", "aquarium"],
+      mustAvoidFailures: [],
+      localGpuResidency: {
+        required: true,
+        ok: true,
+        status: "gpu-backed",
+        pids: [1234],
+        nvidiaProcessIds: [1234]
+      },
+      blockers: ["Planner stopped with finish_reason=length before completing the full card-copy JSON."]
+    });
     writeJson(join(root, "production-text-rerun-plan.json"), {
       createdAtIso: "2026-06-26T05:10:00.000Z",
       status: "rerun-required",
@@ -257,6 +282,7 @@ describe("production text evidence index", () => {
     expect(report.promotionReady).toBe(false);
     expect(report.rerunPlans).toHaveLength(1);
     expect(report.plannerPreflights).toHaveLength(1);
+    expect(report.plannerThroughputProbes).toHaveLength(1);
     expect(report.readinessReports).toHaveLength(1);
     expect(report.modelCoverageReports).toHaveLength(1);
     expect(report.dryRunReports).toHaveLength(1);
@@ -266,6 +292,14 @@ describe("production text evidence index", () => {
       classification: "smoke-only",
       promotionReady: false,
       reportedContextTokens: 4096
+    });
+    expect(report.plannerThroughputProbes[0]).toMatchObject({
+      status: "blocked",
+      throughputReady: false,
+      model: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+      fixtureId: "aquarium-lover-birthday",
+      finishReason: "length",
+      gpuResidencyProven: true
     });
     expect(report.rerunPlans[0]).toMatchObject({
       status: "rerun-required",
@@ -330,6 +364,7 @@ describe("production text evidence index", () => {
     expect(report.findings.join("\n")).toContain("known-small smoke model");
     expect(report.findings.join("\n")).toContain("Latest dry-run planning proof keeps the full production card-copy JSON contract");
     expect(report.findings.join("\n")).toContain("Latest planner preflight is blocked");
+    expect(report.findings.join("\n")).toContain("Latest planner throughput probe is blocked");
     expect(report.findings.join("\n")).toContain("Installed production planner candidates found locally");
     expect(report.findings.join("\n")).toContain("Installed production planner candidates still need local production-text evaluation");
     expect(report.findings.join("\n")).toContain("Latest manual grade checklist is blocked");
@@ -339,6 +374,7 @@ describe("production text evidence index", () => {
     expect(report.nextSteps.join("\n")).toContain("installed production planner candidate");
     expect(report.nextSteps.join("\n")).toContain("local model pull queue");
     expect(report.nextSteps.join("\n")).toContain("planner preflight");
+    expect(report.nextSteps.join("\n")).toContain("planner throughput probe");
     expect(report.nextSteps.join("\n")).toContain("exact endpoint/model used by the latest benchmark");
     expect(report.nextSteps.join("\n")).toContain("manual grade checklist blockers");
   });

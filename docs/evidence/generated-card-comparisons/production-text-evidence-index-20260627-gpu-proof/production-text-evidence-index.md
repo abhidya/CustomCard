@@ -1,6 +1,6 @@
 # Production Text Evidence Index
 
-Created: 2026-06-27T05:19:49.000Z
+Created: 2026-06-27T05:45:00.211Z
 Status: blocked
 Promotion ready: no
 
@@ -9,6 +9,7 @@ Promotion ready: no
 - Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.
 - Latest dry-run planning proof keeps the full production card-copy JSON contract on koboldcpp/gemma-4-31B-it-Q4_K_M with 8192+ context, 3200 output tokens, and 1200000ms timeout across aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you.
 - Latest planner preflight passed with koboldcpp/Magistral-Small-2509-Q4_K_M.
+- Latest planner throughput probe is blocked for koboldcpp/Magistral-Small-2509-Q4_K_M: Planner throughput request timed out after 300000ms.
 - Installed production planner candidates found locally: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Recommended production planner candidates still missing locally: qwen3-14b-instruct.
@@ -20,6 +21,7 @@ Promotion ready: no
 
 ## Next Steps
 
+- Run the production-text planner throughput probe before spending another full Comfy image benchmark on a local planner candidate.
 - Run production-text planner preflight and benchmark evidence against installed production planner candidate(s): gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Resolve local model pull queue if the installed planner is too slow: qwen3-14b-instruct.
 - Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.
@@ -30,8 +32,9 @@ Promotion ready: no
 
 | Type | Path | Status | Key result |
 | --- | --- | --- | --- |
-| Rerun Plan | [open](../production-text-rerun-plan-20260627-gpu-proof/production-text-rerun-plan.json) | rerun-required | 5 failed requirement(s); commands=10 |
+| Rerun Plan | [open](../production-text-rerun-plan-20260627-gpu-proof/production-text-rerun-plan.json) | rerun-required | 5 failed requirement(s); commands=11 |
 | Planner | [open](../production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-planner-preflight.json) | promotion-ready | production-suitable; model=koboldcpp/Magistral-Small-2509-Q4_K_M; context=8192; gpu=yes |
+| Planner Throughput | [open](../production-text-planner-throughput-20260627-magistral-5013-5min/production-text-planner-throughput.json) | blocked | blocked; model=koboldcpp/Magistral-Small-2509-Q4_K_M; fixture=aquarium-lover-birthday; duration=300056ms; gpu=yes |
 | Planner/Benchmark Alignment | [open](../production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json) | aligned | preflight=http://127.0.0.1:5013/v1 koboldcpp/Magistral-Small-2509-Q4_K_M; benchmark=http://127.0.0.1:5013/v1 koboldcpp/Magistral-Small-2509-Q4_K_M; blockers=0 |
 | Readiness | [open](../production-text-readiness-20260627-gpu-proof-magistral-5013/production-text-readiness.json) | promotion-ready | 0 blocker(s); planner=koboldcpp/Magistral-Small-2509-Q4_K_M |
 | Model Coverage | [open](../local-model-coverage-20260627-current/local-model-coverage.json) | action-needed | 9 recommended installed; unevaluated production planners=gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash |

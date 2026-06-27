@@ -12,6 +12,7 @@ import {
   classifyProductionTextPlanner,
   productionTextPlannerPolicy
 } from "./production-text-planner-policy.mjs";
+import { inspectLocalKoboldGpuResidency } from "./local-kobold-gpu-residency.mjs";
 
 const repoRoot = resolve(import.meta.dirname, "..");
 const defaultOutputDir = resolve(
@@ -763,7 +764,7 @@ export function buildModelBenchmarkAdminCatalog(env = process.env) {
   };
 }
 
-export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false } = {}) {
+export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false, gpuResidencyProbe } = {}) {
   const outputDir = resolve(args["output-dir"] || defaultOutputDir);
   const phase = args.phase || "smoke";
   const phaseDirName = args["phase-dir"] || phase;
@@ -806,6 +807,12 @@ export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false } =
   mkdirSync(phaseDir, { recursive: true });
   const plannedRuns = applyRunFilters(plannedRunsForPhase(phase, candidates), args);
   assertProductionTextPlannerRuntime({ phase, plannedRuns, env });
+  const productionTextPlannerGpuResidency = assertProductionTextPlannerGpuResidency({
+    phase,
+    plannedRuns,
+    env,
+    gpuResidencyProbe
+  });
   const summary = {
     phase,
     phaseDir: phaseDirName,
@@ -817,6 +824,7 @@ export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false } =
       aiEnvSources: [".env.local", "infra/env/.env"].filter((filePath) => existsSync(resolve(repoRoot, filePath))),
       configuredProviderKeys: Object.keys(env).filter(isSafeConfiguredKey).sort(),
       productionTextPlannerRuntime: productionTextPlannerRuntimeSummary(env),
+      productionTextPlannerGpuResidency,
       secretsRedacted: true
     },
     plannedRuns: plannedRuns.map(plannedRunSummary),
@@ -950,6 +958,20 @@ function assertProductionTextPlannerRuntime({ phase, plannedRuns, env }) {
   throw new Error(
     `local-production-text LLM-planned runs require the correct production planner before sending the full creative contract: ${productionTextPlannerPolicy.minContextTokens}+ context tokens, ${productionTextPlannerPolicy.minOutputTokens}+ output tokens, and a production-suitable model such as ${productionTextPlannerPolicy.recommendedModels.slice(0, 3).join(", ")}. ${detail}`
   );
+}
+
+function assertProductionTextPlannerGpuResidency({ phase, plannedRuns, env, gpuResidencyProbe }) {
+  if (phase !== "local-production-text") return undefined;
+  if (!plannedRuns.some((run) => run.productionTextMode === "llm-generated-copy")) return undefined;
+  const baseUrl = firstUsableEnv(env, ["CUSTOMCARD_LOCAL_LLM_BASE_URL", "LMSTUDIO_BASE_URL", "KOBOLDCPP_BASE_URL"]);
+  if (!baseUrl) return undefined;
+  const localGpuResidency = inspectLocalKoboldGpuResidency(baseUrl, { probe: gpuResidencyProbe });
+  if (localGpuResidency.required && !localGpuResidency.ok) {
+    throw new Error(
+      `local-production-text benchmark requires a GPU-backed local planner before sending the full creative contract. ${localGpuResidency.blocker || localGpuResidency.reason || "Local GPU residency was not proven."}`
+    );
+  }
+  return localGpuResidency;
 }
 
 function truthyEnv(value) {

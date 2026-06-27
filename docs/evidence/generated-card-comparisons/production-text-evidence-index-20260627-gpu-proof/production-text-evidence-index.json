@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T05:19:49.000Z",
+  "createdAtIso": "2026-06-27T05:45:00.211Z",
   "status": "blocked",
   "promotionReady": false,
   "evidenceRoot": "docs/evidence/generated-card-comparisons",
@@ -10,6 +10,7 @@
     "modelCoverage": "docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current/local-model-coverage.json",
     "rerunPlan": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-gpu-proof/production-text-rerun-plan.json",
     "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-planner-preflight.json",
+    "plannerThroughputProbe": "docs/evidence/generated-card-comparisons/production-text-planner-throughput-20260627-magistral-5013-5min/production-text-planner-throughput.json",
     "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260627T040924Z/production-text-preflight.json",
     "dryRun": "docs/evidence/generated-card-comparisons/production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json",
     "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-gpu-proof-magistral-5013-rerun/production-text-manual-grade-checklist.json",
@@ -20,6 +21,7 @@
     "Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.",
     "Latest dry-run planning proof keeps the full production card-copy JSON contract on koboldcpp/gemma-4-31B-it-Q4_K_M with 8192+ context, 3200 output tokens, and 1200000ms timeout across aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you.",
     "Latest planner preflight passed with koboldcpp/Magistral-Small-2509-Q4_K_M.",
+    "Latest planner throughput probe is blocked for koboldcpp/Magistral-Small-2509-Q4_K_M: Planner throughput request timed out after 300000ms.",
     "Installed production planner candidates found locally: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
     "Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
     "Recommended production planner candidates still missing locally: qwen3-14b-instruct.",
@@ -30,6 +32,7 @@
     "Latest manual grade checklist is blocked: 0/0 generated run(s) graded, 0 failed before image generation."
   ],
   "nextSteps": [
+    "Run the production-text planner throughput probe before spending another full Comfy image benchmark on a local planner candidate.",
     "Run production-text planner preflight and benchmark evidence against installed production planner candidate(s): gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
     "Resolve local model pull queue if the installed planner is too slow: qwen3-14b-instruct.",
     "Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.",
@@ -61,7 +64,7 @@
   "rerunPlans": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-gpu-proof/production-text-rerun-plan.json",
-      "createdAtIso": "2026-06-27T05:17:44.648Z",
+      "createdAtIso": "2026-06-27T05:43:11.782Z",
       "status": "rerun-required",
       "promotionReady": false,
       "failedRequirements": [
@@ -71,7 +74,7 @@
         "manual grade checklist is promotion-ready",
         "manual aggregate is promotion-ready"
       ],
-      "commandCount": 10,
+      "commandCount": 11,
       "plannerModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
       "plannerClassification": "production-suitable",
       "nextBenchmarkOutput": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner"
@@ -402,6 +405,75 @@
         "Start or point to an OpenAI-compatible planner endpoint before collecting production evidence.",
         "Use a production planner such as koboldcpp/gemma-4-31B-it-Q4_K_M, koboldcpp/Magistral-Small-2509-Q4_K_M, koboldcpp/Qwen3-14B-Q4_K_M with 8192+ context tokens.",
         "Keep the full creative planner contract; use -AllowSmallPlanner only for smoke/failure evidence."
+      ]
+    }
+  ],
+  "plannerThroughputProbes": [
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-planner-throughput-20260627-magistral-5013-5min/production-text-planner-throughput.json",
+      "createdAtIso": "2026-06-27T05:34:18.357Z",
+      "status": "blocked",
+      "promotionReady": false,
+      "throughputReady": false,
+      "baseUrl": "http://127.0.0.1:5013/v1",
+      "model": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+      "fixtureId": "aquarium-lover-birthday",
+      "requestTimeoutMs": 300000,
+      "reportedContextTokens": 8192,
+      "maxOutputTokens": 3200,
+      "promptChars": 15313,
+      "durationMs": 300056,
+      "finishReason": "",
+      "responseStatus": 0,
+      "textChars": 0,
+      "localGpuResidency": {
+        "required": true,
+        "ok": true,
+        "status": "gpu-backed",
+        "baseUrl": "http://127.0.0.1:5013/v1",
+        "port": 5013,
+        "pids": [
+          46488
+        ],
+        "candidatePids": [
+          46488
+        ],
+        "nvidiaProcessIds": [
+          38428,
+          46528,
+          39752,
+          1632,
+          46488
+        ]
+      },
+      "gpuResidencyProven": true,
+      "classification": "production-suitable",
+      "providerFailure": "Planner throughput request timed out after 300000ms.",
+      "jsonParseOk": false,
+      "schemaOk": false,
+      "missingMustInclude": [
+        "Nina",
+        "birthday",
+        "aquarium"
+      ],
+      "mustAvoidFailures": [],
+      "blockerCount": 11,
+      "blockers": [
+        "Planner throughput request timed out after 300000ms.",
+        "Planner output is not a JSON object.",
+        "Planner output is missing theme_guide.",
+        "Expected 4 panels, got 0.",
+        "Missing panel front.",
+        "Missing panel inside-left.",
+        "Missing panel inside-right.",
+        "Missing panel back.",
+        "Missing required term: Nina",
+        "Missing required term: birthday",
+        "Missing required term: aquarium"
+      ],
+      "nextSteps": [
+        "Use a faster production-class planner endpoint; do not reduce the full creative card-copy contract.",
+        "Keep the runtime class but retry/repair planner output before spending Comfy image work."
       ]
     }
   ],

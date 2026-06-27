@@ -235,6 +235,58 @@ describe("model benchmark typography experiment", () => {
     }
   });
 
+  it("refuses live production-text runs before generation when local planner GPU residency is not proven", async () => {
+    const outputDir = mkdtempSync(join(tmpdir(), "customcard-production-text-cpu-planner-"));
+    const previousEnv = {
+      CUSTOMCARD_LOCAL_LLM_BASE_URL: process.env.CUSTOMCARD_LOCAL_LLM_BASE_URL,
+      CUSTOMCARD_LOCAL_LLM_MODEL: process.env.CUSTOMCARD_LOCAL_LLM_MODEL,
+      CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS: process.env.CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS,
+      CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS: process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS,
+      CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS: process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS,
+      CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER: process.env.CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER,
+      CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER: process.env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER,
+      CUSTOMCARD_COMFYUI_URL: process.env.CUSTOMCARD_COMFYUI_URL,
+      CUSTOMCARD_COMFYUI_CHECKPOINT: process.env.CUSTOMCARD_COMFYUI_CHECKPOINT
+    };
+    try {
+      process.env.CUSTOMCARD_LOCAL_LLM_BASE_URL = "http://127.0.0.1:5013/v1";
+      process.env.CUSTOMCARD_LOCAL_LLM_MODEL = "koboldcpp/gemma-4-31B-it-Q4_K_M";
+      process.env.CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS = "1200000";
+      process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS = "8192";
+      process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS = "3200";
+      process.env.CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER = "false";
+      process.env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER = "false";
+      process.env.CUSTOMCARD_COMFYUI_URL = "http://127.0.0.1:8188";
+      process.env.CUSTOMCARD_COMFYUI_CHECKPOINT = "sd_xl_turbo_1.0_fp16.safetensors";
+
+      await expect(
+        runModelBenchmarkLoopFromArgs(
+          {
+            phase: "local-production-text",
+            "local-only": "true",
+            "phase-dir": "production-text-workflow",
+            "output-dir": outputDir,
+            live: "true"
+          },
+          {
+            gpuResidencyProbe: () => ({
+              required: true,
+              ok: false,
+              status: "blocked",
+              blocker: "Local KoboldCPP planner process does not declare GPU offload flags."
+            })
+          }
+        )
+      ).rejects.toThrow(/GPU-backed local planner/);
+    } finally {
+      for (const [key, value] of Object.entries(previousEnv)) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+      rmSync(outputDir, { force: true, recursive: true });
+    }
+  });
+
   it("falls back to a single compositor fixture when no local LLM is configured", () => {
     const runs = localProductionTextRuns({
       text: [],
