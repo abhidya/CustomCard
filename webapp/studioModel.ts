@@ -311,7 +311,7 @@ export function buildStudioModel(input: StudioModelInput): StudioModel {
   const stagePanelSummary = input.aiLoading
     ? artworkCount > 0
       ? `${artworkCount}/${totalPanels} panels ready`
-      : "Ready panels will appear here"
+      : "Waiting for the first panel"
     : aiPanelSummary;
   const contextChecklist = buildStudioContextChecklist(input.draftInput);
   const minContextReady = contextChecklist.every((item) => item.done);

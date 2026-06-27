@@ -57,6 +57,7 @@ import {
   toneImpliesHumor,
   toneLabel,
   toneLabels,
+  type GenerationStage,
   uploadedImagePanelPatch
 } from "../studioModel";
 import { Chips, Field, FoldedCardPreview, PanelArt, Step } from "../ui";
@@ -160,6 +161,7 @@ export function StudioView({
     aiNote,
     aiState,
     approvedForRecipient,
+    artworkCount,
     contextChecklist,
     minContextReady,
     proofWorkspaceVisible,
@@ -169,6 +171,7 @@ export function StudioView({
     setupRecipient,
     stagePanelSummary,
     stages,
+    totalPanels,
     tones
   } = buildStudioModel({
     activePanelId: activePanel,
@@ -576,10 +579,12 @@ export function StudioView({
                     <PanelArt className="stage-card" panel={panel} />
                     <span className="stage-panel-badge">{panelArtworkLabel(panel, aiStale, activePanelStatus)}</span>
                   </div>
-                  <div className="stage-ai-state" data-state={aiState}>
-                    <span>{aiLoading ? "Building AI card" : aiActive ? "Ready to review" : "Template proof"}</span>
-                    <strong>{stagePanelSummary}</strong>
-                  </div>
+                  {!aiLoading ? (
+                    <div className="stage-ai-state" data-state={aiState}>
+                      <span>{aiActive ? "Ready to review" : "Template proof"}</span>
+                      <strong>{stagePanelSummary}</strong>
+                    </div>
+                  ) : null}
                   <div aria-label="Card panels" className="pagetabs" role="tablist">
                     {draft.panels.map((candidate, index) => {
                       const candidateStatus = aiPanelProgress[candidate.id];
@@ -669,7 +674,16 @@ export function StudioView({
             </section>
           ) : null}
 
-          {proofWorkspaceVisible ? (
+          {proofWorkspaceVisible && aiLoading ? (
+            <GenerationStatusPanel
+              aiNote={aiNote}
+              readyPanels={artworkCount}
+              stages={stages}
+              totalPanels={totalPanels}
+            />
+          ) : null}
+
+          {proofWorkspaceVisible && !aiLoading ? (
             <ProofNextPanel
               aiActive={aiActive}
               onReviewProof={onReviewProof}
@@ -679,7 +693,9 @@ export function StudioView({
             />
           ) : null}
 
-          {proofWorkspaceVisible && aiLaunchPanel ? (
+          {!proofWorkspaceVisible ? aiLaunchPanel : null}
+
+          {proofWorkspaceVisible && aiLaunchPanel && !aiLoading ? (
             <details className="aiLaunchDrawer" open={aiLoading || undefined}>
               <summary>
                 <span>
@@ -689,9 +705,9 @@ export function StudioView({
               </summary>
               {aiLaunchPanel}
             </details>
-          ) : aiLaunchPanel}
+          ) : null}
 
-          {proofWorkspaceVisible && (!aiRequiresSignIn || aiActive || aiLoading) ? (
+          {proofWorkspaceVisible && !aiLoading && (!aiRequiresSignIn || aiActive) ? (
             <GenerationScopePanel
               activePanelId={activePanel}
               aiActive={aiActive}
@@ -706,7 +722,7 @@ export function StudioView({
             />
           ) : null}
 
-          {stages.length > 0 ? (
+          {!aiLoading && stages.length > 0 ? (
             <ol className="genstages" aria-label="Generation progress">
               {stages.map((stage) => (
                 <li className="genstage" data-state={stage.state} key={stage.label}>
@@ -718,6 +734,42 @@ export function StudioView({
         </div>
       </div>
     </>
+  );
+}
+
+function GenerationStatusPanel({
+  aiNote,
+  readyPanels,
+  stages,
+  totalPanels
+}: {
+  aiNote: string;
+  readyPanels: number;
+  stages: GenerationStage[];
+  totalPanels: number;
+}) {
+  const panelRatio = `${readyPanels}/${totalPanels}`;
+  return (
+    <section className="generationStatusPanel" aria-label="AI generation progress" aria-live="polite">
+      <div className="generationStatusPanel-copy">
+        <span>AI draft</span>
+        <strong>Building your AI card</strong>
+        <small>{aiNote}</small>
+      </div>
+      <div className="generationStatusPanel-meter" aria-label={`${readyPanels} of ${totalPanels} panels ready`}>
+        <strong>{panelRatio}</strong>
+        <span>panels ready</span>
+      </div>
+      {stages.length > 0 ? (
+        <ol className="genstages generationStatusPanel-stages" aria-label="Generation progress">
+          {stages.map((stage) => (
+            <li className="genstage" data-state={stage.state} key={stage.label}>
+              {stage.label}
+            </li>
+          ))}
+        </ol>
+      ) : null}
+    </section>
   );
 }
 

@@ -95,6 +95,29 @@ describe("studio model", () => {
     ]);
   });
 
+  it("uses a clear empty-progress summary while the first panel is still pending", () => {
+    const model = buildStudioModel({
+      draft,
+      draftInput,
+      memories,
+      activePanelId: "front",
+      aiActive: true,
+      aiLoading: true,
+      aiPanelProgress: {
+        front: "queued",
+        "inside-left": "queued",
+        "inside-right": "queued",
+        back: "queued"
+      },
+      aiRequiresSignIn: false,
+      generationPanelIds: ["front"],
+      printFitPassed: false,
+      templateReviewStarted: false
+    });
+
+    expect(model.stagePanelSummary).toBe("Waiting for the first panel");
+  });
+
   it("keeps selected Panel ids valid and prevents deselecting the last selected Panel", () => {
     expect(
       normalizeGenerationPanelIds({ draft, activePanelId: "inside-right", generationPanelIds: ["front", "back"] })

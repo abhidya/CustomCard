@@ -546,12 +546,16 @@ describe("customer shell server render", () => {
       const text = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ");
 
       expect(text).toContain("Building your AI card");
+      expect(text.match(/Building your AI card/g) ?? []).toHaveLength(1);
       expect(text).toContain("1/4 panels ready");
       expect(text).toContain("Loaded 1/4 artwork panels");
       expect(text).toContain("Artwork ready");
       expect(text).toContain("Loading art");
       expect(text).toContain("Copy ready");
       expect(text).toContain("Queued");
+      expect(text).not.toContain("Proof is ready to finish");
+      expect(text).not.toContain("Choose what to improve");
+      expect(text).not.toContain("Ready panels will appear here");
       expect(html).toContain('data-status="artwork-ready"');
       expect(html).toContain('data-status="artwork-loading"');
       expect(html).not.toContain("data:image/png;base64,AAAA");
