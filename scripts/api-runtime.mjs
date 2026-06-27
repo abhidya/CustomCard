@@ -388,6 +388,7 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
         sessionId,
         role: verification.role,
         userId: stableRuntimeId("user", "clerk", verification.clerkUserId),
+        clerkUserId: verification.clerkUserId,
         email: verification.email,
         provider: verification.provider ?? "clerk"
       });
@@ -541,6 +542,8 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
           ? {
               status: connectionRecord.status,
               scopes: connectionRecord.scopes,
+              adapterVersion: connectionRecord.adapterVersion,
+              credentialSource: connectionRecord.metadataSchema?.credentialSource,
               credentialStorageEnabled: Boolean(connectionRecord.encryptedRefreshToken),
               connectedAtIso: connectionRecord.createdAtIso,
               importedEventCount: events.length,
@@ -588,6 +591,7 @@ function authorizeLocalMemoryClerkCustomer({ route, request, sessions, env, toke
     sessionId,
     role: "customer",
     userId: stableRuntimeId("user", "local-clerk", preview.clerkUserId),
+    clerkUserId: preview.clerkUserId,
     email: preview.email,
     provider: "local-clerk"
   });
@@ -704,7 +708,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
       const pool = await getPool();
       const sessionHash = hashSessionToken(token, env.AUTH_SESSION_SECRET);
       const result = await pool.query(
-        `SELECT s.id AS session_id, s.user_id, s.role, u.email, ai.provider AS identity_provider
+        `SELECT s.id AS session_id, s.user_id, s.role, u.email, ai.provider AS identity_provider, ai.provider_subject AS clerk_user_id
          FROM auth_sessions s
          JOIN users u ON u.id = s.user_id
          LEFT JOIN account_identities ai ON ai.user_id = s.user_id AND ai.provider = 'clerk'
@@ -721,6 +725,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
             sessionId: sessionRow.session_id,
             role: sessionRow.role,
             userId: sessionRow.user_id,
+            clerkUserId: sessionRow.clerk_user_id ?? undefined,
             email: sessionRow.email,
             provider: sessionRow.identity_provider ?? "auth-session"
           }
@@ -986,7 +991,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
     async readProviderConnection({ authContext, provider = "google_calendar" }) {
       const pool = await getPool();
       const result = await pool.query(
-        `SELECT id, provider, scopes, status, encrypted_refresh_token, created_at
+        `SELECT id, provider, scopes, status, adapter_version, encrypted_refresh_token, created_at
          FROM provider_connections
          WHERE user_id = $1 AND provider = $2
          ORDER BY created_at DESC
@@ -1000,6 +1005,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
         provider: row.provider,
         scopes: row.scopes ?? [],
         status: row.status,
+        adapterVersion: row.adapter_version ?? "",
         encryptedRefreshToken: row.encrypted_refresh_token ?? "",
         createdAtIso: new Date(row.created_at).toISOString()
       };
@@ -1007,7 +1013,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
     async readCustomerConnections({ authContext }) {
       const pool = await getPool();
       const connectionResult = await pool.query(
-        `SELECT id, scopes, status, encrypted_refresh_token, created_at
+        `SELECT id, scopes, status, adapter_version, encrypted_refresh_token, created_at
          FROM provider_connections
          WHERE user_id = $1 AND provider = 'google_calendar'
          ORDER BY created_at DESC
@@ -1057,6 +1063,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
         connectionRecord = {
           status: row.status,
           scopes: row.scopes ?? [],
+          adapterVersion: row.adapter_version ?? "",
           credentialStorageEnabled: Boolean(row.encrypted_refresh_token),
           connectedAtIso: new Date(row.created_at).toISOString(),
           importedEventCount: Number(stats.imported_count ?? 0),
@@ -2061,6 +2068,7 @@ function buildGoogleCalendarImportRepositoryPayload(record, runtimeMode, persist
       status: record.providerConnection.status,
       scopes: record.providerConnection.scopes,
       adapterVersion: record.providerConnection.adapterVersion,
+      credentialSource: record.providerConnection.metadataSchema?.credentialSource === "clerk" ? "clerk" : "custom_oauth",
       credentialStorageEnabled: Boolean(record.providerConnection.encryptedRefreshToken),
       rawContentStored: false
     },
@@ -2176,7 +2184,7 @@ async function ensureClerkAuthSession(client, { verification, sessionHash }) {
      VALUES ('auth_session', $1, $2, 'auth.clerk_session.bridged', $3::jsonb)`,
     [sessionId, userId, JSON.stringify({ provider: "clerk", role: verification.role })]
   );
-  return { userId, role: verification.role, sessionId, email, provider: verification.provider ?? "clerk" };
+  return { userId, role: verification.role, sessionId, email, provider: verification.provider ?? "clerk", clerkUserId: verification.clerkUserId };
 }
 
 function publicOpportunity(opportunity, importedEvent) {
@@ -2198,9 +2206,12 @@ function buildCustomerConnectionsPayload({ runtimeMode, authContext, connectionR
   let status = "not_connected";
   let reconnectReason;
   if (connectionRecord) {
+    const hasClerkCredentialSource =
+      String(connectionRecord.credentialSource ?? "").toLowerCase() === "clerk" ||
+      String(connectionRecord.adapterVersion ?? "").includes("clerk");
     if (connectionRecord.status === "revoked") {
       status = "revoked";
-    } else if (connectionRecord.status === "connected" && connectionRecord.credentialStorageEnabled) {
+    } else if (connectionRecord.status === "connected" && (connectionRecord.credentialStorageEnabled || hasClerkCredentialSource)) {
       status = "connected";
     } else if (connectionRecord.status === "connected") {
       status = "needs_reconnect";
@@ -2214,6 +2225,15 @@ function buildCustomerConnectionsPayload({ runtimeMode, authContext, connectionR
     provider: "google_calendar",
     status,
     scopes: connectionRecord?.scopes ?? [],
+    ...(connectionRecord
+      ? {
+          credentialSource:
+            String(connectionRecord.credentialSource ?? "").toLowerCase() === "clerk" ||
+            String(connectionRecord.adapterVersion ?? "").includes("clerk")
+              ? "clerk"
+              : "custom_oauth"
+        }
+      : {}),
     connectedAtIso: connectionRecord?.connectedAtIso,
     lastImportedAtIso: connectionRecord?.lastImportedAtIso,
     importedEventCount: connectionRecord?.importedEventCount ?? 0,

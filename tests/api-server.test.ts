@@ -2627,6 +2627,82 @@ describe("api server wrapper", () => {
     }
   }, 30_000);
 
+  it("imports Google Calendar through Clerk connected-account token without using the old OAuth callback", async () => {
+    const google = await startFakeGoogleCalendarServer();
+    const clerk = await startFakeClerkOAuthServer();
+    const port = 6250 + Math.floor(Math.random() * 500);
+    const customerToken = localClerkPreviewJwt("user_2clerkCalendar", "sess_2calendar");
+    const server = spawn(nodeBinary, ["scripts/api-server.mjs"], {
+      env: {
+        ...process.env,
+        HOST: "127.0.0.1",
+        PORT: String(port),
+        CUSTOMCARD_API_RUNTIME: "memory",
+        CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS: "enabled",
+        AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
+        CUSTOMCARD_CUSTOMER_SESSION_TOKEN: "seeded-customer-token",
+        CUSTOMCARD_ADMIN_SESSION_TOKEN: "seeded-admin-token",
+        CUSTOMCARD_GOOGLE_CALENDAR_TOKEN_SOURCE: "clerk",
+        CLERK_JWT_KEY: "replace-me",
+        CLERK_SECRET_KEY: "sk_test_clerk_secret",
+        CLERK_OAUTH_ACCESS_TOKEN_ENDPOINT: `http://127.0.0.1:${clerk.port}/v1/users/{user_id}/oauth_access_tokens/{provider}`,
+        GOOGLE_CALENDAR_EVENTS_ENDPOINT: `http://127.0.0.1:${google.port}/calendar/v3/calendars/primary/events`
+      },
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+
+    try {
+      await waitForApi(port, server);
+      const response = await postJson(
+        port,
+        "/api/calendar/connections/start",
+        { calendarChoiceId: "google-calendar-events", mode: "connect" },
+        {
+          ...bearer(customerToken),
+          "X-Idempotency-Key": "google-calendar-clerk-token-source"
+        }
+      );
+      expect(response.status).toBe(200);
+      const payload = await response.json();
+      expect(payload).toMatchObject({
+        status: "google-calendar-connected",
+        tokenSource: "clerk",
+        providerRequestUrl: null,
+        importedEventCount: 3,
+        credentialStorageEnabled: false,
+        rawContentStored: false,
+        calendarConnection: expect.objectContaining({
+          provider: "google_calendar",
+          credentialSource: "clerk",
+          credentialStorageEnabled: false,
+          rawContentStored: false
+        }),
+        repository: expect.objectContaining({
+          runtimeMode: "memory",
+          persisted: true,
+          rawContentStored: false,
+          providerCredentialsStored: false
+        })
+      });
+      expect(clerk.requests).toEqual(["GET /v1/users/user_2clerkCalendar/oauth_access_tokens/oauth_google"]);
+      expect(google.requests).toEqual(["GET /calendar/v3/calendars/primary/events"]);
+
+      const connections = await getJson(port, "/api/customer/connections", bearer(customerToken));
+      expect(connections.connections[0]).toMatchObject({
+        provider: "google_calendar",
+        status: "connected",
+        credentialSource: "clerk",
+        credentialStorageEnabled: false,
+        canScanAgain: true
+      });
+    } finally {
+      server.kill();
+      await waitForExit(server);
+      await closeServer(google.server);
+      await closeServer(clerk.server);
+    }
+  }, 30_000);
+
   it("persists render artifacts to the configured object store and serves signed downloads", async () => {
     const port = 6300 + Math.floor(Math.random() * 1000);
     const customerToken = "test-customer-session-token";
@@ -2850,6 +2926,51 @@ async function startFakeGoogleCalendarServer(): Promise<{ port: number; server: 
   const address = server.address();
   if (!address || typeof address === "string") throw new Error("Fake Google server did not expose a port.");
   return { port: address.port, server, requests, tokenRequestBodies };
+}
+
+async function startFakeClerkOAuthServer(): Promise<{ port: number; server: Server; requests: string[] }> {
+  const requests: string[] = [];
+  const server = createServer((request, response) => {
+    const url = new URL(request.url ?? "/", "http://127.0.0.1");
+    requests.push(`${request.method} ${url.pathname}`);
+    if (
+      request.method === "GET" &&
+      url.pathname === "/v1/users/user_2clerkCalendar/oauth_access_tokens/oauth_google" &&
+      request.headers.authorization === "Bearer sk_test_clerk_secret"
+    ) {
+      response.setHeader("Content-Type", "application/json; charset=utf-8");
+      response.end(
+        JSON.stringify([
+          {
+            token: "fake-clerk-google-access-token",
+            scopes: ["https://www.googleapis.com/auth/calendar.events.readonly"]
+          }
+        ])
+      );
+      return;
+    }
+    response.statusCode = 404;
+    response.end("{}");
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  if (!address || typeof address === "string") throw new Error("Fake Clerk server did not expose a port.");
+  return { port: address.port, server, requests };
+}
+
+function localClerkPreviewJwt(clerkUserId: string, clerkSessionId: string): string {
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  const header = Buffer.from(JSON.stringify({ alg: "RS256", typ: "JWT" })).toString("base64url");
+  const payload = Buffer.from(
+    JSON.stringify({
+      sub: clerkUserId,
+      sid: clerkSessionId,
+      exp: nowSeconds + 300,
+      nbf: nowSeconds - 30,
+      email: "calendar@example.com"
+    })
+  ).toString("base64url");
+  return `${header}.${payload}.localsignature`;
 }
 
 function closeServer(server: Server): Promise<void> {

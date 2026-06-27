@@ -121,11 +121,15 @@ describe("clerk to api session bridge (memory runtime)", () => {
     const token = signClerkJwt(clerkClaims());
     const route = getApiRouteById("calendar-connection-start");
     const context = await runtime.authorize(route, bearerRequest(token));
-    expect(context).toMatchObject({ ok: true, role: "customer" });
+    expect(context).toMatchObject({ ok: true, role: "customer", clerkUserId: "user_2clerk123" });
 
     // Subsequent calls reuse the minted session (fast path).
     const draftRoute = getApiRouteById("customer-draft-state");
-    expect(await runtime.authorize(draftRoute, bearerRequest(token))).toMatchObject({ ok: true, role: "customer" });
+    expect(await runtime.authorize(draftRoute, bearerRequest(token))).toMatchObject({
+      ok: true,
+      role: "customer",
+      clerkUserId: "user_2clerk123"
+    });
   });
 
   it("still rejects unknown opaque tokens and signed-out requests", async () => {

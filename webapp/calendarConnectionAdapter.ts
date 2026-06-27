@@ -20,6 +20,7 @@ export interface CalendarConnectionStartPayload {
   needsReconnect?: boolean;
   importedEventCount?: number;
   opportunityCount?: number;
+  tokenSource?: "clerk";
 }
 
 export interface CalendarConnectionResult {
@@ -41,6 +42,7 @@ export interface CustomerConnection {
   importedEventCount?: number;
   opportunityCount?: number;
   credentialStorageEnabled: boolean;
+  credentialSource?: "clerk" | "custom_oauth";
   rawContentStored: false;
   canScanAgain: boolean;
   reconnectReason?: string;
@@ -126,6 +128,20 @@ export function resolveCalendarConnectionResult(
   { isSignedIn }: { isSignedIn?: boolean } = {}
 ): CalendarConnectionResult {
   if (!ok) {
+    if (payload?.status === "clerk-google-calendar-token-unavailable") {
+      const calendarScopeMissing = String(payload.detail ?? "")
+        .toLowerCase()
+        .includes("calendar events readonly scope");
+      return {
+        status: {
+          tone: "warn",
+          title: calendarScopeMissing ? "Calendar permission missing" : "Google sign-in token unavailable",
+          detail: calendarScopeMissing
+            ? "Add the Google Calendar events readonly scope in Clerk, then sign out and back in with Google to grant it."
+            : payload?.detail ?? "Clerk could not provide a Google token for Calendar."
+        }
+      };
+    }
     if (statusCode === 401 && isSignedIn) {
       // The browser session is real but the API session is stale — this is not
       // a sign-in problem, so never tell a signed-in person to sign in again.
@@ -174,6 +190,21 @@ export function resolveCalendarConnectionResult(
           imported > 0
             ? `Found ${imported} upcoming event${imported === 1 ? "" : "s"} to review.`
             : "No new card-worthy events found this time."
+      }
+    };
+  }
+
+  if (payload?.status === "google-calendar-connected") {
+    const imported = payload?.importedEventCount ?? 0;
+    return {
+      scanned: true,
+      status: {
+        tone: "ok",
+        title: "Google Calendar connected",
+        detail:
+          imported > 0
+            ? `Found ${imported} upcoming event${imported === 1 ? "" : "s"} to review.`
+            : "Connected, but no new card-worthy events were found this time."
       }
     };
   }

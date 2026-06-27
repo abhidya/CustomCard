@@ -9,6 +9,7 @@ const googleCalendarOAuthRequiredEnv = [
   "GOOGLE_OAUTH_STATE_SECRET",
   "GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY"
 ];
+const clerkGoogleOAuthProvider = "oauth_google";
 
 export function buildImportPreviewContractPayload({ basePayload, requestBody }) {
   const resolvedImport = resolveImportPreviewMetadata(requestBody);
@@ -108,6 +109,14 @@ export async function resolveCalendarConnectionLifecycle({
   if (requestedChoiceId !== "google-calendar-events") return { handled: false };
   const mode = String(body.mode ?? "").trim().toLowerCase();
   const forceReconnect = body.forceReconnect === true || mode === "reconnect";
+  if (clerkGoogleCalendarTokenSourceEnabled(env)) {
+    return importGoogleCalendarWithClerkToken({
+      authContext,
+      apiRuntime,
+      env,
+      fetchImpl
+    });
+  }
   if (forceReconnect) return { handled: false };
 
   let connection;
@@ -196,6 +205,52 @@ export async function resolveCalendarConnectionLifecycle({
       rawContentStored: false
     }
   };
+}
+
+async function importGoogleCalendarWithClerkToken({ authContext, apiRuntime, env, fetchImpl }) {
+  try {
+    const token = await fetchClerkGoogleOAuthAccessToken({ authContext, env, fetchImpl });
+    const eventsPayload = await fetchGoogleCalendarEvents(token.accessToken, env, fetchImpl);
+    const record = buildGoogleCalendarImportRecord({
+      authContext,
+      credentialSource: "clerk",
+      encryptedRefreshToken: "",
+      eventsPayload,
+      grantedScopes: token.scopes.length > 0 ? token.scopes : [googleCalendarOAuthScopeUri]
+    });
+    const persistence = await apiRuntime.persistGoogleCalendarImport({ authContext, record });
+    return {
+      handled: true,
+      statusCode: 200,
+      payload: {
+        service: "customcard-api",
+        status: "google-calendar-connected",
+        tokenSource: "clerk",
+        importedEventCount: record.importedEvents.length,
+        opportunityCount: record.cardOpportunities.length,
+        providerRequestUrl: null,
+        redirected: false,
+        credentialStorageEnabled: false,
+        rawContentStored: false,
+        ...persistence.payload
+      }
+    };
+  } catch (error) {
+    return {
+      handled: true,
+      statusCode: 409,
+      payload: {
+        service: "customcard-api",
+        status: "clerk-google-calendar-token-unavailable",
+        detail: error instanceof Error ? error.message : "Clerk Google Calendar token is unavailable.",
+        tokenSource: "clerk",
+        providerRequestUrl: null,
+        redirected: false,
+        credentialStorageEnabled: false,
+        rawContentStored: false
+      }
+    };
+  }
 }
 
 export async function resolveGoogleCalendarOAuthCallback({
@@ -715,6 +770,58 @@ async function fetchGoogleCalendarEvents(accessToken, env, fetchImpl = globalThi
   return payload;
 }
 
+async function fetchClerkGoogleOAuthAccessToken({ authContext, env, fetchImpl = globalThis.fetch }) {
+  const clerkUserId = safeClerkUserId(authContext);
+  if (!clerkUserId) throw new Error("Clerk user id is unavailable for Google Calendar token lookup.");
+  const secretKey = usableEnvValue(env.CLERK_SECRET_KEY);
+  if (!secretKey) throw new Error("CLERK_SECRET_KEY is required for Clerk Google Calendar token lookup.");
+  const endpoint = clerkOAuthAccessTokenEndpoint(env, clerkUserId);
+  const response = await fetchImpl(endpoint, {
+    headers: {
+      Authorization: `Bearer ${secretKey}`,
+      Accept: "application/json"
+    }
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(safeText(payload.errors?.[0]?.message ?? payload.error?.message ?? payload.message, "Clerk Google OAuth token request failed."));
+  }
+  const tokenPayload = Array.isArray(payload) ? payload[0] : Array.isArray(payload.data) ? payload.data[0] : payload;
+  const accessToken = String(tokenPayload?.token ?? tokenPayload?.access_token ?? "").trim();
+  if (!accessToken) throw new Error("Clerk did not return a Google OAuth access token.");
+  const scopes = normalizeScopeList(tokenPayload?.scopes ?? tokenPayload?.scope);
+  if (scopes.length > 0 && !scopes.includes(googleCalendarOAuthScopeUri)) {
+    throw new Error("Clerk Google OAuth token is missing the Calendar events readonly scope.");
+  }
+  return { accessToken, scopes };
+}
+
+function clerkOAuthAccessTokenEndpoint(env, clerkUserId) {
+  const template = usableEnvValue(env.CLERK_OAUTH_ACCESS_TOKEN_ENDPOINT);
+  if (template) return template.replace("{user_id}", encodeURIComponent(clerkUserId)).replace("{provider}", clerkGoogleOAuthProvider);
+  const apiUrl = usableEnvValue(env.CLERK_API_URL) || "https://api.clerk.com";
+  return `${apiUrl.replace(/\/+$/g, "")}/v1/users/${encodeURIComponent(clerkUserId)}/oauth_access_tokens/${clerkGoogleOAuthProvider}`;
+}
+
+function clerkGoogleCalendarTokenSourceEnabled(env) {
+  return String(env.CUSTOMCARD_GOOGLE_CALENDAR_TOKEN_SOURCE ?? "").trim().toLowerCase() === "clerk";
+}
+
+function safeClerkUserId(authContext) {
+  const explicit = safeText(authContext?.clerkUserId ?? authContext?.clerk_user_id, "");
+  if (explicit) return explicit;
+  const userId = safeText(authContext?.userId, "");
+  return /^user_[A-Za-z0-9_-]+$/.test(userId) ? userId : "";
+}
+
+function normalizeScopeList(value) {
+  if (Array.isArray(value)) return value.map((entry) => safeText(entry, "")).filter(Boolean);
+  return String(value ?? "")
+    .split(/[,\s]+/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
 function googleCalendarEventsUrl(env, now = new Date()) {
   const base = usableEnvValue(env.GOOGLE_CALENDAR_EVENTS_ENDPOINT) ||
     `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(usableEnvValue(env.GOOGLE_CALENDAR_ID) || "primary")}/events`;
@@ -736,7 +843,13 @@ function safeCalendarMaxResults(value) {
   return Math.max(1, Math.min(25, Math.floor(number)));
 }
 
-export function buildGoogleCalendarImportRecord({ authContext, encryptedRefreshToken, eventsPayload, grantedScopes }) {
+export function buildGoogleCalendarImportRecord({
+  authContext,
+  credentialSource = "custom-oauth",
+  encryptedRefreshToken,
+  eventsPayload,
+  grantedScopes
+}) {
   const rawEvents = Array.isArray(eventsPayload.items) ? eventsPayload.items.slice(0, 25) : [];
   const connectionId = `connection-${stableHash(`${authContext.userId}:google-calendar-events`).slice(0, 12)}`;
   const importedEvents = [];
@@ -776,10 +889,11 @@ export function buildGoogleCalendarImportRecord({ authContext, encryptedRefreshT
       provider: "google_calendar",
       status: "connected",
       scopes: grantedScopes.length > 0 ? grantedScopes : [googleCalendarOAuthScopeUri],
-      adapterVersion: "google-calendar-events-v1",
+      adapterVersion: credentialSource === "clerk" ? "google-calendar-events-clerk-v1" : "google-calendar-events-v1",
       encryptedRefreshToken,
       metadataSchema: {
         kind: "calendar_event_metadata",
+        credentialSource,
         rawContentStored: false,
         metadataOnly: true,
         importedFields: ["id_hash", "summary", "start", "timezone", "location_presence"]

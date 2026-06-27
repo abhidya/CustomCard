@@ -316,8 +316,9 @@ export function ImportSection({
             {manageOpen ? (
               <div className="connectedManage">
                 <p>
-                  CustomCard reads event titles and dates only — nothing else is stored, and your refresh credential is
-                  encrypted.
+                  {viewState.connection.credentialSource === "clerk"
+                    ? "CustomCard reads event titles and dates only through your Google sign-in — no Google refresh token is stored here."
+                    : "CustomCard reads event titles and dates only — nothing else is stored, and your refresh credential is encrypted."}
                 </p>
                 <button
                   aria-label="Reconnect Google Calendar"

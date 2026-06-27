@@ -496,6 +496,17 @@ describe("frontend architecture seams", () => {
         status: { tone: "ok", title: "Opening Google Calendar" }
       });
 
+    expect(
+      resolveCalendarConnectionResult(false, 409, {
+        status: "clerk-google-calendar-token-unavailable",
+        detail: "Clerk Google OAuth token is missing the Calendar events readonly scope."
+      }).status
+    ).toMatchObject({
+      tone: "warn",
+      title: "Calendar permission missing",
+      detail: "Add the Google Calendar events readonly scope in Clerk, then sign out and back in with Google to grant it."
+    });
+
     // Setup failures must never leak env vars or internals to the customer.
     expect(resolveCalendarConnectionResult(true, 200, { missingEnv: ["GOOGLE_CLIENT_ID"] }).status.detail)
       .toBe("Calendar connection isn't available right now. Paste an invite instead — it works the same way.");

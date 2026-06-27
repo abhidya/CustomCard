@@ -68,7 +68,14 @@ function loadLocalApiEnvFiles({ cwd = process.cwd(), target = process.env } = {}
     "GOOGLE_OAUTH_STATE_SECRET",
     "GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY",
     "GOOGLE_CALENDAR_ID",
-    "GOOGLE_CALENDAR_IMPORT_MAX_RESULTS"
+    "GOOGLE_CALENDAR_IMPORT_MAX_RESULTS",
+    "CLERK_SECRET_KEY",
+    "CLERK_JWT_KEY",
+    "CLERK_AUTHORIZED_PARTIES",
+    "CLERK_ISSUER",
+    "CLERK_AUDIENCE",
+    "CUSTOMCARD_GOOGLE_CALENDAR_TOKEN_SOURCE",
+    "CLERK_OAUTH_ACCESS_TOKEN_ENDPOINT"
   ]);
   for (const filePath of [".env.local", "infra/env/.env"]) {
     const absolutePath = resolve(cwd, filePath);

@@ -16,6 +16,13 @@ const googleEnv = {
   GOOGLE_CALENDAR_EVENTS_ENDPOINT: "https://calendar.test/calendar/v3/calendars/primary/events"
 };
 
+const clerkGoogleEnv = {
+  ...googleEnv,
+  CUSTOMCARD_GOOGLE_CALENDAR_TOKEN_SOURCE: "clerk",
+  CLERK_SECRET_KEY: "sk_test_clerk_secret",
+  CLERK_OAUTH_ACCESS_TOKEN_ENDPOINT: "https://clerk.test/v1/users/{user_id}/oauth_access_tokens/{provider}"
+};
+
 describe("opportunity intake runtime", () => {
   it("builds import preview payloads from metadata without raw content persistence", () => {
     const payload = buildImportPreviewContractPayload({
@@ -142,6 +149,68 @@ describe("opportunity intake runtime", () => {
     expect(fetches[1].url).toContain("fields=items");
     expect(JSON.stringify(persistedRecords)).not.toContain("fake-google-refresh-token");
     expect(JSON.stringify(persistedRecords)).toContain("Sara");
+  });
+
+  it("imports Google Calendar through Clerk connected-account token without storing a refresh token", async () => {
+    const persistedRecords: unknown[] = [];
+    const fetches: string[] = [];
+    const apiRuntime = {
+      async readProviderConnection() {
+        return undefined;
+      },
+      async persistGoogleCalendarImport({ record }: { record: unknown }) {
+        persistedRecords.push(record);
+        return { payload: { repository: { persisted: true, runtimeMode: "memory" } } };
+      }
+    };
+
+    const result = await resolveCalendarConnectionLifecycle({
+      authContext: { role: "customer", userId: "user-demo", clerkUserId: "user_2clerk123", sessionId: "session-demo" },
+      bodyText: JSON.stringify({ calendarChoiceId: "google-calendar-events", mode: "connect" }),
+      apiRuntime,
+      env: clerkGoogleEnv,
+      fetchImpl: async (url: string, init?: { headers?: Record<string, string> }) => {
+        fetches.push(String(url));
+        if (String(url).includes("clerk.test")) {
+          expect(init?.headers?.Authorization).toBe("Bearer sk_test_clerk_secret");
+          return jsonResponse([
+            {
+              token: "clerk-google-access-token",
+              scopes: ["https://www.googleapis.com/auth/calendar.events.readonly"]
+            }
+          ]);
+        }
+        expect(init?.headers?.Authorization).toBe("Bearer clerk-google-access-token");
+        return jsonResponse({
+          items: [
+            {
+              id: "google-event-clerk-1",
+              summary: "Mina's graduation party",
+              start: { dateTime: "2030-05-10T16:00:00-04:00", timeZone: "America/New_York" },
+              end: { timeZone: "America/New_York" }
+            }
+          ]
+        });
+      }
+    });
+
+    expect(result).toMatchObject({
+      handled: true,
+      statusCode: 200,
+      payload: {
+        status: "google-calendar-connected",
+        tokenSource: "clerk",
+        importedEventCount: 1,
+        credentialStorageEnabled: false,
+        rawContentStored: false
+      }
+    });
+    expect(fetches[0]).toBe("https://clerk.test/v1/users/user_2clerk123/oauth_access_tokens/oauth_google");
+    expect(fetches[1]).toContain("https://calendar.test/calendar/v3/calendars/primary/events");
+    const serialized = JSON.stringify(persistedRecords);
+    expect(serialized).toContain("google-calendar-events-clerk-v1");
+    expect(serialized).toContain("Mina");
+    expect(serialized).not.toContain("refresh_token");
   });
 });
 
