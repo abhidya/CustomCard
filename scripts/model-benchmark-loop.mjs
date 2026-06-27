@@ -8,7 +8,10 @@ import {
   localComfyTypographyVariables,
   localComfyWorkflowInputsForMetadata
 } from "./local-comfy-production-text.mjs";
-import { productionTextPlannerPolicy } from "./production-text-planner-policy.mjs";
+import {
+  classifyProductionTextPlanner,
+  productionTextPlannerPolicy
+} from "./production-text-planner-policy.mjs";
 
 const repoRoot = resolve(import.meta.dirname, "..");
 const defaultOutputDir = resolve(
@@ -802,6 +805,7 @@ export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false } =
   const phaseDir = resolve(outputDir, phaseDirName);
   mkdirSync(phaseDir, { recursive: true });
   const plannedRuns = applyRunFilters(plannedRunsForPhase(phase, candidates), args);
+  assertProductionTextPlannerRuntime({ phase, plannedRuns, env });
   const summary = {
     phase,
     phaseDir: phaseDirName,
@@ -884,17 +888,30 @@ function hasUsableEnvValue(value) {
 }
 
 function productionTextPlannerRuntimeSummary(env) {
+  const model = firstUsableEnv(env, ["CUSTOMCARD_LOCAL_LLM_MODEL", "LMSTUDIO_MODEL", "KOBOLDCPP_MODEL"]);
+  const contextTokens = boundedIntegerEnv(env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS, 0, 1_000_000, 0);
+  const maxOutputTokens = boundedIntegerEnv(
+    env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS,
+    productionTextPlannerPolicy.minOutputTokens,
+    4000,
+    productionTextPlannerPolicy.recommendedOutputTokens
+  );
+  const allowSmallPlanner = truthyEnv(env.CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER);
+  const allowUnknownProductionModel = truthyEnv(env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER);
+  const classification = classifyProductionTextPlanner(model, {
+    allowSmall: allowSmallPlanner,
+    allowUnknownProductionModel,
+    reportedContextTokens: contextTokens,
+    maxOutputTokens,
+    requireRuntimeBudget: true
+  });
+  const runAllowed = classification.blockers.length === 0 && (classification.productionSuitable || allowSmallPlanner);
   return {
     adapterId: "local-openai-compatible-chat",
     baseUrl: redactValue(firstUsableEnv(env, ["CUSTOMCARD_LOCAL_LLM_BASE_URL", "LMSTUDIO_BASE_URL", "KOBOLDCPP_BASE_URL"]), env),
-    model: firstUsableEnv(env, ["CUSTOMCARD_LOCAL_LLM_MODEL", "LMSTUDIO_MODEL", "KOBOLDCPP_MODEL"]),
-    contextTokens: boundedIntegerEnv(env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS, 0, 1_000_000, 0) || null,
-    maxOutputTokens: boundedIntegerEnv(
-      env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS,
-      productionTextPlannerPolicy.minOutputTokens,
-      4000,
-      productionTextPlannerPolicy.recommendedOutputTokens
-    ),
+    model,
+    contextTokens: contextTokens || null,
+    maxOutputTokens,
     requestTimeoutMs: boundedIntegerEnv(
       firstUsableEnv(env, [
         "CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS",
@@ -905,8 +922,38 @@ function productionTextPlannerRuntimeSummary(env) {
       3_600_000,
       1_200_000
     ),
+    classification: classification.classification,
+    productionSuitable: classification.productionSuitable,
+    runAllowed,
+    allowSmallPlanner,
+    allowUnknownProductionModel,
+    policy: {
+      minContextTokens: classification.minContextTokens,
+      minOutputTokens: classification.minOutputTokens,
+      minimumOpenWeightPlannerClass: classification.minimumOpenWeightPlannerClass,
+      recommendedModels: classification.recommendedModels
+    },
+    blockers: classification.blockers,
+    warnings: classification.warnings,
     creativeContract: "full-production-card-copy-json"
   };
+}
+
+function assertProductionTextPlannerRuntime({ phase, plannedRuns, env }) {
+  if (phase !== "local-production-text") return;
+  if (!plannedRuns.some((run) => run.productionTextMode === "llm-generated-copy")) return;
+  const runtime = productionTextPlannerRuntimeSummary(env);
+  if (runtime.productionSuitable || (runtime.allowSmallPlanner && runtime.runAllowed)) return;
+  const detail = runtime.blockers.length
+    ? runtime.blockers.join(" ")
+    : `Planner classification '${runtime.classification}' is not production-suitable.`;
+  throw new Error(
+    `local-production-text LLM-planned runs require the correct production planner before sending the full creative contract: ${productionTextPlannerPolicy.minContextTokens}+ context tokens, ${productionTextPlannerPolicy.minOutputTokens}+ output tokens, and a production-suitable model such as ${productionTextPlannerPolicy.recommendedModels.slice(0, 3).join(", ")}. ${detail}`
+  );
+}
+
+function truthyEnv(value) {
+  return ["1", "true", "yes", "enabled"].includes(String(value || "").trim().toLowerCase());
 }
 
 function plannedRunsForPhase(phase, candidates) {

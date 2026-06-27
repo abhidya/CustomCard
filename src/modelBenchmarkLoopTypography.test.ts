@@ -137,6 +137,8 @@ describe("model benchmark typography experiment", () => {
       CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS: process.env.CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS,
       CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS: process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS,
       CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS: process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS,
+      CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER: process.env.CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER,
+      CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER: process.env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER,
       CUSTOMCARD_COMFYUI_URL: process.env.CUSTOMCARD_COMFYUI_URL,
       CUSTOMCARD_COMFYUI_CHECKPOINT: process.env.CUSTOMCARD_COMFYUI_CHECKPOINT
     };
@@ -146,6 +148,8 @@ describe("model benchmark typography experiment", () => {
       process.env.CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS = "1200000";
       process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS = "8192";
       process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS = "3200";
+      process.env.CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER = "false";
+      process.env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER = "false";
       process.env.CUSTOMCARD_COMFYUI_URL = "http://127.0.0.1:8188";
       process.env.CUSTOMCARD_COMFYUI_CHECKPOINT = "sd_xl_turbo_1.0_fp16.safetensors";
 
@@ -165,11 +169,63 @@ describe("model benchmark typography experiment", () => {
         contextTokens: 8192,
         maxOutputTokens: 3200,
         requestTimeoutMs: 1200000,
+        classification: "production-suitable",
+        productionSuitable: true,
+        runAllowed: true,
+        allowSmallPlanner: false,
+        allowUnknownProductionModel: false,
+        blockers: [],
         creativeContract: "full-production-card-copy-json"
+      });
+      expect(dryRun.productionTextPlannerRuntime.policy).toMatchObject({
+        minContextTokens: 8192,
+        minOutputTokens: 3200
       });
       expect(dryRun.plannedRuns.map((run: { storyId: string }) => run.storyId)).toEqual(
         productionTextRequestFixtures.map((story) => story.id)
       );
+    } finally {
+      for (const [key, value] of Object.entries(previousEnv)) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+      rmSync(outputDir, { force: true, recursive: true });
+    }
+  });
+
+  it("refuses live production-text runs before generation when the local planner is reduced quality", async () => {
+    const outputDir = mkdtempSync(join(tmpdir(), "customcard-production-text-bad-planner-"));
+    const previousEnv = {
+      CUSTOMCARD_LOCAL_LLM_BASE_URL: process.env.CUSTOMCARD_LOCAL_LLM_BASE_URL,
+      CUSTOMCARD_LOCAL_LLM_MODEL: process.env.CUSTOMCARD_LOCAL_LLM_MODEL,
+      CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS: process.env.CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS,
+      CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS: process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS,
+      CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS: process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS,
+      CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER: process.env.CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER,
+      CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER: process.env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER,
+      CUSTOMCARD_COMFYUI_URL: process.env.CUSTOMCARD_COMFYUI_URL,
+      CUSTOMCARD_COMFYUI_CHECKPOINT: process.env.CUSTOMCARD_COMFYUI_CHECKPOINT
+    };
+    try {
+      process.env.CUSTOMCARD_LOCAL_LLM_BASE_URL = "http://127.0.0.1:5001/v1";
+      process.env.CUSTOMCARD_LOCAL_LLM_MODEL = "koboldcpp/Qwen3-8B-Q4_K_M";
+      process.env.CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS = "1200000";
+      process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS = "4096";
+      process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS = "3200";
+      process.env.CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER = "false";
+      process.env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER = "false";
+      process.env.CUSTOMCARD_COMFYUI_URL = "http://127.0.0.1:8188";
+      process.env.CUSTOMCARD_COMFYUI_CHECKPOINT = "sd_xl_turbo_1.0_fp16.safetensors";
+
+      await expect(
+        runModelBenchmarkLoopFromArgs({
+          phase: "local-production-text",
+          "local-only": "true",
+          "phase-dir": "production-text-workflow",
+          "output-dir": outputDir,
+          live: "true"
+        })
+      ).rejects.toThrow(/correct production planner/);
     } finally {
       for (const [key, value] of Object.entries(previousEnv)) {
         if (value === undefined) delete process.env[key];

@@ -94,6 +94,12 @@ if (-not [string]::IsNullOrWhiteSpace($LocalLlmApiKey)) {
 $env:CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS = [string]$PlannerMaxTokens
 $env:CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS = [string]$PlannerContextSize
 $env:CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS = [string]$PlannerRequestTimeoutMs
+if ($AllowSmallPlanner) {
+  $env:CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER = "true"
+}
+if ($AllowUnknownProductionPlanner) {
+  $env:CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER = "true"
+}
 
 function Test-UsableEnvValue {
   param([string]$Value)
