@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T01:08:17.004Z",
+  "createdAtIso": "2026-06-27T01:42:43.911Z",
   "status": "blocked",
   "promotionReady": false,
   "evidenceRoot": "docs/evidence/generated-card-comparisons",
@@ -11,12 +11,14 @@
     "rerunPlan": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-production-planner/production-text-rerun-plan.json",
     "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner/production-text-planner-preflight.json",
     "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260627-production-planner/production-text-preflight.json",
+    "dryRun": "docs/evidence/generated-card-comparisons/production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json",
     "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-production-planner/production-text-manual-grade-checklist.json",
     "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
     "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json"
   },
   "findings": [
     "Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.",
+    "Latest dry-run planning proof keeps the full production card-copy JSON contract on koboldcpp/gemma-4-31B-it-Q4_K_M with 8192+ context, 3200 output tokens, and 1200000ms timeout across aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you.",
     "Latest planner preflight passed with koboldcpp/gemma-4-31B-it-Q4_K_M.",
     "Installed production planner candidates found locally: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
     "Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
@@ -35,12 +37,11 @@
   "rerunPlans": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-production-planner/production-text-rerun-plan.json",
-      "createdAtIso": "2026-06-27T00:45:50.632Z",
+      "createdAtIso": "2026-06-27T01:23:10.727Z",
       "status": "rerun-required",
       "promotionReady": false,
       "failedRequirements": [
         "readiness doctor is promotion-ready",
-        "no small smoke planner is active or used",
         "LLM-planned customer request matrix completed",
         "planner preserved required terms and avoided forbidden terms",
         "manual grade checklist is promotion-ready",
@@ -578,6 +579,43 @@
         "After restart, refresh /object_info evidence so CustomCardTextComposer is visible to future agents.",
         "Use --require-live true in CI or promotion gates so missing live Comfy nodes fail the command."
       ]
+    }
+  ],
+  "dryRunReports": [
+    {
+      "path": "docs/evidence/generated-card-comparisons/production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json",
+      "createdAtIso": "2026-06-27T01:36:44.038Z",
+      "status": "planning-proof",
+      "promotionReady": false,
+      "dryRun": true,
+      "phase": "local-production-text",
+      "phaseDir": "production-text-workflow",
+      "liveProviderCallsEnabled": false,
+      "plannedRunCount": 3,
+      "storyIds": [
+        "aquarium-lover-birthday",
+        "koi-fish-lover-encouragement",
+        "dog-lover-thank-you"
+      ],
+      "textModels": [
+        "koboldcpp/gemma-4-31B-it-Q4_K_M"
+      ],
+      "imageModels": [
+        "sd_xl_turbo_1.0_fp16.safetensors"
+      ],
+      "productionTextModes": [
+        "llm-generated-copy"
+      ],
+      "plannerModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
+      "plannerClassification": "production-suitable",
+      "productionSuitable": true,
+      "runAllowed": true,
+      "contextTokens": 8192,
+      "maxOutputTokens": 3200,
+      "requestTimeoutMs": 1200000,
+      "creativeContract": "full-production-card-copy-json",
+      "blockers": [],
+      "warnings": []
     }
   ],
   "manualGradeChecklists": [

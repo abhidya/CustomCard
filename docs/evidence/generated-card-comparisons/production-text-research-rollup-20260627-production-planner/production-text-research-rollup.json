@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T01:23:18.662Z",
+  "createdAtIso": "2026-06-27T01:42:51.899Z",
   "status": "blocked",
   "promotionReady": false,
   "reportDir": "docs/evidence/generated-card-comparisons/production-text-research-rollup-20260627-production-planner",
@@ -14,6 +14,7 @@
     "rerunPlan": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-production-planner/production-text-rerun-plan.json",
     "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner/production-text-planner-preflight.json",
     "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260627-production-planner/production-text-preflight.json",
+    "dryRun": "docs/evidence/generated-card-comparisons/production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json",
     "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-production-planner/production-text-manual-grade-checklist.json",
     "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
     "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json"
@@ -46,6 +47,26 @@
       "blockers": [
         "latest LLM-planned aggregate is passing"
       ]
+    },
+    "dryRun": {
+      "path": "docs/evidence/generated-card-comparisons/production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json",
+      "status": "planning-proof",
+      "promotionReady": false,
+      "plannedRunCount": 3,
+      "storyIds": [
+        "aquarium-lover-birthday",
+        "koi-fish-lover-encouragement",
+        "dog-lover-thank-you"
+      ],
+      "plannerModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
+      "plannerClassification": "production-suitable",
+      "productionSuitable": true,
+      "runAllowed": true,
+      "contextTokens": 8192,
+      "maxOutputTokens": 3200,
+      "requestTimeoutMs": 1200000,
+      "creativeContract": "full-production-card-copy-json",
+      "blockers": []
     },
     "modelCoverage": {
       "path": "docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current/local-model-coverage.json",
@@ -375,6 +396,7 @@
   },
   "findings": [
     "Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.",
+    "Latest dry-run planning proof keeps the full production card-copy JSON contract on koboldcpp/gemma-4-31B-it-Q4_K_M with 8192+ context, 3200 output tokens, and 1200000ms timeout across aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you.",
     "Latest planner preflight passed with koboldcpp/gemma-4-31B-it-Q4_K_M.",
     "Installed production planner candidates found locally: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
     "Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
@@ -384,6 +406,7 @@
     "Latest manual grade checklist is blocked: 0/0 generated run(s) graded, 0 failed before image generation.",
     "Production planner contract: Keep the full creative planner prompt and switch the runtime, not the prompt quality.",
     "Reduced creative prompt contracts are disallowed for promotion evidence; fix finish_reason=length by using the correct planner runtime.",
+    "Dry-run planning proof records the full-quality production planner path: koboldcpp/gemma-4-31B-it-Q4_K_M with 8192+ context, 3200 output tokens, 1200000ms timeout, and aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you planned.",
     "Production planner files are installed but not yet evaluated in local production-text evidence: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
     "Optional production planner pull queue remains: qwen3-14b-instruct.",
     "Required customer terms still missing: Nina, birthday, aquarium, Uncle Ken, koi, encouragement.",

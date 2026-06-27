@@ -16,6 +16,7 @@ if (isMainModule()) {
     plannerPreflights: result.plannerPreflights.length,
     readinessReports: result.readinessReports.length,
     modelCoverageReports: result.modelCoverageReports.length,
+    dryRunReports: result.dryRunReports.length,
     manualGradeChecklists: result.manualGradeChecklists.length,
     benchmarkSummaries: result.benchmarkSummaries.length,
     aggregates: result.aggregates.length
@@ -55,6 +56,13 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     .map(preflightEntry)
     .filter(Boolean)
     .sort(newestFirst);
+  const dryRunReports = files
+    .filter((file) => basename(file).endsWith("-dry-run.json"))
+    .filter((file) => relativePath(file).includes("production-text"))
+    .map(dryRunEntry)
+    .filter(Boolean)
+    .filter((entry) => entry.phase === "local-production-text")
+    .sort(newestFirst);
   const manualGradeChecklists = files
     .filter((file) => basename(file) === "production-text-manual-grade-checklist.json")
     .map(manualGradeChecklistEntry)
@@ -81,6 +89,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
   const latestAggregate = aggregates.find((entry) => entry.kind === "llm-planned") || aggregates[0];
   const latestBenchmark = benchmarkSummaries.find((entry) => entry.llmGeneratedRuns > 0) || benchmarkSummaries[0];
   const latestPreflight = preflights[0];
+  const latestDryRun = dryRunReports[0];
   const latestManualGradeChecklist = manualGradeChecklists[0];
   const promotionReady = Boolean(
     latestReadiness?.promotionReady &&
@@ -98,6 +107,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     latestAggregate,
     latestBenchmark,
     latestPreflight,
+    latestDryRun,
     latestManualGradeChecklist
   });
   const nextSteps = buildNextSteps({
@@ -107,6 +117,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     latestAggregate,
     latestBenchmark,
     latestPreflight,
+    latestDryRun,
     latestManualGradeChecklist
   });
   const result = {
@@ -122,6 +133,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
       rerunPlan: latestRerunPlan?.path || "",
       plannerPreflight: latestPlannerPreflight?.path || "",
       preflight: latestPreflight?.path || "",
+      dryRun: latestDryRun?.path || "",
       manualGradeChecklist: latestManualGradeChecklist?.path || "",
       aggregate: latestAggregate?.path || "",
       benchmark: latestBenchmark?.path || ""
@@ -133,6 +145,7 @@ export function buildProductionTextEvidenceIndex(args = {}) {
     readinessReports,
     modelCoverageReports,
     preflights,
+    dryRunReports,
     manualGradeChecklists,
     aggregates,
     benchmarkSummaries
@@ -199,6 +212,7 @@ function isEvidenceCandidate(filePath) {
     name === "production-text-readiness.json" ||
     name === "production-text-planner-preflight.json" ||
     name === "production-text-preflight.json" ||
+    (name.endsWith("-dry-run.json") && rel.includes("production-text")) ||
     name === "production-text-manual-grade-checklist.json" ||
     (name === "benchmark-aggregate.json" && rel.includes("production-text")) ||
     (name.endsWith("-summary.json") && rel.includes("production-text"));
@@ -321,6 +335,38 @@ function preflightEntry(filePath) {
   };
 }
 
+function dryRunEntry(filePath) {
+  const payload = readJson(filePath);
+  if (!payload || payload.dryRun !== true) return undefined;
+  const plannedRuns = Array.isArray(payload.plannedRuns) ? payload.plannedRuns : [];
+  const runtime = payload.productionTextPlannerRuntime || {};
+  return {
+    path: relativePath(filePath),
+    createdAtIso: payload.createdAtIso || fileMtime(filePath),
+    status: runtime.productionSuitable ? "planning-proof" : "blocked",
+    promotionReady: false,
+    dryRun: true,
+    phase: payload.phase || "",
+    phaseDir: payload.phaseDir || "",
+    liveProviderCallsEnabled: Boolean(payload.liveProviderCallsEnabled),
+    plannedRunCount: plannedRuns.length,
+    storyIds: unique(plannedRuns.map((run) => run.storyId).filter(Boolean)),
+    textModels: unique(plannedRuns.map((run) => run.textModel).filter(Boolean)),
+    imageModels: unique(plannedRuns.map((run) => run.imageModel).filter(Boolean)),
+    productionTextModes: unique(plannedRuns.map((run) => run.productionTextMode).filter(Boolean)),
+    plannerModel: runtime.model || "",
+    plannerClassification: runtime.classification || "",
+    productionSuitable: Boolean(runtime.productionSuitable),
+    runAllowed: Boolean(runtime.runAllowed),
+    contextTokens: runtime.contextTokens ?? null,
+    maxOutputTokens: runtime.maxOutputTokens ?? null,
+    requestTimeoutMs: runtime.requestTimeoutMs ?? null,
+    creativeContract: runtime.creativeContract || "",
+    blockers: runtime.blockers || [],
+    warnings: runtime.warnings || []
+  };
+}
+
 function manualGradeChecklistEntry(filePath) {
   const payload = readJson(filePath);
   if (!payload) return undefined;
@@ -419,11 +465,20 @@ function buildFindings({
   latestAggregate,
   latestBenchmark,
   latestPreflight,
+  latestDryRun,
   latestManualGradeChecklist
 }) {
   const findings = [];
   if (latestPreflight?.liveComfyReachable && latestPreflight?.liveNodeAvailable) {
     findings.push("Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.");
+  }
+  if (latestDryRun?.productionSuitable && latestDryRun.plannedRunCount >= 3) {
+    findings.push(
+      `Latest dry-run planning proof keeps the full production card-copy JSON contract on ${latestDryRun.plannerModel} with ${latestDryRun.contextTokens}+ context, ${latestDryRun.maxOutputTokens} output tokens, and ${latestDryRun.requestTimeoutMs}ms timeout across ${latestDryRun.storyIds.join(", ")}.`
+    );
+  }
+  if (latestDryRun && !latestDryRun.productionSuitable) {
+    findings.push(`Latest dry-run planning proof is blocked: ${latestDryRun.plannerClassification || "unknown"} planner ${latestDryRun.plannerModel || "n/a"}.`);
   }
   if (latestPlannerPreflight?.promotionReady) {
     findings.push(`Latest planner preflight passed with ${latestPlannerPreflight.activeModel}.`);
@@ -471,6 +526,7 @@ function buildNextSteps({
   latestAggregate,
   latestBenchmark,
   latestPreflight,
+  latestDryRun,
   latestManualGradeChecklist
 }) {
   const steps = [];
@@ -488,6 +544,9 @@ function buildNextSteps({
   }
   if (latestModelCoverage?.pullQueue?.length) {
     steps.push(`Resolve local model pull queue if the installed planner is too slow: ${latestModelCoverage.pullQueue.map((item) => item.id).join(", ")}.`);
+  }
+  if (latestDryRun && !latestDryRun.productionSuitable) {
+    steps.push("Refresh the production-text dry-run with a production-suitable planner before live benchmark work.");
   }
   if (latestReadiness?.smallPlannerActive || latestBenchmark?.smallPlannerUsed) {
     steps.push("Keep Qwen3-4B/8B and other small planner runs as smoke or failure evidence only.");
@@ -530,6 +589,7 @@ function buildMarkdown(result) {
   lines.push(latestRow("Readiness", result.readinessReports[0], readinessSummary));
   lines.push(latestRow("Model Coverage", result.modelCoverageReports[0], modelCoverageSummary));
   lines.push(latestRow("Preflight", result.preflights[0], preflightSummary));
+  lines.push(latestRow("Dry Run", result.dryRunReports[0], dryRunSummary));
   lines.push(latestRow("Manual Grades", result.manualGradeChecklists[0], manualGradeChecklistSummary));
   lines.push(latestRow("Aggregate", result.aggregates[0], aggregateSummary));
   lines.push(latestRow("Benchmark", result.benchmarkSummaries[0], benchmarkSummary));
@@ -548,6 +608,14 @@ function buildMarkdown(result) {
   lines.push("| --- | ---:| ---:| ---:| --- | --- | --- |");
   for (const entry of result.benchmarkSummaries.slice(0, 10)) {
     lines.push(`| ${entry.createdAtIso} | ${entry.totalRuns} | ${entry.completedRuns} | ${entry.failedRuns} | ${markdownCell(entry.fixtures.join(", ") || "n/a")} | ${markdownCell(entry.textModels.join(", ") || "n/a")} | ${link(entry.path)} |`);
+  }
+  lines.push("");
+  lines.push("## Dry Runs");
+  lines.push("");
+  lines.push("| Created | Planned | Planner | Context | Max output | Stories | Path |");
+  lines.push("| --- | ---:| --- | ---:| ---:| --- | --- |");
+  for (const entry of result.dryRunReports.slice(0, 10)) {
+    lines.push(`| ${entry.createdAtIso} | ${entry.plannedRunCount} | ${markdownCell(entry.plannerModel || "n/a")} | ${entry.contextTokens ?? "n/a"} | ${entry.maxOutputTokens ?? "n/a"} | ${markdownCell(entry.storyIds.join(", ") || "n/a")} | ${link(entry.path)} |`);
   }
   return `${lines.join("\n")}\n`;
 }
@@ -575,6 +643,10 @@ function modelCoverageSummary(entry) {
 
 function preflightSummary(entry) {
   return `comfy=${entry.liveComfyReachable ? "yes" : "no"} node=${entry.liveNodeAvailable ? "yes" : "no"}`;
+}
+
+function dryRunSummary(entry) {
+  return `${entry.plannerClassification || "n/a"} ${entry.plannerModel || "n/a"}; planned=${entry.plannedRunCount}; contract=${entry.creativeContract || "n/a"}`;
 }
 
 function manualGradeChecklistSummary(entry) {

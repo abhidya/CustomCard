@@ -1,12 +1,13 @@
 # Production Text Evidence Index
 
-Created: 2026-06-27T01:08:17.004Z
+Created: 2026-06-27T01:42:43.911Z
 Status: blocked
 Promotion ready: no
 
 ## Findings
 
 - Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.
+- Latest dry-run planning proof keeps the full production card-copy JSON contract on koboldcpp/gemma-4-31B-it-Q4_K_M with 8192+ context, 3200 output tokens, and 1200000ms timeout across aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you.
 - Latest planner preflight passed with koboldcpp/gemma-4-31B-it-Q4_K_M.
 - Installed production planner candidates found locally: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
@@ -27,11 +28,12 @@ Promotion ready: no
 
 | Type | Path | Status | Key result |
 | --- | --- | --- | --- |
-| Rerun Plan | [open](../production-text-rerun-plan-20260627-production-planner/production-text-rerun-plan.json) | rerun-required | 6 failed requirement(s); commands=10 |
+| Rerun Plan | [open](../production-text-rerun-plan-20260627-production-planner/production-text-rerun-plan.json) | rerun-required | 5 failed requirement(s); commands=10 |
 | Planner | [open](../production-text-planner-preflight-20260627-production-planner/production-text-planner-preflight.json) | promotion-ready | production-suitable; model=koboldcpp/gemma-4-31B-it-Q4_K_M; context=8192 |
 | Readiness | [open](../production-text-readiness-20260627-production-planner/production-text-readiness.json) | blocked | 1 blocker(s); planner=koboldcpp/gemma-4-31B-it-Q4_K_M |
 | Model Coverage | [open](../local-model-coverage-20260627-current/local-model-coverage.json) | action-needed | 9 recommended installed; unevaluated production planners=gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash |
 | Preflight | [open](../production-text-preflight-20260627-production-planner/production-text-preflight.json) | promotion-ready | comfy=yes node=yes |
+| Dry Run | [open](../production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json) | planning-proof | production-suitable koboldcpp/gemma-4-31B-it-Q4_K_M; planned=3; contract=full-production-card-copy-json |
 | Manual Grades | [open](../production-text-manual-grade-checklist-20260627-production-planner/production-text-manual-grade-checklist.json) | blocked | 0/0 generated graded; manual-grades=0; missing=0; failed-before-image=0 |
 | Aggregate | [open](../benchmark-aggregate-20260627-production-text-production-planner/benchmark-aggregate.json) | blocked | 2 run(s); best=73; ready=no |
 | Benchmark | [open](../production-text-workflow-20260627-production-planner/production-text-workflow-summary.json) | blocked | 0/2 completed; failed=0 |
@@ -57,3 +59,9 @@ Promotion ready: no
 | 2026-06-26T01:53:56.476Z | 1 | 1 | 0 | folded-card-sunburst-typography | n/a | [open](../production-text-workflow-20260626-sdxl-turbo-cfg15/production-text-workflow-summary.json) |
 | 2026-06-26T01:43:59.340Z | 1 | 1 | 0 | folded-card-sunburst-typography | n/a | [open](../production-text-workflow-20260626-sdxl-turbo/production-text-workflow-summary.json) |
 | 2026-06-26T01:25:39.502Z | 1 | 1 | 0 | folded-card-sunburst-typography | n/a | [open](../production-text-workflow-20260626-live-node/production-text-workflow-summary.json) |
+
+## Dry Runs
+
+| Created | Planned | Planner | Context | Max output | Stories | Path |
+| --- | ---:| --- | ---:| ---:| --- | --- |
+| 2026-06-27T01:36:44.038Z | 3 | koboldcpp/gemma-4-31B-it-Q4_K_M | 8192 | 3200 | aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you | [open](../production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json) |

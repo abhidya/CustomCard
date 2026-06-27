@@ -1,6 +1,6 @@
 # Production Text Promotion Gate
 
-Created: 2026-06-27T01:08:17.007Z
+Created: 2026-06-27T01:42:43.914Z
 Status: blocked
 Promotion ready: no
 Evidence index: docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner

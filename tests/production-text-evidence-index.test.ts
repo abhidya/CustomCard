@@ -117,6 +117,45 @@ describe("production text evidence index", () => {
       liveComfyReachable: true,
       liveNodeAvailable: true
     });
+    writeJson(join(root, "production-text-workflow-dry-run.json"), {
+      createdAtIso: "2026-06-26T05:20:00.000Z",
+      phase: "local-production-text",
+      phaseDir: "production-text-workflow",
+      dryRun: true,
+      liveProviderCallsEnabled: false,
+      productionTextPlannerRuntime: {
+        model: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+        contextTokens: 8192,
+        maxOutputTokens: 3200,
+        requestTimeoutMs: 1200000,
+        classification: "production-suitable",
+        productionSuitable: true,
+        runAllowed: true,
+        blockers: [],
+        warnings: [],
+        creativeContract: "full-production-card-copy-json"
+      },
+      plannedRuns: [
+        {
+          storyId: "aquarium-lover-birthday",
+          productionTextMode: "llm-generated-copy",
+          textModel: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+          imageModel: "sd_xl_turbo_1.0_fp16.safetensors"
+        },
+        {
+          storyId: "koi-fish-lover-encouragement",
+          productionTextMode: "llm-generated-copy",
+          textModel: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+          imageModel: "sd_xl_turbo_1.0_fp16.safetensors"
+        },
+        {
+          storyId: "dog-lover-thank-you",
+          productionTextMode: "llm-generated-copy",
+          textModel: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+          imageModel: "sd_xl_turbo_1.0_fp16.safetensors"
+        }
+      ]
+    });
     writeJson(join(root, "production-text-manual-grade-checklist.json"), {
       createdAtIso: "2026-06-26T04:25:00.000Z",
       status: "blocked",
@@ -210,6 +249,7 @@ describe("production text evidence index", () => {
     expect(report.plannerPreflights).toHaveLength(1);
     expect(report.readinessReports).toHaveLength(1);
     expect(report.modelCoverageReports).toHaveLength(1);
+    expect(report.dryRunReports).toHaveLength(1);
     expect(report.manualGradeChecklists).toHaveLength(1);
     expect(report.plannerPreflights[0]).toMatchObject({
       activeModel: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
@@ -227,6 +267,18 @@ describe("production text evidence index", () => {
       installedProductionPlanners: ["gemma-4-31b-it", "magistral-small-2509"],
       unevaluatedProductionPlanners: ["gemma-4-31b-it", "magistral-small-2509"],
       missingProductionPlanners: ["qwen3-14b-instruct"]
+    });
+    expect(report.dryRunReports[0]).toMatchObject({
+      status: "planning-proof",
+      promotionReady: false,
+      plannedRunCount: 3,
+      plannerModel: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+      plannerClassification: "production-suitable",
+      contextTokens: 8192,
+      maxOutputTokens: 3200,
+      requestTimeoutMs: 1200000,
+      creativeContract: "full-production-card-copy-json",
+      storyIds: ["aquarium-lover-birthday", "koi-fish-lover-encouragement", "dog-lover-thank-you"]
     });
     expect(report.aggregates[0]).toMatchObject({
       totalRuns: 2,
@@ -249,6 +301,7 @@ describe("production text evidence index", () => {
       missingMustInclude: ["Nina", "aquarium"]
     });
     expect(report.findings.join("\n")).toContain("known-small smoke model");
+    expect(report.findings.join("\n")).toContain("Latest dry-run planning proof keeps the full production card-copy JSON contract");
     expect(report.findings.join("\n")).toContain("Latest planner preflight is blocked");
     expect(report.findings.join("\n")).toContain("Installed production planner candidates found locally");
     expect(report.findings.join("\n")).toContain("Installed production planner candidates still need local production-text evaluation");

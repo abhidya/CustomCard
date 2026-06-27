@@ -62,6 +62,24 @@ describe("production text research rollup", () => {
           blockers: ["configured production planner endpoint is reachable"]
         }
       ],
+      dryRunReports: [
+        {
+          path: "docs/evidence/generated-card-comparisons/production-text-dry-run-current/production-text-workflow-dry-run.json",
+          status: "planning-proof",
+          promotionReady: false,
+          plannedRunCount: 3,
+          storyIds: ["aquarium-lover-birthday", "koi-fish-lover-encouragement", "dog-lover-thank-you"],
+          plannerModel: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+          plannerClassification: "production-suitable",
+          productionSuitable: true,
+          runAllowed: true,
+          contextTokens: 8192,
+          maxOutputTokens: 3200,
+          requestTimeoutMs: 1200000,
+          creativeContract: "full-production-card-copy-json",
+          blockers: []
+        }
+      ],
       modelCoverageReports: [
         {
           path: "docs/evidence/generated-card-comparisons/local-model-coverage-current/local-model-coverage.json",
@@ -187,7 +205,19 @@ describe("production text research rollup", () => {
       unevaluatedProductionPlanners: ["gemma-4-31b-it", "magistral-small-2509"],
       missingProductionPlanners: ["qwen3-14b-instruct"]
     });
+    expect(report.evidenceSummary.dryRun).toMatchObject({
+      status: "planning-proof",
+      plannedRunCount: 3,
+      plannerModel: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+      plannerClassification: "production-suitable",
+      productionSuitable: true,
+      contextTokens: 8192,
+      maxOutputTokens: 3200,
+      requestTimeoutMs: 1200000,
+      creativeContract: "full-production-card-copy-json"
+    });
     expect(report.findings.join("\n")).toContain("known-small planner");
+    expect(report.findings.join("\n")).toContain("Dry-run planning proof records the full-quality production planner path");
     expect(report.findings.join("\n")).toContain("switch the runtime, not the prompt quality");
     expect(report.findings.join("\n")).toContain("Reduced creative prompt contracts are disallowed");
     expect(report.findings.join("\n")).toContain("Production planner files are installed but not yet evaluated");

@@ -1,6 +1,6 @@
 # Production Text Research Rollup
 
-Created: 2026-06-27T01:23:18.662Z
+Created: 2026-06-27T01:42:51.899Z
 Status: blocked
 Promotion ready: no
 
@@ -13,6 +13,7 @@ Promotion ready: no
 ## Findings
 
 - Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.
+- Latest dry-run planning proof keeps the full production card-copy JSON contract on koboldcpp/gemma-4-31B-it-Q4_K_M with 8192+ context, 3200 output tokens, and 1200000ms timeout across aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you.
 - Latest planner preflight passed with koboldcpp/gemma-4-31B-it-Q4_K_M.
 - Installed production planner candidates found locally: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
@@ -22,6 +23,7 @@ Promotion ready: no
 - Latest manual grade checklist is blocked: 0/0 generated run(s) graded, 0 failed before image generation.
 - Production planner contract: Keep the full creative planner prompt and switch the runtime, not the prompt quality.
 - Reduced creative prompt contracts are disallowed for promotion evidence; fix finish_reason=length by using the correct planner runtime.
+- Dry-run planning proof records the full-quality production planner path: koboldcpp/gemma-4-31B-it-Q4_K_M with 8192+ context, 3200 output tokens, 1200000ms timeout, and aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you planned.
 - Production planner files are installed but not yet evaluated in local production-text evidence: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Optional production planner pull queue remains: qwen3-14b-instruct.
 - Required customer terms still missing: Nina, birthday, aquarium, Uncle Ken, koi, encouragement.
@@ -36,6 +38,7 @@ Promotion ready: no
 | Comfy text composer | promotion-ready | comfy=yes node=yes | [open](../production-text-preflight-20260627-production-planner/production-text-preflight.json) |
 | Planner | promotion-ready | production-suitable koboldcpp/gemma-4-31B-it-Q4_K_M; context=8192; max=3200 | [open](../production-text-planner-preflight-20260627-production-planner/production-text-planner-preflight.json) |
 | Readiness | blocked | production planner reachable=yes; blockers=1 | [open](../production-text-readiness-20260627-production-planner/production-text-readiness.json) |
+| Dry run | planning-proof | 3 planned; production-suitable koboldcpp/gemma-4-31B-it-Q4_K_M; context=8192; max=3200 | [open](../production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json) |
 | Model coverage | action-needed | 9 recommended installed; unevaluated planners=gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash | [open](../local-model-coverage-20260627-current/local-model-coverage.json) |
 | Benchmark | blocked | 0/2 completed; failed=0; missing=Nina, birthday, aquarium, Uncle Ken, koi, encouragement | [open](../production-text-workflow-20260627-production-planner/production-text-workflow-summary.json) |
 | Manual grades | blocked | 0/0 generated graded; blocked=0; failed-before-image=0 | [open](../production-text-manual-grade-checklist-20260627-production-planner/production-text-manual-grade-checklist.json) |

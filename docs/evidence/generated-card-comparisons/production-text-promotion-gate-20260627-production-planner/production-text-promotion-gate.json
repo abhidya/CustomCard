@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T01:08:17.007Z",
+  "createdAtIso": "2026-06-27T01:42:43.914Z",
   "status": "blocked",
   "promotionReady": false,
   "advisory": true,
@@ -15,6 +15,7 @@
     "rerunPlan": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-production-planner/production-text-rerun-plan.json",
     "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner/production-text-planner-preflight.json",
     "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260627-production-planner/production-text-preflight.json",
+    "dryRun": "docs/evidence/generated-card-comparisons/production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json",
     "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-production-planner/production-text-manual-grade-checklist.json",
     "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
     "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json"
