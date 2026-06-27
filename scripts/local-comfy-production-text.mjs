@@ -266,7 +266,7 @@ function localComfyArtworkGuard({ panelId, lightInk, width, height }) {
       width: imageWidth,
       height: imageHeight,
       color: "#111715",
-      opacity: 0.94,
+      opacity: 1,
       radius: 0,
       style: "box"
     };
@@ -278,7 +278,7 @@ function localComfyArtworkGuard({ panelId, lightInk, width, height }) {
       width: Math.round(imageWidth * 0.84),
       height: Math.round(imageHeight * 0.64),
       color: lightInk ? "#111715" : "#fff6df",
-      opacity: 0.66,
+      opacity: lightInk ? 0.96 : 0.97,
       radius: Math.round(imageWidth * 0.045),
       style: "box"
     };
@@ -289,7 +289,7 @@ function localComfyArtworkGuard({ panelId, lightInk, width, height }) {
     width: Math.round(imageWidth * 0.82),
     height: Math.round(imageHeight * 0.72),
     color: "#fff6df",
-    opacity: 0.74,
+    opacity: 0.97,
     radius: Math.round(imageWidth * 0.055),
     style: "box"
   };

@@ -1,0 +1,23 @@
+{
+  "advisoryOnly": true,
+  "checks": {
+    "fourPanels": true,
+    "panelIds": [
+      "front",
+      "inside-left",
+      "inside-right",
+      "back"
+    ],
+    "providerCalls": 35,
+    "materializedImages": 4,
+    "allPanelsMaterialized": true,
+    "finalImagesRenderedByComfy": true,
+    "appOverlayBypassed": true,
+    "metadataIncludesExactCopy": true,
+    "metadataIncludesSafeBoxes": true,
+    "metadataIncludesSafeFieldBackgrounds": true,
+    "metadataIncludesSoftSafeFields": true,
+    "metadataIncludesArtworkGuards": true
+  },
+  "note": "Production text phase treats Comfy output as the final text-composited panel. Automated checks prove request metadata and image materialization, including soft text-hug safe-field and artwork-guard inputs; visual text quality still requires inspection."
+}
