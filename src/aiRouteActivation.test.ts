@@ -176,6 +176,27 @@ describe("AI route activation", () => {
     );
   });
 
+  it("re-reads server-scoped env JSON after the same env object changes", () => {
+    const env = {
+      HUGGINGFACE_API_TOKEN: "hf-token",
+      CUSTOMCARD_AI_FLOW_CONFIG_JSON: JSON.stringify([
+        { flowId: "card-copy", model: "Qwen/Qwen3-32B-Instruct" }
+      ])
+    };
+
+    const firstActivation = resolveAiRouteActivation("card-copy", { env });
+
+    env.CUSTOMCARD_AI_FLOW_CONFIG_JSON = JSON.stringify([
+      { flowId: "card-copy", model: "Qwen/Qwen3-235B-A22B-Instruct-2507" }
+    ]);
+
+    const secondContext = createAiRouteActivationContext({ env });
+    const secondActivation = resolveAiRouteActivation("card-copy", secondContext);
+
+    expect(firstActivation.model).toBe("Qwen/Qwen3-32B-Instruct");
+    expect(secondActivation.model).toBe("Qwen/Qwen3-235B-A22B-Instruct-2507");
+  });
+
   it("attaches control-plane route policy ids for card-copy and card-image", () => {
     const activations = resolveAiRouteActivations({
       env: {

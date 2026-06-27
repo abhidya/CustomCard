@@ -8,8 +8,6 @@ import {
 } from "./aiFlowConfigData.mjs";
 import { aiRoutePolicyIdsByFlowId } from "./aiRoutePolicyIds.mjs";
 
-const serverScopedAiFlowConfigCache = new WeakMap();
-
 export function createAiRouteActivationContext({
   env = process.env,
   body = {},
@@ -85,7 +83,6 @@ export function mergeAiFlowAdminConfigs(...groups) {
 
 export function serverScopedAiFlowConfig(env = process.env) {
   if (!env || typeof env !== "object") return [];
-  if (serverScopedAiFlowConfigCache.has(env)) return serverScopedAiFlowConfigCache.get(env);
 
   const raw = env.CUSTOMCARD_AI_FLOW_CONFIG_JSON ?? env.CUSTOMCARD_AI_FLOW_ADMIN_CONFIG_JSON ?? "";
   let parsedConfigs = [];
@@ -97,7 +94,6 @@ export function serverScopedAiFlowConfig(env = process.env) {
     }
   }
 
-  serverScopedAiFlowConfigCache.set(env, parsedConfigs);
   return parsedConfigs;
 }
 
