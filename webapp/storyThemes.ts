@@ -1,5 +1,27 @@
 import type { VisualStylePreset } from "../src/customerWorkflow";
 
+export type StoryPanelId = "front" | "inside-left" | "inside-right" | "back";
+
+export interface StoryProofPanelCopy {
+  headline: string;
+  body: string;
+}
+
+export interface StoryProofAssets {
+  front: string;
+  insideLeft: string;
+  insideRight: string;
+  back: string;
+  contactSheet: string;
+}
+
+export interface StoryThemeProof {
+  recipient: string;
+  sender: string;
+  panels: Record<StoryPanelId, StoryProofPanelCopy>;
+  assets: StoryProofAssets;
+}
+
 export interface StoryThemeCard {
   id: string;
   title: string;
@@ -15,6 +37,7 @@ export interface StoryThemeCard {
   templateLabel: string;
   templateDetail: string;
   styleId: VisualStylePreset;
+  proof: StoryThemeProof;
 }
 
 export const storyThemeCards: StoryThemeCard[] = [
@@ -32,7 +55,29 @@ export const storyThemeCards: StoryThemeCard[] = [
     tag: "private ritual",
     templateLabel: "Candle ritual",
     templateDetail: "Birthday built from the weird object they would recognize.",
-    styleId: "botanical"
+    styleId: "botanical",
+    proof: proofFor("birthday-candle-stub", {
+      recipient: "Nico",
+      sender: "Ari",
+      panels: {
+        front: {
+          headline: "For the last candle",
+          body: "Same crooked flame. Same table. Somehow, another year of us."
+        },
+        "inside-left": {
+          headline: "You made it a tradition.",
+          body: "By the fourth birthday, that candle was barely a candle. Everyone still looked for it because it meant the joke had survived another year."
+        },
+        "inside-right": {
+          headline: "Happy birthday, Nico.",
+          body: "I hope this year gives you more of the small ridiculous rituals that make a room feel like family."
+        },
+        back: {
+          headline: "Memory used",
+          body: "Half-melted candle stub, matchbox, cake-plate shadow."
+        }
+      }
+    })
   },
   {
     id: "airport-pickup-sign",
@@ -48,7 +93,29 @@ export const storyThemeCards: StoryThemeCard[] = [
     tag: "welcome back",
     templateLabel: "Pickup sign",
     templateDetail: "A reunion card with the homemade-sign detail front and center.",
-    styleId: "minimal"
+    styleId: "minimal",
+    proof: proofFor("airport-pickup-sign", {
+      recipient: "Sam",
+      sender: "Mina",
+      panels: {
+        front: {
+          headline: "Arrivals still know your name",
+          body: "A blank poster board, one marker cap, and somebody waiting anyway."
+        },
+        "inside-left": {
+          headline: "That sign was never fancy.",
+          body: "It was crooked, usually rushed, and impossible to miss. That was the whole promise: when you came through the doors, you did not have to search long."
+        },
+        "inside-right": {
+          headline: "Welcome home, Sam.",
+          body: "I hope the next stretch feels lighter because you know there are people who still show up at arrivals."
+        },
+        back: {
+          headline: "Memory used",
+          body: "Blank pickup sign, suitcase stickers, marker cap, terminal glow."
+        }
+      }
+    })
   },
   {
     id: "first-payroll-friday",
@@ -64,7 +131,29 @@ export const storyThemeCards: StoryThemeCard[] = [
     tag: "team milestone",
     templateLabel: "Payroll Friday",
     templateDetail: "B2B gratitude with the relief of a real operating milestone.",
-    styleId: "minimal"
+    styleId: "minimal",
+    proof: proofFor("first-payroll-friday", {
+      recipient: "The launch team",
+      sender: "Manny",
+      panels: {
+        front: {
+          headline: "Payroll cleared.",
+          body: "So did the part where we wondered if this could become real."
+        },
+        "inside-left": {
+          headline: "You stayed through the thin part.",
+          body: "The pizza was cold, the plant was half alive, and the envelope on the desk felt bigger than a milestone. It felt like trust becoming visible."
+        },
+        "inside-right": {
+          headline: "Thank you.",
+          body: "Not for believing in a pitch. For doing the work before there was proof that the work would hold."
+        },
+        back: {
+          headline: "Memory used",
+          body: "Blank payroll envelope, cold pizza edge, office plant, desk lamp."
+        }
+      }
+    })
   },
   {
     id: "trade-show-tape-booth",
@@ -80,7 +169,29 @@ export const storyThemeCards: StoryThemeCard[] = [
     tag: "event follow-up",
     templateLabel: "Tape booth",
     templateDetail: "A client follow-up about the booth that survived the chaos.",
-    styleId: "minimal"
+    styleId: "minimal",
+    proof: proofFor("trade-show-tape-booth", {
+      recipient: "Jordan",
+      sender: "CustomCard",
+      panels: {
+        front: {
+          headline: "The booth held.",
+          body: "Gaffer tape, folded plans, and the table everyone somehow found."
+        },
+        "inside-left": {
+          headline: "The polished part came later.",
+          body: "What people remembered first was the way your team kept solving the next problem without turning the whole day into a crisis."
+        },
+        "inside-right": {
+          headline: "Thanks for trusting us after the show.",
+          body: "We are glad the scrappy version became the start of a better conversation."
+        },
+        back: {
+          headline: "Memory used",
+          body: "Gaffer tape, folded floor plan, blank lanyards, sample tray."
+        }
+      }
+    })
   },
   {
     id: "night-class-bus-route",
@@ -96,7 +207,29 @@ export const storyThemeCards: StoryThemeCard[] = [
     tag: "earned path",
     templateLabel: "Night route",
     templateDetail: "Graduation framed around the commute and the work.",
-    styleId: "minimal"
+    styleId: "minimal",
+    proof: proofFor("night-class-bus-route", {
+      recipient: "Leah",
+      sender: "Kai",
+      panels: {
+        front: {
+          headline: "You took the long route.",
+          body: "Late bus. Worn backpack. Degree earned before anyone clapped."
+        },
+        "inside-left": {
+          headline: "The ceremony is the visible part.",
+          body: "The real proof was quieter: transfers in your pocket, pencil shavings on the table, and one more draft when sleep would have been easier."
+        },
+        "inside-right": {
+          headline: "Congratulations, Leah.",
+          body: "You did not just finish. You kept choosing the next mile until the path finally had your name on it."
+        },
+        back: {
+          headline: "Memory used",
+          body: "Blank bus transfer, route line, worn backpack, pencil shavings."
+        }
+      }
+    })
   },
   {
     id: "closing-floor-scratch",
@@ -112,7 +245,29 @@ export const storyThemeCards: StoryThemeCard[] = [
     tag: "new-home proof",
     templateLabel: "Floor scratch",
     templateDetail: "A new-home card about the imperfection that made it personal.",
-    styleId: "photo-note"
+    styleId: "photo-note",
+    proof: proofFor("closing-floor-scratch", {
+      recipient: "Ava and Jules",
+      sender: "Nora",
+      panels: {
+        front: {
+          headline: "The scratch stayed.",
+          body: "That was the first thing the house gave you."
+        },
+        "inside-left": {
+          headline: "It was not perfect.",
+          body: "The keys were new, the tape was still on the wall, and that tiny mark in the floor somehow made the place feel less like a listing."
+        },
+        "inside-right": {
+          headline: "Welcome home.",
+          body: "May the next marks be yours: chair legs, suitcase wheels, late dinners, ordinary mornings."
+        },
+        back: {
+          headline: "Memory used",
+          body: "Small floor scratch, house keys, painter tape, paint swatches."
+        }
+      }
+    })
   },
   {
     id: "nurse-extra-hair-ties",
@@ -128,7 +283,29 @@ export const storyThemeCards: StoryThemeCard[] = [
     tag: "practical care",
     templateLabel: "Extra hair ties",
     templateDetail: "A thank-you that notices the small rescue.",
-    styleId: "minimal"
+    styleId: "minimal",
+    proof: proofFor("nurse-extra-hair-ties", {
+      recipient: "Maya",
+      sender: "Priya",
+      panels: {
+        front: {
+          headline: "You had the thing.",
+          body: "Extra hair ties. Shift notes. Care that arrived before anyone asked."
+        },
+        "inside-left": {
+          headline: "You made hard rooms easier.",
+          body: "Not with speeches. With the spare pen, the calm answer, the tiny practical fix that kept somebody from coming undone."
+        },
+        "inside-right": {
+          headline: "Thank you, Maya.",
+          body: "For the kind of care that does not announce itself, but everyone remembers once they can breathe again."
+        },
+        back: {
+          headline: "Memory used",
+          body: "Scrub-green hair ties, blank badge reel, folded shift notes, pen cap."
+        }
+      }
+    })
   },
   {
     id: "faded-receipt-night",
@@ -144,7 +321,29 @@ export const storyThemeCards: StoryThemeCard[] = [
     tag: "ordinary evidence",
     templateLabel: "Faded receipt",
     templateDetail: "Anniversary without the usual romance props.",
-    styleId: "photo-note"
+    styleId: "photo-note",
+    proof: proofFor("faded-receipt-night", {
+      recipient: "Elena",
+      sender: "Marco",
+      panels: {
+        front: {
+          headline: "I kept the receipt.",
+          body: "Not because of the total. Because that was the night everything tilted."
+        },
+        "inside-left": {
+          headline: "Nothing looked historic.",
+          body: "A table ring. A plain matchbook. Two glasses catching the light. The receipt faded, but somehow the room did not."
+        },
+        "inside-right": {
+          headline: "Happy anniversary.",
+          body: "I still love that our story can hide inside something ordinary and become obvious only to us."
+        },
+        back: {
+          headline: "Memory used",
+          body: "Blank faded receipt, matchbook, two glass reflections, table ring."
+        }
+      }
+    })
   },
   {
     id: "off-menu-regular-order",
@@ -160,7 +359,29 @@ export const storyThemeCards: StoryThemeCard[] = [
     tag: "loyalty memory",
     templateLabel: "Off-menu order",
     templateDetail: "Customer appreciation that remembers the regular's ritual.",
-    styleId: "botanical"
+    styleId: "botanical",
+    proof: proofFor("off-menu-regular-order", {
+      recipient: "Dana",
+      sender: "The counter crew",
+      panels: {
+        front: {
+          headline: "We know the order.",
+          body: "Not because it is easy. Because it is yours."
+        },
+        "inside-left": {
+          headline: "The ticket never told the whole story.",
+          body: "Extra sauce, no rush, the same corner if it was open. Somewhere along the way, your impossible order became part of the place."
+        },
+        "inside-right": {
+          headline: "Thanks for being a regular.",
+          body: "You helped make the shop feel less like a counter and more like a ritual."
+        },
+        back: {
+          headline: "Memory used",
+          body: "Blank order ticket, dessert plate, napkin doodle, counter lamp."
+        }
+      }
+    })
   },
   {
     id: "project-war-room-wall",
@@ -176,7 +397,29 @@ export const storyThemeCards: StoryThemeCard[] = [
     tag: "client launch",
     templateLabel: "War-room wall",
     templateDetail: "A launch card that honors the work behind the go-live.",
-    styleId: "bold-type"
+    styleId: "bold-type",
+    proof: proofFor("project-war-room-wall", {
+      recipient: "Atlas Ops",
+      sender: "Manny",
+      panels: {
+        front: {
+          headline: "The wall became a launch.",
+          body: "Sticky notes, tape, marker caps, and one hard thing finally live."
+        },
+        "inside-left": {
+          headline: "The clean version hides the work.",
+          body: "Before the go-live screen, there was the wall: arrows moved twice, notes rewritten, the same problem circled until it finally opened."
+        },
+        "inside-right": {
+          headline: "Congratulations, Atlas Ops.",
+          body: "This launch has fingerprints on it in the best way. Thank you for building it with us."
+        },
+        back: {
+          headline: "Memory used",
+          body: "Blank sticky notes, colored tape, marker cap, flow-line shapes."
+        }
+      }
+    })
   }
 ];
 
@@ -199,4 +442,24 @@ function imageForStory(id: string): string {
   const story = storyThemeCards.find((candidate) => candidate.id === id);
   if (!story) throw new Error(`Missing story theme image for ${id}`);
   return story.imageUrl;
+}
+
+function proofFor(
+  id: string,
+  proof: Omit<StoryThemeProof, "assets">
+): StoryThemeProof {
+  return {
+    ...proof,
+    assets: {
+      front: storyProofAsset(id, "front"),
+      insideLeft: storyProofAsset(id, "inside-left"),
+      insideRight: storyProofAsset(id, "inside-right"),
+      back: storyProofAsset(id, "back"),
+      contactSheet: storyProofAsset(id, "contact-sheet")
+    }
+  };
+}
+
+function storyProofAsset(id: string, asset: StoryPanelId | "contact-sheet"): string {
+  return `/generated/story-proofs/${id}/${asset}.webp`;
 }

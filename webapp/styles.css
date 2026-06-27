@@ -219,7 +219,7 @@ a { color: inherit; }
 .themedot-gallery { background: linear-gradient(135deg, #ffffff 50%, #0071e3 50%); border: 1px solid #ddd; }
 
 /* ---------- Hero (home) ---------- */
-.hero { padding: 72px 0 18px; max-width: 720px; }
+.hero { padding: 50px 0 16px; max-width: 720px; }
 .eyebrow {
   display: inline-flex; align-items: center; gap: 8px;
   font-size: 12px; font-weight: 650; letter-spacing: 0.14em;
@@ -4367,11 +4367,11 @@ a { color: inherit; }
 .landingHeroVisual { display: grid; justify-items: center; gap: 16px; }
 .landingHeroStage {
   position: relative;
-  width: min(510px, 100%);
-  min-height: 470px;
+  width: min(490px, 100%);
+  min-height: 430px;
   display: grid;
   place-items: center;
-  padding: 34px 24px 74px;
+  padding: 26px 24px 56px;
   isolation: isolate;
 }
 .heroRack {
@@ -4442,7 +4442,7 @@ a { color: inherit; }
 .heroMorphCard {
   position: relative;
   z-index: 2;
-  width: min(300px, 70%);
+  width: min(282px, 68%);
   aspect-ratio: 5 / 7;
   overflow: hidden;
   border: 9px solid var(--surface);
@@ -4481,61 +4481,39 @@ a { color: inherit; }
   filter: none;
   transform: scale(1) rotate(0deg);
 }
-.heroProofCopy {
-  position: absolute;
-  inset: 22% 12% auto;
-  z-index: 4;
-  display: grid;
-  align-items: center;
-  box-sizing: border-box;
-  min-height: 150px;
-  padding: 14px 12px;
-  border: 1px solid #ffffffb8;
-  border-radius: 16px;
-  background:
-    linear-gradient(145deg, #fff8e9e8, #f4ecdccc),
-    radial-gradient(circle at 15% 0, #ffffffc9, transparent 48%);
-  box-shadow: 0 18px 44px -30px #121b1680;
-  backdrop-filter: blur(8px);
-  pointer-events: none;
-  text-align: center;
-}
-.heroProofCopy span {
-  display: grid;
-  align-content: center;
-  gap: 10px;
-  color: #15231b;
-  animation: heroProofEnter 520ms var(--ease);
-}
-.heroProofCopy b {
-  color: #0f1d16;
-  font-family: var(--font-display);
-  font-size: clamp(24px, 3vw, 40px);
-  font-weight: 860;
-  line-height: 0.98;
-  overflow-wrap: anywhere;
-}
-.heroProofCopy small {
-  justify-self: center;
-  max-width: 20ch;
-  color: #335143;
-  font-size: 12px;
-  font-weight: 760;
-  line-height: 1.25;
-  text-transform: uppercase;
-}
-.heroMorphRail {
+.heroMorphControls {
   position: absolute;
   left: 50%;
   bottom: 10px;
   z-index: 3;
   display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 9px;
   width: auto;
   transform: translateX(-50%);
 }
-.heroMorphRail span {
+.heroMorphArrow {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #ffffffd0;
+  border-radius: 999px;
+  background: #fffffff0;
+  color: var(--ink);
+  box-shadow: 0 12px 28px -20px #121b1690;
+}
+.heroMorphArrow:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.heroMorphRail {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+}
+.heroMorphRail button {
   width: 7px;
   height: 7px;
   min-height: 0;
@@ -4550,30 +4528,25 @@ a { color: inherit; }
     opacity 180ms ease,
     background-color 180ms ease;
 }
-.heroMorphRail span[data-active="true"] {
+.heroMorphRail button[data-active="true"] {
   width: 24px;
   background: #0f172a;
   opacity: 1;
 }
-@keyframes heroProofEnter {
-  from {
-    opacity: 1;
-    transform: translateY(8px) scale(0.985);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
 @media (prefers-reduced-motion: reduce) {
   .heroMorphImage,
-  .heroProofCopy span,
-  .heroMorphRail span {
+  .heroMorphRail button {
     animation: none;
     transition: none;
   }
 }
-.landingHeroCaption { font-size: 12.5px; color: var(--ink-faint); }
+.landingHeroCaption {
+  max-width: min(420px, 100%);
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  text-align: center;
+}
+.landingHeroCaption strong { color: var(--ink-soft); font-weight: 820; }
 .occasionsLead { margin: 26px 0 10px; font-size: 15px; color: var(--ink-soft); }
 
 .inventoryStrip {
@@ -4733,7 +4706,7 @@ a { color: inherit; }
 }
 .themeInventoryCard {
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
+  grid-template-columns: 142px minmax(0, 1fr);
   gap: 14px;
   align-items: stretch;
   min-width: 0;
@@ -4754,12 +4727,30 @@ a { color: inherit; }
   border-color: var(--accent);
   box-shadow: var(--shadow-pop);
 }
-.themeInventoryCard img {
-  width: 88px;
-  aspect-ratio: 5 / 7;
+.themeInventoryPreview {
+  position: relative;
+  display: block;
+  min-height: 136px;
+}
+.themeInventoryContactSheet {
+  display: block;
+  width: 142px;
+  aspect-ratio: 10 / 7;
   object-fit: cover;
   border-radius: var(--radius-s);
   box-shadow: 0 10px 24px -18px #121b1690;
+}
+.themeInventoryFront {
+  position: absolute;
+  right: 7px;
+  bottom: -8px;
+  width: 54px;
+  aspect-ratio: 5 / 7;
+  object-fit: cover;
+  border: 3px solid var(--surface);
+  border-radius: 8px;
+  box-shadow: 0 12px 26px -18px #121b1690;
+  transform: rotate(4deg);
 }
 .themeInventoryCardBody {
   display: grid;
@@ -5071,29 +5062,13 @@ a { color: inherit; }
     border-width: 6px;
     border-radius: var(--radius);
   }
-  .heroProofCopy {
-    inset: 20% 10% auto;
-    min-height: 84px;
-  }
-  .heroProofCopy span {
-    gap: 5px;
-  }
-  .heroProofCopy b {
-    font-size: 17px;
-    line-height: 1;
-  }
-  .heroProofCopy small {
-    max-width: 16ch;
-    font-size: 8.5px;
-    line-height: 1.15;
-  }
   .heroStack {
     inset: 11% 0 17%;
   }
   .heroStackCard {
     border-width: 3px;
   }
-  .heroMorphRail {
+  .heroMorphControls {
     display: none;
   }
   .landingHeroCaption {
@@ -5123,7 +5098,14 @@ a { color: inherit; }
     grid-template-columns: 1fr;
   }
   .themeInventoryCard {
+    grid-template-columns: 118px minmax(0, 1fr);
     min-height: 116px;
+  }
+  .themeInventoryContactSheet {
+    width: 118px;
+  }
+  .themeInventoryFront {
+    width: 46px;
   }
   .pathchooser {
     margin-top: 14px;
@@ -5172,7 +5154,7 @@ a { color: inherit; }
   }
   .heroStack,
   .heroRack,
-  .heroMorphRail {
+  .heroMorphControls {
     display: none;
   }
   .heroMorphCard {

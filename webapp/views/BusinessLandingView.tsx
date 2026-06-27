@@ -77,8 +77,8 @@ const moments = businessMomentIds.flatMap((id) => {
     ? [
         {
           label: story.title,
-          img: story.imageUrl,
-          alt: `${story.title} card study: ${story.memoryObject}.`,
+          img: story.proof.assets.front,
+          alt: `${story.title} finished card front: ${story.proof.panels.front.headline}.`,
           detail: story.relationship
         }
       ]

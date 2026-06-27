@@ -343,7 +343,8 @@ describe("customer shell server render", () => {
       for (const label of ["Birthday", "Anniversary", "Wedding", "Thank you", "Graduation", "Sympathy"]) {
         expect(text).toContain(label);
       }
-      expect(text).toContain("What a great custom card starts with");
+      expect(text).toContain("What a finished custom card starts with");
+      expect(text).toContain("Finished four-panel proof");
       // Landing sections explain the product and the print-shop payment boundary.
       expect(text).toContain("How it works");
       expect(text).toContain("Pick a moment");

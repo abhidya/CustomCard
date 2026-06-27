@@ -92,13 +92,17 @@ const themeInventoryCards: StoryThemeCard[] = storyThemeCards;
 
 const heroMorphCards = themeInventoryCards.map((card) => ({
   label: card.title,
-  imageUrl: card.imageUrl,
-  proofLine: card.memoryObject.split(",")[0]
+  frontImageUrl: card.proof.assets.front,
+  insideLeftImageUrl: card.proof.assets.insideLeft,
+  insideRightImageUrl: card.proof.assets.insideRight,
+  backImageUrl: card.proof.assets.back,
+  contactSheetUrl: card.proof.assets.contactSheet,
+  proofLine: card.proof.panels.front.body
 }));
 
 const heroRackCards = themeInventoryCards.map((card) => ({
   label: card.title,
-  imageUrl: card.imageUrl
+  imageUrl: card.proof.assets.front
 }));
 
 export function HomeView({
@@ -144,6 +148,9 @@ export function HomeView({
   }, []);
 
   const activeHeroCard = heroMorphCards[heroStoryIndex] ?? heroMorphCards[0];
+  const setHeroRelative = (offset: number) => {
+    setHeroStoryIndex((current) => (current + offset + heroMorphCards.length) % heroMorphCards.length);
+  };
 
   return (
     <>
@@ -175,9 +182,8 @@ export function HomeView({
           </p>
         </div>
         <div
-          aria-label="Custom art card studies morphing between relationship-specific ideas"
+          aria-label="Finished CustomCard proof examples morphing between relationship-specific ideas"
           className="landingHeroVisual"
-          role="img"
         >
           <div className="landingHeroStage">
             <div className="heroRack" aria-hidden="true">
@@ -193,14 +199,18 @@ export function HomeView({
               ))}
             </div>
             <div className="heroStack" aria-hidden="true">
-              {heroMorphCards.slice(1, 4).map((card, index) => (
+              {[
+                { label: "Inside left", src: activeHeroCard.insideLeftImageUrl },
+                { label: "Inside right", src: activeHeroCard.insideRightImageUrl },
+                { label: "Back", src: activeHeroCard.backImageUrl }
+              ].map((panel, index) => (
                 <img
                   alt=""
                   className={`heroStackCard heroStackCard-${index + 1}`}
                   decoding="async"
-                  key={card.label}
+                  key={`${activeHeroCard.label}-${panel.label}`}
                   loading="lazy"
-                  src={card.imageUrl}
+                  src={panel.src}
                 />
               ))}
             </div>
@@ -212,32 +222,43 @@ export function HomeView({
                   decoding="async"
                   data-active={index === heroStoryIndex ? "true" : "false"}
                   key={card.label}
-                  src={card.imageUrl}
+                  src={card.frontImageUrl}
                 />
               ))}
-              <div className="heroProofCopy">
-                <span key={`proof-${activeHeroCard.label}`}>
-                  <b>{activeHeroCard.label}</b>
-                  {" "}
-                  <small>{activeHeroCard.proofLine}</small>
-                </span>
-              </div>
             </div>
-            <div className="heroMorphRail" aria-hidden="true">
-              {heroMorphCards.map((card, index) => (
-                <span data-active={index === heroStoryIndex ? "true" : "false"} key={card.label} />
-              ))}
+            <div className="heroMorphControls" aria-label="Choose featured proof" role="group">
+              <button aria-label="Previous proof" className="heroMorphArrow" onClick={() => setHeroRelative(-1)} type="button">
+                <ChevronLeft size={16} />
+              </button>
+              <div className="heroMorphRail">
+                {heroMorphCards.map((card, index) => (
+                  <button
+                    aria-label={`Show ${card.label}`}
+                    aria-pressed={index === heroStoryIndex}
+                    data-active={index === heroStoryIndex ? "true" : "false"}
+                    key={card.label}
+                    onClick={() => setHeroStoryIndex(index)}
+                    title={card.label}
+                    type="button"
+                  />
+                ))}
+              </div>
+              <button aria-label="Next proof" className="heroMorphArrow" onClick={() => setHeroRelative(1)} type="button">
+                <ChevronRight size={16} />
+              </button>
             </div>
           </div>
-          <span className="landingHeroCaption">Generated card studies briefed around real details, ready for exact app text</span>
+          <span className="landingHeroCaption">
+            Finished four-panel proof: <strong>{activeHeroCard.label}</strong>
+          </span>
         </div>
       </section>
 
       <section className="inventoryStrip reveal reveal-1" aria-label="Custom art card contract examples">
         <div className="inventoryStripHead">
           <span>Art-card contract</span>
-          <strong>{themeInventoryCards.length} story studies</strong>
-          <small>Relationship, remembered object, emotional truth, art move, and forbidden cliches.</small>
+          <strong>{themeInventoryCards.length} proof sets</strong>
+          <small>Front, inside-left, inside-right, and back panels generated from a real story contract.</small>
         </div>
         <div className="inventoryRail" aria-label="Browse story-led card studies">
           {themeInventoryCards.slice(0, 18).map((card) => (
@@ -247,7 +268,7 @@ export function HomeView({
               onClick={() => onOccasion(card.category)}
               type="button"
             >
-              <img alt="" decoding="async" loading="lazy" src={card.imageUrl} />
+              <img alt="" decoding="async" loading="lazy" src={card.proof.assets.front} />
               <span>
                 <strong>{card.title}</strong>
                 <small>{card.tag}</small>
@@ -346,15 +367,15 @@ export function HomeView({
       <section className="examples reveal reveal-3" aria-label="Example cards" id="examples">
         <div className="examplesHead">
           <div>
-            <h2>What a great custom card starts with</h2>
+            <h2>What a finished custom card starts with</h2>
             <p className="examplesLead">
-              Not templates in costumes. Each study starts with one remembered detail, one emotional job, and a list
-              of cliches the card is not allowed to use.
+              Not templates in costumes. Each proof set starts with one remembered detail, then carries it across
+              front, inside-left, inside-right, and back panels.
             </p>
           </div>
           <div className="examplesScore" aria-hidden="true">
             <strong>{themeInventoryCards.length}</strong>
-            <span>studies</span>
+            <span>proof sets</span>
           </div>
         </div>
         {featuredCategories.length > 0 ? (
@@ -371,7 +392,7 @@ export function HomeView({
             </div>
           </>
         ) : (
-          <p className="examplesLead">Shared customer cards will appear here after review; these story-led studies are ready now.</p>
+          <p className="examplesLead">Shared customer cards will appear here after review; these story-led proof sets are ready now.</p>
         )}
         <ThemeInventoryGrid onOccasion={onOccasion} />
       </section>
@@ -414,7 +435,22 @@ function ThemeInventoryGrid({ onOccasion }: { onOccasion: (occasion: string) => 
           onClick={() => onOccasion(card.category)}
           type="button"
         >
-          <img alt="" decoding="async" loading="lazy" src={card.imageUrl} />
+          <span className="themeInventoryPreview">
+            <img
+              alt=""
+              className="themeInventoryContactSheet"
+              decoding="async"
+              loading="lazy"
+              src={card.proof.assets.contactSheet}
+            />
+            <img
+              alt=""
+              className="themeInventoryFront"
+              decoding="async"
+              loading="lazy"
+              src={card.proof.assets.front}
+            />
+          </span>
           <span className="themeInventoryCardBody">
             <span className="themeInventoryTag">{card.tag}</span>
             <strong>{card.title}</strong>

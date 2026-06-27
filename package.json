@@ -43,6 +43,7 @@
     "persistence:doctor": "node scripts/persistence-doctor.mjs",
     "deployment:doctor": "node scripts/deployment-readiness.mjs",
     "website:asset:doctor": "node scripts/website-asset-reference-doctor.mjs",
+    "website:proof-assets": "node scripts/generate-story-proof-assets.mjs",
     "demo:doctor": "node scripts/demo-reset.mjs",
     "localization:doctor": "node scripts/localization-doctor.mjs",
     "security:doctor": "node scripts/security-privacy-accessibility-doctor.mjs",

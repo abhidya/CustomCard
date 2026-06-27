@@ -1,0 +1,308 @@
+{
+  "service": "customcard-story-proof-assets",
+  "status": "generated",
+  "storyCount": 10,
+  "panelCount": 50,
+  "results": [
+    {
+      "storyId": "birthday-candle-stub",
+      "panelId": "front",
+      "outputPath": "public/generated/story-proofs/birthday-candle-stub/front.webp",
+      "bytes": 133962
+    },
+    {
+      "storyId": "birthday-candle-stub",
+      "panelId": "inside-left",
+      "outputPath": "public/generated/story-proofs/birthday-candle-stub/inside-left.webp",
+      "bytes": 49624
+    },
+    {
+      "storyId": "birthday-candle-stub",
+      "panelId": "inside-right",
+      "outputPath": "public/generated/story-proofs/birthday-candle-stub/inside-right.webp",
+      "bytes": 45380
+    },
+    {
+      "storyId": "birthday-candle-stub",
+      "panelId": "back",
+      "outputPath": "public/generated/story-proofs/birthday-candle-stub/back.webp",
+      "bytes": 20450
+    },
+    {
+      "storyId": "birthday-candle-stub",
+      "panelId": "contact-sheet",
+      "outputPath": "public/generated/story-proofs/birthday-candle-stub/contact-sheet.webp",
+      "bytes": 63956
+    },
+    {
+      "storyId": "airport-pickup-sign",
+      "panelId": "front",
+      "outputPath": "public/generated/story-proofs/airport-pickup-sign/front.webp",
+      "bytes": 86248
+    },
+    {
+      "storyId": "airport-pickup-sign",
+      "panelId": "inside-left",
+      "outputPath": "public/generated/story-proofs/airport-pickup-sign/inside-left.webp",
+      "bytes": 42146
+    },
+    {
+      "storyId": "airport-pickup-sign",
+      "panelId": "inside-right",
+      "outputPath": "public/generated/story-proofs/airport-pickup-sign/inside-right.webp",
+      "bytes": 38030
+    },
+    {
+      "storyId": "airport-pickup-sign",
+      "panelId": "back",
+      "outputPath": "public/generated/story-proofs/airport-pickup-sign/back.webp",
+      "bytes": 22422
+    },
+    {
+      "storyId": "airport-pickup-sign",
+      "panelId": "contact-sheet",
+      "outputPath": "public/generated/story-proofs/airport-pickup-sign/contact-sheet.webp",
+      "bytes": 62356
+    },
+    {
+      "storyId": "first-payroll-friday",
+      "panelId": "front",
+      "outputPath": "public/generated/story-proofs/first-payroll-friday/front.webp",
+      "bytes": 83118
+    },
+    {
+      "storyId": "first-payroll-friday",
+      "panelId": "inside-left",
+      "outputPath": "public/generated/story-proofs/first-payroll-friday/inside-left.webp",
+      "bytes": 43140
+    },
+    {
+      "storyId": "first-payroll-friday",
+      "panelId": "inside-right",
+      "outputPath": "public/generated/story-proofs/first-payroll-friday/inside-right.webp",
+      "bytes": 39046
+    },
+    {
+      "storyId": "first-payroll-friday",
+      "panelId": "back",
+      "outputPath": "public/generated/story-proofs/first-payroll-friday/back.webp",
+      "bytes": 20996
+    },
+    {
+      "storyId": "first-payroll-friday",
+      "panelId": "contact-sheet",
+      "outputPath": "public/generated/story-proofs/first-payroll-friday/contact-sheet.webp",
+      "bytes": 57342
+    },
+    {
+      "storyId": "trade-show-tape-booth",
+      "panelId": "front",
+      "outputPath": "public/generated/story-proofs/trade-show-tape-booth/front.webp",
+      "bytes": 178274
+    },
+    {
+      "storyId": "trade-show-tape-booth",
+      "panelId": "inside-left",
+      "outputPath": "public/generated/story-proofs/trade-show-tape-booth/inside-left.webp",
+      "bytes": 59048
+    },
+    {
+      "storyId": "trade-show-tape-booth",
+      "panelId": "inside-right",
+      "outputPath": "public/generated/story-proofs/trade-show-tape-booth/inside-right.webp",
+      "bytes": 55726
+    },
+    {
+      "storyId": "trade-show-tape-booth",
+      "panelId": "back",
+      "outputPath": "public/generated/story-proofs/trade-show-tape-booth/back.webp",
+      "bytes": 28326
+    },
+    {
+      "storyId": "trade-show-tape-booth",
+      "panelId": "contact-sheet",
+      "outputPath": "public/generated/story-proofs/trade-show-tape-booth/contact-sheet.webp",
+      "bytes": 85378
+    },
+    {
+      "storyId": "night-class-bus-route",
+      "panelId": "front",
+      "outputPath": "public/generated/story-proofs/night-class-bus-route/front.webp",
+      "bytes": 150900
+    },
+    {
+      "storyId": "night-class-bus-route",
+      "panelId": "inside-left",
+      "outputPath": "public/generated/story-proofs/night-class-bus-route/inside-left.webp",
+      "bytes": 64404
+    },
+    {
+      "storyId": "night-class-bus-route",
+      "panelId": "inside-right",
+      "outputPath": "public/generated/story-proofs/night-class-bus-route/inside-right.webp",
+      "bytes": 57626
+    },
+    {
+      "storyId": "night-class-bus-route",
+      "panelId": "back",
+      "outputPath": "public/generated/story-proofs/night-class-bus-route/back.webp",
+      "bytes": 24622
+    },
+    {
+      "storyId": "night-class-bus-route",
+      "panelId": "contact-sheet",
+      "outputPath": "public/generated/story-proofs/night-class-bus-route/contact-sheet.webp",
+      "bytes": 77410
+    },
+    {
+      "storyId": "closing-floor-scratch",
+      "panelId": "front",
+      "outputPath": "public/generated/story-proofs/closing-floor-scratch/front.webp",
+      "bytes": 97990
+    },
+    {
+      "storyId": "closing-floor-scratch",
+      "panelId": "inside-left",
+      "outputPath": "public/generated/story-proofs/closing-floor-scratch/inside-left.webp",
+      "bytes": 65714
+    },
+    {
+      "storyId": "closing-floor-scratch",
+      "panelId": "inside-right",
+      "outputPath": "public/generated/story-proofs/closing-floor-scratch/inside-right.webp",
+      "bytes": 61044
+    },
+    {
+      "storyId": "closing-floor-scratch",
+      "panelId": "back",
+      "outputPath": "public/generated/story-proofs/closing-floor-scratch/back.webp",
+      "bytes": 24684
+    },
+    {
+      "storyId": "closing-floor-scratch",
+      "panelId": "contact-sheet",
+      "outputPath": "public/generated/story-proofs/closing-floor-scratch/contact-sheet.webp",
+      "bytes": 76066
+    },
+    {
+      "storyId": "nurse-extra-hair-ties",
+      "panelId": "front",
+      "outputPath": "public/generated/story-proofs/nurse-extra-hair-ties/front.webp",
+      "bytes": 75878
+    },
+    {
+      "storyId": "nurse-extra-hair-ties",
+      "panelId": "inside-left",
+      "outputPath": "public/generated/story-proofs/nurse-extra-hair-ties/inside-left.webp",
+      "bytes": 36836
+    },
+    {
+      "storyId": "nurse-extra-hair-ties",
+      "panelId": "inside-right",
+      "outputPath": "public/generated/story-proofs/nurse-extra-hair-ties/inside-right.webp",
+      "bytes": 35312
+    },
+    {
+      "storyId": "nurse-extra-hair-ties",
+      "panelId": "back",
+      "outputPath": "public/generated/story-proofs/nurse-extra-hair-ties/back.webp",
+      "bytes": 21916
+    },
+    {
+      "storyId": "nurse-extra-hair-ties",
+      "panelId": "contact-sheet",
+      "outputPath": "public/generated/story-proofs/nurse-extra-hair-ties/contact-sheet.webp",
+      "bytes": 62830
+    },
+    {
+      "storyId": "faded-receipt-night",
+      "panelId": "front",
+      "outputPath": "public/generated/story-proofs/faded-receipt-night/front.webp",
+      "bytes": 67946
+    },
+    {
+      "storyId": "faded-receipt-night",
+      "panelId": "inside-left",
+      "outputPath": "public/generated/story-proofs/faded-receipt-night/inside-left.webp",
+      "bytes": 34866
+    },
+    {
+      "storyId": "faded-receipt-night",
+      "panelId": "inside-right",
+      "outputPath": "public/generated/story-proofs/faded-receipt-night/inside-right.webp",
+      "bytes": 33428
+    },
+    {
+      "storyId": "faded-receipt-night",
+      "panelId": "back",
+      "outputPath": "public/generated/story-proofs/faded-receipt-night/back.webp",
+      "bytes": 20810
+    },
+    {
+      "storyId": "faded-receipt-night",
+      "panelId": "contact-sheet",
+      "outputPath": "public/generated/story-proofs/faded-receipt-night/contact-sheet.webp",
+      "bytes": 64294
+    },
+    {
+      "storyId": "off-menu-regular-order",
+      "panelId": "front",
+      "outputPath": "public/generated/story-proofs/off-menu-regular-order/front.webp",
+      "bytes": 103246
+    },
+    {
+      "storyId": "off-menu-regular-order",
+      "panelId": "inside-left",
+      "outputPath": "public/generated/story-proofs/off-menu-regular-order/inside-left.webp",
+      "bytes": 43520
+    },
+    {
+      "storyId": "off-menu-regular-order",
+      "panelId": "inside-right",
+      "outputPath": "public/generated/story-proofs/off-menu-regular-order/inside-right.webp",
+      "bytes": 34524
+    },
+    {
+      "storyId": "off-menu-regular-order",
+      "panelId": "back",
+      "outputPath": "public/generated/story-proofs/off-menu-regular-order/back.webp",
+      "bytes": 24114
+    },
+    {
+      "storyId": "off-menu-regular-order",
+      "panelId": "contact-sheet",
+      "outputPath": "public/generated/story-proofs/off-menu-regular-order/contact-sheet.webp",
+      "bytes": 71318
+    },
+    {
+      "storyId": "project-war-room-wall",
+      "panelId": "front",
+      "outputPath": "public/generated/story-proofs/project-war-room-wall/front.webp",
+      "bytes": 96492
+    },
+    {
+      "storyId": "project-war-room-wall",
+      "panelId": "inside-left",
+      "outputPath": "public/generated/story-proofs/project-war-room-wall/inside-left.webp",
+      "bytes": 41356
+    },
+    {
+      "storyId": "project-war-room-wall",
+      "panelId": "inside-right",
+      "outputPath": "public/generated/story-proofs/project-war-room-wall/inside-right.webp",
+      "bytes": 34352
+    },
+    {
+      "storyId": "project-war-room-wall",
+      "panelId": "back",
+      "outputPath": "public/generated/story-proofs/project-war-room-wall/back.webp",
+      "bytes": 22550
+    },
+    {
+      "storyId": "project-war-room-wall",
+      "panelId": "contact-sheet",
+      "outputPath": "public/generated/story-proofs/project-war-room-wall/contact-sheet.webp",
+      "bytes": 62672
+    }
+  ]
+}

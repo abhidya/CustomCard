@@ -15,6 +15,13 @@ for (const file of files) {
   }
 }
 
+const storyThemesSource = readFileSync("webapp/storyThemes.ts", "utf8");
+for (const match of storyThemesSource.matchAll(/(?:^|\n)\s*id:\s*"([^"]+)"/g)) {
+  for (const asset of ["front", "inside-left", "inside-right", "back", "contact-sheet"]) {
+    references.add(`/generated/story-proofs/${match[1]}/${asset}.webp`);
+  }
+}
+
 const missing = [...references]
   .map((url) => ({ url, path: `public${url}` }))
   .filter((item) => !existsSync(item.path));
