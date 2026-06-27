@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T03:27:34.719Z",
+  "createdAtIso": "2026-06-27T03:32:44.787Z",
   "status": "blocked",
   "promotionReady": false,
   "evidenceRoot": "docs/evidence/generated-card-comparisons",
@@ -61,23 +61,19 @@
   "rerunPlans": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-production-planner/production-text-rerun-plan.json",
-      "createdAtIso": "2026-06-27T02:58:27.354Z",
+      "createdAtIso": "2026-06-27T03:32:21.927Z",
       "status": "rerun-required",
       "promotionReady": false,
       "failedRequirements": [
-        "live ComfyUI proof is current",
-        "planner preflight is production-ready",
-        "readiness doctor is promotion-ready",
-        "production-suitable planner endpoint is reachable",
-        "no small smoke planner is active or used",
         "LLM-planned customer request matrix completed",
+        "final images came from Comfy text composer",
         "planner preserved required terms and avoided forbidden terms",
         "manual grade checklist is promotion-ready",
         "manual aggregate is promotion-ready"
       ],
       "commandCount": 10,
-      "plannerModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
-      "plannerClassification": "smoke-only",
+      "plannerModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
+      "plannerClassification": "production-suitable",
       "nextBenchmarkOutput": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner"
     },
     {

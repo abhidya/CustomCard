@@ -1,18 +1,14 @@
 # Production Text Rerun Plan
 
-Created: 2026-06-27T02:58:27.354Z
+Created: 2026-06-27T03:32:21.927Z
 Status: rerun-required
-Gate: docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current/production-text-promotion-gate.json
-Evidence index: docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current/production-text-evidence-index.json
+Gate: docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-production-planner/production-text-promotion-gate.json
+Evidence index: docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner/production-text-evidence-index.json
 
 ## Current Blockers
 
-- live ComfyUI proof is current
-- planner preflight is production-ready
-- readiness doctor is promotion-ready
-- production-suitable planner endpoint is reachable
-- no small smoke planner is active or used
 - LLM-planned customer request matrix completed
+- final images came from Comfy text composer
 - planner preserved required terms and avoided forbidden terms
 - manual grade checklist is promotion-ready
 - manual aggregate is promotion-ready
@@ -36,7 +32,7 @@ Do not use for promotion:
 
 ## Local Model Coverage
 
-- Coverage report: docs/evidence/generated-card-comparisons/local-model-coverage-20260626-current/local-model-coverage.json
+- Coverage report: docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current/local-model-coverage.json
 - Installed production planners: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash
 - Installed but not evaluated: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash
 - Missing production planner fallbacks: qwen3-14b-instruct
@@ -81,7 +77,7 @@ Confirms Comfy, the custom text node, aggregate state, model inventory, and the 
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5013/v1 -LocalLlmModel koboldcpp/gemma-4-31B-it-Q4_K_M -OutputDir docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 3200 -PlannerContextSize 8192 -PlannerRequestTimeoutMs 1200000 -PlannerGpuId 0 -PlannerGpuLayers 999
 ```
 
-Runs aquarium/koi/dog customer requests through the production Comfy text workflow with LLM-owned theme/copy/layout.
+Runs aquarium/koi/dog customer requests through the production Comfy text workflow with LLM-owned theme/copy/layout; when the dedicated local planner port is missing, the wrapper starts the configured GPU-backed planner before the live run.
 
 ### 6. Manually grade every run
 
@@ -126,11 +122,13 @@ Shows whether every production-text requirement now passes. Remove --advisory on
 ## Acceptance Checks
 
 - planner preflight is production-ready
+- planner preflight matches benchmark runtime
 - live ComfyUI proof is current
 - readiness doctor is promotion-ready
 - production-suitable planner endpoint is reachable
 - no small smoke planner is active or used
 - LLM-planned customer request matrix completed
+- final images came from Comfy text composer
 - planner preserved required terms and avoided forbidden terms
 - manual grade checklist is promotion-ready
 - manual aggregate is promotion-ready

@@ -200,9 +200,20 @@ $ResolvedLocalLlmBaseUrl = Get-FirstUsableEnvValue @(
   "KOBOLDCPP_BASE_URL"
 )
 $HasLocalLlm = Test-UsableEnvValue $ResolvedLocalLlmBaseUrl
+$RequestedLocalPlannerUri = if ($HasLocalLlm) { Get-EndpointUri $ResolvedLocalLlmBaseUrl } else { $null }
+$RequestedDedicatedPlannerMissing = $HasLocalLlm -and
+  -not $DryRun -and
+  -not $NoAutoStartPlanner -and
+  -not $AllowCompositorFixtureFallback -and
+  (Test-LocalEndpoint $RequestedLocalPlannerUri) -and
+  $RequestedLocalPlannerUri.Port -eq $PlannerPort -and
+  @(Get-LocalKoboldPlannerProcess $PlannerPort).Count -eq 0
 
-if (-not $HasLocalLlm -and -not $AllowCompositorFixtureFallback -and -not $NoAutoStartPlanner) {
+if (((-not $HasLocalLlm) -or $RequestedDedicatedPlannerMissing) -and -not $DryRun -and -not $AllowCompositorFixtureFallback -and -not $NoAutoStartPlanner) {
   if ((Test-Path -LiteralPath $StartPlannerScript) -and (Test-Path -LiteralPath $ProductionPlannerModelPath)) {
+    if ($RequestedDedicatedPlannerMissing) {
+      Write-Host "Local LLM planner: $ResolvedLocalLlmBaseUrl is configured but no KoboldCPP listener was found on port $PlannerPort; auto-starting the configured production planner."
+    }
     Write-Host "Local LLM planner: auto-starting production planner $ProductionPlannerModelPath on port $PlannerPort"
     & powershell -NoProfile -ExecutionPolicy Bypass -File $StartPlannerScript `
       -ModelPath $ProductionPlannerModelPath `

@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T03:27:42.081Z",
+  "createdAtIso": "2026-06-27T03:32:58.656Z",
   "status": "blocked",
   "promotionReady": false,
   "reportDir": "docs/evidence/generated-card-comparisons/production-text-research-rollup-20260627-production-planner",
@@ -413,7 +413,7 @@
       "requiredLocalGpu": {
         "gpuId": 0,
         "gpuLayers": 999,
-        "note": "Local KoboldCPP production planner commands must use CUDA/Vulkan/HIP with nonzero GPU offload. GpuLayers 999 requests full GPU offload and lets KoboldCPP cap at what the runtime can use."
+        "note": "Local KoboldCPP production planner commands must use CUDA/Vulkan/HIP with nonzero GPU offload. GpuLayers 999 requests full GPU offload and lets KoboldCPP cap at what the runtime can use. The benchmark wrapper auto-starts the configured local production planner when the dedicated planner port is requested but no KoboldCPP process is listening there."
       },
       "recommendedModels": [
         "koboldcpp/gemma-4-31B-it-Q4_K_M",
@@ -430,11 +430,11 @@
       ]
     },
     "currentEvidence": {
-      "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current/production-text-planner-preflight.json",
-      "plannerClassification": "smoke-only",
-      "plannerModel": "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
-      "plannerContextTokens": 4096,
-      "localModelCoverage": "docs/evidence/generated-card-comparisons/local-model-coverage-20260626-current/local-model-coverage.json",
+      "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627T021918Z/production-text-planner-preflight.json",
+      "plannerClassification": "production-suitable",
+      "plannerModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
+      "plannerContextTokens": 8192,
+      "localModelCoverage": "docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current/local-model-coverage.json",
       "installedProductionPlanners": [
         "gemma-4-31b-it",
         "magistral-small-2509",
@@ -448,7 +448,7 @@
       "missingProductionPlanners": [
         "qwen3-14b-instruct"
       ],
-      "latestBenchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260626-llm-planner-live-sdxl-turbo-cfg15/production-text-workflow-summary.json",
+      "latestBenchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
       "latestAggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
       "bestScore": 38
     },
@@ -525,7 +525,7 @@
       "step": 5,
       "title": "Run full production-text matrix",
       "command": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5013/v1 -LocalLlmModel koboldcpp/gemma-4-31B-it-Q4_K_M -OutputDir docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 3200 -PlannerContextSize 8192 -PlannerRequestTimeoutMs 1200000 -PlannerGpuId 0 -PlannerGpuLayers 999",
-      "why": "Runs aquarium/koi/dog customer requests through the production Comfy text workflow with LLM-owned theme/copy/layout."
+      "why": "Runs aquarium/koi/dog customer requests through the production Comfy text workflow with LLM-owned theme/copy/layout; when the dedicated local planner port is missing, the wrapper starts the configured GPU-backed planner before the live run."
     },
     {
       "step": 6,

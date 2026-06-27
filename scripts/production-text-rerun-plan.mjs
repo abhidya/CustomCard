@@ -99,7 +99,7 @@ export function buildProductionTextRerunPlan(args = {}) {
       requiredLocalGpu: {
         gpuId: recommended.gpuId,
         gpuLayers: recommended.gpuLayers,
-        note: "Local KoboldCPP production planner commands must use CUDA/Vulkan/HIP with nonzero GPU offload. GpuLayers 999 requests full GPU offload and lets KoboldCPP cap at what the runtime can use."
+        note: "Local KoboldCPP production planner commands must use CUDA/Vulkan/HIP with nonzero GPU offload. GpuLayers 999 requests full GPU offload and lets KoboldCPP cap at what the runtime can use. The benchmark wrapper auto-starts the configured local production planner when the dedicated planner port is requested but no KoboldCPP process is listening there."
       },
       recommendedModels: productionTextPlannerPolicy.recommendedModels,
       disallowedForPromotion: [
@@ -114,11 +114,13 @@ export function buildProductionTextRerunPlan(args = {}) {
     commands,
     acceptanceChecks: [
       "planner preflight is production-ready",
+      "planner preflight matches benchmark runtime",
       "live ComfyUI proof is current",
       "readiness doctor is promotion-ready",
       "production-suitable planner endpoint is reachable",
       "no small smoke planner is active or used",
       "LLM-planned customer request matrix completed",
+      "final images came from Comfy text composer",
       "planner preserved required terms and avoided forbidden terms",
       "manual grade checklist is promotion-ready",
       "manual aggregate is promotion-ready"
@@ -162,7 +164,7 @@ function buildCommands({ recommended, paths }) {
       step: 5,
       title: "Run full production-text matrix",
       command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl ${recommended.plannerBaseUrl} -LocalLlmModel ${recommended.plannerModel} -OutputDir ${paths.benchmarkOutput} -Checkpoint ${recommended.checkpoint} -Steps ${recommended.steps} -Cfg ${recommended.cfg} -Sampler ${recommended.sampler} -Scheduler ${recommended.scheduler} -PlannerMaxTokens ${recommended.maxOutputTokens} -PlannerContextSize ${recommended.contextTokens} -PlannerRequestTimeoutMs ${recommended.requestTimeoutMs} -PlannerGpuId ${recommended.gpuId} -PlannerGpuLayers ${recommended.gpuLayers}`,
-      why: "Runs aquarium/koi/dog customer requests through the production Comfy text workflow with LLM-owned theme/copy/layout."
+      why: "Runs aquarium/koi/dog customer requests through the production Comfy text workflow with LLM-owned theme/copy/layout; when the dedicated local planner port is missing, the wrapper starts the configured GPU-backed planner before the live run."
     },
     {
       step: 6,

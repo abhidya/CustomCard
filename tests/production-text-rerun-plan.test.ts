@@ -85,6 +85,7 @@ describe("production text rerun plan", () => {
     expect(plan.productionPlannerContract.disallowedForPromotion.join("\n")).toContain("Qwen3-4B");
     expect(plan.productionPlannerContract.disallowedForPromotion.join("\n")).toContain("8B");
     expect(plan.productionPlannerContract.disallowedForPromotion.join("\n")).toContain("gpulayers 0");
+    expect(plan.productionPlannerContract.requiredLocalGpu.note).toContain("auto-starts");
     expect(plan.currentEvidence).toMatchObject({
       localModelCoverage: "docs/evidence/generated-card-comparisons/local-model-coverage-20260626-current/local-model-coverage.json",
       installedProductionPlanners: ["gemma-4-31b-it", "magistral-small-2509"],
@@ -117,7 +118,9 @@ describe("production text rerun plan", () => {
     expect(plan.commands[4].command).not.toContain("-AllowSmallPlanner");
     expect(plan.commands[6].command).toContain("production-text-manual-grade-checklist.mjs");
     expect(plan.acceptanceChecks).toContain("planner preflight is production-ready");
+    expect(plan.acceptanceChecks).toContain("planner preflight matches benchmark runtime");
     expect(plan.acceptanceChecks).toContain("live ComfyUI proof is current");
+    expect(plan.acceptanceChecks).toContain("final images came from Comfy text composer");
     expect(plan.acceptanceChecks).toContain("manual grade checklist is promotion-ready");
     expect(existsSync(join(outputDir, "production-text-rerun-plan.json"))).toBe(true);
     expect(existsSync(join(outputDir, "production-text-rerun-plan.md"))).toBe(true);

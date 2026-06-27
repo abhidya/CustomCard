@@ -1,6 +1,6 @@
 # Production Text Evidence Index
 
-Created: 2026-06-27T03:27:34.719Z
+Created: 2026-06-27T03:32:44.787Z
 Status: blocked
 Promotion ready: no
 
@@ -30,7 +30,7 @@ Promotion ready: no
 
 | Type | Path | Status | Key result |
 | --- | --- | --- | --- |
-| Rerun Plan | [open](../production-text-rerun-plan-20260627-production-planner/production-text-rerun-plan.json) | rerun-required | 9 failed requirement(s); commands=10 |
+| Rerun Plan | [open](../production-text-rerun-plan-20260627-production-planner/production-text-rerun-plan.json) | rerun-required | 5 failed requirement(s); commands=10 |
 | Planner | [open](../production-text-planner-preflight-20260627T021918Z/production-text-planner-preflight.json) | promotion-ready | production-suitable; model=koboldcpp/gemma-4-31B-it-Q4_K_M; context=8192 |
 | Planner/Benchmark Alignment | [open](../production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json) | aligned | preflight=http://127.0.0.1:5013/v1 koboldcpp/gemma-4-31B-it-Q4_K_M; benchmark=http://127.0.0.1:5013/v1 koboldcpp/gemma-4-31B-it-Q4_K_M; blockers=0 |
 | Readiness | [open](../production-text-readiness-20260627-production-planner/production-text-readiness.json) | promotion-ready | 0 blocker(s); planner=koboldcpp/gemma-4-31B-it-Q4_K_M |

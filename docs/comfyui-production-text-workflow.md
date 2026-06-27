@@ -354,6 +354,10 @@ Comfy template variables exposed by the local adapter include:
   - Auto-starts the default Gemma 31B planner on dedicated port `5013` when no planner URL
     is configured and the local model files exist; pass `-NoAutoStartPlanner`
     when a hosted/self-hosted endpoint should be used instead.
+  - Also auto-starts that configured production planner when `-LocalLlmBaseUrl`
+    points at the dedicated local planner port but no KoboldCPP process is
+    listening there, so a stale environment variable cannot silently redirect a
+    production benchmark away from the GPU-backed runtime.
   - Accepts either a root planner URL such as `http://127.0.0.1:5013` or a `/v1`
     URL such as `http://127.0.0.1:5013/v1`, then runs the production planner
     preflight before live runs. The preflight JSON/MD is written into the same
