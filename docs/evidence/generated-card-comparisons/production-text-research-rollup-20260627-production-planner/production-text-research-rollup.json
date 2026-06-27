@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T03:22:30.089Z",
+  "createdAtIso": "2026-06-27T03:27:42.081Z",
   "status": "blocked",
   "promotionReady": false,
   "reportDir": "docs/evidence/generated-card-comparisons/production-text-research-rollup-20260627-production-planner",
@@ -61,14 +61,12 @@
     },
     "readiness": {
       "path": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json",
-      "status": "blocked",
-      "promotionReady": false,
+      "status": "promotion-ready",
+      "promotionReady": true,
       "productionSuitablePlannerReachable": true,
       "comfyReachable": true,
       "hasTextComposer": true,
-      "blockers": [
-        "latest LLM-planned aggregate is passing"
-      ]
+      "blockers": []
     },
     "dryRun": {
       "path": "docs/evidence/generated-card-comparisons/production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json",
@@ -202,15 +200,6 @@
     "status": "blocked",
     "promotionReady": false,
     "failedRequirements": [
-      {
-        "name": "readiness doctor is promotion-ready",
-        "details": {
-          "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json",
-          "blockers": [
-            "latest LLM-planned aggregate is passing"
-          ]
-        }
-      },
       {
         "name": "LLM-planned customer request matrix completed",
         "details": {
@@ -352,6 +341,13 @@
         }
       },
       {
+        "name": "readiness doctor is promotion-ready",
+        "details": {
+          "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json",
+          "blockers": []
+        }
+      },
+      {
         "name": "local model coverage is tracked",
         "details": {
           "modelCoverage": "docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current/local-model-coverage.json",
@@ -487,7 +483,7 @@
     "Required customer terms still missing: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog.",
     "Manual grade readiness is blocked: 0 blocked grade(s), 0 run(s) failed before image generation.",
     "Best current LLM-planned score is 38/100 and remains blocked.",
-    "Promotion gate currently fails 6 requirement(s): readiness doctor is promotion-ready, LLM-planned customer request matrix completed, final images came from Comfy text composer, planner preserved required terms and avoided forbidden terms, manual grade checklist is promotion-ready, manual aggregate is promotion-ready."
+    "Promotion gate currently fails 5 requirement(s): LLM-planned customer request matrix completed, final images came from Comfy text composer, planner preserved required terms and avoided forbidden terms, manual grade checklist is promotion-ready, manual aggregate is promotion-ready."
   ],
   "nextSteps": [
     "Run production-text planner preflight and benchmark evidence against installed production planner candidate(s): gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
@@ -495,7 +491,6 @@
     "Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.",
     "Manually grade every production-text run and aggregate only after all candidates pass.",
     "Resolve the latest manual grade checklist blockers before treating the aggregate as promotion evidence.",
-    "Run the planner preflight and readiness doctor after starting a production-suitable planner endpoint with 8192+ context.",
     "Run the full aquarium/koi/dog production-text matrix to completion.",
     "Keep the full prompt and correct planner runtime; retry/repair planner output until must_include and must_avoid checks pass before Comfy work.",
     "Run the manual grade checklist after grading every generated run, then resolve missing/invalid/blocked grades before aggregation.",

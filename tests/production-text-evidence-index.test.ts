@@ -394,4 +394,43 @@ describe("production text evidence index", () => {
       deterministicTextComposerUsed: false
     });
   });
+
+  it("treats legacy aggregate-only readiness blockers as non-runtime evidence", () => {
+    const root = mkdtempSync(join(tmpdir(), "production-text-evidence-index-readiness-runtime-"));
+    const outputDir = join(root, "index");
+
+    writeJson(join(root, "production-text-readiness.json"), {
+      createdAtIso: "2026-06-26T05:00:00.000Z",
+      status: "blocked",
+      promotionReady: false,
+      comfy: { reachable: true, hasTextComposer: true },
+      activePlannerEndpoints: [
+        {
+          baseUrl: "http://127.0.0.1:5013/v1",
+          reachable: true,
+          activeModel: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+          smallPlanner: false,
+          productionSuitable: true
+        }
+      ],
+      blockers: [{ name: "latest LLM-planned aggregate is passing" }],
+      aggregateSummary: { promotionReady: false }
+    });
+
+    const report = buildProductionTextEvidenceIndex({
+      input: root,
+      "output-dir": outputDir,
+      "include-untracked": true
+    });
+
+    expect(report.readinessReports[0]).toMatchObject({
+      status: "promotion-ready",
+      promotionReady: true,
+      aggregatePromotionReady: false,
+      blockerCount: 0,
+      blockers: [],
+      aggregateCheckBlockers: ["latest LLM-planned aggregate is passing"],
+      productionSuitablePlannerReachable: true
+    });
+  });
 });

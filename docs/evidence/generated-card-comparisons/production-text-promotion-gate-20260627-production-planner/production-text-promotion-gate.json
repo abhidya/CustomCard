@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T03:22:21.132Z",
+  "createdAtIso": "2026-06-27T03:27:34.721Z",
   "status": "blocked",
   "promotionReady": false,
   "advisory": true,
@@ -81,12 +81,10 @@
     },
     {
       "name": "readiness doctor is promotion-ready",
-      "ok": false,
+      "ok": true,
       "details": {
         "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json",
-        "blockers": [
-          "latest LLM-planned aggregate is passing"
-        ]
+        "blockers": []
       }
     },
     {
@@ -234,7 +232,6 @@
     }
   ],
   "nextSteps": [
-    "Run the planner preflight and readiness doctor after starting a production-suitable planner endpoint with 8192+ context.",
     "Run the full aquarium/koi/dog production-text matrix to completion.",
     "Keep the full prompt and correct planner runtime; retry/repair planner output until must_include and must_avoid checks pass before Comfy work.",
     "Run the manual grade checklist after grading every generated run, then resolve missing/invalid/blocked grades before aggregation.",

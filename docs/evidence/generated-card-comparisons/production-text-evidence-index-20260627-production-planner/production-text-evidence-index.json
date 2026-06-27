@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T03:22:21.130Z",
+  "createdAtIso": "2026-06-27T03:27:34.719Z",
   "status": "blocked",
   "promotionReady": false,
   "evidenceRoot": "docs/evidence/generated-card-comparisons",
@@ -231,10 +231,12 @@
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json",
       "createdAtIso": "2026-06-27T01:49:05.479Z",
-      "status": "blocked",
-      "promotionReady": false,
-      "blockerCount": 1,
-      "blockers": [
+      "status": "promotion-ready",
+      "promotionReady": true,
+      "aggregatePromotionReady": false,
+      "blockerCount": 0,
+      "blockers": [],
+      "aggregateCheckBlockers": [
         "latest LLM-planned aggregate is passing"
       ],
       "comfyReachable": true,
@@ -253,13 +255,16 @@
       "createdAtIso": "2026-06-27T00:28:10.486Z",
       "status": "blocked",
       "promotionReady": false,
-      "blockerCount": 5,
+      "aggregatePromotionReady": false,
+      "blockerCount": 4,
       "blockers": [
         "live ComfyUI reachable",
         "live ComfyUI exposes CustomCardTextComposer",
-        "latest LLM-planned aggregate is passing",
         "configured production planner endpoint is reachable",
         "configured production planner endpoint is production-suitable"
+      ],
+      "aggregateCheckBlockers": [
+        "latest LLM-planned aggregate is passing"
       ],
       "comfyReachable": false,
       "hasTextComposer": false,
@@ -279,13 +284,16 @@
       "createdAtIso": "2026-06-26T23:10:59.401Z",
       "status": "blocked",
       "promotionReady": false,
-      "blockerCount": 5,
+      "aggregatePromotionReady": false,
+      "blockerCount": 4,
       "blockers": [
         "live ComfyUI reachable",
         "live ComfyUI exposes CustomCardTextComposer",
-        "latest LLM-planned aggregate is passing",
         "configured production planner endpoint is reachable",
         "configured production planner endpoint is production-suitable"
+      ],
+      "aggregateCheckBlockers": [
+        "latest LLM-planned aggregate is passing"
       ],
       "comfyReachable": false,
       "hasTextComposer": false,

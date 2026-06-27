@@ -269,13 +269,20 @@ function plannerPreflightEntry(filePath) {
 function readinessEntry(filePath) {
   const payload = readJson(filePath);
   if (!payload) return undefined;
+  const blockerNames = (payload.blockers || []).map((item) => item.name || String(item)).filter(Boolean);
+  const runtimeBlockers = blockerNames.filter((name) => !isAggregateReadinessCheck(name));
+  const promotionReady = payload.aggregatePromotionReady === undefined && Array.isArray(payload.blockers)
+    ? runtimeBlockers.length === 0
+    : Boolean(payload.promotionReady);
   return {
     path: relativePath(filePath),
     createdAtIso: payload.createdAtIso || fileMtime(filePath),
-    status: payload.status || "unknown",
-    promotionReady: Boolean(payload.promotionReady),
-    blockerCount: Array.isArray(payload.blockers) ? payload.blockers.length : 0,
-    blockers: (payload.blockers || []).map((item) => item.name || String(item)).filter(Boolean),
+    status: promotionReady ? "promotion-ready" : payload.status || "unknown",
+    promotionReady,
+    aggregatePromotionReady: Boolean(payload.aggregatePromotionReady ?? payload.aggregateSummary?.promotionReady),
+    blockerCount: runtimeBlockers.length,
+    blockers: runtimeBlockers,
+    aggregateCheckBlockers: blockerNames.filter(isAggregateReadinessCheck),
     comfyReachable: Boolean(payload.comfy?.reachable),
     hasTextComposer: Boolean(payload.comfy?.hasTextComposer),
     activePlannerModels: unique((payload.activePlannerEndpoints || payload.plannerEndpoints || [])
@@ -287,6 +294,10 @@ function readinessEntry(filePath) {
       .some((endpoint) => endpoint.reachable && endpoint.smallPlanner),
     nextSteps: payload.nextSteps || []
   };
+}
+
+function isAggregateReadinessCheck(name) {
+  return /^latest LLM-planned aggregate\b/.test(String(name || ""));
 }
 
 function modelCoverageEntry(filePath) {

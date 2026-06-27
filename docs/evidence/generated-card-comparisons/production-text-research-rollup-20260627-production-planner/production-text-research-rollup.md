@@ -1,6 +1,6 @@
 # Production Text Research Rollup
 
-Created: 2026-06-27T03:22:30.089Z
+Created: 2026-06-27T03:27:42.081Z
 Status: blocked
 Promotion ready: no
 
@@ -31,7 +31,7 @@ Promotion ready: no
 - Required customer terms still missing: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog.
 - Manual grade readiness is blocked: 0 blocked grade(s), 0 run(s) failed before image generation.
 - Best current LLM-planned score is 38/100 and remains blocked.
-- Promotion gate currently fails 6 requirement(s): readiness doctor is promotion-ready, LLM-planned customer request matrix completed, final images came from Comfy text composer, planner preserved required terms and avoided forbidden terms, manual grade checklist is promotion-ready, manual aggregate is promotion-ready.
+- Promotion gate currently fails 5 requirement(s): LLM-planned customer request matrix completed, final images came from Comfy text composer, planner preserved required terms and avoided forbidden terms, manual grade checklist is promotion-ready, manual aggregate is promotion-ready.
 
 ## Evidence Summary
 
@@ -40,7 +40,7 @@ Promotion ready: no
 | Comfy text composer | promotion-ready | comfy=yes node=yes | [open](../production-text-preflight-20260627-production-planner/production-text-preflight.json) |
 | Planner | promotion-ready | production-suitable koboldcpp/gemma-4-31B-it-Q4_K_M; context=8192; max=3200 | [open](../production-text-planner-preflight-20260627T021918Z/production-text-planner-preflight.json) |
 | Planner/runtime alignment | promotion-ready | checked=yes ok=yes; preflight=http://127.0.0.1:5013/v1; benchmark=http://127.0.0.1:5013/v1; blockers=0 | [open](../production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json) |
-| Readiness | blocked | production planner reachable=yes; blockers=1 | [open](../production-text-readiness-20260627-production-planner/production-text-readiness.json) |
+| Readiness | promotion-ready | production planner reachable=yes; blockers=0 | [open](../production-text-readiness-20260627-production-planner/production-text-readiness.json) |
 | Dry run | planning-proof | 3 planned; production-suitable koboldcpp/gemma-4-31B-it-Q4_K_M; context=8192; max=3200 | [open](../production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json) |
 | Model coverage | action-needed | 9 recommended installed; unevaluated planners=gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash | [open](../local-model-coverage-20260627-current/local-model-coverage.json) |
 | Benchmark | blocked | 0/3 completed; failed=3; failed-before-image=3; provider=aquarium-lover-birthday: text provider read ECONNRESET; koi-fish-lover-encouragement: text provider connect ECONNREFUSED 127.0.0.1:5013; missing=Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog | [open](../production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json) |
@@ -50,7 +50,6 @@ Promotion ready: no
 ## Promotion Gate
 
 Failed requirements:
-- readiness doctor is promotion-ready
 - LLM-planned customer request matrix completed
 - final images came from Comfy text composer
 - planner preserved required terms and avoided forbidden terms
@@ -62,6 +61,7 @@ Passed requirements:
 - live ComfyUI proof is current
 - planner preflight is production-ready
 - planner preflight matches benchmark runtime
+- readiness doctor is promotion-ready
 - local model coverage is tracked
 - production planner candidate is available
 - production-suitable planner endpoint is reachable
@@ -156,7 +156,6 @@ Shows whether every production-text requirement now passes. Remove --advisory on
 - Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.
 - Manually grade every production-text run and aggregate only after all candidates pass.
 - Resolve the latest manual grade checklist blockers before treating the aggregate as promotion evidence.
-- Run the planner preflight and readiness doctor after starting a production-suitable planner endpoint with 8192+ context.
 - Run the full aquarium/koi/dog production-text matrix to completion.
 - Keep the full prompt and correct planner runtime; retry/repair planner output until must_include and must_avoid checks pass before Comfy work.
 - Run the manual grade checklist after grading every generated run, then resolve missing/invalid/blocked grades before aggregation.

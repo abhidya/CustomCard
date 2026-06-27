@@ -1,6 +1,6 @@
 # Production Text Promotion Gate
 
-Created: 2026-06-27T03:22:21.132Z
+Created: 2026-06-27T03:27:34.721Z
 Status: blocked
 Promotion ready: no
 Evidence index: docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner
@@ -13,7 +13,7 @@ Evidence index: docs/evidence/generated-card-comparisons/production-text-evidenc
 | live ComfyUI proof is current | ok | {"preflight":"docs/evidence/generated-card-comparisons/production-text-preflight-20260627-production-planner/production-text-preflight.json","preflightCreatedAtIso":"2026-06-27T01:49:04.402Z","readiness":"docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json","readinessCreatedAtIso":"2026-06-27T01:49:05.479Z","preflightLiveComfyReachable":true,"preflightLiveNodeAvailable":true,"readinessComfyReachable":true,"readinessHasTextComposer":true,"staleReason":""} |
 | planner preflight is production-ready | ok | {"plannerPreflight":"docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627T021918Z/production-text-planner-preflight.json","activeModel":"koboldcpp/gemma-4-31B-it-Q4_K_M","classification":"production-suitable","reportedContextTokens":8192,"maxOutputTokens":3200,"blockers":[]} |
 | planner preflight matches benchmark runtime | ok | {"preflight":{"path":"docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627T021918Z/production-text-planner-preflight.json","baseUrl":"http://127.0.0.1:5013/v1","model":"koboldcpp/gemma-4-31B-it-Q4_K_M"},"benchmark":{"path":"docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json","plannerBaseUrls":["http://127.0.0.1:5013/v1"],"textModels":["koboldcpp/gemma-4-31B-it-Q4_K_M"]},"blockers":[]} |
-| readiness doctor is promotion-ready | fail | {"readiness":"docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json","blockers":["latest LLM-planned aggregate is passing"]} |
+| readiness doctor is promotion-ready | ok | {"readiness":"docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json","blockers":[]} |
 | local model coverage is tracked | ok | {"modelCoverage":"docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current/local-model-coverage.json","installedModelFiles":47,"recommendedInstalled":9,"recommendedEvaluated":3,"recommendedMissing":1} |
 | production planner candidate is available | ok | {"modelCoverage":"docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current/local-model-coverage.json","readiness":"docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json","productionSuitablePlannerReachable":true,"installedProductionPlanners":["gemma-4-31b-it","magistral-small-2509","deepseek-v4-flash"],"unevaluatedProductionPlanners":["gemma-4-31b-it","magistral-small-2509","deepseek-v4-flash"],"missingProductionPlanners":["qwen3-14b-instruct"]} |
 | production-suitable planner endpoint is reachable | ok | {"readiness":"docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json","activePlannerModels":["koboldcpp/gemma-4-31B-it-Q4_K_M"]} |
@@ -26,7 +26,6 @@ Evidence index: docs/evidence/generated-card-comparisons/production-text-evidenc
 
 ## Next Steps
 
-- Run the planner preflight and readiness doctor after starting a production-suitable planner endpoint with 8192+ context.
 - Run the full aquarium/koi/dog production-text matrix to completion.
 - Keep the full prompt and correct planner runtime; retry/repair planner output until must_include and must_avoid checks pass before Comfy work.
 - Run the manual grade checklist after grading every generated run, then resolve missing/invalid/blocked grades before aggregation.

@@ -449,12 +449,12 @@ current live Comfy preflight is
 `docs/evidence/generated-card-comparisons/production-text-preflight-20260627-production-planner`:
 the target ComfyUI server is reachable and `CustomCardTextComposer` is loaded.
 The current planner preflight report is
-`docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner`:
+`docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627T021918Z`:
 Gemma 31B is promotion-ready with 8192 context and 3200 output tokens at the
-configured planner `/models` endpoint. The current readiness report is
+matching `http://127.0.0.1:5013/v1` benchmark planner endpoint. The current readiness report is
 `docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner`:
-local Comfy and the production planner endpoint are both reachable; readiness
-still blocks on the stale failed Qwen3-4B LLM-planned aggregate. The current
+local Comfy and the production planner endpoint are both reachable; failed
+aggregate quality is tracked separately from runtime readiness. The current
 local model coverage is
 `docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current`;
 Gemma 31B, Magistral Small, and DeepSeek V4 Flash are installed but still need
@@ -469,10 +469,10 @@ the current promotion gate is
 `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-production-planner`,
 and the current research rollup is
 `docs/evidence/generated-card-comparisons/production-text-research-rollup-20260627-production-planner`.
-Together they keep promotion blocked on readiness, full matrix completion, final
+Together they keep promotion blocked on full matrix completion, final
 Comfy-rendered image proof, must-include/must-avoid adherence, manual grade
-checklist readiness, and manual aggregate readiness. The current gate fails 6
-requirements total after tracking the matching 5013 planner preflight. A full matrix attempt is
+checklist readiness, and manual aggregate readiness. The current gate fails 5
+requirements total after separating runtime readiness from aggregate quality. A full matrix attempt is
 recorded at
 `docs/evidence/generated-card-comparisons/production-text-runtime-attempt-20260627-production-planner`
 and

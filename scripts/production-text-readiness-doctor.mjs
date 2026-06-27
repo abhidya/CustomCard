@@ -76,9 +76,9 @@ export async function runDoctor(args = {}) {
       comfyUrl,
       objectInfoKeys: comfy.objectInfoKeyCount
     }),
-    check("latest LLM-planned aggregate exists", Boolean(aggregate), true, { aggregatePath: relativePath(aggregatePath) }),
-    check("latest LLM-planned aggregate covers three customer requests", aggregateSummary.totalRuns >= 3, true, aggregateSummary),
-    check("latest LLM-planned aggregate is passing", aggregateSummary.promotionReady, true, aggregateSummary),
+    check("latest LLM-planned aggregate exists", Boolean(aggregate), false, { aggregatePath: relativePath(aggregatePath) }),
+    check("latest LLM-planned aggregate covers three customer requests", aggregateSummary.totalRuns >= 3, false, aggregateSummary),
+    check("latest LLM-planned aggregate is passing", aggregateSummary.promotionReady, false, aggregateSummary),
     check("higher-quality local planner model is installed", modelInventory.qualityPlannerInstalled, true, {
       modelRoot,
       installedQualityPlanners: modelInventory.installedQualityPlanners
@@ -107,6 +107,7 @@ export async function runDoctor(args = {}) {
     status: promotionReady ? "promotion-ready" : "blocked",
     advisory,
     promotionReady,
+    aggregatePromotionReady: aggregateSummary.promotionReady,
     workflowPath: relativePath(workflowPath),
     nodeSource: relativePath(nodeSource),
     aggregatePath: relativePath(aggregatePath),
@@ -298,7 +299,7 @@ function buildNextSteps({ blockers, modelInventory, plannerEndpoints, comfy, agg
     steps.push(modelInventory.recommendedNextPull);
   }
   if (!aggregateSummary.promotionReady) {
-    steps.push("Run the full LLM-planned matrix with a production-suitable planner, manually grade every run, then aggregate.");
+    steps.push("Promotion gate still needs a passing full LLM-planned matrix, manual grades, and aggregate; readiness only proves the runtime can run it.");
   }
   if (!comfy.hasTextComposer && !steps.length) {
     steps.push("Refresh live Comfy /object_info evidence.");
