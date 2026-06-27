@@ -44,7 +44,7 @@ describe("production text evidence index", () => {
         productionSuitable: false,
         minContextTokens: 8192,
         reportedContextTokens: 4096,
-        minOutputTokens: 2200,
+        minOutputTokens: 3200,
         maxOutputTokens: 3200
       },
       blockers: ["Planner model is smoke-only.", "Planner context 4096 is below the production minimum 8192."]

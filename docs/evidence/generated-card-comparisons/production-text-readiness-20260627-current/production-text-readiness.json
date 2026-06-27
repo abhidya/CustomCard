@@ -1,0 +1,385 @@
+{
+  "createdAtIso": "2026-06-27T00:28:10.486Z",
+  "status": "blocked",
+  "advisory": true,
+  "promotionReady": false,
+  "workflowPath": "comfyui-workflows/customcard-production-text-overlay.json",
+  "nodeSource": "comfyui-custom-nodes/CustomCardTextComposer",
+  "aggregatePath": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
+  "modelRoot": "D:\\models",
+  "comfy": {
+    "comfyUrl": "http://127.0.0.1:8188",
+    "reachable": false,
+    "hasTextComposer": false,
+    "objectInfoKeyCount": 0,
+    "error": "fetch failed"
+  },
+  "configuredPlannerUrls": [
+    "http://127.0.0.1:5003/v1"
+  ],
+  "activePlannerEndpoints": [
+    {
+      "baseUrl": "http://127.0.0.1:5003/v1",
+      "reachable": false,
+      "activeModel": "",
+      "models": [],
+      "smallPlanner": false,
+      "productionSuitable": false,
+      "error": "fetch failed"
+    }
+  ],
+  "plannerEndpoints": [
+    {
+      "baseUrl": "http://127.0.0.1:5003/v1",
+      "reachable": false,
+      "activeModel": "",
+      "models": [],
+      "smallPlanner": false,
+      "productionSuitable": false,
+      "error": "fetch failed"
+    },
+    {
+      "baseUrl": "http://127.0.0.1:5001/v1",
+      "reachable": false,
+      "activeModel": "",
+      "models": [],
+      "smallPlanner": false,
+      "productionSuitable": false,
+      "error": "fetch failed"
+    }
+  ],
+  "aggregateSummary": {
+    "aggregatePath": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
+    "exists": true,
+    "totalRuns": 3,
+    "statuses": {
+      "blocked": 2,
+      "failed": 1
+    },
+    "bestScore": 38,
+    "bestRun": "aquarium-lover-birthday",
+    "textModels": [
+      "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
+    ],
+    "promotionReady": false,
+    "blockingFailures": [
+      "Planner missed required recipient/name/theme terms: Nina and aquarium are absent.",
+      "Artwork and copy drifted into botanical birthday stationery instead of aquarium-lover stationery.",
+      "Back panel is too dark, contains visible text, and does not behave as a sparse no-copy back cover.",
+      "Planner missed required recipient/name/theme terms: Morgan and dog are absent.",
+      "Copy invents plant-watering context and says the plants are grateful, which contradicts the dog-lover thank-you request.",
+      "Local Qwen3-4B planner returned invalid JSON.",
+      "The LLM response hit the 2200-token completion cap with finish_reason length.",
+      "No image panels were generated for the koi encouragement request."
+    ]
+  },
+  "modelInventory": {
+    "modelRoot": "D:\\models",
+    "fileCount": 26,
+    "textModelCount": 24,
+    "plannerModelCount": 9,
+    "qualityPlannerInstalled": true,
+    "installedQualityPlanners": [
+      "D:\\models\\DeepSeekV4-Flash-158B-Q4_K_M.gguf",
+      "D:\\models\\gemma-4-31B-it-Q4_K_M.gguf",
+      "D:\\models\\lmstudio-community\\gemma-4-31B-it-QAT-GGUF\\gemma-4-31B-it-QAT-Q4_0.gguf",
+      "D:\\models\\lmstudio-community\\Magistral-Small-2509-GGUF\\Magistral-Small-2509-Q4_K_M.gguf"
+    ],
+    "installedSmallPlanners": [
+      "D:\\models\\Qwen\\Qwen3-8B-GGUF\\Qwen3-8B-Q4_K_M.gguf",
+      "D:\\models\\Qwen3-4B-Instruct-2507-Q4_K_S.gguf"
+    ],
+    "missingMidTierPlanner": false,
+    "recommendedNextPull": ""
+  },
+  "plannerRuntimeBudget": {
+    "reportedContextTokens": 8192,
+    "maxOutputTokens": 3200
+  },
+  "checks": [
+    {
+      "name": "production workflow file exists",
+      "ok": true,
+      "required": true,
+      "details": {
+        "workflowPath": "comfyui-workflows/customcard-production-text-overlay.json"
+      }
+    },
+    {
+      "name": "CustomCardTextComposer source exists",
+      "ok": true,
+      "required": true,
+      "details": {
+        "nodeSource": "comfyui-custom-nodes/CustomCardTextComposer"
+      }
+    },
+    {
+      "name": "live ComfyUI reachable",
+      "ok": false,
+      "required": true,
+      "details": {
+        "comfyUrl": "http://127.0.0.1:8188",
+        "error": "fetch failed"
+      }
+    },
+    {
+      "name": "live ComfyUI exposes CustomCardTextComposer",
+      "ok": false,
+      "required": true,
+      "details": {
+        "comfyUrl": "http://127.0.0.1:8188",
+        "objectInfoKeys": 0
+      }
+    },
+    {
+      "name": "latest LLM-planned aggregate exists",
+      "ok": true,
+      "required": true,
+      "details": {
+        "aggregatePath": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json"
+      }
+    },
+    {
+      "name": "latest LLM-planned aggregate covers three customer requests",
+      "ok": true,
+      "required": true,
+      "details": {
+        "aggregatePath": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
+        "exists": true,
+        "totalRuns": 3,
+        "statuses": {
+          "blocked": 2,
+          "failed": 1
+        },
+        "bestScore": 38,
+        "bestRun": "aquarium-lover-birthday",
+        "textModels": [
+          "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
+        ],
+        "promotionReady": false,
+        "blockingFailures": [
+          "Planner missed required recipient/name/theme terms: Nina and aquarium are absent.",
+          "Artwork and copy drifted into botanical birthday stationery instead of aquarium-lover stationery.",
+          "Back panel is too dark, contains visible text, and does not behave as a sparse no-copy back cover.",
+          "Planner missed required recipient/name/theme terms: Morgan and dog are absent.",
+          "Copy invents plant-watering context and says the plants are grateful, which contradicts the dog-lover thank-you request.",
+          "Local Qwen3-4B planner returned invalid JSON.",
+          "The LLM response hit the 2200-token completion cap with finish_reason length.",
+          "No image panels were generated for the koi encouragement request."
+        ]
+      }
+    },
+    {
+      "name": "latest LLM-planned aggregate is passing",
+      "ok": false,
+      "required": true,
+      "details": {
+        "aggregatePath": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
+        "exists": true,
+        "totalRuns": 3,
+        "statuses": {
+          "blocked": 2,
+          "failed": 1
+        },
+        "bestScore": 38,
+        "bestRun": "aquarium-lover-birthday",
+        "textModels": [
+          "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
+        ],
+        "promotionReady": false,
+        "blockingFailures": [
+          "Planner missed required recipient/name/theme terms: Nina and aquarium are absent.",
+          "Artwork and copy drifted into botanical birthday stationery instead of aquarium-lover stationery.",
+          "Back panel is too dark, contains visible text, and does not behave as a sparse no-copy back cover.",
+          "Planner missed required recipient/name/theme terms: Morgan and dog are absent.",
+          "Copy invents plant-watering context and says the plants are grateful, which contradicts the dog-lover thank-you request.",
+          "Local Qwen3-4B planner returned invalid JSON.",
+          "The LLM response hit the 2200-token completion cap with finish_reason length.",
+          "No image panels were generated for the koi encouragement request."
+        ]
+      }
+    },
+    {
+      "name": "higher-quality local planner model is installed",
+      "ok": true,
+      "required": true,
+      "details": {
+        "modelRoot": "D:\\models",
+        "installedQualityPlanners": [
+          "D:\\models\\DeepSeekV4-Flash-158B-Q4_K_M.gguf",
+          "D:\\models\\gemma-4-31B-it-Q4_K_M.gguf",
+          "D:\\models\\lmstudio-community\\gemma-4-31B-it-QAT-GGUF\\gemma-4-31B-it-QAT-Q4_0.gguf",
+          "D:\\models\\lmstudio-community\\Magistral-Small-2509-GGUF\\Magistral-Small-2509-Q4_K_M.gguf"
+        ]
+      }
+    },
+    {
+      "name": "configured production planner endpoint is reachable",
+      "ok": false,
+      "required": true,
+      "details": {
+        "configuredPlannerUrls": [
+          "http://127.0.0.1:5003/v1"
+        ],
+        "discoveryMode": false,
+        "activePlannerEndpoints": [
+          {
+            "baseUrl": "http://127.0.0.1:5003/v1",
+            "reachable": false,
+            "activeModel": "",
+            "models": [],
+            "smallPlanner": false,
+            "productionSuitable": false,
+            "error": "fetch failed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "configured production planner endpoint is production-suitable",
+      "ok": false,
+      "required": true,
+      "details": {
+        "configuredPlannerUrls": [
+          "http://127.0.0.1:5003/v1"
+        ],
+        "discoveryMode": false,
+        "activePlannerEndpoints": [
+          {
+            "baseUrl": "http://127.0.0.1:5003/v1",
+            "reachable": false,
+            "activeModel": "",
+            "models": [],
+            "smallPlanner": false,
+            "productionSuitable": false,
+            "error": "fetch failed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "configured production planner is not a small smoke model",
+      "ok": true,
+      "required": true,
+      "details": {
+        "configuredPlannerUrls": [
+          "http://127.0.0.1:5003/v1"
+        ],
+        "discoveryMode": false,
+        "activePlannerEndpoints": [
+          {
+            "baseUrl": "http://127.0.0.1:5003/v1",
+            "reachable": false,
+            "activeModel": "",
+            "models": [],
+            "smallPlanner": false,
+            "productionSuitable": false,
+            "error": "fetch failed"
+          }
+        ]
+      }
+    }
+  ],
+  "blockers": [
+    {
+      "name": "live ComfyUI reachable",
+      "ok": false,
+      "required": true,
+      "details": {
+        "comfyUrl": "http://127.0.0.1:8188",
+        "error": "fetch failed"
+      }
+    },
+    {
+      "name": "live ComfyUI exposes CustomCardTextComposer",
+      "ok": false,
+      "required": true,
+      "details": {
+        "comfyUrl": "http://127.0.0.1:8188",
+        "objectInfoKeys": 0
+      }
+    },
+    {
+      "name": "latest LLM-planned aggregate is passing",
+      "ok": false,
+      "required": true,
+      "details": {
+        "aggregatePath": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
+        "exists": true,
+        "totalRuns": 3,
+        "statuses": {
+          "blocked": 2,
+          "failed": 1
+        },
+        "bestScore": 38,
+        "bestRun": "aquarium-lover-birthday",
+        "textModels": [
+          "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
+        ],
+        "promotionReady": false,
+        "blockingFailures": [
+          "Planner missed required recipient/name/theme terms: Nina and aquarium are absent.",
+          "Artwork and copy drifted into botanical birthday stationery instead of aquarium-lover stationery.",
+          "Back panel is too dark, contains visible text, and does not behave as a sparse no-copy back cover.",
+          "Planner missed required recipient/name/theme terms: Morgan and dog are absent.",
+          "Copy invents plant-watering context and says the plants are grateful, which contradicts the dog-lover thank-you request.",
+          "Local Qwen3-4B planner returned invalid JSON.",
+          "The LLM response hit the 2200-token completion cap with finish_reason length.",
+          "No image panels were generated for the koi encouragement request."
+        ]
+      }
+    },
+    {
+      "name": "configured production planner endpoint is reachable",
+      "ok": false,
+      "required": true,
+      "details": {
+        "configuredPlannerUrls": [
+          "http://127.0.0.1:5003/v1"
+        ],
+        "discoveryMode": false,
+        "activePlannerEndpoints": [
+          {
+            "baseUrl": "http://127.0.0.1:5003/v1",
+            "reachable": false,
+            "activeModel": "",
+            "models": [],
+            "smallPlanner": false,
+            "productionSuitable": false,
+            "error": "fetch failed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "configured production planner endpoint is production-suitable",
+      "ok": false,
+      "required": true,
+      "details": {
+        "configuredPlannerUrls": [
+          "http://127.0.0.1:5003/v1"
+        ],
+        "discoveryMode": false,
+        "activePlannerEndpoints": [
+          {
+            "baseUrl": "http://127.0.0.1:5003/v1",
+            "reachable": false,
+            "activeModel": "",
+            "models": [],
+            "smallPlanner": false,
+            "productionSuitable": false,
+            "error": "fetch failed"
+          }
+        ]
+      }
+    }
+  ],
+  "nextSteps": [
+    "Start the target ComfyUI server on the configured URL.",
+    "Install/link comfyui-custom-nodes/CustomCardTextComposer into ComfyUI/custom_nodes and restart ComfyUI.",
+    "Start the configured local/hosted OpenAI-compatible planner endpoint before running promotion evidence.",
+    "Run tools/start-local-card-planner.ps1 with 8192+ context and 3200 output tokens, use a hosted/self-hosted production planner, or point -LocalLlmBaseUrl at that endpoint.",
+    "Run the full LLM-planned matrix with a production-suitable planner, manually grade every run, then aggregate."
+  ],
+  "reportDir": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-current"
+}

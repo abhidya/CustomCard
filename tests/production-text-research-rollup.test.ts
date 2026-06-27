@@ -206,4 +206,63 @@ describe("production text research rollup", () => {
     expect(existsSync(join(outputDir, "production-text-research-rollup.json"))).toBe(true);
     expect(existsSync(join(outputDir, "production-text-research-rollup.md"))).toBe(true);
   });
+
+  it("describes production-suitable planner failures as endpoint blockers when unreachable", () => {
+    const root = mkdtempSync(join(tmpdir(), "production-text-research-rollup-planner-"));
+    const indexPath = join(root, "production-text-evidence-index.json");
+    const gatePath = join(root, "production-text-promotion-gate.json");
+    const rerunPath = join(root, "production-text-rerun-plan.json");
+    const outputDir = join(root, "rollup");
+
+    writeJson(indexPath, {
+      status: "blocked",
+      promotionReady: false,
+      findings: [],
+      preflights: [],
+      plannerPreflights: [
+        {
+          path: "docs/evidence/generated-card-comparisons/production-text-planner-preflight-current/production-text-planner-preflight.json",
+          status: "blocked",
+          promotionReady: false,
+          reachable: false,
+          activeModel: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+          classification: "production-suitable",
+          reportedContextTokens: 8192,
+          maxOutputTokens: 3200,
+          blockers: ["Planner /models preflight failed: fetch failed"]
+        }
+      ],
+      readinessReports: [],
+      modelCoverageReports: [],
+      benchmarkSummaries: [],
+      manualGradeChecklists: [],
+      aggregates: []
+    });
+    writeJson(gatePath, {
+      status: "blocked",
+      promotionReady: false,
+      requirements: [{ name: "planner preflight is production-ready", ok: false }]
+    });
+    writeJson(rerunPath, {
+      status: "rerun-required",
+      productionPlannerContract: {
+        summary: "Keep the full creative planner prompt and switch the runtime, not the prompt quality.",
+        disallowedForPromotion: []
+      },
+      commands: []
+    });
+
+    const report = buildProductionTextResearchRollup({
+      index: indexPath,
+      gate: gatePath,
+      rerun: rerunPath,
+      "output-dir": outputDir,
+      date: "20260627"
+    });
+
+    const findings = report.findings.join("\n");
+    expect(findings).toContain("Production planner endpoint is not reachable");
+    expect(findings).toContain("gemma-4-31B-it");
+    expect(findings).not.toContain("Planner evidence is not promotable: koboldcpp/gemma-4-31B-it-Q4_K_M is production-suitable");
+  });
 });

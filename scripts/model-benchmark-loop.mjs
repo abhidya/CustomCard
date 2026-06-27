@@ -8,6 +8,7 @@ import {
   localComfyTypographyVariables,
   localComfyWorkflowInputsForMetadata
 } from "./local-comfy-production-text.mjs";
+import { productionTextPlannerPolicy } from "./production-text-planner-policy.mjs";
 
 const repoRoot = resolve(import.meta.dirname, "..");
 const defaultOutputDir = resolve(
@@ -1648,7 +1649,12 @@ function buildRunAiFlowConfig(run) {
       monthlyBudgetCents: 5000,
       perRequestBudgetCents: 5,
       maxRetries: 1,
-      maxTokens: boundedIntegerEnv(process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS, 2200, 4000, 3200),
+      maxTokens: boundedIntegerEnv(
+        process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS,
+        productionTextPlannerPolicy.minOutputTokens,
+        4000,
+        productionTextPlannerPolicy.recommendedOutputTokens
+      ),
       temperature: 0.62
     },
     {

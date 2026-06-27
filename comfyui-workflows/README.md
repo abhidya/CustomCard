@@ -142,12 +142,13 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 Readiness doctor before collecting promotion evidence:
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-readiness-doctor.mjs --advisory
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-readiness-doctor.mjs --advisory --local-llm-base-url http://127.0.0.1:5003/v1 --planner-context-tokens 8192 --planner-max-output-tokens 3200
 ```
 
 The doctor checks the production workflow, live Comfy node, latest aggregate,
-local model inventory, and planner endpoint suitability. It should stay blocked
-when the only reachable planner is a Qwen3-4B/8B smoke model.
+local model inventory, planner endpoint suitability, and declared planner
+context/output budget. It should stay blocked when the only reachable planner is
+a Qwen3-4B/8B smoke model or when the production budget is not reported.
 
 Planner runtime preflight:
 
@@ -163,7 +164,7 @@ and 4096-context runs are smoke/failure evidence only.
 Generate the blocked-evidence rerun plan:
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-rerun-plan.mjs --output-dir docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-rerun-plan.mjs --date 20260627 --gate docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-current/production-text-promotion-gate.json --index docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-current/production-text-evidence-index.json --output-dir docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-current
 ```
 
 The rerun plan reads the current promotion gate and evidence index, then writes
@@ -184,7 +185,7 @@ manual grades before aggregate or gate evidence is cited.
 Local model coverage before the tracked evidence index:
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/local-model-coverage.mjs --output-dir docs/evidence/generated-card-comparisons/local-model-coverage-20260626-current
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/local-model-coverage.mjs --output-dir docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current
 ```
 
 The coverage report separates installed production planner files from live
@@ -194,7 +195,7 @@ evidence index if it should count in current production-text findings.
 Evidence index before deciding the next run:
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-evidence-index.mjs --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-evidence-index.mjs --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-current
 ```
 
 The index scans tracked production-text planner preflight, readiness, local
@@ -204,7 +205,7 @@ evidence. Pass `--include-untracked` only for local scratch review.
 Promotion gate before defaulting the workflow:
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-promotion-gate.mjs --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current --index-output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-promotion-gate.mjs --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-current --index-output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-current
 ```
 
 The gate is the final pass/fail contract for production-text promotion. It is
@@ -215,7 +216,7 @@ matrix, term adherence, and manual aggregate requirements all pass.
 Research rollup after the index/gate/rerun refresh:
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-research-rollup.mjs --output-dir docs/evidence/generated-card-comparisons/production-text-research-rollup-20260626-current
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-research-rollup.mjs --date 20260627 --index docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-current/production-text-evidence-index.json --gate docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-current/production-text-promotion-gate.json --rerun docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-current/production-text-rerun-plan.json --output-dir docs/evidence/generated-card-comparisons/production-text-research-rollup-20260627-current
 ```
 
 The rollup aggregates the current evidence index, promotion gate, and rerun plan
@@ -293,45 +294,44 @@ Latest live evidence:
     theme/copy/cue/visual-brief repair request-aware, and refuses Qwen3-4B/8B
     for production evidence unless `-AllowSmallPlanner` is explicit.
 - Current readiness doctor:
-  `docs/evidence/generated-card-comparisons/production-text-readiness-20260626-current`
-  - Previous live preflight proves `CustomCardTextComposer` worked, but the
-    latest readiness probe finds local Comfy and planner endpoints offline.
+  `docs/evidence/generated-card-comparisons/production-text-readiness-20260627-current`
+  - Current live Comfy and production planner endpoint probes are offline.
   - Higher-quality local planner files exist, but no production-suitable
     planner endpoint is currently reachable/configured.
 - Current planner preflight:
-  `docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260626-current`
-  - Blocks promotion because the 5001 `/models` probe is not currently
-    reachable and the explicit Qwen3-4B/4096-context planner is smoke-only.
+  `docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-current`
+  - Uses Gemma 31B with 8192 context and 3200 max output as the production
+    planner target, but blocks promotion because the `5003` `/models` probe is
+    not currently reachable.
 - Current local model coverage:
-  `docs/evidence/generated-card-comparisons/local-model-coverage-20260626-current`
+  `docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current`
   - Gemma 31B, Magistral Small, and DeepSeek V4 Flash are installed production
     planner candidates but still need local production-text evaluation.
   - Qwen3 14B remains an optional missing fallback if installed planners are too
     slow for routine benchmark loops.
 - Current rerun plan:
-  `docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260626-current`
-  - Converts the 9 failed gate requirements into 10 ordered commands for the
+  `docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-current`
+  - Converts the 10 failed gate requirements into 10 ordered commands for the
     next production-suitable planner pass and records local planner coverage.
 - Current manual grade checklist:
   `docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current`
   - Blocks promotion: 2 generated runs were graded and blocked, koi failed
     before image generation, and must-include/theme adherence remains broken.
 - Current evidence index:
-  `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260626-current`
+  `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-current`
   - Tracks the current production-text evidence set, including planner
     preflight, local model coverage, and rerun plan, and keeps promotion blocked
     until the planner endpoint and aggregate evidence pass.
 - Current promotion gate:
-  `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260626-current`
-  - Passes historical live Comfy/text-composer preflight, final-Comfy-image
-    evidence, local model coverage, and production-planner-candidate
-    availability.
-  - Fails current live Comfy proof, planner preflight/readiness,
-    production-suitable endpoint, no-small-planner, matrix completion,
-    must-include, manual grade checklist, and manual aggregate requirements, so
-    production promotion remains blocked.
+  `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-current`
+  - Passes local model coverage, production-planner-candidate availability, and
+    final-Comfy-image evidence from the older matrix.
+  - Fails live Comfy preflight/current proof, planner preflight/readiness,
+    production-suitable endpoint, no-small-planner replacement evidence, matrix
+    completion, must-include/must-avoid, manual grade checklist, and manual
+    aggregate requirements, so production promotion remains blocked.
 - Current research rollup:
-  `docs/evidence/generated-card-comparisons/production-text-research-rollup-20260626-current`
+  `docs/evidence/generated-card-comparisons/production-text-research-rollup-20260627-current`
   - Derives current findings, failed gate requirements, evidence summary, and 10
     next commands from tracked index/gate/rerun artifacts.
   - Records that reduced planner prompts are not promotion evidence; rerun with

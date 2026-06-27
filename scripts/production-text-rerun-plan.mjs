@@ -145,8 +145,8 @@ function buildCommands({ recommended, paths }) {
     {
       step: 4,
       title: "Refresh readiness",
-      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-readiness-doctor.mjs --advisory --local-llm-base-url ${recommended.plannerBaseUrl} --output-dir ${paths.readinessOutput}`,
-      why: "Confirms Comfy, the custom text node, aggregate state, model inventory, and configured planner endpoint."
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-readiness-doctor.mjs --advisory --local-llm-base-url ${recommended.plannerBaseUrl} --planner-context-tokens ${recommended.contextTokens} --planner-max-output-tokens ${recommended.maxOutputTokens} --output-dir ${paths.readinessOutput}`,
+      why: "Confirms Comfy, the custom text node, aggregate state, model inventory, and the configured planner endpoint with the production context/output budget."
     },
     {
       step: 5,

@@ -1,6 +1,11 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, extname, resolve } from "node:path";
-import { classifyProductionTextPlanner, isQualityPlanner, isSmallPlanner } from "./production-text-planner-policy.mjs";
+import {
+  classifyProductionTextPlanner,
+  isQualityPlanner,
+  isSmallPlanner,
+  productionTextPlannerPolicy
+} from "./production-text-planner-policy.mjs";
 
 const repoRoot = resolve(import.meta.dirname, "..");
 const evidenceRoot = resolve(repoRoot, "docs/evidence/generated-card-comparisons");
@@ -47,6 +52,10 @@ export async function runDoctor(args = {}) {
     ...commonPlannerUrls
   ].filter(Boolean).map(normalizeOpenAiBaseUrl));
   const timeoutMs = boundedInteger(args["timeout-ms"], 500, 30_000, 3_000);
+  const plannerRuntimeBudget = {
+    reportedContextTokens: boundedInteger(args["planner-context-tokens"] || args["reported-context-tokens"], 1, 1_000_000, 0),
+    maxOutputTokens: boundedInteger(args["planner-max-output-tokens"] || args["max-output-tokens"], 1, 1_000_000, 0)
+  };
 
   const workflowExists = existsSync(workflowPath);
   const nodeSourceExists = existsSync(nodeSource) &&
@@ -55,7 +64,7 @@ export async function runDoctor(args = {}) {
   const aggregate = readJson(aggregatePath);
   const aggregateSummary = summarizeAggregate(aggregate, aggregatePath);
   const modelInventory = summarizeModelInventory(modelRoot);
-  const plannerEndpoints = await Promise.all(plannerUrls.map((url) => probePlanner(url, timeoutMs)));
+  const plannerEndpoints = await Promise.all(plannerUrls.map((url) => probePlanner(url, timeoutMs, plannerRuntimeBudget)));
   const activePlannerEndpoints = selectActivePlannerEndpoints(plannerEndpoints, configuredPlannerUrls);
   const comfy = await probeComfy(comfyUrl, timeoutMs);
 
@@ -108,6 +117,7 @@ export async function runDoctor(args = {}) {
     plannerEndpoints,
     aggregateSummary,
     modelInventory,
+    plannerRuntimeBudget,
     checks,
     blockers,
     nextSteps: buildNextSteps({ blockers, modelInventory, plannerEndpoints, comfy, aggregateSummary })
@@ -192,7 +202,7 @@ function collectModelFiles(root) {
   return results.sort((a, b) => a.path.localeCompare(b.path));
 }
 
-async function probePlanner(baseUrl, timeoutMs) {
+async function probePlanner(baseUrl, timeoutMs, runtimeBudget = {}) {
   const modelsUrl = `${baseUrl.replace(/\/$/, "")}/models`;
   try {
     const response = await fetchWithTimeout(modelsUrl, timeoutMs);
@@ -200,17 +210,24 @@ async function probePlanner(baseUrl, timeoutMs) {
     const body = await response.json();
     const models = (body?.data || []).map((item) => String(item?.id || "")).filter(Boolean);
     const activeModel = models[0] || "";
-    const plannerClass = classifyProductionTextPlanner(activeModel);
+    const plannerClass = classifyProductionTextPlanner(activeModel, {
+      reportedContextTokens: runtimeBudget.reportedContextTokens,
+      maxOutputTokens: runtimeBudget.maxOutputTokens,
+      requireRuntimeBudget: true
+    });
     return {
       baseUrl,
       reachable: true,
       activeModel,
       models,
+      reportedContextTokens: plannerClass.reportedContextTokens,
+      maxOutputTokens: plannerClass.maxOutputTokens,
       smallPlanner: plannerClass.smallPlanner,
       productionSuitable: plannerClass.productionSuitable,
       plannerClass: plannerClass.classification,
       plannerPolicy: {
         minContextTokens: plannerClass.minContextTokens,
+        minOutputTokens: plannerClass.minOutputTokens,
         recommendedOutputTokens: plannerClass.recommendedOutputTokens,
         blockers: plannerClass.blockers,
         warnings: plannerClass.warnings
@@ -272,7 +289,7 @@ function buildNextSteps({ blockers, modelInventory, plannerEndpoints, comfy, agg
     steps.push("Start the configured local/hosted OpenAI-compatible planner endpoint before running promotion evidence.");
   }
   if (blockerNames.has("configured production planner endpoint is production-suitable")) {
-    steps.push("Run tools/start-local-card-planner.ps1 with 8192+ context and GPU/offload, use a hosted/self-hosted production planner, or point -LocalLlmBaseUrl at that endpoint.");
+    steps.push(`Run tools/start-local-card-planner.ps1 with ${productionTextPlannerPolicy.minContextTokens}+ context and ${productionTextPlannerPolicy.recommendedOutputTokens} output tokens, use a hosted/self-hosted production planner, or point -LocalLlmBaseUrl at that endpoint.`);
   }
   if (blockerNames.has("configured production planner is not a small smoke model")) {
     steps.push("Switch the production planner URL away from Qwen3-4B/8B and other small smoke models; keep -AllowSmallPlanner only for exploratory failure evidence, not promotion.");
@@ -311,10 +328,10 @@ function buildMarkdown(result) {
   lines.push("");
   lines.push("## Planner Endpoints");
   lines.push("");
-  lines.push("| Endpoint | Reachable | Active model | Production suitable |");
-  lines.push("| --- | --- | --- | --- |");
+  lines.push("| Endpoint | Reachable | Active model | Context | Output cap | Production suitable |");
+  lines.push("| --- | --- | --- | --- | --- | --- |");
   for (const endpoint of result.plannerEndpoints) {
-    lines.push(`| ${markdownCell(endpoint.baseUrl)} | ${endpoint.reachable ? "yes" : "no"} | ${markdownCell(endpoint.activeModel || endpoint.error || "n/a")} | ${endpoint.productionSuitable ? "yes" : "no"} |`);
+    lines.push(`| ${markdownCell(endpoint.baseUrl)} | ${endpoint.reachable ? "yes" : "no"} | ${markdownCell(endpoint.activeModel || endpoint.error || "n/a")} | ${endpoint.reportedContextTokens ?? "n/a"} | ${endpoint.maxOutputTokens ?? "n/a"} | ${endpoint.productionSuitable ? "yes" : "no"} |`);
   }
   lines.push("");
   lines.push("## Aggregate Summary");

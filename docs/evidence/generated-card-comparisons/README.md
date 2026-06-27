@@ -29,25 +29,31 @@ Current production-text research status:
 `production-text-research-findings-2026-06-26.md`.
 
 Current generated production-text research rollup:
-`production-text-research-rollup-20260626-current/production-text-research-rollup.md`.
+`production-text-research-rollup-20260627-current/production-text-research-rollup.md`.
 
 Current production-text evidence index:
-`production-text-evidence-index-20260626-current/production-text-evidence-index.md`.
+`production-text-evidence-index-20260627-current/production-text-evidence-index.md`.
 
 Current production-text local model coverage:
-`local-model-coverage-20260626-current/local-model-coverage.md`.
+`local-model-coverage-20260627-current/local-model-coverage.md`.
 
 Current production-text planner preflight:
-`production-text-planner-preflight-20260626-current/production-text-planner-preflight.md`.
+`production-text-planner-preflight-20260627-current/production-text-planner-preflight.md`.
+
+Current production-text live Comfy preflight:
+`production-text-preflight-20260627-current/production-text-preflight.md`.
+
+Current production-text readiness doctor:
+`production-text-readiness-20260627-current/production-text-readiness.md`.
 
 Current production-text rerun plan:
-`production-text-rerun-plan-20260626-current/production-text-rerun-plan.md`.
+`production-text-rerun-plan-20260627-current/production-text-rerun-plan.md`.
 
 Current production-text manual grade checklist:
 `production-text-manual-grade-checklist-20260626-current/production-text-manual-grade-checklist.md`.
 
 Current production-text promotion gate:
-`production-text-promotion-gate-20260626-current/production-text-promotion-gate.md`.
+`production-text-promotion-gate-20260627-current/production-text-promotion-gate.md`.
 
 Latest LLM-planned production-text matrix:
 `benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-rankings.md`.

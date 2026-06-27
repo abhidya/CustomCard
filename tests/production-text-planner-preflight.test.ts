@@ -116,17 +116,39 @@ describe("production text planner preflight", () => {
     expect(report.promotionReady).toBe(true);
     expect(report.classification.classification).toBe("production-suitable");
     expect(report.classification.minimumOpenWeightPlannerClass).toContain("14B+");
+    expect(report.classification.minOutputTokens).toBe(3200);
     expect(report.blockers).toEqual([]);
+  });
+
+  it("blocks a production model when the runtime context budget is not reported", async () => {
+    const fetchImpl = async () => modelsResponse("koboldcpp/gemma-4-31B-it-Q4_K_M");
+    const root = mkdtempSync(join(tmpdir(), "production-text-planner-preflight-missing-context-"));
+
+    const report = await runProductionTextPlannerPreflight(
+      {
+        "base-url": "http://127.0.0.1:5003/v1",
+        "max-output-tokens": "3200",
+        "output-dir": root
+      },
+      { fetchImpl }
+    );
+
+    expect(report.runAllowed).toBe(false);
+    expect(report.promotionReady).toBe(false);
+    expect(report.classification.classification).toBe("blocked");
+    expect(report.blockers.join("\n")).toContain("context was not reported");
+    expect(report.blockers.join("\n")).toContain("finish_reason=length");
   });
 
   it("keeps the policy helper strict about reduced output caps", () => {
     const result = classifyProductionTextPlanner("koboldcpp/gemma-4-31B-it-Q4_K_M", {
       reportedContextTokens: 8192,
-      maxOutputTokens: 1800,
+      maxOutputTokens: 2200,
       requireRuntimeBudget: true
     });
 
     expect(result.productionSuitable).toBe(false);
-    expect(result.blockers.join("\n")).toContain("PlannerMaxTokens 1800");
+    expect(result.blockers.join("\n")).toContain("PlannerMaxTokens 2200");
+    expect(result.blockers.join("\n")).toContain("production minimum 3200");
   });
 });

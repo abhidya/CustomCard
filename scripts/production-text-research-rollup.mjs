@@ -199,7 +199,7 @@ function buildFindings({
     findings.push("Reduced creative prompt contracts are disallowed for promotion evidence; fix finish_reason=length by using the correct planner runtime.");
   }
   if (latestPlanner && !latestPlanner.promotionReady) {
-    findings.push(`Planner evidence is not promotable: ${latestPlanner.activeModel || "unknown model"} is ${latestPlanner.classification || "blocked"}.`);
+    findings.push(plannerBlockedFinding(latestPlanner));
   }
   if (latestReadiness && !latestReadiness.productionSuitablePlannerReachable) {
     findings.push("A production-suitable planner endpoint is not currently reachable.");
@@ -226,6 +226,19 @@ function buildFindings({
     findings.push(`Promotion gate currently fails ${failedRequirements.length} requirement(s): ${failedRequirements.map((item) => item.name).join(", ")}.`);
   }
   return unique(findings);
+}
+
+function plannerBlockedFinding(latestPlanner) {
+  const model = latestPlanner.activeModel || "unknown model";
+  const classification = latestPlanner.classification || "blocked";
+  const blockers = Array.isArray(latestPlanner.blockers) ? latestPlanner.blockers.filter(Boolean) : [];
+  if (!latestPlanner.reachable) {
+    return `Production planner endpoint is not reachable for ${model} (${classification}); latest blocker: ${blockers[0] || "planner /models probe failed"}.`;
+  }
+  if (classification === "production-suitable") {
+    return `Planner preflight is blocked despite production-suitable model ${model}; latest blocker: ${blockers[0] || "unknown planner preflight blocker"}.`;
+  }
+  return `Planner evidence is not promotable: ${model} is ${classification}.`;
 }
 
 function buildMarkdown(result) {

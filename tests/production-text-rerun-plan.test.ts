@@ -99,6 +99,8 @@ describe("production text rerun plan", () => {
     ]);
     expect(plan.commands[2].command).toContain("comfyui-production-text-preflight.mjs");
     expect(plan.commands[2].command).toContain("--require-live true");
+    expect(plan.commands[3].command).toContain("--planner-context-tokens 8192");
+    expect(plan.commands[3].command).toContain("--planner-max-output-tokens 3200");
     expect(plan.commands[4].command).toContain("-PlannerMaxTokens 3200");
     expect(plan.commands[4].command).not.toContain("-AllowSmallPlanner");
     expect(plan.commands[6].command).toContain("production-text-manual-grade-checklist.mjs");

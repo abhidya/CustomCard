@@ -1,6 +1,6 @@
 export const productionTextPlannerPolicy = Object.freeze({
   minContextTokens: 8192,
-  minOutputTokens: 2200,
+  minOutputTokens: 3200,
   recommendedOutputTokens: 3200,
   minimumOpenWeightPlannerClass: "14B+ dense/open-weight planner or stronger hosted model",
   recommendedModels: [
@@ -42,7 +42,11 @@ export function classifyProductionTextPlanner(modelName, options = {}) {
     blockers.push("PlannerMaxTokens was not provided for production planner preflight.");
   }
 
-  if (!allowSmall && reportedContextTokens && reportedContextTokens < productionTextPlannerPolicy.minContextTokens) {
+  if (!allowSmall && requireRuntimeBudget && !reportedContextTokens) {
+    blockers.push(
+      `Planner context was not reported; prove ${productionTextPlannerPolicy.minContextTokens}+ context tokens for production evidence and treat finish_reason=length as wrong-runtime evidence.`
+    );
+  } else if (!allowSmall && reportedContextTokens && reportedContextTokens < productionTextPlannerPolicy.minContextTokens) {
     blockers.push(
       `Planner context ${reportedContextTokens} is below the production minimum ${productionTextPlannerPolicy.minContextTokens}; 4096-token local runs are smoke-only.`
     );
