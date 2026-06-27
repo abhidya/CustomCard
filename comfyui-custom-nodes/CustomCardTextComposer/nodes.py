@@ -30,7 +30,7 @@ class CustomCardTextComposer:
                 "artwork_guard_color": ("STRING", {"default": ""}),
                 "artwork_guard_opacity": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.01}),
                 "artwork_guard_radius": ("INT", {"default": 0, "min": 0, "max": 512, "step": 1}),
-                "artwork_guard_style": (["none", "box"], {"default": "none"}),
+                "artwork_guard_style": (["none", "box", "panel"], {"default": "none"}),
                 "headline_box_x": ("INT", {"default": 80, "min": 0, "max": 8192, "step": 1}),
                 "headline_box_y": ("INT", {"default": 120, "min": 0, "max": 8192, "step": 1}),
                 "headline_box_width": ("INT", {"default": 800, "min": 1, "max": 8192, "step": 1}),
@@ -39,7 +39,7 @@ class CustomCardTextComposer:
                 "headline_box_background_padding": ("INT", {"default": 0, "min": 0, "max": 512, "step": 1}),
                 "headline_box_background_radius": ("INT", {"default": 32, "min": 0, "max": 512, "step": 1}),
                 "headline_box_background_opacity": ("FLOAT", {"default": 0.96, "min": 0.0, "max": 1.0, "step": 0.01}),
-                "headline_box_background_style": (["text-hug", "box"], {"default": "text-hug"}),
+                "headline_box_background_style": (["text-hug", "box", "panel"], {"default": "text-hug"}),
                 "body_box_x": ("INT", {"default": 100, "min": 0, "max": 8192, "step": 1}),
                 "body_box_y": ("INT", {"default": 460, "min": 0, "max": 8192, "step": 1}),
                 "body_box_width": ("INT", {"default": 760, "min": 1, "max": 8192, "step": 1}),
@@ -48,7 +48,7 @@ class CustomCardTextComposer:
                 "body_box_background_padding": ("INT", {"default": 0, "min": 0, "max": 512, "step": 1}),
                 "body_box_background_radius": ("INT", {"default": 32, "min": 0, "max": 512, "step": 1}),
                 "body_box_background_opacity": ("FLOAT", {"default": 0.96, "min": 0.0, "max": 1.0, "step": 0.01}),
-                "body_box_background_style": (["text-hug", "box"], {"default": "text-hug"}),
+                "body_box_background_style": (["text-hug", "box", "panel"], {"default": "text-hug"}),
                 "alignment": (["left", "center", "right"], {"default": "center"}),
                 "headline_vertical_alignment": (["top", "middle", "bottom"], {"default": "middle"}),
                 "body_vertical_alignment": (["top", "middle", "bottom"], {"default": "middle"}),
@@ -325,7 +325,7 @@ def _draw_box_background(
         min(image_size[0], int(round(right))),
         min(image_size[1], int(round(bottom))),
     )
-    return _draw_safe_field(canvas, rect, color, radius, opacity)
+    return _draw_safe_surface(canvas, rect, color, radius, opacity, style)
 
 
 def _draw_artwork_guard(canvas, box, fill, opacity, radius, style):
@@ -335,7 +335,32 @@ def _draw_artwork_guard(canvas, box, fill, opacity, radius, style):
     if color is None:
         return canvas
     rect = _box_rect(canvas.size, box, padding=0)
-    return _draw_safe_field(canvas, rect, color, radius, opacity)
+    return _draw_safe_surface(canvas, rect, color, radius, opacity, style)
+
+
+def _draw_safe_surface(canvas, rect, color, radius, opacity, style):
+    rendered = _draw_safe_field(canvas, rect, color, radius, opacity)
+    if str(style or "").strip().lower() != "panel":
+        return rendered
+    left, top, right, bottom = rect
+    if right <= left or bottom <= top:
+        return rendered
+    rounded_radius = max(0, min(int(round(float(radius or 0))), (right - left) // 2, (bottom - top) // 2))
+    line_width = max(2, min(8, int(round((right - left) * 0.008))))
+    outer, inner = _panel_edge_colors(color)
+    overlay = Image.new("RGBA", rendered.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+    draw.rounded_rectangle((left, top, right, bottom), radius=rounded_radius, outline=outer, width=line_width)
+    inset = max(line_width * 2, 6)
+    if right - left > inset * 2 and bottom - top > inset * 2:
+        inner_radius = max(0, rounded_radius - inset)
+        draw.rounded_rectangle(
+            (left + inset, top + inset, right - inset, bottom - inset),
+            radius=inner_radius,
+            outline=inner,
+            width=max(1, line_width // 2),
+        )
+    return Image.alpha_composite(rendered.convert("RGBA"), overlay).convert("RGB")
 
 
 def _box_rect(image_size, box, padding=0):
@@ -365,6 +390,13 @@ def _draw_safe_field(canvas, rect, color, radius, opacity):
     draw = ImageDraw.Draw(overlay)
     draw.rounded_rectangle((left, top, right, bottom), radius=rounded_radius, fill=(*color, alpha))
     return Image.alpha_composite(canvas.convert("RGBA"), overlay).convert("RGB")
+
+
+def _panel_edge_colors(color):
+    luminance = color[0] * 0.2126 + color[1] * 0.7152 + color[2] * 0.0722
+    if luminance < 96:
+        return (255, 246, 223, 90), (255, 246, 223, 34)
+    return (74, 67, 48, 70), (255, 255, 255, 58)
 
 
 def _fit_text(draw, text, font_name, font_size, min_font_size, max_width, max_height, stroke_width, line_spacing):

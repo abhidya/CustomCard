@@ -11,6 +11,15 @@ Use this instead of asking the diffusion model to draw body copy. The model
 should render text-safe artwork only; this node owns exact spelling, wrapping,
 and final print pixels.
 
+The node can also draw deterministic safe fields before typography:
+
+- `box` draws a plain rounded field.
+- `panel` draws the same field with a subtle outer and inner edge, so broad
+  Comfy-side text-safe regions read like intentional card stationery instead
+  of accidental flat rectangles.
+- `text-hug` on headline/body backgrounds hugs the fitted copy while the
+  broader artwork guard keeps busy model output out of the reading area.
+
 Install with:
 
 ```powershell

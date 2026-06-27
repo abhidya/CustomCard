@@ -9,7 +9,8 @@ the local worker or benchmark loop.
 - `customcard-production-text-overlay.json`
   - Production candidate for Comfy-side deterministic text compositing.
   - Requires the checked-in `CustomCardTextComposer` node from `comfyui-custom-nodes/CustomCardTextComposer`.
-  - The diffusion model still generates artwork only; exact card copy, deterministic soft text-hug safe fields, and broader artwork guards are rendered before `SaveImage`.
+  - The diffusion model still generates artwork only; exact card copy, deterministic soft text-hug safe fields, and broader `panel` artwork guards are rendered before `SaveImage`.
+  - Restart ComfyUI after updating or relinking the custom node; `/object_info` for `CustomCardTextComposer` should include `panel` in `artwork_guard_style`.
   - Live local evidence on 2026-06-26 proves the text-composer path works. The best artwork-guard candidate is improved but still blocked for visual quality. Do not make this the production default until a manual/local-vision grade passes.
 - `customcard-hybrid-reserved-layout.json`
   - Production-leaning benchmark workflow for four greeting-card panels.

@@ -29,7 +29,7 @@ describe("local Comfy production text contract", () => {
     expect(variables.bodyText).toBe("Wishing you strength and peace.");
     expect(variables.headlineFont).toBe("arialbd.ttf");
     expect(variables.bodyFont).toBe("arial.ttf");
-    expect(variables.artworkGuardStyle).toBe("box");
+    expect(variables.artworkGuardStyle).toBe("panel");
     expect(variables.artworkGuardOpacity).toBe(0.96);
     expect(variables.artworkGuardX).toBe(77);
     expect(variables.artworkGuardY).toBe(269);
@@ -72,7 +72,7 @@ describe("local Comfy production text contract", () => {
     );
 
     expect(summary.workflow_id).toBe("customcard-production-text-overlay");
-    expect(summary.artwork_guard_style).toBe("box");
+    expect(summary.artwork_guard_style).toBe("panel");
     expect(summary.artwork_guard_opacity).toBe(0.97);
     expect(summary.headline_box_background_style).toBe("text-hug");
     expect(merged.panel_id).toBe("inside-right");

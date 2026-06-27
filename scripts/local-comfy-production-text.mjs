@@ -280,7 +280,7 @@ function localComfyArtworkGuard({ panelId, lightInk, width, height }) {
       color: lightInk ? "#111715" : "#fff6df",
       opacity: lightInk ? 0.96 : 0.97,
       radius: Math.round(imageWidth * 0.045),
-      style: "box"
+      style: "panel"
     };
   }
   return {
@@ -291,7 +291,7 @@ function localComfyArtworkGuard({ panelId, lightInk, width, height }) {
     color: "#fff6df",
     opacity: 0.97,
     radius: Math.round(imageWidth * 0.055),
-    style: "box"
+    style: "panel"
   };
 }
 
