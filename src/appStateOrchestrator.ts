@@ -326,18 +326,26 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
       .then(async (initialResult: AiGenerationApiResult) => {
         let result = initialResult;
         if (result.status === "queued" || result.queue_status === "queued") {
+          const queuedResult = result;
+          const queuedJob = buildAiGenerationJobEvidence({ result: queuedResult, draft: requestDraft });
+          setAiGenerationJobs((current) => prependAiGenerationJob(current, queuedJob, 10));
           setAiDraft(requestDraft);
           setAiCardGenStatus("Template is ready while AI drafts the card in the background.");
           setAiPanelGenerationProgress(progressForPanels(requestPanels, "queued"));
-          result = await pollQueuedAiGenerationJob({
+          const completedResult = await pollQueuedAiGenerationJob({
             getCustomerApiToken,
-            jobId: result.job_id,
-            statusUrl: result.job_status_url,
+            jobId: queuedResult.job_id,
+            statusUrl: queuedResult.job_status_url,
             onStatus: (status) => {
               setAiCardGenStatus(status.statusText);
               setAiPanelGenerationProgress(progressForPanels(requestPanels, "queued"));
             }
           });
+          result = {
+            ...completedResult,
+            job_id: completedResult.job_id || queuedResult.job_id,
+            job_status_url: completedResult.job_status_url || queuedResult.job_status_url
+          };
         }
 
         const imageByPanel = new Map<string, AiGenerationApiImage>(

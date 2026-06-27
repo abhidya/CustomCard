@@ -88,6 +88,72 @@ describe("AI generation job evidence", () => {
     expect(serialized).not.toContain("test-only-secret");
   });
 
+  it("records queued admissions before provider results are ready", () => {
+    const job = buildAiGenerationJobEvidence({
+      draft,
+      now: new Date("2026-06-11T13:05:00.000Z"),
+      result: {
+        status: "queued",
+        job_id: "job-ai-card-1",
+        queue_status: "queued",
+        job_status_url: "/api/ai/jobs/status?job_id=job-ai-card-1",
+        result_available: false
+      }
+    });
+
+    expect(job).toMatchObject({
+      id: "job-ai-card-1",
+      draftId: draft.id,
+      status: "queued",
+      queueStatus: "queued",
+      jobStatusUrl: "/api/ai/jobs/status?job_id=job-ai-card-1",
+      generatedBy: "queued-worker",
+      copyProvider: "pending",
+      imageProvider: "pending",
+      imageCount: 0,
+      panelCount: draft.panels.length
+    });
+    expect(job.panels.every((panel) => panel.status === "queued")).toBe(true);
+  });
+
+  it("replaces the queued admission when the same provider job completes", () => {
+    const queuedJob = buildAiGenerationJobEvidence({
+      draft,
+      now: new Date("2026-06-11T13:05:00.000Z"),
+      result: {
+        status: "queued",
+        job_id: "job-ai-card-1",
+        queue_status: "queued",
+        job_status_url: "/api/ai/jobs/status?job_id=job-ai-card-1",
+        result_available: false
+      }
+    });
+    const completedJob = buildAiGenerationJobEvidence({
+      draft,
+      now: new Date("2026-06-11T13:06:00.000Z"),
+      result: {
+        job_id: "job-ai-card-1",
+        queue_status: "succeeded",
+        draft_id: "draft-small-business",
+        generated_by: "ai-text-and-image",
+        card_copy: {
+          panels: [{ id: "front", headline: "Done", body: "Ready for review." }]
+        },
+        images: [{ panel_id: "front", image_url: "data:image/png;base64,AAAA" }]
+      }
+    });
+
+    const next = prependAiGenerationJob([queuedJob], completedJob, 10);
+
+    expect(next).toHaveLength(1);
+    expect(next[0]).toMatchObject({
+      id: "job-ai-card-1",
+      status: "partial",
+      imageCount: 1,
+      draftId: "draft-small-business"
+    });
+  });
+
   it("keeps only the most recent generation jobs", () => {
     const jobs = Array.from({ length: 4 }, (_, index) =>
       buildAiGenerationJobEvidence({

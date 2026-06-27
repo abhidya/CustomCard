@@ -1,7 +1,7 @@
 import type { CardDraft, CardPanel, CardTextLayout } from "./customerWorkflow";
 
-export type AiGenerationJobStatus = "succeeded" | "partial" | "copy-only";
-export type AiGenerationJobPanelStatus = "generated" | "missing";
+export type AiGenerationJobStatus = "queued" | "succeeded" | "partial" | "copy-only";
+export type AiGenerationJobPanelStatus = "queued" | "generated" | "missing";
 
 export interface AiGenerationFlowState {
   adapter_id?: string;
@@ -130,6 +130,8 @@ export interface AiGenerationJobEvidence {
   draftId: string;
   createdAtIso: string;
   status: AiGenerationJobStatus;
+  queueStatus?: string;
+  jobStatusUrl?: string;
   generatedBy: string;
   copyProvider: string;
   copyModel: string;
@@ -155,23 +157,31 @@ export function buildAiGenerationJobEvidence({
   const images = Array.isArray(result.images) ? result.images : [];
   const copyByPanel = new Map(copyPanels.map((panel) => [String(panel.id || ""), panel]));
   const imageByPanel = new Map(images.map((image) => [String(image.panel_id || ""), image]));
-  const panels = draft.panels.map((panel) => buildPanelEvidence(panel, copyByPanel.get(panel.id), imageByPanel.get(panel.id)));
+  const queueStatus = readQueueStatus(result);
+  const isQueued = queueStatus === "queued" || queueStatus === "running";
+  const panels = draft.panels.map((panel) =>
+    buildPanelEvidence(panel, copyByPanel.get(panel.id), imageByPanel.get(panel.id), isQueued)
+  );
   const imageCount = panels.filter((panel) => panel.status === "generated").length;
   const status: AiGenerationJobStatus =
-    imageCount === panels.length && panels.length > 0 ? "succeeded" : imageCount > 0 ? "partial" : "copy-only";
+    isQueued
+      ? "queued"
+      : imageCount === panels.length && panels.length > 0 ? "succeeded" : imageCount > 0 ? "partial" : "copy-only";
   const copyFlow = result.ai_flow?.card_copy;
   const imageFlow = result.ai_flow?.card_image;
 
   return {
-    id: `${draft.id}-${now.getTime()}`,
+    id: buildJobEvidenceId(result, draft, now),
     draftId: redactSensitiveText(String(result.draft_id || draft.id)),
     createdAtIso: now.toISOString(),
     status,
-    generatedBy: redactSensitiveText(String(result.generated_by || (imageCount > 0 ? "ai-text-and-image" : "ai-text-only"))),
-    copyProvider: redactSensitiveText(copyFlow?.adapter_id || "unknown"),
-    copyModel: redactSensitiveText(copyFlow?.model || "unknown"),
-    imageProvider: redactSensitiveText(imageFlow?.adapter_id || "unknown"),
-    imageModel: redactSensitiveText(imageFlow?.model || "unknown"),
+    queueStatus: queueStatus || undefined,
+    jobStatusUrl: redactSensitiveText(result.job_status_url || ""),
+    generatedBy: redactSensitiveText(String(result.generated_by || (isQueued ? "queued-worker" : imageCount > 0 ? "ai-text-and-image" : "ai-text-only"))),
+    copyProvider: redactSensitiveText(copyFlow?.adapter_id || (isQueued ? "pending" : "unknown")),
+    copyModel: redactSensitiveText(copyFlow?.model || (isQueued ? "pending" : "unknown")),
+    imageProvider: redactSensitiveText(imageFlow?.adapter_id || (isQueued ? "pending" : "unknown")),
+    imageModel: redactSensitiveText(imageFlow?.model || (isQueued ? "pending" : "unknown")),
     textProviderFailure: redactSensitiveText(copyFlow?.provider_failure || ""),
     imageProviderFailure: redactSensitiveText(imageFlow?.provider_failure || ""),
     panelCount: panels.length,
@@ -185,13 +195,14 @@ export function prependAiGenerationJob(
   job: AiGenerationJobEvidence,
   limit = 10
 ): AiGenerationJobEvidence[] {
-  return [job, ...jobs].slice(0, Math.max(1, limit));
+  return [job, ...jobs.filter((candidate) => candidate.id !== job.id)].slice(0, Math.max(1, limit));
 }
 
 function buildPanelEvidence(
   panel: CardPanel,
   copy: AiGenerationApiPanel | undefined,
-  image: AiGenerationApiImage | undefined
+  image: AiGenerationApiImage | undefined,
+  isQueued: boolean
 ): AiGenerationJobPanelEvidence {
   const imageUrl = typeof image?.image_url === "string" && image.image_url ? image.image_url : undefined;
   return {
@@ -209,8 +220,20 @@ function buildPanelEvidence(
     renderingMode: readImageRenderingMode(image),
     width: coercePositiveInt(image?.width, panel.width),
     height: coercePositiveInt(image?.height, panel.height),
-    status: imageUrl ? "generated" : "missing"
+    status: isQueued ? "queued" : imageUrl ? "generated" : "missing"
   };
+}
+
+function buildJobEvidenceId(result: AiGenerationApiResult, draft: CardDraft, now: Date): string {
+  const jobId = redactSensitiveText(result.job_id || "");
+  return jobId || `${draft.id}-${now.getTime()}`;
+}
+
+function readQueueStatus(result: AiGenerationApiResult): string {
+  const queueStatus = String(result.queue_status || "").trim().toLowerCase();
+  if (queueStatus) return queueStatus;
+  const status = String(result.status || "").trim().toLowerCase();
+  return status === "queued" || status === "running" ? status : "";
 }
 
 function readImageRenderingMode(image: AiGenerationApiImage | undefined): string | undefined {

@@ -242,6 +242,46 @@ describe("customer shell server render", () => {
     expect(text).toContain("image-provider / image-test");
   });
 
+  it("renders queued admin AI generation jobs as generating work", () => {
+    const aiFlowConfigs = buildDefaultAiFlowAdminConfigs();
+    const queuedJob: AiGenerationJobEvidence = {
+      id: "job-ai-card-1",
+      draftId: "draft-queue-1",
+      createdAtIso: "2026-06-11T12:05:00.000Z",
+      status: "queued",
+      queueStatus: "queued",
+      jobStatusUrl: "/api/ai/jobs/status?job_id=job-ai-card-1",
+      generatedBy: "queued-worker",
+      copyProvider: "pending",
+      copyModel: "pending",
+      imageProvider: "pending",
+      imageModel: "pending",
+      textProviderFailure: "",
+      imageProviderFailure: "",
+      panelCount: 4,
+      imageCount: 0,
+      panels: []
+    };
+    const html = renderToString(
+      createElement(AdminView, {
+        aiFlowConfigs,
+        aiFlowSummary: summarizeAiFlowConfigs({}, aiFlowConfigs),
+        aiGenerationJobs: [queuedJob],
+        fullAudit: createElement("div", null, "Full audit"),
+        onAiFlowConfigsChange: () => undefined
+      })
+    );
+    const text = textFromHtml(html);
+
+    expect(text).toContain("Received");
+    expect(text).toContain("1 recent browser job captured.");
+    expect(text).toContain("Generating");
+    expect(text).toContain("1 background AI job is queued or running.");
+    expect(text).toContain("Latest run");
+    expect(text).toContain("Queued");
+    expect(text).toContain("draft-queue-1");
+  });
+
   it("renders the admin featured-card curation workflow shell", () => {
     const html = renderToString(createElement(AdminCardGalleryView, {}));
     const text = textFromHtml(html);

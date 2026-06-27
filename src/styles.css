@@ -1196,6 +1196,10 @@ h3 {
   border-left-color: #c88f25;
 }
 
+.aiJobRow.queued {
+  border-left-color: #4c6fb3;
+}
+
 .aiJobRow.copy-only {
   border-left-color: #315b7d;
 }
@@ -1241,6 +1245,11 @@ h3 {
 .aiJobRow.partial .aiJobHeader em {
   color: #6d4c12;
   background: #fff5da;
+}
+
+.aiJobRow.queued .aiJobHeader em {
+  color: #2e4774;
+  background: #edf3ff;
 }
 
 .aiJobRow.copy-only .aiJobHeader em {

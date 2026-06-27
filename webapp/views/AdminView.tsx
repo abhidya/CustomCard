@@ -1528,6 +1528,7 @@ export function AdminView({
 
 function buildAiQueueLanes(jobs: AiGenerationJobEvidence[]) {
   const needsReview = jobs.filter((job) => job.status === "partial" || job.status === "copy-only").length;
+  const generating = jobs.filter((job) => job.status === "queued").length;
   const completed = jobs.filter((job) => job.status === "succeeded").length;
   return [
     {
@@ -1540,9 +1541,12 @@ function buildAiQueueLanes(jobs: AiGenerationJobEvidence[]) {
     {
       id: "generating",
       label: "Generating",
-      count: 0,
-      detail: "Live worker telemetry is not active in this browser view.",
-      tone: "idle"
+      count: generating,
+      detail:
+        generating === 1
+          ? "1 background AI job is queued or running."
+          : `${generating} background AI jobs are queued or running.`,
+      tone: generating > 0 ? "ready" : "idle"
     },
     {
       id: "review",
@@ -1566,6 +1570,7 @@ function aiGenerationJobStatusLabel(status: AiGenerationJobEvidence["status"]): 
   const labels: Record<AiGenerationJobEvidence["status"], string> = {
     "copy-only": "Copy only",
     partial: "Partial",
+    queued: "Queued",
     succeeded: "Generated"
   };
   return labels[status];

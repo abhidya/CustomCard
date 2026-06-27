@@ -1633,6 +1633,7 @@ function aiGenerationJobStatusLabel(status: AiGenerationJobEvidence["status"]): 
   const labels: Record<AiGenerationJobEvidence["status"], string> = {
     "copy-only": "Copy only",
     partial: "Partial",
+    queued: "Queued",
     succeeded: "Generated"
   };
   return labels[status];
