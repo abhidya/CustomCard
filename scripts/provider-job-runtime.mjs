@@ -97,12 +97,18 @@ export function createProviderJobRuntime({
                AND locked_at < NOW() - ($2::int * INTERVAL '1 second')
            )::int AS stale_running_total,
            COUNT(*) FILTER (WHERE status = 'succeeded')::int AS succeeded_total,
-           COUNT(*) FILTER (WHERE status = 'dead_lettered')::int AS dead_lettered_total,
+           COUNT(*) FILTER (
+             WHERE status = 'dead_lettered'
+                OR (status = 'failed' AND result->>'status' = 'dead_lettered')
+           )::int AS dead_lettered_total,
            COALESCE(EXTRACT(EPOCH FROM (NOW() - MIN(created_at) FILTER (WHERE status = 'queued')))::int, 0) AS oldest_queued_age_seconds,
            COALESCE(MAX(attempt_count) FILTER (WHERE status IN ('queued', 'running')), 0)::int AS max_active_attempt_count,
            COALESCE(MAX(max_attempts), 0)::int AS max_attempts,
            MAX(updated_at) FILTER (WHERE status = 'succeeded') AS last_succeeded_at,
-           MAX(updated_at) FILTER (WHERE status = 'dead_lettered') AS last_dead_lettered_at
+           MAX(updated_at) FILTER (
+             WHERE status = 'dead_lettered'
+                OR (status = 'failed' AND result->>'status' = 'dead_lettered')
+           ) AS last_dead_lettered_at
          FROM scoped_jobs`,
         [selectedRouteIds, leaseSeconds]
       );
@@ -431,18 +437,31 @@ function providerRetryBackoffSeconds(env) {
 }
 
 async function requeueExpiredProviderJobs(pool, leaseSeconds) {
+  try {
+    await updateExpiredProviderJobs(pool, leaseSeconds, "dead_lettered");
+  } catch (error) {
+    if (!isDeadLetterStatusConstraintError(error)) throw error;
+    await updateExpiredProviderJobs(pool, leaseSeconds, "failed");
+  }
+}
+
+async function updateExpiredProviderJobs(pool, leaseSeconds, exhaustedPhysicalStatus) {
   await pool.query(
     `UPDATE api_jobs
-     SET status = CASE WHEN attempt_count >= max_attempts THEN 'dead_lettered' ELSE 'queued' END,
+     SET status = CASE WHEN attempt_count >= max_attempts THEN $2 ELSE 'queued' END,
          locked_by = NULL,
          locked_at = NULL,
          run_after = CASE WHEN attempt_count >= max_attempts THEN run_after ELSE NOW() END,
-         result = jsonb_build_object('status', 'lease-expired', 'leaseSeconds', $1::int),
+         result = CASE
+           WHEN attempt_count >= max_attempts
+             THEN jsonb_build_object('status', 'dead_lettered', 'reason', 'lease-expired', 'leaseSeconds', $1::int)
+           ELSE jsonb_build_object('status', 'lease-expired', 'leaseSeconds', $1::int)
+         END,
          updated_at = NOW()
      WHERE status = 'running'
        AND locked_at IS NOT NULL
        AND locked_at < NOW() - ($1::int * INTERVAL '1 second')`,
-    [leaseSeconds]
+    [leaseSeconds, exhaustedPhysicalStatus]
   );
 }
 
@@ -526,6 +545,34 @@ async function failProviderJob({ postgresRuntime, job, body, workerId, retryBack
     maxAttempts: job.maxAttempts,
     workerId
   };
+  try {
+    await writeProviderJobFailure({
+      postgresRuntime,
+      job,
+      status,
+      physicalStatus: status,
+      payload,
+      error,
+      retryBackoffSeconds,
+      exhausted
+    });
+  } catch (writeError) {
+    if (!exhausted || !isDeadLetterStatusConstraintError(writeError)) throw writeError;
+    await writeProviderJobFailure({
+      postgresRuntime,
+      job,
+      status,
+      physicalStatus: "failed",
+      payload,
+      error,
+      retryBackoffSeconds,
+      exhausted
+    });
+  }
+  return { status };
+}
+
+async function writeProviderJobFailure({ postgresRuntime, job, status, physicalStatus, payload, error, retryBackoffSeconds, exhausted }) {
   await postgresRuntime.withTransaction(async (client) => {
     await client.query(
       `UPDATE api_jobs
@@ -537,7 +584,7 @@ async function failProviderJob({ postgresRuntime, job, body, workerId, retryBack
            run_after = CASE WHEN $2 = 'dead_lettered' THEN run_after ELSE NOW() + ($5::int * INTERVAL '1 second') END,
            updated_at = NOW()
        WHERE id = $1`,
-      [job.id, status, JSON.stringify(payload), error, retryBackoffSeconds]
+      [job.id, physicalStatus, JSON.stringify(payload), error, retryBackoffSeconds]
     );
     await client.query(
       `INSERT INTO audit_log (subject_type, subject_id, actor_id, action, metadata)
@@ -550,7 +597,10 @@ async function failProviderJob({ postgresRuntime, job, body, workerId, retryBack
       ]
     );
   });
-  return { status };
+}
+
+function isDeadLetterStatusConstraintError(error) {
+  return error?.code === "23514" && /api_jobs_status_check|dead_lettered|status/i.test(String(error?.message ?? ""));
 }
 
 function hasLiveProviderNetworkCall(payload = {}) {

@@ -137,6 +137,84 @@ describe("provider job runtime", () => {
     expect(queries.some((query) => Array.isArray(query.params[1]) && query.params[1].includes("ai-card-generate"))).toBe(true);
     expect(queries.some((query) => Array.isArray(query.params[1]) && query.params[1].includes("render-packets"))).toBe(false);
   });
+
+  it("falls back to failed physical status when an older DB rejects dead_lettered", async () => {
+    const queries: Array<{ sql: string; params: unknown[] }> = [];
+    let expiredUpdateAttempts = 0;
+    const runtime = createProviderJobRuntime({
+      env: providerEnv,
+      getPool: async () => ({
+        async query(sql: string, params: unknown[] = []) {
+          queries.push({ sql: compactSql(sql), params });
+          if (sql.includes("locked_at < NOW()")) {
+            expiredUpdateAttempts += 1;
+            if (expiredUpdateAttempts === 1) {
+              const error = new Error("new row for relation api_jobs violates check constraint api_jobs_status_check") as Error & {
+                code?: string;
+              };
+              error.code = "23514";
+              throw error;
+            }
+            return { rows: [], rowCount: 1 };
+          }
+          if (sql.includes("FOR UPDATE SKIP LOCKED")) return { rows: [], rowCount: 0 };
+          return { rows: [], rowCount: 0 };
+        }
+      })
+    });
+
+    const lease = await runtime.leaseJobs({
+      authContext: { ok: true, role: "provider", userId: "provider-worker", providerRouteIds: ["ai-card-generate"] },
+      workerId: "local-comfy-01",
+      routeIds: ["ai-card-generate"],
+      limit: 1
+    });
+
+    expect(lease).toMatchObject({ statusCode: 200, payload: { leased: 0 } });
+    expect(expiredUpdateAttempts).toBe(2);
+    expect(queries.some((query) => query.params.includes("dead_lettered"))).toBe(true);
+    expect(queries.some((query) => query.params.includes("failed"))).toBe(true);
+  });
+
+  it("counts logical dead letters stored under failed status for older DB schemas", async () => {
+    const queries: Array<{ sql: string; params: unknown[] }> = [];
+    const runtime = createProviderJobRuntime({
+      env: providerEnv,
+      getPool: async () => ({
+        async query(sql: string, params: unknown[] = []) {
+          queries.push({ sql: compactSql(sql), params });
+          if (sql.includes("WITH scoped_jobs")) {
+            return {
+              rows: [
+                {
+                  queued_total: 0,
+                  running_total: 0,
+                  stale_running_total: 0,
+                  succeeded_total: 0,
+                  dead_lettered_total: 1,
+                  oldest_queued_age_seconds: 0,
+                  max_active_attempt_count: 0,
+                  max_attempts: 3,
+                  last_succeeded_at: null,
+                  last_dead_lettered_at: "2030-01-01T00:00:00.000Z"
+                }
+              ],
+              rowCount: 1
+            };
+          }
+          return { rows: [], rowCount: 0 };
+        }
+      })
+    });
+
+    const status = await runtime.readStatus({
+      authContext: { ok: true, role: "provider", userId: "provider-worker", providerRouteIds: ["ai-card-generate"] },
+      routeIds: ["ai-card-generate"]
+    });
+
+    expect(status.payload.metrics.dead_lettered_total).toBe(1);
+    expect(queries.some((query) => query.sql.includes("result->>'status' = 'dead_lettered'"))).toBe(true);
+  });
 });
 
 function createProviderPool(queries: Array<{ sql: string; params: unknown[] }>, leasedRows: unknown[] = []) {
