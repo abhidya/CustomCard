@@ -35,6 +35,7 @@ if (isMainModule()) {
 
 export async function runDoctor(args = {}, options = {}) {
   const advisory = Boolean(args.advisory);
+  const fetchImpl = options.fetchImpl || globalThis.fetch;
   const outputRoot = resolve(String(args["output-root"] || defaultOutputRoot));
   const reportDir = resolve(String(args["output-dir"] || `${outputRoot}/production-text-readiness-${timestamp()}`));
   const workflowPath = resolve(String(args["workflow-path"] || defaultWorkflowPath));
@@ -48,6 +49,13 @@ export async function runDoctor(args = {}, options = {}) {
     process.env.LMSTUDIO_BASE_URL,
     process.env.KOBOLDCPP_BASE_URL
   ].filter(Boolean).map(normalizeOpenAiBaseUrl));
+  const plannerApiKey = firstUsableValue(
+    args["local-llm-api-key"],
+    args["api-key"],
+    process.env.CUSTOMCARD_LOCAL_LLM_API_KEY,
+    process.env.LMSTUDIO_API_KEY,
+    process.env.KOBOLDCPP_API_KEY
+  );
   const plannerUrls = unique([
     ...configuredPlannerUrls,
     ...commonPlannerUrls
@@ -65,9 +73,13 @@ export async function runDoctor(args = {}, options = {}) {
   const aggregate = readJson(aggregatePath);
   const aggregateSummary = summarizeAggregate(aggregate, aggregatePath);
   const modelInventory = summarizeModelInventory(modelRoot);
-  const plannerEndpoints = await Promise.all(plannerUrls.map((url) => probePlanner(url, timeoutMs, plannerRuntimeBudget, options)));
+  const plannerEndpoints = await Promise.all(plannerUrls.map((url) => probePlanner(url, timeoutMs, plannerRuntimeBudget, {
+    ...options,
+    apiKey: plannerApiKey,
+    fetchImpl
+  })));
   const activePlannerEndpoints = selectActivePlannerEndpoints(plannerEndpoints, configuredPlannerUrls);
-  const comfy = await probeComfy(comfyUrl, timeoutMs);
+  const comfy = await probeComfy(comfyUrl, timeoutMs, { fetchImpl });
 
   const checks = [
     check("production workflow file exists", workflowExists, true, { workflowPath: relativePath(workflowPath) }),
@@ -120,6 +132,7 @@ export async function runDoctor(args = {}, options = {}) {
     modelRoot,
     comfy,
     configuredPlannerUrls,
+    plannerApiKeyProvided: Boolean(plannerApiKey),
     activePlannerEndpoints,
     plannerEndpoints,
     aggregateSummary,
@@ -211,8 +224,10 @@ function collectModelFiles(root) {
 
 async function probePlanner(baseUrl, timeoutMs, runtimeBudget = {}, options = {}) {
   const modelsUrl = `${baseUrl.replace(/\/$/, "")}/models`;
+  const fetchImpl = options.fetchImpl || globalThis.fetch;
+  const headers = options.apiKey ? { authorization: `Bearer ${options.apiKey}` } : {};
   try {
-    const response = await fetchWithTimeout(modelsUrl, timeoutMs);
+    const response = await fetchWithTimeout(fetchImpl, modelsUrl, { headers }, timeoutMs);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const body = await response.json();
     const models = (body?.data || []).map((item) => String(item?.id || "")).filter(Boolean);
@@ -263,9 +278,10 @@ function localPlannerGpuOk(activePlannerEndpoints) {
   return reachableLocal.some((endpoint) => endpoint.localGpuResidency?.ok);
 }
 
-async function probeComfy(comfyUrl, timeoutMs) {
+async function probeComfy(comfyUrl, timeoutMs, options = {}) {
+  const fetchImpl = options.fetchImpl || globalThis.fetch;
   try {
-    const response = await fetchWithTimeout(`${comfyUrl.replace(/\/$/, "")}/object_info`, timeoutMs);
+    const response = await fetchWithTimeout(fetchImpl, `${comfyUrl.replace(/\/$/, "")}/object_info`, {}, timeoutMs);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const objectInfo = await response.json();
     return {
@@ -401,11 +417,19 @@ function normalizeRootUrl(value) {
   return parsed.toString().replace(/\/$/, "");
 }
 
-async function fetchWithTimeout(url, timeoutMs) {
+function firstUsableValue(...values) {
+  for (const value of values) {
+    const text = String(value ?? "").trim();
+    if (text && !["__UNSET__", "placeholder", "changeme"].includes(text)) return text;
+  }
+  return "";
+}
+
+async function fetchWithTimeout(fetchImpl, url, init, timeoutMs) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    return await fetch(url, { signal: controller.signal });
+    return await fetchImpl(url, { ...init, signal: controller.signal });
   } finally {
     clearTimeout(timeout);
   }

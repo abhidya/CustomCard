@@ -292,6 +292,10 @@ Comfy template variables exposed by the local adapter include:
   - Advisory or blocking readiness check for promotion attempts.
   - Aggregates workflow/node availability, live Comfy status, latest aggregate
     quality, local model inventory, and active planner endpoint suitability.
+  - Accepts hosted/self-hosted planner auth through
+    `CUSTOMCARD_LOCAL_LLM_API_KEY` or `--local-llm-api-key`, so protected
+    OpenAI-compatible endpoints can be checked without falling back to local
+    KoboldCPP.
   - Treats known-small planners such as Qwen3-4B/8B as smoke/failure evidence,
     not production evidence.
 - `scripts/production-text-planner-preflight.mjs`
@@ -310,6 +314,10 @@ Comfy template variables exposed by the local adapter include:
     contract, exact rerun commands, and acceptance checks.
   - Keeps the recovery path aligned with production-suitable planner evidence
     instead of reduced prompt quality.
+  - When the latest GPU feasibility report proves all installed local
+    production planner candidates are hardware-blocked, emits a
+    hosted/self-hosted planner path with `-NoAutoStartPlanner` instead of
+    telling the next agent to rerun the same partial-CPU local model.
 - `scripts/local-model-coverage.mjs`
   - Scans local model/runtime files, Comfy model files, and benchmark evidence.
   - For production text, refresh it before the evidence index so installed but
@@ -424,38 +432,46 @@ customer-theme quality.
 3. Start the local Comfy runtime with `tools/start-local-comfyui.ps1`, then run
    preflight with `--require-live true` and confirm `CustomCardTextComposer` is
    present in live `/object_info`.
-4. Run `npm run comfy:production-text:planner -- --base-url ... --model ... --reported-context-tokens 8192 --max-output-tokens 3200`
+4. For local KoboldCPP planners, run
+   `npm run comfy:production-text:planner-gpu -- --base-url ... --model ... --model-path ... --gpu-id ...`
+   and confirm the selected GGUF fully fits the assigned GPU. Skip this only
+   for a hosted/self-hosted production endpoint where local GPU feasibility is
+   not applicable.
+5. Run `npm run comfy:production-text:planner -- --base-url ... --model ... --reported-context-tokens 8192 --max-output-tokens 3200`
    and confirm the active planner is production-suitable. Qwen3-4B/8B and
    4096-context planners should be run only with `--allow-small` for failure
    evidence.
-5. Run `npm run comfy:production-text:doctor -- --advisory --local-llm-base-url ... --planner-context-tokens 8192 --planner-max-output-tokens 3200`
+6. Run `npm run comfy:production-text:doctor -- --advisory --local-llm-base-url ... --planner-context-tokens 8192 --planner-max-output-tokens 3200`
    and confirm the configured planner endpoint is reachable and
    production-suitable with the declared runtime budget. The doctor should not
    be satisfied by Qwen3-4B/8B smoke planners or by a model name without
-   context/output proof.
-6. Run `npm run comfy:production-text:rerun-plan -- --output-dir docs/evidence/generated-card-comparisons/production-text-rerun-plan-YYYYMMDD-current`
+   context/output proof. For protected hosted endpoints, set
+   `CUSTOMCARD_LOCAL_LLM_API_KEY` or pass `--local-llm-api-key`.
+7. Run `npm run comfy:production-text:rerun-plan -- --output-dir docs/evidence/generated-card-comparisons/production-text-rerun-plan-YYYYMMDD-current`
    to write the exact command chain for the next production-suitable rerun.
-7. Run `npm run comfy:production-text:model-coverage -- --output-dir docs/evidence/generated-card-comparisons/local-model-coverage-YYYYMMDD-current`
+8. Run `npm run comfy:production-text:model-coverage -- --output-dir docs/evidence/generated-card-comparisons/local-model-coverage-YYYYMMDD-current`
    to refresh installed/evaluated planner and Comfy model coverage. Commit or
    stage this artifact before the tracked evidence index if it should count.
-8. Run `npm run comfy:production-text:evidence -- --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-YYYYMMDD-current`
+9. Run `npm run comfy:production-text:evidence -- --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-YYYYMMDD-current`
    to refresh the tracked evidence index before deciding what to run next.
-9. Run `npm run comfy:production-text:gate -- --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-YYYYMMDD-current`
+10. Run `npm run comfy:production-text:gate -- --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-YYYYMMDD-current`
    and confirm every requirement passes before promoting.
-10. Run the production overlay workflow against the LLM-planned customer request
+11. Run the production overlay workflow against the LLM-planned customer request
    matrix through `tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl ...`
    and manually grade every run. Use `-AllowCompositorFixtureFallback` only for
-   compositor/node smoke evidence.
-10. Run `npm run comfy:production-text:manual-grades -- --advisory --input <benchmark-output-dir> --output-dir docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-YYYYMMDD-current`
+   compositor/node smoke evidence. For hosted/self-hosted endpoints, pass
+   `-NoAutoStartPlanner` so the wrapper cannot fall back to a local
+   hardware-blocked KoboldCPP process.
+12. Run `npm run comfy:production-text:manual-grades -- --advisory --input <benchmark-output-dir> --output-dir docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-YYYYMMDD-current`
    and confirm generated runs have valid manual grades while failed-before-image
    stories are tracked separately.
-11. Add an overflow/contrast QA gate. Minimum acceptable gate:
+13. Add an overflow/contrast QA gate. Minimum acceptable gate:
    - all panels rendered
    - no text missing
    - no fake text in artwork-only areas
    - no people/mockup/object-scene leakage
    - text contrast meets print/readability threshold
-12. Promote only after aggregate benchmark evidence beats the current
+14. Promote only after aggregate benchmark evidence beats the current
    app-compositor baseline.
 
 Current status: the 2026-06-27 GPU-backed evidence proves the correct runtime
@@ -512,11 +528,12 @@ output because no output completed, the manual grade checklist is blocked, and
 the manual aggregate is blocked. The
 aggregate selection is current:
 `docs/evidence/generated-card-comparisons/benchmark-aggregate-20260627-production-text-gpu-proof-magistral-5013-rerun`.
-The rerun plan records the exact Magistral GGUF path and GPU flags so another
-agent does not accidentally run CPU or guess a flat `D:\models` filename. The
-next production attempt should use a hosted/self-hosted stronger planner or a
-rights-clean production-floor local planner that fully fits a single assigned
-GPU while keeping the full creative contract intact.
+The rerun plan now records the Magistral GGUF proof as blocked and emits a
+hosted/self-hosted production planner path with `-NoAutoStartPlanner` so another
+agent does not rerun the same partial-CPU local path by accident. If a future
+agent has a rights-clean production-floor local planner that fully fits a
+single assigned GPU, pass explicit rerun-plan planner args and prove it with
+`production-text-planner-gpu-feasibility.mjs` before benchmark work.
 
 ## Open Engineering Work
 

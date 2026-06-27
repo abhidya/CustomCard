@@ -190,4 +190,57 @@ describe("production text readiness doctor", () => {
     });
     expect(report.nextSteps.join("\n")).toContain("nvidia-smi");
   });
+
+  it("passes bearer auth to hosted planner readiness probes", async () => {
+    const root = mkdtempSync(join(tmpdir(), "production-text-readiness-doctor-hosted-"));
+    const modelRoot = join(root, "models");
+    mkdirSync(modelRoot, { recursive: true });
+    writeFileSync(join(modelRoot, "gemma-4-31B-it-Q4_K_M.gguf"), "fake model marker");
+    const aggregatePath = join(root, "benchmark-aggregate.json");
+    writePassingAggregate(aggregatePath);
+    const seenAuthHeaders: string[] = [];
+
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (url, init) => {
+      const target = String(url);
+      const headers = new Headers(init?.headers);
+      if (target.startsWith("https://planner.example") && target.endsWith("/models")) {
+        seenAuthHeaders.push(headers.get("authorization") || "");
+        return new Response(JSON.stringify({ data: [{ id: "gpt-production-planner" }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      if (target.endsWith("/object_info")) {
+        return new Response(JSON.stringify({ CustomCardTextComposer: {} }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      return new Response("not found", { status: 404 });
+    });
+
+    const report = await runDoctor({
+      advisory: true,
+      aggregate: aggregatePath,
+      "model-root": modelRoot,
+      "local-llm-base-url": "https://planner.example/v1",
+      "local-llm-api-key": "test-hosted-key",
+      "planner-context-tokens": 8192,
+      "planner-max-output-tokens": 3200,
+      "output-dir": join(root, "readiness")
+    });
+
+    expect(seenAuthHeaders).toEqual(["Bearer test-hosted-key"]);
+    expect(report.plannerApiKeyProvided).toBe(true);
+    expect(report.promotionReady).toBe(true);
+    expect(report.activePlannerEndpoints[0]).toMatchObject({
+      baseUrl: "https://planner.example/v1",
+      activeModel: "gpt-production-planner",
+      productionSuitable: true
+    });
+    expect(report.activePlannerEndpoints[0].localGpuResidency).toMatchObject({
+      required: false,
+      ok: true
+    });
+  });
 });

@@ -38,10 +38,11 @@ export function buildProductionTextRerunPlan(args = {}) {
       details: item.details || {}
     }));
   const latestPlanner = index.plannerPreflights?.[0] || {};
+  const latestPlannerGpuFeasibility = index.plannerGpuFeasibilityReports?.[0] || {};
   const latestModelCoverage = index.modelCoverageReports?.[0] || {};
   const latestBenchmark = index.benchmarkSummaries?.[0] || {};
   const latestAggregate = (index.aggregates || []).find((entry) => entry.kind === "llm-planned") || index.aggregates?.[0] || {};
-  const recommended = {
+  const baseRecommended = {
     plannerBaseUrl: String(args["planner-base-url"] || "http://127.0.0.1:5013/v1"),
     plannerModel: String(args["planner-model"] || productionTextPlannerPolicy.recommendedModels[0]),
     plannerModelPath: String(args["planner-model-path"] || defaultPlannerModelPath(args["planner-model"] || productionTextPlannerPolicy.recommendedModels[0])),
@@ -56,6 +57,7 @@ export function buildProductionTextRerunPlan(args = {}) {
     sampler: String(args.sampler || "euler_ancestral"),
     scheduler: String(args.scheduler || "sgm_uniform")
   };
+  const recommended = selectPlannerRuntimeRecommendation({ args, baseRecommended, latestPlannerGpuFeasibility });
   const paths = {
     plannerGpuFeasibilityOutput: `docs/evidence/generated-card-comparisons/production-text-planner-gpu-feasibility-${reportDate}-production-planner`,
     plannerPreflightOutput: `docs/evidence/generated-card-comparisons/production-text-planner-preflight-${reportDate}-production-planner`,
@@ -83,6 +85,9 @@ export function buildProductionTextRerunPlan(args = {}) {
       plannerClassification: latestPlanner.classification || "",
       plannerModel: latestPlanner.activeModel || "",
       plannerContextTokens: latestPlanner.reportedContextTokens ?? null,
+      plannerGpuFeasibility: latestPlannerGpuFeasibility.path || "",
+      gpuOnlyCandidateIds: latestPlannerGpuFeasibility.gpuOnlyCandidateIds || [],
+      hardwareBlockedCandidateIds: latestPlannerGpuFeasibility.hardwareBlockedCandidateIds || [],
       localModelCoverage: latestModelCoverage.path || "",
       installedProductionPlanners: latestModelCoverage.installedProductionPlanners || [],
       unevaluatedProductionPlanners: latestModelCoverage.unevaluatedProductionPlanners || [],
@@ -99,6 +104,16 @@ export function buildProductionTextRerunPlan(args = {}) {
       minOutputTokens: productionTextPlannerPolicy.minOutputTokens,
       recommendedOutputTokens: productionTextPlannerPolicy.recommendedOutputTokens,
       recommendedRequestTimeoutMs: recommended.requestTimeoutMs,
+      runtimeRecommendation: {
+        mode: recommended.runtimeMode,
+        localGpuRequired: recommended.localGpuRequired,
+        reason: recommended.runtimeReason,
+        plannerBaseUrl: recommended.plannerBaseUrl,
+        plannerModel: recommended.plannerModel,
+        hardwareBlockedCandidateIds: recommended.hardwareBlockedCandidateIds || [],
+        gpuOnlyCandidateIds: recommended.gpuOnlyCandidateIds || [],
+        blockers: recommended.localGpuBlockers || []
+      },
       requiredLocalGpu: {
         gpuId: recommended.gpuId,
         gpuLayers: recommended.gpuLayers,
@@ -117,7 +132,7 @@ export function buildProductionTextRerunPlan(args = {}) {
     commands,
     acceptanceChecks: [
       "planner preflight is production-ready",
-      "local planner GPU-only fit is proven",
+      "planner runtime is hosted/self-hosted GPU capacity or local GPU-only fit is proven",
       "planner throughput probe completes the full JSON contract",
       "planner preflight matches benchmark runtime",
       "live ComfyUI proof is current",
@@ -139,6 +154,13 @@ export function buildProductionTextRerunPlan(args = {}) {
 }
 
 function buildCommands({ recommended, paths }) {
+  if (!recommended.localGpuRequired) {
+    return buildHostedCommands({ recommended, paths });
+  }
+  return buildLocalCommands({ recommended, paths });
+}
+
+function buildLocalCommands({ recommended, paths }) {
   return [
     {
       step: 1,
@@ -215,6 +237,79 @@ function buildCommands({ recommended, paths }) {
   ];
 }
 
+function buildHostedCommands({ recommended, paths }) {
+  const hostedBaseUrl = "$env:CUSTOMCARD_LOCAL_LLM_BASE_URL";
+  const hostedModel = "$env:CUSTOMCARD_LOCAL_LLM_MODEL";
+  return [
+    {
+      step: 1,
+      title: "Configure hosted or self-hosted production planner",
+      command: `$env:CUSTOMCARD_LOCAL_LLM_BASE_URL="${recommended.plannerBaseUrl}"; $env:CUSTOMCARD_LOCAL_LLM_MODEL="${recommended.plannerModel}"; $env:CUSTOMCARD_LOCAL_LLM_API_KEY="<redacted>"`,
+      why: hostedWhy(recommended)
+    },
+    {
+      step: 2,
+      title: "Write planner preflight evidence",
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-preflight.mjs --base-url ${hostedBaseUrl} --model ${hostedModel} --reported-context-tokens ${recommended.contextTokens} --max-output-tokens ${recommended.maxOutputTokens} --output-dir ${paths.plannerPreflightOutput}`,
+      why: "Proves the hosted/self-hosted planner model, context budget, and output cap before image work starts."
+    },
+    {
+      step: 3,
+      title: "Probe planner throughput",
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-throughput-probe.mjs --base-url ${hostedBaseUrl} --model ${hostedModel} --reported-context-tokens ${recommended.contextTokens} --max-output-tokens ${recommended.maxOutputTokens} --request-timeout-ms ${recommended.requestTimeoutMs} --output-dir ${paths.plannerThroughputOutput}`,
+      why: "Uses the full card-copy prompt to prove the planner can finish valid JSON before spending Comfy image work."
+    },
+    {
+      step: 4,
+      title: "Refresh live Comfy preflight",
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/comfyui-production-text-preflight.mjs --require-live true --report-dir ${paths.liveComfyPreflightOutput}`,
+      why: "Proves the current ComfyUI runtime is reachable and has CustomCardTextComposer loaded before readiness or image work rely on it."
+    },
+    {
+      step: 5,
+      title: "Refresh readiness",
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-readiness-doctor.mjs --advisory --local-llm-base-url ${hostedBaseUrl} --planner-context-tokens ${recommended.contextTokens} --planner-max-output-tokens ${recommended.maxOutputTokens} --output-dir ${paths.readinessOutput}`,
+      why: "Confirms Comfy, the custom text node, aggregate state, model inventory, and the configured planner endpoint with the production context/output budget."
+    },
+    {
+      step: 6,
+      title: "Run full production-text matrix",
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl ${hostedBaseUrl} -LocalLlmModel ${hostedModel} -OutputDir ${paths.benchmarkOutput} -Checkpoint ${recommended.checkpoint} -Steps ${recommended.steps} -Cfg ${recommended.cfg} -Sampler ${recommended.sampler} -Scheduler ${recommended.scheduler} -PlannerMaxTokens ${recommended.maxOutputTokens} -PlannerContextSize ${recommended.contextTokens} -PlannerRequestTimeoutMs ${recommended.requestTimeoutMs} -NoAutoStartPlanner`,
+      why: "Runs aquarium/koi/dog customer requests through the production Comfy text workflow with LLM-owned theme/copy/layout, while preventing the wrapper from falling back to the known hardware-blocked local planner."
+    },
+    {
+      step: 7,
+      title: "Manually grade every run",
+      command: `${paths.benchmarkOutput}/production-text-workflow/*/manual-grade-template.md`,
+      why: "Fill each template and save manual-visual-grade.json before aggregating promotion evidence."
+    },
+    {
+      step: 8,
+      title: "Write manual grade checklist",
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-manual-grade-checklist.mjs --advisory --input ${paths.benchmarkOutput} --output-dir ${paths.manualGradeChecklistOutput}`,
+      why: "Summarizes generated runs, missing/invalid manual grades, blocked grades, and failed-before-image stories before aggregation."
+    },
+    {
+      step: 9,
+      title: "Aggregate production-text results",
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/model-benchmark-aggregate.mjs --input ${paths.benchmarkOutput} --output-dir ${paths.aggregateOutput} --phase local-production-text`,
+      why: "Builds the ranked aggregate used by the promotion gate."
+    },
+    {
+      step: 10,
+      title: "Refresh tracked evidence index",
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-evidence-index.mjs --output-dir ${paths.evidenceIndexOutput}`,
+      why: "Aggregates tracked planner/readiness/preflight/benchmark/aggregate evidence after the rerun artifacts are committed."
+    },
+    {
+      step: 11,
+      title: "Run final promotion gate",
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-promotion-gate.mjs --advisory --output-dir ${paths.promotionGateOutput} --index-output-dir ${paths.evidenceIndexOutput}`,
+      why: "Shows whether every production-text requirement now passes. Remove --advisory only when a pass is expected."
+    }
+  ];
+}
+
 function buildMarkdown(plan) {
   const lines = [
     "# Production Text Rerun Plan",
@@ -242,8 +337,17 @@ function buildMarkdown(plan) {
   lines.push(`- Minimum context tokens: ${plan.productionPlannerContract.minContextTokens}`);
   lines.push(`- Recommended output tokens: ${plan.productionPlannerContract.recommendedOutputTokens}`);
   lines.push(`- Recommended local request timeout: ${plan.productionPlannerContract.recommendedRequestTimeoutMs}ms`);
-  lines.push(`- Required local GPU: device ${plan.productionPlannerContract.requiredLocalGpu.gpuId}, gpulayers ${plan.productionPlannerContract.requiredLocalGpu.gpuLayers}`);
+  lines.push(`- Runtime recommendation: ${plan.productionPlannerContract.runtimeRecommendation.mode} (${plan.productionPlannerContract.runtimeRecommendation.reason})`);
+  lines.push(`- Required local GPU when local: device ${plan.productionPlannerContract.requiredLocalGpu.gpuId}, gpulayers ${plan.productionPlannerContract.requiredLocalGpu.gpuLayers}`);
   lines.push(`- Recommended models: ${plan.productionPlannerContract.recommendedModels.join(", ")}`);
+  if (plan.productionPlannerContract.runtimeRecommendation.hardwareBlockedCandidateIds.length) {
+    lines.push(`- Hardware-blocked local planners: ${plan.productionPlannerContract.runtimeRecommendation.hardwareBlockedCandidateIds.join(", ")}`);
+  }
+  if (plan.productionPlannerContract.runtimeRecommendation.blockers.length) {
+    for (const blocker of plan.productionPlannerContract.runtimeRecommendation.blockers) {
+      lines.push(`- Runtime blocker: ${blocker}`);
+    }
+  }
   lines.push("");
   lines.push("Do not use for promotion:");
   for (const item of plan.productionPlannerContract.disallowedForPromotion) {
@@ -255,6 +359,8 @@ function buildMarkdown(plan) {
     lines.push("");
     lines.push(`- Coverage report: ${plan.currentEvidence.localModelCoverage}`);
     lines.push(`- Installed production planners: ${plan.currentEvidence.installedProductionPlanners.join(", ") || "none"}`);
+    lines.push(`- GPU-only local candidates: ${plan.currentEvidence.gpuOnlyCandidateIds.join(", ") || "none"}`);
+    lines.push(`- Hardware-blocked local candidates: ${plan.currentEvidence.hardwareBlockedCandidateIds.join(", ") || "none"}`);
     lines.push(`- Installed but not evaluated: ${plan.currentEvidence.unevaluatedProductionPlanners.join(", ") || "none"}`);
     lines.push(`- Missing production planner fallbacks: ${plan.currentEvidence.missingProductionPlanners.join(", ") || "none"}`);
   }
@@ -301,6 +407,87 @@ function writeMarkdown(filePath, value) {
 function numberOr(value, fallback) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function selectPlannerRuntimeRecommendation({ args, baseRecommended, latestPlannerGpuFeasibility }) {
+  const explicitPlannerRuntime = [
+    "planner-base-url",
+    "planner-model",
+    "planner-model-path",
+    "gpu-id",
+    "gpu-layers"
+  ].some((key) => Object.hasOwn(args, key));
+  const hostedConfigured = !isLocalPlannerBaseUrl(baseRecommended.plannerBaseUrl);
+  const localHardwareBlocked = latestFeasibilityBlocksLocalRuntime(latestPlannerGpuFeasibility);
+  const localGpuBlockers = latestPlannerGpuFeasibility.blockers || [];
+  const hardwareBlockedCandidateIds = latestPlannerGpuFeasibility.hardwareBlockedCandidateIds || [];
+  const gpuOnlyCandidateIds = latestPlannerGpuFeasibility.gpuOnlyCandidateIds || [];
+
+  if (hostedConfigured) {
+    return {
+      ...baseRecommended,
+      runtimeMode: "hosted-configured",
+      runtimeReason: "A non-local OpenAI-compatible planner endpoint was explicitly configured.",
+      localGpuRequired: false,
+      localGpuBlockers,
+      hardwareBlockedCandidateIds,
+      gpuOnlyCandidateIds
+    };
+  }
+
+  if (localHardwareBlocked && !explicitPlannerRuntime) {
+    return {
+      ...baseRecommended,
+      plannerBaseUrl: "https://YOUR_OPENAI_COMPATIBLE_ENDPOINT/v1",
+      plannerModel: "YOUR_PRODUCTION_PLANNER_MODEL",
+      plannerModelPath: "",
+      runtimeMode: "hosted-required",
+      runtimeReason: "Latest GPU feasibility evidence found no installed local production planner that fully fits a single assigned GPU.",
+      localGpuRequired: false,
+      localGpuBlockers,
+      hardwareBlockedCandidateIds,
+      gpuOnlyCandidateIds
+    };
+  }
+
+  return {
+    ...baseRecommended,
+    runtimeMode: "local-gpu",
+    runtimeReason: explicitPlannerRuntime
+      ? "Local planner runtime was explicitly requested in rerun-plan arguments."
+      : "No current evidence proves every local production planner candidate is hardware-blocked.",
+    localGpuRequired: true,
+    localGpuBlockers,
+    hardwareBlockedCandidateIds,
+    gpuOnlyCandidateIds
+  };
+}
+
+function latestFeasibilityBlocksLocalRuntime(report) {
+  return Boolean(
+    report?.path &&
+    report.gpuOnlyReady === false &&
+    Array.isArray(report.gpuOnlyCandidateIds) &&
+    report.gpuOnlyCandidateIds.length === 0 &&
+    Array.isArray(report.hardwareBlockedCandidateIds) &&
+    report.hardwareBlockedCandidateIds.length > 0
+  );
+}
+
+function isLocalPlannerBaseUrl(value) {
+  try {
+    const parsed = new URL(String(value));
+    return ["localhost", "127.0.0.1", "::1", "0.0.0.0"].includes(parsed.hostname.toLowerCase());
+  } catch {
+    return false;
+  }
+}
+
+function hostedWhy(recommended) {
+  const hardwareBlocked = recommended.hardwareBlockedCandidateIds?.length
+    ? ` Latest hardware-blocked local candidates: ${recommended.hardwareBlockedCandidateIds.join(", ")}.`
+    : "";
+  return `Configures a production-class OpenAI-compatible planner without using the local hardware-blocked KoboldCPP path. Keep these environment variables in the shell used for the remaining commands.${hardwareBlocked}`;
 }
 
 function defaultPlannerModelPath(modelName) {

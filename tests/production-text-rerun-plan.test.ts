@@ -127,7 +127,7 @@ describe("production text rerun plan", () => {
     expect(plan.commands[6].command).not.toContain("-AllowSmallPlanner");
     expect(plan.commands[8].command).toContain("production-text-manual-grade-checklist.mjs");
     expect(plan.acceptanceChecks).toContain("planner preflight is production-ready");
-    expect(plan.acceptanceChecks).toContain("local planner GPU-only fit is proven");
+    expect(plan.acceptanceChecks).toContain("planner runtime is hosted/self-hosted GPU capacity or local GPU-only fit is proven");
     expect(plan.acceptanceChecks).toContain("planner throughput probe completes the full JSON contract");
     expect(plan.acceptanceChecks).toContain("planner preflight matches benchmark runtime");
     expect(plan.acceptanceChecks).toContain("live ComfyUI proof is current");
@@ -171,5 +171,96 @@ describe("production text rerun plan", () => {
     expect(plan.commands[1].command).toContain("--gpu-id 1");
     expect(plan.commands[6].command).toContain(`-ProductionPlannerModelPath ${modelPath}`);
     expect(plan.commands[6].command).toContain("-PlannerGpuId 1");
+  });
+
+  it("switches to a hosted planner path when local production candidates are GPU-blocked", () => {
+    const root = mkdtempSync(join(tmpdir(), "production-text-rerun-plan-hosted-"));
+    const gatePath = join(root, "production-text-promotion-gate.json");
+    const indexPath = join(root, "production-text-evidence-index.json");
+    const outputDir = join(root, "rerun-plan");
+
+    writeJson(gatePath, {
+      status: "blocked",
+      promotionReady: false,
+      requirements: [
+        {
+          name: "local planner GPU-only fit is proven",
+          ok: false,
+          details: {
+            activeModel: "koboldcpp/Magistral-Small-2509-Q4_K_M"
+          }
+        },
+        { name: "LLM-planned customer request matrix completed", ok: false }
+      ]
+    });
+    writeJson(indexPath, {
+      plannerPreflights: [
+        {
+          path: "docs/evidence/generated-card-comparisons/production-text-planner-preflight-current/production-text-planner-preflight.json",
+          classification: "production-suitable",
+          activeModel: "koboldcpp/Magistral-Small-2509-Q4_K_M",
+          reportedContextTokens: 8192
+        }
+      ],
+      plannerGpuFeasibilityReports: [
+        {
+          path: "docs/evidence/generated-card-comparisons/production-text-planner-gpu-feasibility-current/production-text-planner-gpu-feasibility.json",
+          gpuOnlyReady: false,
+          gpuOnlyCandidateIds: [],
+          hardwareBlockedCandidateIds: ["gemma-4-31b-it", "magistral-small-2509", "deepseek-v4-flash"],
+          blockers: [
+            "Planner model alone is 13670 MiB, larger than assigned GPU capacity 8192 MiB."
+          ]
+        }
+      ],
+      benchmarkSummaries: [],
+      modelCoverageReports: [
+        {
+          path: "docs/evidence/generated-card-comparisons/local-model-coverage-current/local-model-coverage.json",
+          installedProductionPlanners: ["gemma-4-31b-it", "magistral-small-2509", "deepseek-v4-flash"],
+          unevaluatedProductionPlanners: ["gemma-4-31b-it", "magistral-small-2509", "deepseek-v4-flash"],
+          missingProductionPlanners: ["qwen3-14b-instruct"]
+        }
+      ],
+      aggregates: []
+    });
+
+    const plan = buildProductionTextRerunPlan({
+      gate: gatePath,
+      index: indexPath,
+      "output-dir": outputDir,
+      date: "20260627"
+    });
+
+    expect(plan.productionPlannerContract.runtimeRecommendation).toMatchObject({
+      mode: "hosted-required",
+      localGpuRequired: false,
+      hardwareBlockedCandidateIds: ["gemma-4-31b-it", "magistral-small-2509", "deepseek-v4-flash"]
+    });
+    expect(plan.currentEvidence).toMatchObject({
+      gpuOnlyCandidateIds: [],
+      hardwareBlockedCandidateIds: ["gemma-4-31b-it", "magistral-small-2509", "deepseek-v4-flash"]
+    });
+    expect(plan.commands.map((item) => item.title)).toEqual([
+      "Configure hosted or self-hosted production planner",
+      "Write planner preflight evidence",
+      "Probe planner throughput",
+      "Refresh live Comfy preflight",
+      "Refresh readiness",
+      "Run full production-text matrix",
+      "Manually grade every run",
+      "Write manual grade checklist",
+      "Aggregate production-text results",
+      "Refresh tracked evidence index",
+      "Run final promotion gate"
+    ]);
+    expect(plan.commands[0].command).toContain("CUSTOMCARD_LOCAL_LLM_BASE_URL");
+    expect(plan.commands[0].why).toContain("hardware-blocked");
+    expect(plan.commands[1].command).not.toContain("production-text-planner-gpu-feasibility.mjs");
+    expect(plan.commands[5].command).toContain("-NoAutoStartPlanner");
+    expect(plan.commands[5].command).not.toContain("-ProductionPlannerModelPath");
+    expect(plan.commands[5].command).not.toContain("-PlannerGpuId");
+    expect(plan.commands[5].command).not.toContain("-PlannerGpuLayers");
+    expect(plan.acceptanceChecks).toContain("planner runtime is hosted/self-hosted GPU capacity or local GPU-only fit is proven");
   });
 });
