@@ -356,7 +356,9 @@ Comfy template variables exposed by the local adapter include:
     when a hosted/self-hosted endpoint should be used instead.
   - Accepts either a root planner URL such as `http://127.0.0.1:5013` or a `/v1`
     URL such as `http://127.0.0.1:5013/v1`, then runs the production planner
-    preflight before live runs.
+    preflight before live runs. The preflight JSON/MD is written into the same
+    benchmark output directory as the workflow summary so the evidence index can
+    prove endpoint/model alignment without chasing timestamped side folders.
   - The preflight must see the requested `-LocalLlmModel` in `/v1/models`;
     mismatched stale servers are blocked instead of trusted.
   - Accepts `-PlannerMaxTokens` and `-PlannerContextSize` while keeping the full
@@ -467,9 +469,10 @@ the current promotion gate is
 `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-production-planner`,
 and the current research rollup is
 `docs/evidence/generated-card-comparisons/production-text-research-rollup-20260627-production-planner`.
-Together they keep promotion blocked on readiness, full matrix completion,
-must-include/must-avoid adherence, manual grade checklist readiness, and manual
-aggregate readiness: 5 failed requirements total. A full matrix attempt is
+Together they keep promotion blocked on readiness, full matrix completion, final
+Comfy-rendered image proof, must-include/must-avoid adherence, manual grade
+checklist readiness, and manual aggregate readiness. The current gate fails 6
+requirements total after tracking the matching 5013 planner preflight. A full matrix attempt is
 recorded at
 `docs/evidence/generated-card-comparisons/production-text-runtime-attempt-20260627-production-planner`
 and

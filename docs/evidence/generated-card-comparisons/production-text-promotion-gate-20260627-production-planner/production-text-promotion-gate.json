@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T03:18:12.083Z",
+  "createdAtIso": "2026-06-27T03:22:21.132Z",
   "status": "blocked",
   "promotionReady": false,
   "advisory": true,
@@ -13,7 +13,7 @@
     "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json",
     "modelCoverage": "docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current/local-model-coverage.json",
     "rerunPlan": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-production-planner/production-text-rerun-plan.json",
-    "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner/production-text-planner-preflight.json",
+    "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627T021918Z/production-text-planner-preflight.json",
     "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260627-production-planner/production-text-preflight.json",
     "dryRun": "docs/evidence/generated-card-comparisons/production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json",
     "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-production-planner/production-text-manual-grade-checklist.json",
@@ -50,7 +50,7 @@
       "name": "planner preflight is production-ready",
       "ok": true,
       "details": {
-        "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner/production-text-planner-preflight.json",
+        "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627T021918Z/production-text-planner-preflight.json",
         "activeModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
         "classification": "production-suitable",
         "reportedContextTokens": 8192,
@@ -60,11 +60,11 @@
     },
     {
       "name": "planner preflight matches benchmark runtime",
-      "ok": false,
+      "ok": true,
       "details": {
         "preflight": {
-          "path": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner/production-text-planner-preflight.json",
-          "baseUrl": "http://127.0.0.1:5003/v1",
+          "path": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627T021918Z/production-text-planner-preflight.json",
+          "baseUrl": "http://127.0.0.1:5013/v1",
           "model": "koboldcpp/gemma-4-31B-it-Q4_K_M"
         },
         "benchmark": {
@@ -76,9 +76,7 @@
             "koboldcpp/gemma-4-31B-it-Q4_K_M"
           ]
         },
-        "blockers": [
-          "Planner preflight endpoint http://127.0.0.1:5003/v1 does not match benchmark planner endpoint(s): http://127.0.0.1:5013/v1."
-        ]
+        "blockers": []
       }
     },
     {
@@ -236,7 +234,6 @@
     }
   ],
   "nextSteps": [
-    "Refresh planner preflight against the exact endpoint/model used by the latest benchmark before treating planner evidence as current.",
     "Run the planner preflight and readiness doctor after starting a production-suitable planner endpoint with 8192+ context.",
     "Run the full aquarium/koi/dog production-text matrix to completion.",
     "Keep the full prompt and correct planner runtime; retry/repair planner output until must_include and must_avoid checks pass before Comfy work.",

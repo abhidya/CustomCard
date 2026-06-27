@@ -1,6 +1,6 @@
 # Production Text Research Rollup
 
-Created: 2026-06-27T03:18:19.532Z
+Created: 2026-06-27T03:22:30.089Z
 Status: blocked
 Promotion ready: no
 
@@ -15,7 +15,6 @@ Promotion ready: no
 - Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.
 - Latest dry-run planning proof keeps the full production card-copy JSON contract on koboldcpp/gemma-4-31B-it-Q4_K_M with 8192+ context, 3200 output tokens, and 1200000ms timeout across aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you.
 - Latest planner preflight passed with koboldcpp/gemma-4-31B-it-Q4_K_M.
-- Planner preflight and benchmark runtime evidence do not align: Planner preflight endpoint http://127.0.0.1:5003/v1 does not match benchmark planner endpoint(s): http://127.0.0.1:5013/v1.
 - Installed production planner candidates found locally: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Recommended production planner candidates still missing locally: qwen3-14b-instruct.
@@ -32,15 +31,15 @@ Promotion ready: no
 - Required customer terms still missing: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog.
 - Manual grade readiness is blocked: 0 blocked grade(s), 0 run(s) failed before image generation.
 - Best current LLM-planned score is 38/100 and remains blocked.
-- Promotion gate currently fails 7 requirement(s): planner preflight matches benchmark runtime, readiness doctor is promotion-ready, LLM-planned customer request matrix completed, final images came from Comfy text composer, planner preserved required terms and avoided forbidden terms, manual grade checklist is promotion-ready, manual aggregate is promotion-ready.
+- Promotion gate currently fails 6 requirement(s): readiness doctor is promotion-ready, LLM-planned customer request matrix completed, final images came from Comfy text composer, planner preserved required terms and avoided forbidden terms, manual grade checklist is promotion-ready, manual aggregate is promotion-ready.
 
 ## Evidence Summary
 
 | Area | Status | Key result | Path |
 | --- | --- | --- | --- |
 | Comfy text composer | promotion-ready | comfy=yes node=yes | [open](../production-text-preflight-20260627-production-planner/production-text-preflight.json) |
-| Planner | promotion-ready | production-suitable koboldcpp/gemma-4-31B-it-Q4_K_M; context=8192; max=3200 | [open](../production-text-planner-preflight-20260627-production-planner/production-text-planner-preflight.json) |
-| Planner/runtime alignment | blocked | checked=yes ok=no; preflight=http://127.0.0.1:5003/v1; benchmark=http://127.0.0.1:5013/v1; blockers=1 | [open](../production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json) |
+| Planner | promotion-ready | production-suitable koboldcpp/gemma-4-31B-it-Q4_K_M; context=8192; max=3200 | [open](../production-text-planner-preflight-20260627T021918Z/production-text-planner-preflight.json) |
+| Planner/runtime alignment | promotion-ready | checked=yes ok=yes; preflight=http://127.0.0.1:5013/v1; benchmark=http://127.0.0.1:5013/v1; blockers=0 | [open](../production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json) |
 | Readiness | blocked | production planner reachable=yes; blockers=1 | [open](../production-text-readiness-20260627-production-planner/production-text-readiness.json) |
 | Dry run | planning-proof | 3 planned; production-suitable koboldcpp/gemma-4-31B-it-Q4_K_M; context=8192; max=3200 | [open](../production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json) |
 | Model coverage | action-needed | 9 recommended installed; unevaluated planners=gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash | [open](../local-model-coverage-20260627-current/local-model-coverage.json) |
@@ -51,7 +50,6 @@ Promotion ready: no
 ## Promotion Gate
 
 Failed requirements:
-- planner preflight matches benchmark runtime
 - readiness doctor is promotion-ready
 - LLM-planned customer request matrix completed
 - final images came from Comfy text composer
@@ -63,6 +61,7 @@ Passed requirements:
 - live ComfyUI preflight passed
 - live ComfyUI proof is current
 - planner preflight is production-ready
+- planner preflight matches benchmark runtime
 - local model coverage is tracked
 - production planner candidate is available
 - production-suitable planner endpoint is reachable
@@ -152,7 +151,6 @@ Shows whether every production-text requirement now passes. Remove --advisory on
 
 ## Next Steps
 
-- Refresh planner preflight against the exact endpoint/model used by the latest benchmark before treating planner evidence as current.
 - Run production-text planner preflight and benchmark evidence against installed production planner candidate(s): gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Resolve local model pull queue if the installed planner is too slow: qwen3-14b-instruct.
 - Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.

@@ -263,6 +263,7 @@ if ($HasLocalLlm -and -not $DryRun) {
     )
     $PlannerPreflightArgs = @(
       $PlannerPreflightScript,
+      "--output-dir", $OutputDir,
       "--base-url", $ResolvedLocalLlmBaseUrl,
       "--timeout-ms", [string]($LocalLlmPreflightTimeoutSec * 1000),
       "--max-output-tokens", [string]$PlannerMaxTokens,
