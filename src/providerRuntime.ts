@@ -1009,6 +1009,7 @@ function imageModelEnvKeys(adapterId: string): string[] {
 
 function defaultTextModel(adapterId: string): string {
   const defaults: Record<string, string> = {
+    "cloudflare-workers-ai-chat": "@cf/qwen/qwen3-30b-a3b-fp8",
     "openai-responses-chat": "gpt-4o-mini",
     "anthropic-messages-chat": "claude-3-5-haiku-latest",
     "google-gemini-chat": "gemini-1.5-flash",

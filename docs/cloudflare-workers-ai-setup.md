@@ -12,7 +12,7 @@ Required shared configuration:
 ```bash
 CLOUDFLARE_ACCOUNT_ID=replace-me
 CLOUDFLARE_API_TOKEN=replace-me
-CLOUDFLARE_WORKERS_AI_TEXT_MODEL=@cf/meta/llama-3.1-8b-instruct-fast
+CLOUDFLARE_WORKERS_AI_TEXT_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
 CLOUDFLARE_WORKERS_AI_IMAGE_MODEL=@cf/bytedance/stable-diffusion-xl-lightning
 ```
 
@@ -29,11 +29,10 @@ generation.
 
 ## Recommended Models
 
-Use `@cf/meta/llama-3.1-8b-instruct-fast` as the default LLM for card copy,
-metadata shaping, and lightweight customer-chat assistance. It is the cheapest
-Cloudflare JSON Mode-capable default in this repo's live path, and card-copy
-requests send a JSON Schema through `response_format` so panel copy is not
-prompt-only JSON.
+Use `@cf/qwen/qwen3-30b-a3b-fp8` as the default LLM for production card copy.
+It is the current Cloudflare text model for the full card-copy JSON contract,
+and card-copy requests send a JSON Schema through `response_format` so panel
+copy is not prompt-only JSON.
 
 Use `cloudflare-workers-ai-image` as the preferred live card-image adapter right
 now. The app still keeps `browser-svg-renderer` as the deterministic fallback and
@@ -58,8 +57,8 @@ pause.
 
 ## Fallback Order
 
-1. Cloudflare LLM JSON Mode default: `@cf/meta/llama-3.1-8b-instruct-fast`.
-2. Cloudflare LLM quality fallback: `@cf/meta/llama-3.3-70b-instruct-fp8-fast`.
+1. Cloudflare LLM JSON Mode default: `@cf/qwen/qwen3-30b-a3b-fp8`.
+2. Cloudflare LLM low-cost fallback: `@cf/meta/llama-3.1-8b-instruct-fast`.
 3. Preferred live image adapter: `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=cloudflare-workers-ai-image`.
 4. Deterministic image fallback/debug adapter: `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=browser-svg-renderer`.
 5. Cloudflare image quality experiment: `@cf/black-forest-labs/flux-1-schnell`.

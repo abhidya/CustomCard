@@ -10,7 +10,7 @@ import {
 const cloudflareEnv = {
   CLOUDFLARE_ACCOUNT_ID: "acct_123",
   CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
-  CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
+  CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8",
   CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "token_image",
   CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning"
 };
@@ -25,21 +25,21 @@ describe("AI flow config", () => {
     const flow = resolveAiFlowConfig("card-copy", cloudflareEnv);
 
     expect(flow.primaryAdapterId).toBe("cloudflare-workers-ai-chat");
-    expect(flow.model).toBe("@cf/meta/llama-3.1-8b-instruct-fast");
+    expect(flow.model).toBe("@cf/qwen/qwen3-30b-a3b-fp8");
     expect(flow.liveProviderCallsEnabled).toBe(true);
     expect(flow.readyForLiveCalls).toBe(true);
     expect(flow.blockedReasons).toEqual([]);
   });
 
-  it("defaults card generation to Qwen copy and RunComfy image with live calls enabled", () => {
+  it("defaults card generation to Cloudflare copy and RunComfy image with live calls enabled", () => {
     const configs = buildDefaultAiFlowAdminConfigs();
     const cardCopy = configs.find((config) => config.flowId === "card-copy");
     const cardImage = configs.find((config) => config.flowId === "card-image");
 
-    expect(cardCopy?.primaryAdapterId).toBe("huggingface-chat");
-    expect(cardCopy?.fallbackAdapterId).toBe("cloudflare-workers-ai-chat");
+    expect(cardCopy?.primaryAdapterId).toBe("cloudflare-workers-ai-chat");
+    expect(cardCopy?.fallbackAdapterId).toBe("huggingface-chat");
     expect(cardCopy?.fallbackQueueEnabled).toBe(true);
-    expect(cardCopy?.model).toBe("Qwen/Qwen3-235B-A22B-Instruct-2507");
+    expect(cardCopy?.model).toBe("@cf/qwen/qwen3-30b-a3b-fp8");
     expect(cardCopy?.rateLimitPerMinute).toBe(4);
     expect(cardCopy?.perRequestBudgetCents).toBe(5);
     expect(cardCopy?.liveProviderCallsEnabled).toBe(true);
@@ -52,7 +52,32 @@ describe("AI flow config", () => {
     expect(cardImage?.liveProviderCallsEnabled).toBe(true);
   });
 
-  it("uses the benchmark-winning Qwen plus DeepAI text2img combo when those credentials exist", () => {
+  it("lets the production card-copy model env override stale admin and provider defaults", () => {
+    const flow = resolveAiFlowConfig(
+      "card-copy",
+      {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
+        CUSTOMCARD_AI_CARD_COPY_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8"
+      },
+      [
+        {
+          flowId: "card-copy",
+          primaryAdapterId: "cloudflare-workers-ai-chat",
+          fallbackAdapterId: "huggingface-chat",
+          model: "@cf/meta/llama-3.1-8b-instruct-fast",
+          liveProviderCallsEnabled: true
+        }
+      ]
+    );
+
+    expect(flow.primaryAdapterId).toBe("cloudflare-workers-ai-chat");
+    expect(flow.model).toBe("@cf/qwen/qwen3-30b-a3b-fp8");
+    expect(flow.readyForLiveCalls).toBe(true);
+  });
+
+  it("uses the fallback Qwen plus DeepAI text2img combo when only those credentials exist", () => {
     const cardCopy = resolveAiFlowConfig("card-copy", recommendedCardGenerationEnv);
     const cardImage = resolveAiFlowConfig("card-image", {
       ...recommendedCardGenerationEnv,

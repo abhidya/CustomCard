@@ -39,8 +39,8 @@ describe("provider HTTP worker", () => {
       [
         "CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID=cloudflare-workers-ai-chat",
         "CUSTOMCARD_AI_CARD_COPY_FALLBACK_ADAPTER_ID=cloudflare-workers-ai-chat",
-        "CUSTOMCARD_AI_CARD_COPY_MODEL=@cf/meta/llama-3.1-8b-instruct-fast",
-        "CLOUDFLARE_WORKERS_AI_TEXT_MODEL=@cf/meta/llama-3.1-8b-instruct-fast",
+        "CUSTOMCARD_AI_CARD_COPY_MODEL=@cf/qwen/qwen3-30b-a3b-fp8",
+        "CLOUDFLARE_WORKERS_AI_TEXT_MODEL=@cf/qwen/qwen3-30b-a3b-fp8",
         "CLOUDFLARE_ACCOUNT_ID=acct_123",
         "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN=cf_text_token",
         "CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=local-comfyui-api-image",
@@ -53,7 +53,7 @@ describe("provider HTTP worker", () => {
 
     expect(runtime.describe()).toMatchObject({
       copyAdapter: "cloudflare-workers-ai-chat",
-      copyModel: "@cf/meta/llama-3.1-8b-instruct-fast",
+      copyModel: "@cf/qwen/qwen3-30b-a3b-fp8",
       imageAdapter: "local-comfyui-api-image",
       comfyUrl: "http://127.0.0.1:8188"
     });

@@ -56,8 +56,8 @@ export const aiFlowDefinitions = [
     flowId: "card-copy",
     label: "Card copy",
     capability: "text-chat",
-    defaultPrimaryAdapterId: "huggingface-chat",
-    defaultFallbackAdapterId: "cloudflare-workers-ai-chat",
+    defaultPrimaryAdapterId: "cloudflare-workers-ai-chat",
+    defaultFallbackAdapterId: "huggingface-chat",
     allowedAdapterIds: textProviderAdapterIds,
     liveDefault: "auto",
     queueDefault: false,
@@ -180,6 +180,7 @@ const aiProviderModelEnvKeys = {
 };
 
 const defaultModelsByAdapter = {
+  "cloudflare-workers-ai-chat": "@cf/qwen/qwen3-30b-a3b-fp8",
   "cloudflare-workers-ai-image": "@cf/black-forest-labs/flux-1-schnell",
   "openai-responses-chat": "gpt-4o-mini",
   "openai-images": "gpt-image-2",
@@ -304,12 +305,11 @@ export function resolveAiFlowConfig(flowId, env = {}, adminOverrides = []) {
       ? override.promptInstructions || readEnvString(env, `CUSTOMCARD_AI_${key}_PROMPT_INSTRUCTIONS`)
       : readEnvString(env, `CUSTOMCARD_AI_${key}_PROMPT_INSTRUCTIONS`) || override.promptInstructions) ||
     definition.promptInstructions;
+  const modelOverride = readEnvString(env, `CUSTOMCARD_AI_${key}_MODEL`) || override.model;
   const model = modelForAiAdapter(
     primaryAdapterId,
     env,
-    hasAdminOverride
-      ? override.model || readEnvString(env, `CUSTOMCARD_AI_${key}_MODEL`)
-      : readEnvString(env, `CUSTOMCARD_AI_${key}_MODEL`) || override.model
+    modelOverride
   );
   const envRateLimitPerMinute = readEnvNumber(
     env,
