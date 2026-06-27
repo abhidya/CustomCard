@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "phase": "local-production-text",
+  "storyId": "koi-fish-lover-encouragement",
+  "textCandidateId": "text-local-openai-compatible",
+  "imageCandidateId": "image-local-comfyui",
+  "imageAdapterId": "local-comfyui-api-image",
+  "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+  "requestCount": 0,
+  "requests": []
+}

@@ -44,6 +44,14 @@ Production text should be planned by the card-copy LLM and rendered by ComfyUI:
 | `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-current` | Blocked | Fresh tracked index points at the 2026-06-27 Comfy/planner/readiness/model-coverage/rerun evidence and keeps the older Qwen3-4B benchmark only as blocked smoke/failure evidence. |
 | `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-current` | Blocked | Current gate fails 10 requirements: live Comfy preflight, current live Comfy proof, planner preflight, readiness, production-suitable endpoint, no-small-planner replacement evidence, matrix completion, must-include/must-avoid adherence, manual grade checklist, and manual aggregate. |
 | `docs/evidence/generated-card-comparisons/production-text-research-rollup-20260627-current` | Blocked | Generated rollup derives 20 findings and 10 next commands from the current index/gate/rerun artifacts; it correctly identifies the production planner blocker as an unreachable endpoint for a production-suitable Gemma 31B target. |
+| `docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner` | Promotion-ready | Fresh `/v1/models` proof reports `koboldcpp/gemma-4-31B-it-Q4_K_M` live on `5003`; planner preflight passes with 8192 context and 3200 output tokens. |
+| `docs/evidence/generated-card-comparisons/production-text-preflight-20260627-production-planner` | Promotion-ready | Fresh live Comfy proof reports the target ComfyUI server reachable and `CustomCardTextComposer` loaded. |
+| `docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner` | Blocked | Runtime setup is now proven: live Comfy, text node, and production planner endpoint pass. Readiness has 1 remaining blocker, the stale failed Qwen3-4B LLM-planned aggregate. |
+| `docs/evidence/generated-card-comparisons/production-text-runtime-attempt-20260627-production-planner` | Throughput blocked | Full matrix command passed live Comfy and Gemma planner preflights, wrote partial benchmark evidence for aquarium and koi, and both completed records failed before image generation with text provider `fetch failed`; dog had started but did not finish before the run was stopped. The local CPU-only Gemma worker reached about 27 GB resident memory and kept consuming CPU after the client stopped; next attempt should use GPU/offload or a hosted/self-hosted production planner, not a reduced prompt. |
+| `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner` | Blocked | Tracked index now includes the live Gemma planner preflight, live Comfy preflight, and one-blocker readiness report, while retaining the older Qwen3-4B matrix as failed smoke evidence until the full production-planner matrix is run. |
+| `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-production-planner` | Blocked | Gate now passes live Comfy proof, current Comfy proof, planner preflight, production-suitable endpoint, no-small-planner evidence, local model coverage, production planner candidate availability, and final-Comfy-image evidence. It fails 5 remaining requirements: readiness, matrix completion, must-include/must-avoid adherence, manual grade checklist, and manual aggregate. |
+| `docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-production-planner` | Rerun required | Converts the 5 remaining gate failures into the next command chain for the full aquarium/koi/dog production-planner matrix, manual grading, checklist, aggregate, evidence index, and final gate. |
+| `docs/evidence/generated-card-comparisons/production-text-research-rollup-20260627-production-planner` | Blocked | Generated rollup derives 16 findings and 10 next commands from the updated production-planner index/gate/rerun artifacts; the remaining work is now benchmark and grading evidence, not runtime reachability. |
 | `docs/evidence/generated-card-comparisons/production-text-workflow-20260626-sdxl-turbo-cfg15-artwork-guard-v2` | 72/100, blocked | Deterministic Comfy text, soft text fields, and artwork guards work structurally, but artwork remains too dense for production. |
 | `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-candidates` | Blocked | Aggregate evidence still says do not promote production Comfy text as the default path. |
 
@@ -98,7 +106,7 @@ a hosted/self-hosted larger planner.
 The wrapper accepts either a root local URL such as `http://127.0.0.1:5001` or
 a `/v1` URL such as `http://127.0.0.1:5001/v1`, then probes `/v1/models` before
 live provider calls. Use `-DryRun` to inspect planned aquarium/koi/dog runs
-while the text server is offline.
+without spending Comfy image work.
 
 Run `npm run comfy:production-text:doctor -- --advisory --local-llm-base-url ... --planner-context-tokens 8192 --planner-max-output-tokens 3200`
 before collecting new promotion evidence. It aggregates workflow/node
@@ -111,7 +119,7 @@ before refreshing the tracked evidence index. Stage or commit the coverage
 artifact first if installed/evaluated planner inventory should count in current
 findings.
 
-Run `npm run comfy:production-text:evidence -- --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-current`
+Run `npm run comfy:production-text:evidence -- --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner`
 to refresh the tracked production-text evidence index. Add `--include-untracked`
 only when intentionally reviewing local scratch runs that should not be treated
 as promotion proof.
@@ -125,7 +133,7 @@ Run `npm run comfy:production-text:planner -- --base-url ... --model ... --repor
 before any live production benchmark. This is the fast check that prevents a
 4096-context local model from turning the koi case into truncated JSON again.
 
-Run `npm run comfy:production-text:gate -- --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-current --index-output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-current`
+Run `npm run comfy:production-text:gate -- --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-production-planner --index-output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner`
 as the final promotion contract. Remove `--advisory` only when the current
 planner/runtime and aggregate evidence are expected to pass.
 
@@ -139,11 +147,11 @@ single-run structural compositor smoke test.
 
 ## Next Gate
 
-Promotion remains blocked. The next gate is no longer reachability; it is
-correct planner runtime plus planner-output validation:
+Promotion remains blocked. The next gate is no longer runtime reachability; it
+is full production-planner matrix execution plus planner-output validation:
 
-- Keep full prompt quality and use a planner/runtime large enough for the full
-  creative contract.
+- Keep full prompt quality and keep the live Gemma 31B or an equivalent
+  production-suitable planner/runtime on the full creative contract.
 - Run the readiness doctor before promotion attempts and point
   `-LocalLlmBaseUrl` at a production-suitable planner, not the Qwen3-4B smoke
   endpoint.

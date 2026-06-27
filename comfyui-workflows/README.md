@@ -136,6 +136,7 @@ Promotion preflight, which fails if Comfy is not reachable or the node is not
 loaded:
 
 ```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/start-local-comfyui.ps1
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/comfyui-production-text-preflight.mjs --require-live true
 ```
 
@@ -164,7 +165,7 @@ and 4096-context runs are smoke/failure evidence only.
 Generate the blocked-evidence rerun plan:
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-rerun-plan.mjs --date 20260627 --gate docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-current/production-text-promotion-gate.json --index docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-current/production-text-evidence-index.json --output-dir docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-current
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-rerun-plan.mjs --date 20260627 --gate docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-production-planner/production-text-promotion-gate.json --index docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner/production-text-evidence-index.json --output-dir docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-production-planner
 ```
 
 The rerun plan reads the current promotion gate and evidence index, then writes
@@ -195,7 +196,7 @@ evidence index if it should count in current production-text findings.
 Evidence index before deciding the next run:
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-evidence-index.mjs --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-current
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-evidence-index.mjs --output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner
 ```
 
 The index scans tracked production-text planner preflight, readiness, local
@@ -205,7 +206,7 @@ evidence. Pass `--include-untracked` only for local scratch review.
 Promotion gate before defaulting the workflow:
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-promotion-gate.mjs --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-current --index-output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-current
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-promotion-gate.mjs --advisory --output-dir docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-production-planner --index-output-dir docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner
 ```
 
 The gate is the final pass/fail contract for production-text promotion. It is
@@ -216,7 +217,7 @@ matrix, term adherence, and manual aggregate requirements all pass.
 Research rollup after the index/gate/rerun refresh:
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-research-rollup.mjs --date 20260627 --index docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-current/production-text-evidence-index.json --gate docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-current/production-text-promotion-gate.json --rerun docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-current/production-text-rerun-plan.json --output-dir docs/evidence/generated-card-comparisons/production-text-research-rollup-20260627-current
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-research-rollup.mjs --date 20260627 --index docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner/production-text-evidence-index.json --gate docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-production-planner/production-text-promotion-gate.json --rerun docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-production-planner/production-text-rerun-plan.json --output-dir docs/evidence/generated-card-comparisons/production-text-research-rollup-20260627-production-planner
 ```
 
 The rollup aggregates the current evidence index, promotion gate, and rerun plan
@@ -294,15 +295,15 @@ Latest live evidence:
     theme/copy/cue/visual-brief repair request-aware, and refuses Qwen3-4B/8B
     for production evidence unless `-AllowSmallPlanner` is explicit.
 - Current readiness doctor:
-  `docs/evidence/generated-card-comparisons/production-text-readiness-20260627-current`
-  - Current live Comfy and production planner endpoint probes are offline.
-  - Higher-quality local planner files exist, but no production-suitable
-    planner endpoint is currently reachable/configured.
+  `docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner`
+  - Live Comfy and Gemma 31B planner probes are reachable with the production
+    8192 context / 3200 output budget.
+  - Readiness now blocks only on the stale failed Qwen3-4B LLM-planned
+    aggregate; the runtime setup blockers are cleared.
 - Current planner preflight:
-  `docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-current`
-  - Uses Gemma 31B with 8192 context and 3200 max output as the production
-    planner target, but blocks promotion because the `5003` `/models` probe is
-    not currently reachable.
+  `docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner`
+  - Promotion-ready: `/v1/models` reports Gemma 31B with 8192 context and 3200
+    max output as the active production-suitable planner.
 - Current local model coverage:
   `docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current`
   - Gemma 31B, Magistral Small, and DeepSeek V4 Flash are installed production
@@ -310,30 +311,38 @@ Latest live evidence:
   - Qwen3 14B remains an optional missing fallback if installed planners are too
     slow for routine benchmark loops.
 - Current rerun plan:
-  `docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-current`
-  - Converts the 10 failed gate requirements into 10 ordered commands for the
-    next production-suitable planner pass and records local planner coverage.
+  `docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-production-planner`
+  - Converts the 5 remaining failed gate requirements into 10 ordered commands
+    for the full production-planner matrix, manual grading, aggregation, and
+    final gate.
 - Current manual grade checklist:
   `docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260626-current`
   - Blocks promotion: 2 generated runs were graded and blocked, koi failed
     before image generation, and must-include/theme adherence remains broken.
+- Current runtime attempt:
+  `docs/evidence/generated-card-comparisons/production-text-runtime-attempt-20260627-production-planner`
+  - Full matrix command passed live Comfy and Gemma planner preflights, wrote
+    partial aquarium/koi benchmark evidence, and both completed records failed
+    before image generation with text provider `fetch failed`; dog had started
+    but did not finish before the local CPU-only Gemma path was stopped.
 - Current evidence index:
-  `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-current`
-  - Tracks the current production-text evidence set, including planner
-    preflight, local model coverage, and rerun plan, and keeps promotion blocked
-    until the planner endpoint and aggregate evidence pass.
+  `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner`
+  - Tracks the current production-text evidence set, including live Comfy,
+    production planner preflight, readiness, local model coverage, and rerun
+    plan; promotion remains blocked until the fresh matrix and aggregate pass.
 - Current promotion gate:
-  `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-current`
-  - Passes local model coverage, production-planner-candidate availability, and
-    final-Comfy-image evidence from the older matrix.
-  - Fails live Comfy preflight/current proof, planner preflight/readiness,
-    production-suitable endpoint, no-small-planner replacement evidence, matrix
-    completion, must-include/must-avoid, manual grade checklist, and manual
-    aggregate requirements, so production promotion remains blocked.
+  `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-production-planner`
+  - Passes live Comfy preflight/current proof, planner preflight,
+    production-suitable endpoint, local model coverage, production-planner
+    candidate availability, and final-Comfy-image evidence from the older
+    matrix.
+  - Fails readiness, no-small-planner replacement evidence, matrix completion,
+    must-include/must-avoid, manual grade checklist, and manual aggregate
+    requirements, so production promotion remains blocked.
 - Current research rollup:
-  `docs/evidence/generated-card-comparisons/production-text-research-rollup-20260627-current`
-  - Derives current findings, failed gate requirements, evidence summary, and 10
-    next commands from tracked index/gate/rerun artifacts.
+  `docs/evidence/generated-card-comparisons/production-text-research-rollup-20260627-production-planner`
+  - Derives current findings, 5 failed gate requirements, evidence summary, and
+    10 next commands from tracked index/gate/rerun artifacts.
   - Records that reduced planner prompts are not promotion evidence; rerun with
     Gemma 31B, Magistral Small, Qwen3 14B+, or a stronger hosted/self-hosted
     planner when the full contract does not fit.

@@ -399,8 +399,9 @@ customer-theme quality.
    `tools/install-comfy-customcard-text-node.ps1`.
 2. Put approved font files in the node `fonts/` directory and document their
    names.
-3. Run preflight with `--require-live true` and confirm
-   `CustomCardTextComposer` is present in live `/object_info`.
+3. Start the local Comfy runtime with `tools/start-local-comfyui.ps1`, then run
+   preflight with `--require-live true` and confirm `CustomCardTextComposer` is
+   present in live `/object_info`.
 4. Run `npm run comfy:production-text:planner -- --base-url ... --model ... --reported-context-tokens 8192 --max-output-tokens 3200`
    and confirm the active planner is production-suitable. Qwen3-4B/8B and
    4096-context planners should be run only with `--allow-small` for failure
@@ -435,35 +436,42 @@ customer-theme quality.
 12. Promote only after aggregate benchmark evidence beats the current
    app-compositor baseline.
 
-Current status: gates 1, 3, and the readiness portion of 4 have current local
-evidence for the 2026-06-27 runtime. The current live Comfy preflight is
-`docs/evidence/generated-card-comparisons/production-text-preflight-20260627-current`:
-the target ComfyUI server is not reachable, so `CustomCardTextComposer` is not
-currently proven loaded. The current planner preflight report is
-`docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-current`:
-Gemma 31B is correctly classified as production-suitable with 8192 context and
-3200 output tokens, but the configured `5003` `/models` probe is not reachable.
-The current readiness report is
-`docs/evidence/generated-card-comparisons/production-text-readiness-20260627-current`:
-local Comfy and the production planner endpoint are both offline. The current
+Current status: gates 1, 2, 3, and the runtime-readiness portion of 4 have
+current local evidence for the 2026-06-27 production-planner runtime. The
+current live Comfy preflight is
+`docs/evidence/generated-card-comparisons/production-text-preflight-20260627-production-planner`:
+the target ComfyUI server is reachable and `CustomCardTextComposer` is loaded.
+The current planner preflight report is
+`docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner`:
+Gemma 31B is promotion-ready with 8192 context and 3200 output tokens at the
+configured `5003` `/models` endpoint. The current readiness report is
+`docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner`:
+local Comfy and the production planner endpoint are both reachable; readiness
+still blocks on the stale failed Qwen3-4B LLM-planned aggregate. The current
 local model coverage is
 `docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current`;
 Gemma 31B, Magistral Small, and DeepSeek V4 Flash are installed but still need
 local production-text evaluation, while Qwen3 14B remains an optional missing
 fallback if installed planners are too slow. The current rerun plan is
-`docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-current`:
-it turns the 10 failed gate requirements into 10 ordered commands for the next
-production-suitable planner evidence pass. The current evidence index is
-`docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-current`,
+`docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-production-planner`:
+it turns the 5 remaining failed gate requirements into 10 ordered commands for
+the full production-planner matrix, grading, aggregation, and final gate. The
+current evidence index is
+`docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner`,
 the current promotion gate is
-`docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-current`,
+`docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-production-planner`,
 and the current research rollup is
-`docs/evidence/generated-card-comparisons/production-text-research-rollup-20260627-current`.
-Together they keep promotion blocked on live Comfy reachability, current Comfy
-text-node proof, planner endpoint reachability, readiness, no-small-planner
-replacement evidence, full matrix completion, must-include/must-avoid
-adherence, manual grade checklist readiness, and manual aggregate readiness:
-10 failed requirements total. Gate 9's older live LLM-planned matrix ran through
+`docs/evidence/generated-card-comparisons/production-text-research-rollup-20260627-production-planner`.
+Together they keep promotion blocked on readiness, full matrix completion,
+must-include/must-avoid adherence, manual grade checklist readiness, and manual
+aggregate readiness: 5 failed requirements total. A full matrix attempt is
+recorded at
+`docs/evidence/generated-card-comparisons/production-text-runtime-attempt-20260627-production-planner`:
+it passed live Comfy and Gemma planner preflights, wrote partial benchmark
+evidence for aquarium and koi, and both completed records failed before image
+generation with text provider `fetch failed`; dog had started but did not
+finish before the CPU-only Gemma worker was stopped for throughput. Gate 9's
+older live LLM-planned matrix ran through
 KoboldCPP Qwen3-4B and local Comfy, then failed quality review: aquarium scored
 38/100, dog scored 34/100, and koi failed before image generation because the
 local LLM returned truncated invalid JSON. The code now keeps full prompt

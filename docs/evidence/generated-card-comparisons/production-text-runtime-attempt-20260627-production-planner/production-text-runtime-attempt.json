@@ -1,0 +1,25 @@
+{
+  "createdAtIso": "2026-06-27T00:59:00.000Z",
+  "status": "stopped-throughput-blocked",
+  "promotionReady": false,
+  "plannerModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
+  "plannerBaseUrl": "http://127.0.0.1:5003/v1",
+  "plannerContextTokens": 8192,
+  "plannerMaxOutputTokens": 3200,
+  "comfyUrl": "http://127.0.0.1:8188",
+  "benchmarkCommand": "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5003/v1 -LocalLlmModel koboldcpp/gemma-4-31B-it-Q4_K_M -OutputDir docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 3200 -PlannerContextSize 8192",
+  "preflightEvidence": {
+    "comfyPreflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260627-production-planner/production-text-preflight.json",
+    "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner/production-text-planner-preflight.json",
+    "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json"
+  },
+  "observations": [
+    "Live Comfy preflight passed before the benchmark attempt.",
+    "Gemma 31B planner preflight passed with 8192 context and 3200 output tokens before the benchmark attempt.",
+    "The benchmark wrote partial evidence for aquarium-lover-birthday and koi-fish-lover-encouragement.",
+    "Both completed run records failed before image generation with text provider failure: fetch failed.",
+    "The dog-lover-thank-you run had started but did not finish before the run was stopped.",
+    "The KoboldCPP worker process reached about 27 GB resident memory and continued consuming CPU after the client was stopped, so the local CPU-only planner was stopped to release the machine."
+  ],
+  "nextAction": "Run the full aquarium/koi/dog production-text matrix with the same full prompt contract on GPU/offload or a hosted/self-hosted production-suitable planner endpoint; do not reduce prompt quality to fit a slower local CPU path."
+}

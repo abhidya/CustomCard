@@ -1,0 +1,107 @@
+{
+  "createdAtIso": "2026-06-27T01:07:31.385Z",
+  "status": "blocked",
+  "promotionReady": false,
+  "advisory": true,
+  "benchmarkSummary": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json",
+  "benchmarkCreatedAtIso": "2026-06-27T00:49:34.101Z",
+  "phase": "local-production-text",
+  "phaseDir": "production-text-workflow",
+  "summary": {
+    "totalRuns": 2,
+    "gradableRuns": 0,
+    "generatedVisualRuns": 0,
+    "gradedGeneratedRuns": 0,
+    "gradedRuns": 0,
+    "validGrades": 0,
+    "missingGrades": 0,
+    "invalidGrades": 0,
+    "passingGrades": 0,
+    "blockedGrades": 0,
+    "failedBeforeImageGeneration": 0,
+    "failedRuns": 0,
+    "stories": [
+      "aquarium-lover-birthday",
+      "koi-fish-lover-encouragement"
+    ]
+  },
+  "blockers": [
+    "Automated must_include checks failed for: Nina, birthday, aquarium, Uncle Ken, koi, encouragement."
+  ],
+  "runs": [
+    {
+      "storyId": "aquarium-lover-birthday",
+      "productionTextMode": "llm-generated-copy",
+      "textModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
+      "imageModel": "",
+      "runDir": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow/aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui",
+      "generatedVisuals": false,
+      "failedBeforeImageGeneration": false,
+      "status": "",
+      "statusCode": 502,
+      "error": "",
+      "panelCount": 0,
+      "providerCallCount": 0,
+      "contactSheet": "",
+      "manualGradeTemplate": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow/aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui/manual-grade-template.md",
+      "manualGradePath": "",
+      "gradeExpected": false,
+      "gradePresent": false,
+      "gradeValid": false,
+      "gradeIssues": [
+        "manual-visual-grade.json is missing"
+      ],
+      "gradeStatus": "",
+      "passed": false,
+      "productionRecommendation": "",
+      "blockingFailures": [],
+      "notes": "",
+      "missingMustInclude": [
+        "Nina",
+        "birthday",
+        "aquarium"
+      ],
+      "avoidedFailures": [],
+      "benchmarkSummary": "2026-06-27T00:49:34.101Z"
+    },
+    {
+      "storyId": "koi-fish-lover-encouragement",
+      "productionTextMode": "llm-generated-copy",
+      "textModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
+      "imageModel": "",
+      "runDir": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow/koi-fish-lover-encouragement__text-local-openai-compatible__image-local-comfyui",
+      "generatedVisuals": false,
+      "failedBeforeImageGeneration": false,
+      "status": "",
+      "statusCode": 502,
+      "error": "",
+      "panelCount": 0,
+      "providerCallCount": 0,
+      "contactSheet": "",
+      "manualGradeTemplate": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow/koi-fish-lover-encouragement__text-local-openai-compatible__image-local-comfyui/manual-grade-template.md",
+      "manualGradePath": "",
+      "gradeExpected": false,
+      "gradePresent": false,
+      "gradeValid": false,
+      "gradeIssues": [
+        "manual-visual-grade.json is missing"
+      ],
+      "gradeStatus": "",
+      "passed": false,
+      "productionRecommendation": "",
+      "blockingFailures": [],
+      "notes": "",
+      "missingMustInclude": [
+        "Uncle Ken",
+        "koi",
+        "encouragement"
+      ],
+      "avoidedFailures": [],
+      "benchmarkSummary": "2026-06-27T00:49:34.101Z"
+    }
+  ],
+  "nextSteps": [
+    "Fix planner contract adherence before spending more Comfy image work."
+  ],
+  "reportDir": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-production-planner"
+}

@@ -1,0 +1,63 @@
+{
+  "createdAtIso": "2026-06-27T01:07:42.369Z",
+  "inputDir": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner",
+  "outputDir": "docs/evidence/generated-card-comparisons/benchmark-aggregate-20260627-production-text-production-planner",
+  "phaseFilter": [
+    "local-production-text"
+  ],
+  "totalRuns": 2,
+  "ranked": [
+    {
+      "rank": 1,
+      "benchmarkKind": "model-benchmark-loop",
+      "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json",
+      "runId": "production-text-workflow:koi-fish-lover-encouragement:text-local-openai-compatible:image-local-comfyui",
+      "phase": "local-production-text",
+      "createdAtIso": "2026-06-27T00:59:47.324Z",
+      "fixtureId": "koi-fish-lover-encouragement",
+      "textAdapterId": "local-openai-compatible-chat",
+      "textModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
+      "imageAdapterId": "local-comfyui-api-image",
+      "provider": "local-comfyui-api-image",
+      "technique": "llm-planned-copy-comfy-deterministic-text",
+      "score": 73,
+      "status": "status-502",
+      "passed": 8,
+      "total": 11,
+      "autoScore": 73,
+      "panelCount": 0,
+      "providerCallCount": 0,
+      "settings": {
+        "phase": "local-production-text",
+        "phaseDir": "production-text-workflow",
+        "localOnlyNetworkGuard": true
+      }
+    },
+    {
+      "rank": 2,
+      "benchmarkKind": "model-benchmark-loop",
+      "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner/production-text-workflow-summary.json",
+      "runId": "production-text-workflow:aquarium-lover-birthday:text-local-openai-compatible:image-local-comfyui",
+      "phase": "local-production-text",
+      "createdAtIso": "2026-06-27T00:54:40.654Z",
+      "fixtureId": "aquarium-lover-birthday",
+      "textAdapterId": "local-openai-compatible-chat",
+      "textModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
+      "imageAdapterId": "local-comfyui-api-image",
+      "provider": "local-comfyui-api-image",
+      "technique": "llm-planned-copy-comfy-deterministic-text",
+      "score": 73,
+      "status": "status-502",
+      "passed": 8,
+      "total": 11,
+      "autoScore": 73,
+      "panelCount": 0,
+      "providerCallCount": 0,
+      "settings": {
+        "phase": "local-production-text",
+        "phaseDir": "production-text-workflow",
+        "localOnlyNetworkGuard": true
+      }
+    }
+  ]
+}

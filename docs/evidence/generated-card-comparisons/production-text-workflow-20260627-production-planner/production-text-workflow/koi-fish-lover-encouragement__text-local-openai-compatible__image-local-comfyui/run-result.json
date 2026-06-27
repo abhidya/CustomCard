@@ -1,0 +1,50 @@
+{
+  "phase": "local-production-text",
+  "focus": "local-comfy-production-text-generated-copy",
+  "storyId": "koi-fish-lover-encouragement",
+  "productionTextMode": "llm-generated-copy",
+  "textCandidateId": "text-local-openai-compatible",
+  "textAdapterId": "local-openai-compatible-chat",
+  "textModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
+  "imageCandidateId": "image-local-comfyui",
+  "imageAdapterId": "local-comfyui-api-image",
+  "typographyModeId": "customcard-production-text-composer",
+  "typographyModeLabel": "CustomCard production text composer",
+  "typographyStrategy": "llm-planned-copy-comfy-deterministic-text",
+  "runDir": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-production-planner\\production-text-workflow\\koi-fish-lover-encouragement__text-local-openai-compatible__image-local-comfyui",
+  "startedAt": "2026-06-27T00:54:40.657Z",
+  "finishedAt": "2026-06-27T00:59:47.324Z",
+  "statusCode": 502,
+  "cardCopyModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
+  "providerFailures": {
+    "text": "fetch failed"
+  },
+  "panelCount": 0,
+  "panelFiles": [],
+  "effectiveProviderRequests": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-production-planner\\production-text-workflow\\koi-fish-lover-encouragement__text-local-openai-compatible__image-local-comfyui\\effective-provider-requests.json",
+  "providerCallCount": 0,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": false,
+      "noProviderFailure": false,
+      "mustIncludeCovered": false,
+      "mustAvoidClean": true,
+      "providerCalls": 0,
+      "productionTextGeneratedCopy": true,
+      "finalImagesRenderedByComfy": true,
+      "benchmarkPreviewOverlayBypassed": true,
+      "metadataIncludesExactGeneratedCopy": true,
+      "metadataIncludesSafeBoxes": true,
+      "metadataIncludesArtworkGuards": true,
+      "imagePromptsSuppressExactCopy": true
+    },
+    "missingMustInclude": [
+      "Uncle Ken",
+      "koi",
+      "encouragement"
+    ],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}
