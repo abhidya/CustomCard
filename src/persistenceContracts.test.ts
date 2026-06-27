@@ -53,6 +53,13 @@ describe("persistence contracts", () => {
       idempotencyReplayRequired: false,
       persistedTables: ["api_jobs"]
     });
+    expect(apiPersistenceRouteContracts.find((contract) => contract.routeId === "admin-provider-job-status")).toMatchObject({
+      mode: "read-only",
+      requiredRole: "admin",
+      sessionRequired: true,
+      idempotencyReplayRequired: false,
+      persistedTables: ["auth_sessions", "api_jobs"]
+    });
     for (const routeId of queueBackedRouteIds) {
       const contract = apiPersistenceRouteContracts.find((candidate) => candidate.routeId === routeId);
       expect(contract?.queueBacked).toBe(true);
@@ -102,7 +109,7 @@ describe("persistence contracts", () => {
       requiredRole: "customer",
       persistedTables: expect.arrayContaining(["auth_sessions", "idempotency_keys", "draft_states", "audit_log"])
     });
-    expect(summary.routes.schemaBacked).toBe(37);
+    expect(summary.routes.schemaBacked).toBe(38);
     expect(summary.routes.idempotentMutations).toBe(summary.routes.mutations);
     expect(apiPersistenceRouteContracts.find((contract) => contract.routeId === "admin-demo-reset")).toMatchObject({
       requiredRole: "admin",

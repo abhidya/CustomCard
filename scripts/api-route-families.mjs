@@ -91,6 +91,24 @@ export function createApiRouteFamilies(deps) {
     return "";
   }
 
+  function providerJobStatusRouteIds(requestUrl) {
+    return String(requestUrl?.searchParams?.get("routes") ?? "")
+      .split(/[,\s]+/)
+      .map((routeId) => routeId.trim())
+      .filter(Boolean);
+  }
+
+  function adminProviderJobStatusRouteIds(requestUrl) {
+    const requested = providerJobStatusRouteIds(requestUrl);
+    const adminVisibleQueueRoutes = new Set(
+      routes
+        .filter((route) => route.id === "ai-card-generate" || route.runtimeMode === "queue-backed")
+        .map((route) => route.id)
+    );
+    const selected = requested.length > 0 ? requested : ["ai-card-generate"];
+    return selected.filter((routeId) => adminVisibleQueueRoutes.has(routeId));
+  }
+
   async function handlePublicGalleryRoute({ path, request, response }) {
     if (path !== "/api/public/featured-cards" || request.method !== "GET") return false;
     const payload = await apiRuntime.readFeaturedCards();
@@ -121,13 +139,10 @@ export function createApiRouteFamilies(deps) {
 
   async function handleProviderJobRoute({ authContext, path, request, requestUrl, response }) {
     if (path === "/api/provider/jobs/status") {
-      const routes = String(requestUrl?.searchParams?.get("routes") ?? "")
-        .split(/[,\s]+/)
-        .map((routeId) => routeId.trim())
-        .filter(Boolean);
+      const routeIds = providerJobStatusRouteIds(requestUrl);
       const result = await apiRuntime.readProviderJobStatus({
         authContext,
-        routeIds: routes.length > 0 ? routes : undefined
+        routeIds: routeIds.length > 0 ? routeIds : undefined
       });
       sendJson(response, result.statusCode, result.payload);
       return true;
@@ -204,6 +219,16 @@ export function createApiRouteFamilies(deps) {
         realOrdersEnabled: false,
         runtime: apiRuntime.describe()
       });
+      return true;
+    }
+
+    if (path === "/api/admin/provider/jobs/status") {
+      const routeIds = adminProviderJobStatusRouteIds(requestUrl);
+      const result = await apiRuntime.readProviderJobStatus({
+        authContext: { ...authContext, providerRouteIds: routeIds },
+        routeIds
+      });
+      sendJson(response, result.statusCode, result.payload);
       return true;
     }
 

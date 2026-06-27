@@ -30,6 +30,7 @@ describe("api contracts", () => {
         "ai-card-generate",
         "provider-job-lease",
         "provider-job-status",
+        "admin-provider-job-status",
         "provider-job-complete",
         "customer-bootstrap",
         "customer-draft-state",
@@ -90,6 +91,7 @@ describe("api contracts", () => {
     const aiJobStatus = apiRouteContracts.find((route) => route.id === "ai-job-status");
     const providerJobLease = apiRouteContracts.find((route) => route.id === "provider-job-lease");
     const providerJobStatus = apiRouteContracts.find((route) => route.id === "provider-job-status");
+    const adminProviderJobStatus = apiRouteContracts.find((route) => route.id === "admin-provider-job-status");
     const providerJobComplete = apiRouteContracts.find((route) => route.id === "provider-job-complete");
     const adminLocalAiLoopRun = apiRouteContracts.find((route) => route.id === "admin-local-ai-loop-run");
 
@@ -316,6 +318,17 @@ describe("api contracts", () => {
       externalNetworkCalls: false
     });
     expect(providerJobStatus?.responseSchema).toEqual(
+      expect.arrayContaining(["queued_total", "running_total", "stale_running_total", "dead_lettered_total", "oldest_queued_age_seconds"])
+    );
+    expect(adminProviderJobStatus).toMatchObject({
+      method: "GET",
+      path: "/api/admin/provider/jobs/status",
+      audience: "admin",
+      auth: "admin-session",
+      idempotencyKeyRequired: false,
+      externalNetworkCalls: false
+    });
+    expect(adminProviderJobStatus?.responseSchema).toEqual(
       expect.arrayContaining(["queued_total", "running_total", "stale_running_total", "dead_lettered_total", "oldest_queued_age_seconds"])
     );
     expect(providerJobComplete).toMatchObject({

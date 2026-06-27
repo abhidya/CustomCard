@@ -50,6 +50,7 @@ export default function AdminOperationalView({
           aiFlowConfigs={aiFlowConfigs}
           aiFlowSummary={aiFlowSummary}
           aiGenerationJobs={aiGenerationJobs}
+          getAdminApiToken={getAdminApiToken}
           localizationSummary={operationalState.localizationSummary}
           model={operationalState.adminPanelModel}
           onAiFlowConfigsChange={onAiFlowConfigsChange}

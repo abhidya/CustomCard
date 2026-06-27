@@ -244,6 +244,7 @@ export const apiPersistenceRouteContracts: ApiRoutePersistenceContract[] = [
   routePersistence("ai-job-status", "read-only", "customer", ["auth_sessions", "api_jobs"], true, false, false),
   routePersistence("provider-job-lease", "mutation", "provider", ["api_jobs", "audit_log"], false, false, false),
   routePersistence("provider-job-status", "read-only", "provider", ["api_jobs"], false, false, false),
+  routePersistence("admin-provider-job-status", "read-only", "admin", ["auth_sessions", "api_jobs"], true, false, false),
   routePersistence("provider-job-complete", "mutation", "provider", ["api_jobs", "audit_log"], false, false, false),
   routePersistence("admin-readiness", "read-only", "admin", ["auth_sessions", "account_identities", "account_recovery_challenges", "provider_connections", "provider_call_events", "audit_log"], true, false, false),
   routePersistence("admin-provider-catalog", "read-only", "admin", ["auth_sessions", "provider_connections", "provider_call_events"], true, false, false),

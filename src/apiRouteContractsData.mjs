@@ -297,6 +297,34 @@ export const apiRouteContracts = [
     backedBy: ["api_jobs", "provider-token auth", "postgres aggregate status"]
   },
   {
+    id: "admin-provider-job-status",
+    method: "GET",
+    path: "/api/admin/provider/jobs/status",
+    audience: "admin",
+    auth: "admin-session",
+    runtimeMode: "durable-api",
+    requestSchema: ["Authorization: Bearer admin session", "routes"],
+    responseSchema: [
+      "route_scope",
+      "lease_ttl_seconds",
+      "queued_total",
+      "running_total",
+      "stale_running_total",
+      "succeeded_total",
+      "dead_lettered_total",
+      "oldest_queued_age_seconds",
+      "last_succeeded_at",
+      "last_dead_lettered_at",
+      "artifact_upload"
+    ],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Admin-session-protected operators can read aggregate provider queue health for safe queue-backed route ids; no customer payloads, provider credentials, database credentials, object-store credentials, or worker bearer tokens are returned.",
+    backedBy: ["api_jobs", "admin-session auth", "postgres aggregate status"]
+  },
+  {
     id: "provider-job-complete",
     method: "POST",
     path: "/api/provider/jobs/:id/complete",
@@ -1052,6 +1080,7 @@ export const persistedTablesByRouteId = Object.freeze({
   "ai-job-status": ["auth_sessions", "api_jobs"],
   "provider-job-lease": ["api_jobs", "audit_log"],
   "provider-job-status": ["api_jobs"],
+  "admin-provider-job-status": ["auth_sessions", "api_jobs"],
   "provider-job-complete": ["api_jobs", "audit_log"],
   "admin-ai-flow-configs": ["auth_sessions", "admin_runtime_configs", "audit_log"],
   "admin-ai-flow-configs-save": ["auth_sessions", "idempotency_keys", "admin_runtime_configs", "audit_log"],
