@@ -501,9 +501,12 @@ describe("AI card generator service", () => {
       };
       expect(comfyPromptBodies).toHaveLength(4);
       for (const body of comfyPromptBodies) {
-        const panelCopy = payload.card_copy.panels.find((panel) => panel.id === body.prompt["10"].inputs.panel_id);
-        expect(body.prompt["10"].inputs.headline_text).toBe(panelCopy?.headline);
-        expect(body.prompt["10"].inputs.body_text).toBe(panelCopy?.body);
+        const panelId = body.prompt["10"].inputs.panel_id;
+        const panelCopy = payload.card_copy.panels.find((panel) => panel.id === panelId);
+        const expectedHeadline = panelId === "back" ? "" : panelCopy?.headline;
+        const expectedBody = panelId === "back" ? "" : panelCopy?.body;
+        expect(body.prompt["10"].inputs.headline_text).toBe(expectedHeadline);
+        expect(body.prompt["10"].inputs.body_text).toBe(expectedBody);
         expect(typeof body.prompt["10"].inputs.headline_font_size).toBe("number");
         expect(typeof body.prompt["10"].inputs.body_font_size).toBe("number");
         expect(["left", "center", "right"]).toContain(body.prompt["10"].inputs.text_alignment);
@@ -513,8 +516,8 @@ describe("AI card generator service", () => {
         expect(body.prompt["10"].inputs.body_box_height).toBeGreaterThan(0);
         expect(body.prompt["10"].inputs.min_font_size).toBeGreaterThan(0);
         expect(body.extra_data.customcard.inputs).toMatchObject({
-          headline_text: panelCopy?.headline,
-          body_text: panelCopy?.body,
+          headline_text: expectedHeadline,
+          body_text: expectedBody,
           headline_box: {
             width: expect.any(Number),
             height: expect.any(Number)
@@ -1007,6 +1010,64 @@ describe("AI card generator service", () => {
     );
     expect(JSON.stringify(result.payload)).toContain("Dog-neighbor harmony");
     expect(JSON.stringify(result.payload)).toContain("Morgan");
+  });
+
+  it("repairs a required recipient name into visible copy when the planner leaves it only in citations", async () => {
+    const response = {
+      theme_guide: {
+        theme_title: "Trusted neighbor thanks",
+        palette: ["warm gray", "soft cream", "terracotta"],
+        motifs: ["dog tag", "neighborly doorstep", "quiet leash curve"],
+        border_style: "thin quiet border",
+        front_back_pairing: "front and back share a dog tag mark",
+        interior_pairing: "interiors share a quiet leash curve"
+      },
+      panels: cardCopyResponse.panels.map((panel) => ({
+        ...panel,
+        headline: panel.id === "front" ? "Thank You for the Quiet Watch" : panel.headline,
+        body: panel.id === "front" ? "A good neighbor is the kind of person a dog trusts." : panel.body,
+        image_prompt:
+          "Premium 5x7 vertical dog-lover thank-you stationery with one abstract leash curve, quiet text-safe space, no readable text."
+      })),
+      memory_citations: ["Morgan loves dogs and helped while Avery was away."]
+    };
+    const fetchImpl = vi.fn(async () =>
+      new Response(JSON.stringify({ result: { response } }), {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      })
+    );
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel
+      },
+      fetchImpl,
+      aiFlowAdminConfig: buildDefaultAiFlowAdminConfigs().map((config) =>
+        config.flowId === "card-image" ? { ...config, liveProviderCallsEnabled: false } : config
+      )
+    });
+
+    const result = await service.generateCard(
+      {
+        ...cardRequest,
+        sender: "Avery",
+        recipient: "Morgan",
+        occasion: "thank-you card",
+        style: "premium folded greeting card for a dog lover",
+        personal_note: "Thank Morgan for helping while Avery was away.",
+        memory_notes: ["Morgan loves dogs and helped while Avery was away."],
+        must_include: ["Morgan", "thank", "dog"]
+      },
+      { rateKey: "test-recipient-visible-copy-repair" }
+    );
+
+    expect(result.statusCode, JSON.stringify(result.payload)).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    const payload = result.payload as { card_copy: { panels: Array<{ id: string; body: string }> } };
+    const front = payload.card_copy.panels.find((panel) => panel.id === "front");
+    expect(front?.body).toContain("Morgan");
   });
 
   it("reports length-truncated planner output as a runtime/model failure", async () => {

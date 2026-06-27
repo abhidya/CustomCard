@@ -1,0 +1,20 @@
+{
+  "advisoryOnly": true,
+  "checks": {
+    "fourPanels": true,
+    "noProviderFailure": true,
+    "mustIncludeCovered": true,
+    "mustAvoidClean": true,
+    "providerCalls": 35,
+    "productionTextGeneratedCopy": true,
+    "finalImagesRenderedByComfy": true,
+    "benchmarkPreviewOverlayBypassed": true,
+    "metadataIncludesExactGeneratedCopy": true,
+    "metadataIncludesSafeBoxes": true,
+    "metadataIncludesArtworkGuards": true,
+    "imagePromptsSuppressExactCopy": true
+  },
+  "missingMustInclude": [],
+  "avoidedFailures": [],
+  "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+}

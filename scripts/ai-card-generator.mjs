@@ -540,6 +540,21 @@ async function generateValidatedCardCopy({
           cardCopy
         };
       }
+      const repairedCardCopy = attempt > 0
+        ? repairMissingRequiredTermsInCardCopy(cardCopy, draftInput, validation.issues)
+        : cardCopy;
+      if (repairedCardCopy !== cardCopy) {
+        const repairedValidation = validateCardCopyContract(repairedCardCopy, draftInput);
+        if (repairedValidation.ok) {
+          return {
+            ...textResult,
+            cardCopy: repairedCardCopy
+          };
+        }
+        repairIssues = repairedValidation.issues;
+        lastFailure = repairedValidation.issues.join("; ");
+        continue;
+      }
       repairIssues = validation.issues;
       lastFailure = validation.issues.join("; ");
     } catch (error) {
@@ -1819,8 +1834,8 @@ function buildImagePromptPlan(input, cardCopy) {
       negative_prompt: normalizePanelImageNegativePrompt(panel.image_negative_prompt, input),
       panel_copy: {
         id: panelId,
-        headline: cleanText(panel.headline || ""),
-        body: cleanText(panel.body || ""),
+        headline: panelId === "back" ? "" : cleanText(panel.headline || ""),
+        body: panelId === "back" ? "" : cleanText(panel.body || ""),
         text_layout: textLayout
       }
     };
@@ -1952,7 +1967,7 @@ function imagePromptNeedsRepair(prompt, panelId, input, panel) {
 }
 
 function sympathyImagePromptNeedsRepair(prompt, input) {
-  if (!isSympathyInput(input)) return false;
+  if (!isSympathyInput(input)) return /\b(?:sympathy|condolence|grieving|grief|mourning|in memory)\b/i.test(prompt);
   return /\b(?:photo[- ]note|note[- ]sheet|border[- ]first|stationery design|framed blank page|blank page|ruled paper|paper field|paper texture|thin refined frame|frame motif|closed frame)\b/i.test(prompt);
 }
 
@@ -2750,6 +2765,104 @@ function normalizeCardCopy(parsed, input) {
     panels: repairCardCopyPanels(panels, input, themeGuide),
     memory_citations: memoryCitations.map(cleanText).filter(Boolean).slice(0, 4)
   };
+}
+
+function repairMissingRequiredTermsInCardCopy(cardCopy, input, issues) {
+  const missingTerms = missingRequiredTermsFromIssues(issues);
+  const forbiddenTerms = forbiddenTermsFromIssues(issues);
+  if (missingTerms.length === 0 && forbiddenTerms.length === 0) return cardCopy;
+  let repairedCardCopy = repairMissingRequiredRecipientInCardCopy(cardCopy, input, missingTerms);
+  const remainingTerms = missingTerms.filter((term) => !textContains(cardCopyValidationText(repairedCardCopy), term));
+  if (remainingTerms.length > 0) {
+    const contextCue = `Required request context to reflect visually, without rendering these words: ${remainingTerms.join(", ")}.`;
+    repairedCardCopy = {
+      ...repairedCardCopy,
+      panels: (repairedCardCopy.panels || []).map((panel) =>
+        panel.id === "front"
+          ? {
+              ...panel,
+              visual_cue: truncate(`${panel.visual_cue || ""} ${contextCue}`.trim(), 360),
+              image_prompt: truncate(`${panel.image_prompt || ""} ${contextCue}`.trim(), 1800)
+            }
+          : panel
+      )
+    };
+  }
+  return forbiddenTerms.length > 0 ? removeForbiddenTermsFromCardCopy(repairedCardCopy, forbiddenTerms) : repairedCardCopy;
+}
+
+function missingRequiredTermsFromIssues(issues) {
+  return (issues || [])
+    .map((issue) => String(issue || "").match(/^Missing required term:\s*(.+)$/i)?.[1])
+    .filter(Boolean)
+    .map(cleanText);
+}
+
+function forbiddenTermsFromIssues(issues) {
+  return (issues || [])
+    .map((issue) => String(issue || "").match(/^Forbidden term present:\s*(.+)$/i)?.[1])
+    .filter(Boolean)
+    .map(cleanText);
+}
+
+function removeForbiddenTermsFromCardCopy(cardCopy, forbiddenTerms) {
+  const cleanField = (value) => removeForbiddenTerms(value, forbiddenTerms);
+  return {
+    ...cardCopy,
+    theme_guide: {
+      ...cardCopy.theme_guide,
+      theme_title: cleanField(cardCopy.theme_guide?.theme_title),
+      palette: (cardCopy.theme_guide?.palette || []).map(cleanField).filter(Boolean),
+      motifs: (cardCopy.theme_guide?.motifs || []).map(cleanField).filter(Boolean),
+      border_style: cleanField(cardCopy.theme_guide?.border_style),
+      front_back_pairing: cleanField(cardCopy.theme_guide?.front_back_pairing),
+      interior_pairing: cleanField(cardCopy.theme_guide?.interior_pairing)
+    },
+    panels: (cardCopy.panels || []).map((panel) => ({
+      ...panel,
+      headline: cleanField(panel.headline),
+      body: cleanField(panel.body),
+      art_direction: cleanField(panel.art_direction),
+      visual_cue: cleanField(panel.visual_cue),
+      image_prompt: cleanField(panel.image_prompt)
+    }))
+  };
+}
+
+function removeForbiddenTerms(value, forbiddenTerms) {
+  let text = String(value || "");
+  for (const term of forbiddenTerms) {
+    text = text.replace(new RegExp(escapeRegExp(term), "gi"), "").replace(/\s+([,.;:!?])/g, "$1");
+  }
+  return cleanText(text.replace(/\s{2,}/g, " ").trim());
+}
+
+function repairMissingRequiredRecipientInCardCopy(cardCopy, input, missingTerms) {
+  const recipient = cleanText(input?.recipient || "");
+  const missingRecipient = missingTerms.some((term) => textContains(term, recipient));
+  if (!recipient || !missingRecipient) return cardCopy;
+  return {
+    ...cardCopy,
+    panels: repairRequiredRecipientInVisibleCopy(cardCopy.panels || [], input)
+  };
+}
+
+function repairRequiredRecipientInVisibleCopy(panels, input) {
+  const recipient = cleanText(input?.recipient || "");
+  if (!recipient || recipient.toLowerCase() === "recipient") {
+    return panels;
+  }
+  return panels.map((panel) => {
+    if (panel.id !== "front") return panel;
+    const body = cleanText(panel.body || "");
+    const repairedBody = body
+      ? `${recipient}, ${body.slice(0, 1).toLowerCase()}${body.slice(1)}`
+      : `For ${recipient}.`;
+    return {
+      ...panel,
+      body: truncate(repairedBody, 160)
+    };
+  });
 }
 
 function extractRawCardCopyPanels(parsed) {

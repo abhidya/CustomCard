@@ -1,0 +1,92 @@
+{
+  "phase": "local-production-text",
+  "focus": "local-comfy-production-text-generated-copy",
+  "storyId": "dog-lover-thank-you",
+  "productionTextMode": "llm-generated-copy",
+  "textCandidateId": "text-cloudflare-qwen3-30b-a3b-fp8",
+  "textAdapterId": "cloudflare-workers-ai-chat",
+  "textModel": "@cf/qwen/qwen3-30b-a3b-fp8",
+  "imageCandidateId": "image-local-comfyui",
+  "imageAdapterId": "local-comfyui-api-image",
+  "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+  "typographyModeId": "customcard-production-text-composer",
+  "typographyModeLabel": "CustomCard production text composer",
+  "typographyStrategy": "llm-planned-copy-comfy-deterministic-text",
+  "runDir": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\dog-lover-thank-you__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui",
+  "startedAt": "2026-06-27T21:52:15.742Z",
+  "finishedAt": "2026-06-27T21:53:10.564Z",
+  "statusCode": 200,
+  "generatedBy": "ai-text-and-image",
+  "cardCopyModel": "@cf/qwen/qwen3-30b-a3b-fp8",
+  "providerFailures": {},
+  "panelCount": 4,
+  "panelFiles": [
+    {
+      "panelId": "front",
+      "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\dog-lover-thank-you__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui\\provider-front.png",
+      "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\dog-lover-thank-you__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui\\preview-front.png",
+      "width": 960,
+      "height": 1344,
+      "prompt": "Full-bleed flat 2D artwork layer with editorial stationery restraint for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, use edge/corner ornament only, no central medallion, no ornate frame around copy, no caption plaque, and avoid all-over motif wallpaper. Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only. Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story. Use this panel-specific composition: City skyline with abstract dog silhouette in lower third, soft golden hour lighting, woven rope border in warm brown, clean text-safe area at bottom 1/3 Keep natural negative space for app-rendered typography in the lower half; do not draw words, labels, or handwriting. Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark.",
+      "renderedByComfyTextComposer": true,
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "inside-left",
+      "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\dog-lover-thank-you__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui\\provider-inside-left.png",
+      "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\dog-lover-thank-you__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui\\preview-inside-left.png",
+      "width": 960,
+      "height": 1344,
+      "prompt": "Full-bleed flat 2D artwork layer with editorial stationery restraint for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, edge-led stationery layout, thin perimeter rule, sparse edge/corner or lower-edge motifs only, quiet blank center, clean text-safe area, generous safe margins, no central medallion, no ornate frame around copy, no inner text box. Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only. Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story. Use this panel-specific composition: Warm parchment texture with abstract paw print in upper corner, soft terracotta border, centered clean text area Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label.",
+      "renderedByComfyTextComposer": true,
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "inside-right",
+      "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\dog-lover-thank-you__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui\\provider-inside-right.png",
+      "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\dog-lover-thank-you__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui\\preview-inside-right.png",
+      "width": 960,
+      "height": 1344,
+      "prompt": "Full-bleed flat 2D artwork layer with editorial stationery restraint for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, edge-led stationery layout, thin perimeter rule, sparse edge/corner or lower-edge motifs only, quiet blank center, clean text-safe area, generous safe margins, no central medallion, no ornate frame around copy, no inner text box. Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only. Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story. Use this panel-specific composition: Soft gradient background with abstract dog silhouette in lower third, subtle city grid pattern, centered clean text area Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label.",
+      "renderedByComfyTextComposer": true,
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "back",
+      "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\dog-lover-thank-you__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui\\provider-back.png",
+      "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\dog-lover-thank-you__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui\\preview-back.png",
+      "width": 960,
+      "height": 1344,
+      "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only. Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story. Use this panel-specific composition: Minimalist design with subtle city silhouette in lower corner, warm brown border with terracotta accent, centered clean text area Keep natural negative space for app-rendered typography in the quiet center field; do not draw words, labels, or handwriting. Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark. No central medallion, no halo, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.",
+      "renderedByComfyTextComposer": true,
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    }
+  ],
+  "contactSheet": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\dog-lover-thank-you__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui\\contact-sheet.png",
+  "effectiveProviderRequests": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\dog-lover-thank-you__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui\\effective-provider-requests.json",
+  "providerCallCount": 36,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": true,
+      "noProviderFailure": true,
+      "mustIncludeCovered": true,
+      "mustAvoidClean": true,
+      "providerCalls": 36,
+      "productionTextGeneratedCopy": true,
+      "finalImagesRenderedByComfy": true,
+      "benchmarkPreviewOverlayBypassed": true,
+      "metadataIncludesExactGeneratedCopy": true,
+      "metadataIncludesSafeBoxes": true,
+      "metadataIncludesArtworkGuards": true,
+      "imagePromptsSuppressExactCopy": true
+    },
+    "missingMustInclude": [],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

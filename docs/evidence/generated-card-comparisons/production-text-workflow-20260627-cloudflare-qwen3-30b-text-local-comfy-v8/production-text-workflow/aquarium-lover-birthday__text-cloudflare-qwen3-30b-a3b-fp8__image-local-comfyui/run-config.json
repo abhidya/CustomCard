@@ -1,0 +1,47 @@
+{
+  "phase": "local-production-text",
+  "focus": "local-comfy-production-text-generated-copy",
+  "storyId": "aquarium-lover-birthday",
+  "productionTextMode": "llm-generated-copy",
+  "textCandidateId": "text-cloudflare-qwen3-30b-a3b-fp8",
+  "textAdapterId": "cloudflare-workers-ai-chat",
+  "textModel": "@cf/qwen/qwen3-30b-a3b-fp8",
+  "imageCandidateId": "image-local-comfyui",
+  "imageAdapterId": "local-comfyui-api-image",
+  "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+  "typographyModeId": "customcard-production-text-composer",
+  "typographyModeLabel": "CustomCard production text composer",
+  "typographyStrategy": "llm-planned-copy-comfy-deterministic-text",
+  "aiFlowConfig": [
+    {
+      "flowId": "card-copy",
+      "primaryAdapterId": "cloudflare-workers-ai-chat",
+      "fallbackAdapterId": "",
+      "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": false,
+      "rateLimitPerMinute": 4,
+      "monthlyBudgetCents": 5000,
+      "perRequestBudgetCents": 5,
+      "maxRetries": 1,
+      "maxTokens": 3200,
+      "temperature": 0.62
+    },
+    {
+      "flowId": "card-image",
+      "primaryAdapterId": "local-comfyui-api-image",
+      "fallbackAdapterId": "",
+      "model": "sd_xl_turbo_1.0_fp16.safetensors",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": false,
+      "rateLimitPerMinute": 4,
+      "monthlyBudgetCents": 4000,
+      "perRequestBudgetCents": 1,
+      "maxRetries": 1,
+      "maxTokens": 0,
+      "temperature": 0
+    }
+  ]
+}

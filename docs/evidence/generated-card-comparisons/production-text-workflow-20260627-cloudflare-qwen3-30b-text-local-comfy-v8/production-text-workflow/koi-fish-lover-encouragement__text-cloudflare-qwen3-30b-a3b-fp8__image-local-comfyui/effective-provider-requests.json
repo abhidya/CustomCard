@@ -1,0 +1,872 @@
+{
+  "schemaVersion": 1,
+  "phase": "local-production-text",
+  "storyId": "koi-fish-lover-encouragement",
+  "textCandidateId": "text-cloudflare-qwen3-30b-a3b-fp8",
+  "imageCandidateId": "image-local-comfyui",
+  "imageAdapterId": "local-comfyui-api-image",
+  "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+  "requestCount": 4,
+  "requests": [
+    {
+      "panelId": "front",
+      "url": "http://127.0.0.1:8188/prompt",
+      "method": "POST",
+      "requestBody": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "Full-bleed flat 2D practical-care sympathy illustration for the front of a premium vertical 5x7 print panel; deep moss field, muted ivory title-safe open area, and one lower abstract paper-cut care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the main message field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. Keep the artwork sparse, abstract, camera-free, and free of literal document props; rely on the negative prompt for failure modes. Serene koi encouragement stationery: muted pond green, warm ivory, one slow koi arc, quiet water ripples, generous negative space, restrained hopeful mood, no birthday language or dense ornamental fish pattern. Panel cue: Koi fish center-left with radiating ripples, soft blue-green palette, text-safe area at lower third Required request context to reflect visually, without rendering these words: encouragement. Palette: warm ivory, muted gray-green, deep moss, soft taupe, charcoal ink only; quiet practical sympathy, no religious symbols unless requested. Flat editorial stationery artwork with clean print surfaces and integrated negative space. No readable text. No words, letters, handwriting,"
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering, fruit, flowers, vase, urn, table setting, window bars, ornate frame, dense line art, line-art thicket, landscape, wheat field, grassland, horizon, sunset, sun, bright yellow, neon green, saturated yellow, cheerful celebration, trees, phone, smartphone, device, blank note card, note card, open book, book, page seam, tabletop, artist signature"
+            }
+          },
+          "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {
+              "batch_size": 1,
+              "height": 1344,
+              "width": 960
+            }
+          },
+          "5": {
+            "class_type": "KSampler",
+            "inputs": {
+              "cfg": 1.5,
+              "denoise": 1,
+              "latent_image": [
+                "4",
+                0
+              ],
+              "model": [
+                "1",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "positive": [
+                "2",
+                0
+              ],
+              "sampler_name": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 3838616460,
+              "steps": 2
+            }
+          },
+          "6": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "5",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            }
+          },
+          "7": {
+            "class_type": "CustomCardTextComposer",
+            "inputs": {
+              "alignment": "center",
+              "artwork_guard_color": "#111715",
+              "artwork_guard_height": 1344,
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "panel",
+              "artwork_guard_width": 960,
+              "artwork_guard_x": 0,
+              "artwork_guard_y": 0,
+              "body": "A quiet reminder that still waters run deep",
+              "body_box_height": 457,
+              "body_box_background_color": "#111715",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "body_box_width": 748,
+              "body_box_x": 106,
+              "body_box_y": 323,
+              "body_fill_color": "#f4d77d",
+              "body_font": "georgia.ttf",
+              "body_font_size": 31,
+              "body_line_spacing": 6,
+              "body_stroke_color": "#111715",
+              "body_stroke_width": 2,
+              "body_vertical_alignment": "middle",
+              "debug_boxes": false,
+              "headline": "For Uncle Ken",
+              "headline_box_height": 269,
+              "headline_box_background_color": "#111715",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "headline_box_width": 788,
+              "headline_box_x": 86,
+              "headline_box_y": 134,
+              "headline_fill_color": "#fff7df",
+              "headline_font": "georgia.ttf",
+              "headline_font_size": 79,
+              "headline_line_spacing": 8,
+              "headline_stroke_color": "#111715",
+              "headline_stroke_width": 2,
+              "headline_vertical_alignment": "middle",
+              "image": [
+                "6",
+                0
+              ],
+              "min_font_size": 16
+            }
+          },
+          "9": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "filename_prefix": "customcard/customcard-production-text-overlay/front",
+              "images": [
+                "7",
+                0
+              ]
+            }
+          }
+        },
+        "client_id": "customcard-local-comfyui-provider",
+        "extra_data": {
+          "customcard": {
+            "workflow_id": "customcard-production-text-overlay",
+            "panel_id": "front",
+            "seed": 3838616460,
+            "inputs": {
+              "workflow_id": "customcard-production-text-overlay",
+              "panel_id": "front",
+              "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+              "width": 960,
+              "height": 1344,
+              "steps": 2,
+              "cfg": 1.5,
+              "sampler": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 3838616460,
+              "prompt": "Full-bleed flat 2D practical-care sympathy illustration for the front of a premium vertical 5x7 print panel; deep moss field, muted ivory title-safe open area, and one lower abstract paper-cut care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the main message field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. Keep the artwork sparse, abstract, camera-free, and free of literal document props; rely on the negative prompt for failure modes. Serene koi encouragement stationery: muted pond green, warm ivory, one slow koi arc, quiet water ripples, generous negative space, restrained hopeful mood, no birthday language or dense ornamental fish pattern. Panel cue: Koi fish center-left with radiating ripples, soft blue-green palette, text-safe area at lower third Required request context to reflect visually, without rendering these words: encouragement. Palette: warm ivory, muted gray-green, deep moss, soft taupe, charcoal ink only; quiet practical sympathy, no religious symbols unless requested. Flat editorial stationery artwork with clean print surfaces and integrated negative space. No readable text. No words, letters, handwriting,",
+              "negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering, fruit, flowers, vase, urn, table setting, window bars, ornate frame, dense line art, line-art thicket, landscape, wheat field, grassland, horizon, sunset, sun, bright yellow, neon green, saturated yellow, cheerful celebration, trees, phone, smartphone, device, blank note card, note card, open book, book, page seam, tabletop, artist signature",
+              "artwork_guard": {
+                "x": 0,
+                "y": 0,
+                "width": 960,
+                "height": 1344
+              },
+              "artwork_guard_color": "#111715",
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "panel",
+              "headline_text": "For Uncle Ken",
+              "body_text": "A quiet reminder that still waters run deep",
+              "headline_font_size": 79,
+              "body_font_size": 31,
+              "headline_box": {
+                "x": 86,
+                "y": 134,
+                "width": 788,
+                "height": 269
+              },
+              "headline_box_background_color": "#111715",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "body_box": {
+                "x": 106,
+                "y": 323,
+                "width": 748,
+                "height": 457
+              },
+              "body_box_background_color": "#111715",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "text_alignment": "center",
+              "min_font_size": 16
+            }
+          }
+        }
+      },
+      "providerPrompt": "Full-bleed flat 2D practical-care sympathy illustration for the front of a premium vertical 5x7 print panel; deep moss field, muted ivory title-safe open area, and one lower abstract paper-cut care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the main message field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. Keep the artwork sparse, abstract, camera-free, and free of literal document props; rely on the negative prompt for failure modes. Serene koi encouragement stationery: muted pond green, warm ivory, one slow koi arc, quiet water ripples, generous negative space, restrained hopeful mood, no birthday language or dense ornamental fish pattern. Panel cue: Koi fish center-left with radiating ripples, soft blue-green palette, text-safe area at lower third Required request context to reflect visually, without rendering these words: encouragement. Palette: warm ivory, muted gray-green, deep moss, soft taupe, charcoal ink only; quiet practical sympathy, no religious symbols unless requested. Flat editorial stationery artwork with clean print surfaces and integrated negative space. No readable text. No words, letters, handwriting,",
+      "providerNegativePrompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering, fruit, flowers, vase, urn, table setting, window bars, ornate frame, dense line art, line-art thicket, landscape, wheat field, grassland, horizon, sunset, sun, bright yellow, neon green, saturated yellow, cheerful celebration, trees, phone, smartphone, device, blank note card, note card, open book, book, page seam, tabletop, artist signature",
+      "seed": 3838616460,
+      "width": 960,
+      "height": 1344,
+      "responseStatus": 200,
+      "responseOk": true,
+      "responseContentType": "application/json; charset=utf-8"
+    },
+    {
+      "panelId": "inside-left",
+      "url": "http://127.0.0.1:8188/prompt",
+      "method": "POST",
+      "requestBody": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "Full-bleed flat 2D practical-care sympathy illustration for a vertical 5x7 inside-left panel; warm ivory open field, generous center text area, and one small lower-edge care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. Keep the artwork sparse, abstract, camera-free, and free of literal document props; rely on the negative prompt for failure modes. Serene koi encouragement stationery: muted pond green, warm ivory, one slow koi arc, quiet water ripples, generous negative space, restrained hopeful mood, no birthday language or dense ornamental fish pattern. Panel cue: Koi near top-left corner with spreading ripples, light blue-green palette, text-safe center area Palette: warm ivory, muted gray-green, deep moss, soft taupe, charcoal ink only; quiet practical sympathy, no religious symbols unless requested. Flat editorial stationery artwork with clean print surfaces and integrated negative space. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No"
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering, fruit, flowers, vase, urn, table setting, window bars, ornate frame, dense line art, line-art thicket, landscape, wheat field, grassland, horizon, sunset, sun, bright yellow, neon green, saturated yellow, cheerful celebration, trees, phone, smartphone, device, blank note card, note card, open book, book, page seam, tabletop, artist signature"
+            }
+          },
+          "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {
+              "batch_size": 1,
+              "height": 1344,
+              "width": 960
+            }
+          },
+          "5": {
+            "class_type": "KSampler",
+            "inputs": {
+              "cfg": 1.5,
+              "denoise": 1,
+              "latent_image": [
+                "4",
+                0
+              ],
+              "model": [
+                "1",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "positive": [
+                "2",
+                0
+              ],
+              "sampler_name": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 3990272083,
+              "steps": 2
+            }
+          },
+          "6": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "5",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            }
+          },
+          "7": {
+            "class_type": "CustomCardTextComposer",
+            "inputs": {
+              "alignment": "center",
+              "artwork_guard_color": "#fff6df",
+              "artwork_guard_height": 1344,
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "panel",
+              "artwork_guard_width": 960,
+              "artwork_guard_x": 0,
+              "artwork_guard_y": 0,
+              "body": "Uncle Ken, I keep thinking about the way koi move through a pond: unhurried, resilient, still finding a path through the water. That feels right for this hard stretch.",
+              "body_box_height": 484,
+              "body_box_background_color": "#fff6df",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "body_box_width": 748,
+              "body_box_x": 106,
+              "body_box_y": 497,
+              "body_fill_color": "#4f432a",
+              "body_font": "georgia.ttf",
+              "body_font_size": 29,
+              "body_line_spacing": 6,
+              "body_stroke_color": "#fff6df",
+              "body_stroke_width": 1,
+              "body_vertical_alignment": "middle",
+              "debug_boxes": false,
+              "headline": "Steady Water",
+              "headline_box_height": 269,
+              "headline_box_background_color": "#fff6df",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "headline_box_width": 788,
+              "headline_box_x": 86,
+              "headline_box_y": 134,
+              "headline_fill_color": "#282923",
+              "headline_font": "georgia.ttf",
+              "headline_font_size": 59,
+              "headline_line_spacing": 8,
+              "headline_stroke_color": "#fff6df",
+              "headline_stroke_width": 1,
+              "headline_vertical_alignment": "middle",
+              "image": [
+                "6",
+                0
+              ],
+              "min_font_size": 16
+            }
+          },
+          "9": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "filename_prefix": "customcard/customcard-production-text-overlay/inside-left",
+              "images": [
+                "7",
+                0
+              ]
+            }
+          }
+        },
+        "client_id": "customcard-local-comfyui-provider",
+        "extra_data": {
+          "customcard": {
+            "workflow_id": "customcard-production-text-overlay",
+            "panel_id": "inside-left",
+            "seed": 3990272083,
+            "inputs": {
+              "workflow_id": "customcard-production-text-overlay",
+              "panel_id": "inside-left",
+              "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+              "width": 960,
+              "height": 1344,
+              "steps": 2,
+              "cfg": 1.5,
+              "sampler": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 3990272083,
+              "prompt": "Full-bleed flat 2D practical-care sympathy illustration for a vertical 5x7 inside-left panel; warm ivory open field, generous center text area, and one small lower-edge care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. Keep the artwork sparse, abstract, camera-free, and free of literal document props; rely on the negative prompt for failure modes. Serene koi encouragement stationery: muted pond green, warm ivory, one slow koi arc, quiet water ripples, generous negative space, restrained hopeful mood, no birthday language or dense ornamental fish pattern. Panel cue: Koi near top-left corner with spreading ripples, light blue-green palette, text-safe center area Palette: warm ivory, muted gray-green, deep moss, soft taupe, charcoal ink only; quiet practical sympathy, no religious symbols unless requested. Flat editorial stationery artwork with clean print surfaces and integrated negative space. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No",
+              "negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering, fruit, flowers, vase, urn, table setting, window bars, ornate frame, dense line art, line-art thicket, landscape, wheat field, grassland, horizon, sunset, sun, bright yellow, neon green, saturated yellow, cheerful celebration, trees, phone, smartphone, device, blank note card, note card, open book, book, page seam, tabletop, artist signature",
+              "artwork_guard": {
+                "x": 0,
+                "y": 0,
+                "width": 960,
+                "height": 1344
+              },
+              "artwork_guard_color": "#fff6df",
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "panel",
+              "headline_text": "Steady Water",
+              "body_text": "Uncle Ken, I keep thinking about the way koi move through a pond: unhurried, resilient, still finding a path through the water. That feels right for this hard stretch.",
+              "headline_font_size": 59,
+              "body_font_size": 29,
+              "headline_box": {
+                "x": 86,
+                "y": 134,
+                "width": 788,
+                "height": 269
+              },
+              "headline_box_background_color": "#fff6df",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "body_box": {
+                "x": 106,
+                "y": 497,
+                "width": 748,
+                "height": 484
+              },
+              "body_box_background_color": "#fff6df",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "text_alignment": "center",
+              "min_font_size": 16
+            }
+          }
+        }
+      },
+      "providerPrompt": "Full-bleed flat 2D practical-care sympathy illustration for a vertical 5x7 inside-left panel; warm ivory open field, generous center text area, and one small lower-edge care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. Keep the artwork sparse, abstract, camera-free, and free of literal document props; rely on the negative prompt for failure modes. Serene koi encouragement stationery: muted pond green, warm ivory, one slow koi arc, quiet water ripples, generous negative space, restrained hopeful mood, no birthday language or dense ornamental fish pattern. Panel cue: Koi near top-left corner with spreading ripples, light blue-green palette, text-safe center area Palette: warm ivory, muted gray-green, deep moss, soft taupe, charcoal ink only; quiet practical sympathy, no religious symbols unless requested. Flat editorial stationery artwork with clean print surfaces and integrated negative space. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No",
+      "providerNegativePrompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering, fruit, flowers, vase, urn, table setting, window bars, ornate frame, dense line art, line-art thicket, landscape, wheat field, grassland, horizon, sunset, sun, bright yellow, neon green, saturated yellow, cheerful celebration, trees, phone, smartphone, device, blank note card, note card, open book, book, page seam, tabletop, artist signature",
+      "seed": 3990272083,
+      "width": 960,
+      "height": 1344,
+      "responseStatus": 200,
+      "responseOk": true,
+      "responseContentType": "application/json; charset=utf-8"
+    },
+    {
+      "panelId": "inside-right",
+      "url": "http://127.0.0.1:8188/prompt",
+      "method": "POST",
+      "requestBody": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "Full-bleed flat 2D practical-care sympathy illustration for a vertical 5x7 inside-right panel; matching warm ivory open field, generous center text area, and one mirrored lower-edge care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. Keep the artwork sparse, abstract, camera-free, and free of literal document props; rely on the negative prompt for failure modes. Serene koi encouragement stationery: muted pond green, warm ivory, one slow koi arc, quiet water ripples, generous negative space, restrained hopeful mood, no birthday language or dense ornamental fish pattern. Panel cue: Lone koi in lower third, calm water surface, warm blue-green palette, text-safe area above Palette: warm ivory, muted gray-green, deep moss, soft taupe, charcoal ink only; quiet practical sympathy, no religious symbols unless requested. Flat editorial stationery artwork with clean print surfaces and integrated negative space. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No"
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering, fruit, flowers, vase, urn, table setting, window bars, ornate frame, dense line art, line-art thicket, landscape, wheat field, grassland, horizon, sunset, sun, bright yellow, neon green, saturated yellow, cheerful celebration, trees, phone, smartphone, device, blank note card, note card, open book, book, page seam, tabletop, artist signature"
+            }
+          },
+          "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {
+              "batch_size": 1,
+              "height": 1344,
+              "width": 960
+            }
+          },
+          "5": {
+            "class_type": "KSampler",
+            "inputs": {
+              "cfg": 1.5,
+              "denoise": 1,
+              "latent_image": [
+                "4",
+                0
+              ],
+              "model": [
+                "1",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "positive": [
+                "2",
+                0
+              ],
+              "sampler_name": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 2047443516,
+              "steps": 2
+            }
+          },
+          "6": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "5",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            }
+          },
+          "7": {
+            "class_type": "CustomCardTextComposer",
+            "inputs": {
+              "alignment": "center",
+              "artwork_guard_color": "#fff6df",
+              "artwork_guard_height": 1344,
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "panel",
+              "artwork_guard_width": 960,
+              "artwork_guard_x": 0,
+              "artwork_guard_y": 0,
+              "body": "I hope this encouragement reaches you gently. No loud speech, no forced brightness; just a reminder that patience can still be strength, and that I am wishing you steadier water ahead. With care, Mara.",
+              "body_box_height": 484,
+              "body_box_background_color": "#fff6df",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "body_box_width": 748,
+              "body_box_x": 106,
+              "body_box_y": 497,
+              "body_fill_color": "#4f432a",
+              "body_font": "georgia.ttf",
+              "body_font_size": 29,
+              "body_line_spacing": 6,
+              "body_stroke_color": "#fff6df",
+              "body_stroke_width": 1,
+              "body_vertical_alignment": "middle",
+              "debug_boxes": false,
+              "headline": "From Mara",
+              "headline_box_height": 269,
+              "headline_box_background_color": "#fff6df",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "headline_box_width": 788,
+              "headline_box_x": 86,
+              "headline_box_y": 134,
+              "headline_fill_color": "#282923",
+              "headline_font": "georgia.ttf",
+              "headline_font_size": 59,
+              "headline_line_spacing": 8,
+              "headline_stroke_color": "#fff6df",
+              "headline_stroke_width": 1,
+              "headline_vertical_alignment": "middle",
+              "image": [
+                "6",
+                0
+              ],
+              "min_font_size": 16
+            }
+          },
+          "9": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "filename_prefix": "customcard/customcard-production-text-overlay/inside-right",
+              "images": [
+                "7",
+                0
+              ]
+            }
+          }
+        },
+        "client_id": "customcard-local-comfyui-provider",
+        "extra_data": {
+          "customcard": {
+            "workflow_id": "customcard-production-text-overlay",
+            "panel_id": "inside-right",
+            "seed": 2047443516,
+            "inputs": {
+              "workflow_id": "customcard-production-text-overlay",
+              "panel_id": "inside-right",
+              "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+              "width": 960,
+              "height": 1344,
+              "steps": 2,
+              "cfg": 1.5,
+              "sampler": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 2047443516,
+              "prompt": "Full-bleed flat 2D practical-care sympathy illustration for a vertical 5x7 inside-right panel; matching warm ivory open field, generous center text area, and one mirrored lower-edge care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. Keep the artwork sparse, abstract, camera-free, and free of literal document props; rely on the negative prompt for failure modes. Serene koi encouragement stationery: muted pond green, warm ivory, one slow koi arc, quiet water ripples, generous negative space, restrained hopeful mood, no birthday language or dense ornamental fish pattern. Panel cue: Lone koi in lower third, calm water surface, warm blue-green palette, text-safe area above Palette: warm ivory, muted gray-green, deep moss, soft taupe, charcoal ink only; quiet practical sympathy, no religious symbols unless requested. Flat editorial stationery artwork with clean print surfaces and integrated negative space. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No",
+              "negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering, fruit, flowers, vase, urn, table setting, window bars, ornate frame, dense line art, line-art thicket, landscape, wheat field, grassland, horizon, sunset, sun, bright yellow, neon green, saturated yellow, cheerful celebration, trees, phone, smartphone, device, blank note card, note card, open book, book, page seam, tabletop, artist signature",
+              "artwork_guard": {
+                "x": 0,
+                "y": 0,
+                "width": 960,
+                "height": 1344
+              },
+              "artwork_guard_color": "#fff6df",
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "panel",
+              "headline_text": "From Mara",
+              "body_text": "I hope this encouragement reaches you gently. No loud speech, no forced brightness; just a reminder that patience can still be strength, and that I am wishing you steadier water ahead. With care, Mara.",
+              "headline_font_size": 59,
+              "body_font_size": 29,
+              "headline_box": {
+                "x": 86,
+                "y": 134,
+                "width": 788,
+                "height": 269
+              },
+              "headline_box_background_color": "#fff6df",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "body_box": {
+                "x": 106,
+                "y": 497,
+                "width": 748,
+                "height": 484
+              },
+              "body_box_background_color": "#fff6df",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "text_alignment": "center",
+              "min_font_size": 16
+            }
+          }
+        }
+      },
+      "providerPrompt": "Full-bleed flat 2D practical-care sympathy illustration for a vertical 5x7 inside-right panel; matching warm ivory open field, generous center text area, and one mirrored lower-edge care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. Keep the artwork sparse, abstract, camera-free, and free of literal document props; rely on the negative prompt for failure modes. Serene koi encouragement stationery: muted pond green, warm ivory, one slow koi arc, quiet water ripples, generous negative space, restrained hopeful mood, no birthday language or dense ornamental fish pattern. Panel cue: Lone koi in lower third, calm water surface, warm blue-green palette, text-safe area above Palette: warm ivory, muted gray-green, deep moss, soft taupe, charcoal ink only; quiet practical sympathy, no religious symbols unless requested. Flat editorial stationery artwork with clean print surfaces and integrated negative space. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No",
+      "providerNegativePrompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering, fruit, flowers, vase, urn, table setting, window bars, ornate frame, dense line art, line-art thicket, landscape, wheat field, grassland, horizon, sunset, sun, bright yellow, neon green, saturated yellow, cheerful celebration, trees, phone, smartphone, device, blank note card, note card, open book, book, page seam, tabletop, artist signature",
+      "seed": 2047443516,
+      "width": 960,
+      "height": 1344,
+      "responseStatus": 200,
+      "responseOk": true,
+      "responseContentType": "application/json; charset=utf-8"
+    },
+    {
+      "panelId": "back",
+      "url": "http://127.0.0.1:8188/prompt",
+      "method": "POST",
+      "requestBody": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "Full-bleed flat 2D practical-care sympathy illustration for a minimal vertical 5x7 back panel; deep moss field, readable upper/center text-safe area, and one small lower care-vignette echo. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. Keep the artwork sparse, abstract, camera-free, and free of literal document props; rely on the negative prompt for failure modes. Serene koi encouragement stationery: muted pond green, warm ivory, one slow koi arc, quiet water ripples, generous negative space, restrained hopeful mood, no birthday language or dense ornamental fish pattern. Panel cue: Faint ripples along bottom edge, soft blue-green palette, text-safe area at top Palette: warm ivory, muted gray-green, deep moss, soft taupe, charcoal ink only; quiet practical sympathy, no religious symbols unless requested. Flat editorial stationery artwork with clean print surfaces and integrated negative space. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark. No"
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering, fruit, flowers, vase, urn, table setting, window bars, ornate frame, dense line art, line-art thicket, landscape, wheat field, grassland, horizon, sunset, sun, bright yellow, neon green, saturated yellow, cheerful celebration, trees, phone, smartphone, device, blank note card, note card, open book, book, page seam, tabletop, artist signature"
+            }
+          },
+          "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {
+              "batch_size": 1,
+              "height": 1344,
+              "width": 960
+            }
+          },
+          "5": {
+            "class_type": "KSampler",
+            "inputs": {
+              "cfg": 1.5,
+              "denoise": 1,
+              "latent_image": [
+                "4",
+                0
+              ],
+              "model": [
+                "1",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "positive": [
+                "2",
+                0
+              ],
+              "sampler_name": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 2144345996,
+              "steps": 2
+            }
+          },
+          "6": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "5",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            }
+          },
+          "7": {
+            "class_type": "CustomCardTextComposer",
+            "inputs": {
+              "alignment": "center",
+              "artwork_guard_color": "#111715",
+              "artwork_guard_height": 1344,
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "box",
+              "artwork_guard_width": 960,
+              "artwork_guard_x": 0,
+              "artwork_guard_y": 0,
+              "body": "",
+              "body_box_height": 484,
+              "body_box_background_color": "",
+              "body_box_background_padding": 0,
+              "body_box_background_radius": 0,
+              "body_box_background_opacity": 0,
+              "body_box_background_style": "box",
+              "body_box_width": 748,
+              "body_box_x": 106,
+              "body_box_y": 497,
+              "body_fill_color": "#f4d77d",
+              "body_font": "georgia.ttf",
+              "body_font_size": 24,
+              "body_line_spacing": 6,
+              "body_stroke_color": "#111715",
+              "body_stroke_width": 2,
+              "body_vertical_alignment": "middle",
+              "debug_boxes": false,
+              "headline": "",
+              "headline_box_height": 269,
+              "headline_box_background_color": "",
+              "headline_box_background_padding": 0,
+              "headline_box_background_radius": 0,
+              "headline_box_background_opacity": 0,
+              "headline_box_background_style": "box",
+              "headline_box_width": 788,
+              "headline_box_x": 86,
+              "headline_box_y": 134,
+              "headline_fill_color": "#fff7df",
+              "headline_font": "georgia.ttf",
+              "headline_font_size": 46,
+              "headline_line_spacing": 8,
+              "headline_stroke_color": "#111715",
+              "headline_stroke_width": 2,
+              "headline_vertical_alignment": "middle",
+              "image": [
+                "6",
+                0
+              ],
+              "min_font_size": 14
+            }
+          },
+          "9": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "filename_prefix": "customcard/customcard-production-text-overlay/back",
+              "images": [
+                "7",
+                0
+              ]
+            }
+          }
+        },
+        "client_id": "customcard-local-comfyui-provider",
+        "extra_data": {
+          "customcard": {
+            "workflow_id": "customcard-production-text-overlay",
+            "panel_id": "back",
+            "seed": 2144345996,
+            "inputs": {
+              "workflow_id": "customcard-production-text-overlay",
+              "panel_id": "back",
+              "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+              "width": 960,
+              "height": 1344,
+              "steps": 2,
+              "cfg": 1.5,
+              "sampler": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 2144345996,
+              "prompt": "Full-bleed flat 2D practical-care sympathy illustration for a minimal vertical 5x7 back panel; deep moss field, readable upper/center text-safe area, and one small lower care-vignette echo. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. Keep the artwork sparse, abstract, camera-free, and free of literal document props; rely on the negative prompt for failure modes. Serene koi encouragement stationery: muted pond green, warm ivory, one slow koi arc, quiet water ripples, generous negative space, restrained hopeful mood, no birthday language or dense ornamental fish pattern. Panel cue: Faint ripples along bottom edge, soft blue-green palette, text-safe area at top Palette: warm ivory, muted gray-green, deep moss, soft taupe, charcoal ink only; quiet practical sympathy, no religious symbols unless requested. Flat editorial stationery artwork with clean print surfaces and integrated negative space. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark. No",
+              "negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering, fruit, flowers, vase, urn, table setting, window bars, ornate frame, dense line art, line-art thicket, landscape, wheat field, grassland, horizon, sunset, sun, bright yellow, neon green, saturated yellow, cheerful celebration, trees, phone, smartphone, device, blank note card, note card, open book, book, page seam, tabletop, artist signature",
+              "artwork_guard": {
+                "x": 0,
+                "y": 0,
+                "width": 960,
+                "height": 1344
+              },
+              "artwork_guard_color": "#111715",
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "box",
+              "headline_text": "",
+              "body_text": "",
+              "headline_font_size": 46,
+              "body_font_size": 24,
+              "headline_box": {
+                "x": 86,
+                "y": 134,
+                "width": 788,
+                "height": 269
+              },
+              "headline_box_background_color": "",
+              "headline_box_background_padding": 0,
+              "headline_box_background_radius": 0,
+              "headline_box_background_opacity": 0,
+              "headline_box_background_style": "box",
+              "body_box": {
+                "x": 106,
+                "y": 497,
+                "width": 748,
+                "height": 484
+              },
+              "body_box_background_color": "",
+              "body_box_background_padding": 0,
+              "body_box_background_radius": 0,
+              "body_box_background_opacity": 0,
+              "body_box_background_style": "box",
+              "text_alignment": "center",
+              "min_font_size": 14
+            }
+          }
+        }
+      },
+      "providerPrompt": "Full-bleed flat 2D practical-care sympathy illustration for a minimal vertical 5x7 back panel; deep moss field, readable upper/center text-safe area, and one small lower care-vignette echo. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. Keep the artwork sparse, abstract, camera-free, and free of literal document props; rely on the negative prompt for failure modes. Serene koi encouragement stationery: muted pond green, warm ivory, one slow koi arc, quiet water ripples, generous negative space, restrained hopeful mood, no birthday language or dense ornamental fish pattern. Panel cue: Faint ripples along bottom edge, soft blue-green palette, text-safe area at top Palette: warm ivory, muted gray-green, deep moss, soft taupe, charcoal ink only; quiet practical sympathy, no religious symbols unless requested. Flat editorial stationery artwork with clean print surfaces and integrated negative space. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark. No",
+      "providerNegativePrompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering, fruit, flowers, vase, urn, table setting, window bars, ornate frame, dense line art, line-art thicket, landscape, wheat field, grassland, horizon, sunset, sun, bright yellow, neon green, saturated yellow, cheerful celebration, trees, phone, smartphone, device, blank note card, note card, open book, book, page seam, tabletop, artist signature",
+      "seed": 2144345996,
+      "width": 960,
+      "height": 1344,
+      "responseStatus": 200,
+      "responseOk": true,
+      "responseContentType": "application/json; charset=utf-8"
+    }
+  ]
+}

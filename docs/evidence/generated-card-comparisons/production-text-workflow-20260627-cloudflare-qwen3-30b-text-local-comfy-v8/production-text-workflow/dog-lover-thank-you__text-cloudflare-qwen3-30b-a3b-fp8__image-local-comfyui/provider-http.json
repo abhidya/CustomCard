@@ -1,0 +1,2899 @@
+[
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/[redacted]/ai/v1/chat/completions",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json",
+        "authorization": "[redacted]"
+      },
+      "body": {
+        "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan, panel-specific visual cues, and safe text-layout plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, visual_cue composition notes, text_layout enum choices, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+          },
+          {
+            "role": "user",
+            "content": "{\n  \"task\": \"Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only. The LLM owns the creative concept; benchmark inputs and user interests are not finished themes.\",\n  \"required_schema\": {\n    \"theme_guide\": {\n      \"theme_title\": \"string\",\n      \"palette\": [\n        \"string\"\n      ],\n      \"motifs\": [\n        \"string\"\n      ],\n      \"border_style\": \"string\",\n      \"front_back_pairing\": \"string\",\n      \"interior_pairing\": \"string\"\n    },\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"section_order\": [\n    \"Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels; do not copy a fixture, request label, or generic subject category as the final theme.\",\n    \"Name a specific creative concept that could only belong to this request, then make each panel a distinct expression of that concept.\",\n    \"Write the panel copy so the card has an emotional arc from cover to interior to back.\",\n    \"Write art_direction as layout notes for app-rendered typography and print-safe artwork.\",\n    \"Write visual_cue as the specific image composition each panel should show.\",\n    \"Write text_layout as a safe typography plan using only the enumerated zones, alignment, font_pairing, color_mode, and scale values.\",\n    \"Write each image_prompt as a separate one-panel visual request for the image provider.\"\n  ],\n  \"copy_requirements\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"If input.must_include has values, every value must appear naturally in the finished card copy, theme_guide, visual_cue, or image_prompt before the image step runs.\",\n    \"Required recipient or sender names from must_include must appear in visible panel headline/body copy; memory_citations alone do not count.\",\n    \"If input.must_avoid has values, do not use those values in final copy or image prompts unless the input explicitly says they are only negative prompts.\",\n    \"Preserve exact concrete facts from personal_note and memory_notes in final copy: names, relationships, dates, places, product names, CTA nouns, and practical support items. Do not replace literal requested items such as meals, rides, calls, silence, QR, dates, names, or business terms with generic summaries.\",\n    \"No order/payment claims.\",\n    \"Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.\",\n    \"Do not produce generic one-line cards unless the input is extremely thin.\",\n    \"Write original card copy for this recipient and occasion; never reuse benchmark/sample headlines, fixture copy, or generic category slogans.\",\n    \"Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.\",\n    \"Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.\",\n    \"When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.\",\n    \"front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short dedication.\",\n    \"inside-left body should be 120-320 characters and feel like an opening note, quote, blessing, or scene-setting message.\",\n    \"inside-right body should be 180-420 characters and carry the main personal message plus a natural sign-off when appropriate.\",\n    \"back body <= 160 characters and should feel quiet, polished, and optional.\",\n    \"All body text must fit a 5x7 card panel with generous margins.\"\n  ],\n  \"story_playbooks\": [\n    \"Low-context first-time cards: be useful and specific from the supplied occasion/style without inventing memories; use one gentle human detail and enough copy that the sender could approve it immediately.\",\n    \"High-memory get-well or recovery cards: weave only approved inside jokes into tender support, avoid medical advice, diagnosis, miracle-cure language, pity, or clownish meme overload.\",\n    \"B2B lifecycle or warranty cards: preserve exact customer, business, date, product, and CTA facts; make the CTA clear but calm; never invent discounts, legal terms, shipment status, or order/payment claims.\",\n    \"Wedding or distant-family cards: be respectful and warm without overclaiming closeness; use a short non-denominational blessing unless a religion is explicitly specified, and reserve handwriting space when requested.\",\n    \"Sympathy or quiet-support cards: keep language grounded and practical; avoid cliches, religious claims unless requested, bright celebration language, overdesigned ornament, and generic note-template stationery.\"\n  ],\n  \"layout_requirements\": [\n    \"The theme_guide must be LLM-decided from the user's request. For interests such as aquarium lover, koi fish lover, or dog lover, create a more specific visual genre than the literal noun alone.\",\n    \"Prefer distinctive greeting-card concepts over obvious wallpaper: e.g. ritual, habitat, movement, care, place, season, or object-system interpretations tied to the supplied details.\",\n    \"theme_guide is binding, but reuse motifs with restraint: a panel should have one dominant composition idea, not a scattered wallpaper of every motif.\",\n    \"art_direction must name the panel's composition archetype, layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.\",\n    \"visual_cue is binding for the image prompt: make front, inside-left, inside-right, and back visually distinct while still coordinated.\",\n    \"visual_cue should describe concrete objects, light, palette, spacing, and text-safe negative space for that exact panel; do not mention final words, letters, signatures, or fake handwriting.\",\n    \"text_layout controls app-rendered typography only. Choose zones that match the clean text-safe area in visual_cue; never ask the image model to draw the text.\",\n    \"text_layout must use only these values: headline_zone top/upper/center/lower; body_zone upper/center/lower/bottom; alignment left/center/right; font_pairing serif-sans/bold-editorial/minimal-sans/soft-serif; color_mode dark-ink/light-ink/accent-ink/high-contrast; scale compact/standard/large.\",\n    \"front and back should visually match each other; the front carries the strongest hero idea and the back repeats a small quiet echo.\",\n    \"inside-left and inside-right should visually match each other and feel like the opened interior spread.\",\n    \"inside-left and inside-right must keep a calm blank/low-contrast center reserved for app-rendered text; use edge-led artwork, not a generic note-template.\",\n    \"Interior panels should usually be lighter, warmer, and more paper-like than the front/back covers; avoid using the same dark cover field on all four panels.\",\n    \"Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.\",\n    \"Artwork should read as flat editorial stationery: clean print surfaces, integrated negative space, and restrained edge/corner ornament rather than ornate central decoration.\",\n    \"Keep the text-safe field blank, simple, and integrated into the artwork; do not surround it with a central medallion, halo, ornate frame, or decorative ring.\",\n    \"Never rely on a large opaque caption plaque, text box, label, banner, or card-within-card; text-safe space means natural negative space in the artwork.\",\n    \"Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, edge-led gallery illustration, lower-corner object cluster, or mostly blank back mark.\",\n    \"Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.\",\n    \"Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative.\"\n  ],\n  \"image_prompt_requirements\": [\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must describe one separate portrait 5x7 panel, not the whole four-panel set.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must express the LLM-decided visual concept with a unique composition for that panel, not a generic subject collage or repeated motif field.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Reserve clean text-safe space for the app overlay where the panel copy belongs.\",\n    \"Do not describe the app overlay as a recipient name, headline, body, quote, blessing, verse, poem, short message, personal message, or scene-setting message; say only clean text-safe area.\",\n    \"Text-safe areas must stay plain and low-detail: no central medallion, no halo, no ornate frame around copy, no rays behind copy, and no decorative ring under typography.\",\n    \"Do not create a caption plaque, inner card rectangle, blank label, sticky note, banner, or text box; text-safe must be integrated negative space, soft open field, or quiet blank center.\",\n    \"image_prompt must stay visual: concrete motifs, palette, border/frame treatment, background texture, ornament density, composition archetype, and hierarchy only.\",\n    \"For the front, explicitly choose one dominant hero composition or sparse line-art composition with a clean lower or central text-safe area and edge/corner ornament only.\",\n    \"For inside-left and inside-right, explicitly include: quiet center, clean text-safe area, generous margins, light low-contrast interior, and sparse edge/corner or lower-edge artwork only.\",\n    \"For the back, explicitly include mostly negative space and one small coordinating lower mark or border echo.\",\n    \"Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.\",\n    \"Coordinate palette, border style, motifs, and spacing across all four image_prompt values.\",\n    \"For B2B CTA cards, reserve a clean app-overlay area for any QR code or account-manager CTA; do not ask the image model to draw QR codes, labels, or interface elements.\",\n    \"For cards requesting handwriting space, reserve an open note area but do not ask the image model to create handwriting, signatures, script, or fake personal notes.\",\n    \"For sympathy image_prompt values, describe sparse flat support artwork with an integrated quiet text-safe field; keep blank-message template, ruled sheet, card-within-card, and physical-card-display failure terms only in image_negative_prompt.\",\n    \"For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, and clean text-safe space; keep avoid/failure terms for people, hands, display frames, logos, watermarks, and readable text in image_negative_prompt rather than image_prompt.\"\n  ],\n  \"safety_requirements\": [\n    \"Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.\",\n    \"Do not describe a physical paper card, folded card, envelope, tabletop, desk scene, product photo, mockup, shadowed card, framed card, or any object photographed in a scene.\",\n    \"Do not include words, letters, glyphs, calligraphy, handwriting, labels, signatures, fake text, pseudo text, or decorative script marks.\",\n    \"Do not include fake glyph-like marks, pseudo-calligraphy, decorative micro-lettering, or signature-like strokes as ornament.\",\n    \"image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"Avery\",\n    \"recipient\": \"Morgan\",\n    \"relationship\": \"neighbor\",\n    \"occasion\": \"thank-you card\",\n    \"tone\": \"grateful, loyal, lightly playful, specific\",\n    \"style\": \"premium folded greeting card for a dog lover; the LLM must decide the creative theme, exact copy, palette, motifs, and layout\",\n    \"language\": \"English\",\n    \"personal_note\": \"Thank Morgan for helping while Avery was away and for being the kind of dog-loving neighbor who notices what needs doing. It should be grateful and a little playful without turning into paw-print wallpaper.\",\n    \"memory_notes\": [\n      \"Morgan loves dogs and often mentions how a good neighbor is the kind of person a dog trusts.\",\n      \"Morgan helped while Avery was away.\",\n      \"The final artwork should avoid dog portraits and keep a clean print-safe area for Comfy-rendered text.\"\n    ],\n    \"must_include\": [\n      \"Morgan\",\n      \"thank\",\n      \"dog\"\n    ],\n    \"must_avoid\": [\n      \"lorem ipsum\",\n      \"placeholder\",\n      \"extra words\",\n      \"fake lettering\",\n      \"mockup\",\n      \"paw-print wallpaper\"\n    ]\n  }\n}"
+          }
+        ],
+        "max_tokens": 3200,
+        "temperature": 0.62,
+        "response_format": {
+          "type": "json_schema",
+          "json_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "theme_guide",
+              "panels",
+              "memory_citations"
+            ],
+            "properties": {
+              "theme_guide": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "theme_title",
+                  "palette",
+                  "motifs",
+                  "border_style",
+                  "front_back_pairing",
+                  "interior_pairing"
+                ],
+                "properties": {
+                  "theme_title": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "palette": {
+                    "type": "array",
+                    "minItems": 3,
+                    "maxItems": 6,
+                    "items": {
+                      "type": "string",
+                      "maxLength": 80
+                    }
+                  },
+                  "motifs": {
+                    "type": "array",
+                    "minItems": 3,
+                    "maxItems": 8,
+                    "items": {
+                      "type": "string",
+                      "maxLength": 80
+                    }
+                  },
+                  "border_style": {
+                    "type": "string",
+                    "maxLength": 180
+                  },
+                  "front_back_pairing": {
+                    "type": "string",
+                    "maxLength": 220
+                  },
+                  "interior_pairing": {
+                    "type": "string",
+                    "maxLength": 220
+                  }
+                }
+              },
+              "panels": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "headline",
+                    "body",
+                    "art_direction",
+                    "visual_cue",
+                    "text_layout",
+                    "image_prompt",
+                    "image_negative_prompt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "enum": [
+                        "front",
+                        "inside-left",
+                        "inside-right",
+                        "back"
+                      ]
+                    },
+                    "headline": {
+                      "type": "string",
+                      "maxLength": 120
+                    },
+                    "body": {
+                      "type": "string",
+                      "maxLength": 600
+                    },
+                    "art_direction": {
+                      "type": "string",
+                      "maxLength": 500
+                    },
+                    "visual_cue": {
+                      "type": "string",
+                      "maxLength": 360
+                    },
+                    "text_layout": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "headline_zone",
+                        "body_zone",
+                        "alignment",
+                        "font_pairing",
+                        "color_mode",
+                        "scale"
+                      ],
+                      "properties": {
+                        "headline_zone": {
+                          "type": "string",
+                          "enum": [
+                            "top",
+                            "upper",
+                            "center",
+                            "lower"
+                          ]
+                        },
+                        "body_zone": {
+                          "type": "string",
+                          "enum": [
+                            "upper",
+                            "center",
+                            "lower",
+                            "bottom"
+                          ]
+                        },
+                        "alignment": {
+                          "type": "string",
+                          "enum": [
+                            "left",
+                            "center",
+                            "right"
+                          ]
+                        },
+                        "font_pairing": {
+                          "type": "string",
+                          "enum": [
+                            "serif-sans",
+                            "bold-editorial",
+                            "minimal-sans",
+                            "soft-serif"
+                          ]
+                        },
+                        "color_mode": {
+                          "type": "string",
+                          "enum": [
+                            "dark-ink",
+                            "light-ink",
+                            "accent-ink",
+                            "high-contrast"
+                          ]
+                        },
+                        "scale": {
+                          "type": "string",
+                          "enum": [
+                            "compact",
+                            "standard",
+                            "large"
+                          ]
+                        }
+                      }
+                    },
+                    "image_prompt": {
+                      "type": "string",
+                      "maxLength": 1200
+                    },
+                    "image_negative_prompt": {
+                      "type": "string",
+                      "maxLength": 500
+                    }
+                  }
+                }
+              },
+              "memory_citations": {
+                "type": "array",
+                "maxItems": 4,
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 8848,
+      "body": {
+        "id": "id-1782597147167",
+        "object": "chat.completion",
+        "created": 1782597147,
+        "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "annotations": null,
+              "audio": null,
+              "content": "{\"memory_citations\":[\"Morgan loves dogs and often mentions how a good neighbor is the kind of person a dog trusts.\",\"Morgan helped while Avery was away.\"],\"panels\":[{\"art_direction\":\"Central abstract motif with text at lower third; clean 5x7 flat print with 15% margin\",\"body\":\"Your dog-loving care while I was away meant the world.\",\"headline\":\"A Thank-You for the Quiet Watch\",\"id\":\"front\",\"image_negative_prompt\":\"readable text,fake text,letters,people,face,portrait,hands,folded card mockup,physical card mockup,tabletop scene,product photo\",\"image_prompt\":\"Soft gradient background in warm beige and deep sage with abstract interlocking circle motifs; subtle faint dog silhouette in lower corner\",\"text_layout\":{\"alignment\":\"center\",\"body_zone\":\"lower\",\"color_mode\":\"dark-ink\",\"font_pairing\":\"soft-serif\",\"headline_zone\":\"top\",\"scale\":\"standard\"},\"visual_cue\":\"Abstract geometric shapes with faint canine reference in lower corner\"},{\"art_direction\":\"Light background with border; text-safe area in center with 20% margin\",\"body\":\"In a world of noise, your quiet help was a beacon.\",\"headline\":\"The Neighbor a Dog Trusts\",\"id\":\"inside-left\",\"image_negative_prompt\":\"readable text,fake text,letters,people,face,portrait,hands,folded card mockup,physical card mockup,tabletop scene,product photo\",\"image_prompt\":\"Minimalist line drawing of a house with tree and faint paw print trail in upper border\",\"text_layout\":{\"alignment\":\"center\",\"body_zone\":\"center\",\"color_mode\":\"dark-ink\",\"font_pairing\":\"bold-editorial\",\"headline_zone\":\"upper\",\"scale\":\"standard\"},\"visual_cue\":\"House silhouette with subtle trail motif in upper border\"},{\"art_direction\":\"Warm background with soft border; text-safe area in center with 25% margin\",\"body\":\"Thank you for being the neighbor a dog trusts – and for making my absence feel like a breeze.\",\"headline\":\"Avery\",\"id\":\"inside-right\",\"image_negative_prompt\":\"readable text,fake text,letters,people,face,portrait,hands,folded card mockup,physical card mockup,tabletop scene,product photo\",\"image_prompt\":\"Cozy living room scene with faint dog toy icon in lower third\",\"text_layout\":{\"alignment\":\"left\",\"body_zone\":\"center\",\"color_mode\":\"dark-ink\",\"font_pairing\":\"serif-sans\",\"headline_zone\":\"top\",\"scale\":\"standard\"},\"visual_cue\":\"Domestic interior with subtle pet-related symbol\"},{\"art_direction\":\"Negative space with small border echo; text-safe area in center with 30% margin\",\"body\":\"With gratitude, Avery\",\"headline\":\"\",\"id\":\"back\",\"image_negative_prompt\":\"readable text,fake text,letters,people,face,portrait,hands,folded card mockup,physical card mockup,tabletop scene,product photo\",\"image_prompt\":\"Soft textured background with faint circular emblem in lower third\",\"text_layout\":{\"alignment\":\"center\",\"body_zone\":\"center\",\"color_mode\":\"dark-ink\",\"font_pairing\":\"minimal-sans\",\"headline_zone\":\"top\",\"scale\":\"standard\"},\"visual_cue\":\"Subtle patterned texture with small emblem\"}],\"theme_guide\":{\"border_style\":\"Subtle line and faint pattern\",\"front_back_pairing\":\"Gradient motif with emblem echo\",\"interior_pairing\":\"Light warm tones with soft borders\",\"motifs\":[\"Abstract circles\",\"Paw print trail\",\"House silhouette\",\"Dog toy icon\"],\"palette\":[\"warm beige\",\"deep sage\",\"terracotta\",\"slate\"],\"theme_title\":\"The Quiet Watchfulness of a Trusted Neighbor\"}}",
+              "function_call": null,
+              "reasoning": "\nOkay, let's tackle this query. The user wants a 5x7 greeting card for Morgan, a dog-loving neighbor, as a thank-you. The theme needs to be cohesive, with specific panels and image prompts. First, I need to figure out the theme. Since Morgan loves dogs and the card should avoid paw-print wallpaper, maybe something like \"The Quiet Watchfulness of a Trusted Neighbor\" – focusing on trust and observation without direct dog imagery.\n\nNext, the palette. Soft, earthy tones would work well – maybe warm beige, deep sage, terracotta, and slate. Motifs could be abstract shapes representing trust, like interlocking circles or minimal lines. The border style should be subtle, maybe a thin line or a soft pattern.\n\nFor the front panel, the headline needs to be catchy. \"A Thank-You for the Quiet Watch\" – it's grateful and a bit playful. The body could be \"Your dog-loving care while I was away meant the world.\" Art direction should have a central abstract motif with text at the bottom. The image prompt might be a soft gradient background with abstract shapes and a small, subtle dog silhouette in the corner, but not too prominent.\n\nInside-left panel should set the tone. Maybe a quote or a heartfelt message. \"In a world of noise, your quiet help was a beacon.\" Art direction here would have a light background with a border. The image prompt could be a minimalist line drawing of a house with a tree, symbolizing home and care.\n\nInside-right panel is the main message. \"Thank you for being the neighbor a dog trusts – and for making my absence feel like a breeze.\" The art direction here needs a warm background with a soft border. The image prompt might be a cozy living room scene with a dog's toy, but again, keeping it subtle.\n\nThe back panel should be simple. \"With gratitude, Avery\" – maybe a small emblem or a simple pattern. The image prompt could be a soft, textured background with a faint emblem.\n\nI need to ensure all panels have the right text layout, using the specified zones and fonts. Avoid any mention of text in the image prompts, just the visual elements. Also, check that all must_include words are there and avoid the must_avoid terms. Make sure the copy feels natural and not forced, staying within the character limits. Let me double-check each panel's requirements and ensure the visual cues are distinct but coordinated.\n",
+              "reasoning_content": "\nOkay, let's tackle this query. The user wants a 5x7 greeting card for Morgan, a dog-loving neighbor, as a thank-you. The theme needs to be cohesive, with specific panels and image prompts. First, I need to figure out the theme. Since Morgan loves dogs and the card should avoid paw-print wallpaper, maybe something like \"The Quiet Watchfulness of a Trusted Neighbor\" – focusing on trust and observation without direct dog imagery.\n\nNext, the palette. Soft, earthy tones would work well – maybe warm beige, deep sage, terracotta, and slate. Motifs could be abstract shapes representing trust, like interlocking circles or minimal lines. The border style should be subtle, maybe a thin line or a soft pattern.\n\nFor the front panel, the headline needs to be catchy. \"A Thank-You for the Quiet Watch\" – it's grateful and a bit playful. The body could be \"Your dog-loving care while I was away meant the world.\" Art direction should have a central abstract motif with text at the bottom. The image prompt might be a soft gradient background with abstract shapes and a small, subtle dog silhouette in the corner, but not too prominent.\n\nInside-left panel should set the tone. Maybe a quote or a heartfelt message. \"In a world of noise, your quiet help was a beacon.\" Art direction here would have a light background with a border. The image prompt could be a minimalist line drawing of a house with a tree, symbolizing home and care.\n\nInside-right panel is the main message. \"Thank you for being the neighbor a dog trusts – and for making my absence feel like a breeze.\" The art direction here needs a warm background with a soft border. The image prompt might be a cozy living room scene with a dog's toy, but again, keeping it subtle.\n\nThe back panel should be simple. \"With gratitude, Avery\" – maybe a small emblem or a simple pattern. The image prompt could be a soft, textured background with a faint emblem.\n\nI need to ensure all panels have the right text layout, using the specified zones and fonts. Avoid any mention of text in the image prompts, just the visual elements. Also, check that all must_include words are there and avoid the must_avoid terms. Make sure the copy feels natural and not forced, staying within the character limits. Let me double-check each panel's requirements and ensure the visual cues are distinct but coordinated.\n",
+              "refusal": null,
+              "role": "assistant",
+              "tool_calls": []
+            },
+            "routed_experts": null,
+            "stop_reason": null,
+            "token_ids": null
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 3664,
+          "completion_tokens": 1248,
+          "total_tokens": 4912,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        }
+      }
+    },
+    "durationMs": 10632
+  },
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/[redacted]/ai/v1/chat/completions",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json",
+        "authorization": "[redacted]"
+      },
+      "body": {
+        "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan, panel-specific visual cues, and safe text-layout plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, visual_cue composition notes, text_layout enum choices, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+          },
+          {
+            "role": "user",
+            "content": "{\n  \"task\": \"Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only. The LLM owns the creative concept; benchmark inputs and user interests are not finished themes.\",\n  \"required_schema\": {\n    \"theme_guide\": {\n      \"theme_title\": \"string\",\n      \"palette\": [\n        \"string\"\n      ],\n      \"motifs\": [\n        \"string\"\n      ],\n      \"border_style\": \"string\",\n      \"front_back_pairing\": \"string\",\n      \"interior_pairing\": \"string\"\n    },\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"section_order\": [\n    \"Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels; do not copy a fixture, request label, or generic subject category as the final theme.\",\n    \"Name a specific creative concept that could only belong to this request, then make each panel a distinct expression of that concept.\",\n    \"Write the panel copy so the card has an emotional arc from cover to interior to back.\",\n    \"Write art_direction as layout notes for app-rendered typography and print-safe artwork.\",\n    \"Write visual_cue as the specific image composition each panel should show.\",\n    \"Write text_layout as a safe typography plan using only the enumerated zones, alignment, font_pairing, color_mode, and scale values.\",\n    \"Write each image_prompt as a separate one-panel visual request for the image provider.\"\n  ],\n  \"copy_requirements\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"If input.must_include has values, every value must appear naturally in the finished card copy, theme_guide, visual_cue, or image_prompt before the image step runs.\",\n    \"Required recipient or sender names from must_include must appear in visible panel headline/body copy; memory_citations alone do not count.\",\n    \"If input.must_avoid has values, do not use those values in final copy or image prompts unless the input explicitly says they are only negative prompts.\",\n    \"Preserve exact concrete facts from personal_note and memory_notes in final copy: names, relationships, dates, places, product names, CTA nouns, and practical support items. Do not replace literal requested items such as meals, rides, calls, silence, QR, dates, names, or business terms with generic summaries.\",\n    \"No order/payment claims.\",\n    \"Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.\",\n    \"Do not produce generic one-line cards unless the input is extremely thin.\",\n    \"Write original card copy for this recipient and occasion; never reuse benchmark/sample headlines, fixture copy, or generic category slogans.\",\n    \"Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.\",\n    \"Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.\",\n    \"When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.\",\n    \"front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short dedication.\",\n    \"inside-left body should be 120-320 characters and feel like an opening note, quote, blessing, or scene-setting message.\",\n    \"inside-right body should be 180-420 characters and carry the main personal message plus a natural sign-off when appropriate.\",\n    \"back body <= 160 characters and should feel quiet, polished, and optional.\",\n    \"All body text must fit a 5x7 card panel with generous margins.\"\n  ],\n  \"story_playbooks\": [\n    \"Low-context first-time cards: be useful and specific from the supplied occasion/style without inventing memories; use one gentle human detail and enough copy that the sender could approve it immediately.\",\n    \"High-memory get-well or recovery cards: weave only approved inside jokes into tender support, avoid medical advice, diagnosis, miracle-cure language, pity, or clownish meme overload.\",\n    \"B2B lifecycle or warranty cards: preserve exact customer, business, date, product, and CTA facts; make the CTA clear but calm; never invent discounts, legal terms, shipment status, or order/payment claims.\",\n    \"Wedding or distant-family cards: be respectful and warm without overclaiming closeness; use a short non-denominational blessing unless a religion is explicitly specified, and reserve handwriting space when requested.\",\n    \"Sympathy or quiet-support cards: keep language grounded and practical; avoid cliches, religious claims unless requested, bright celebration language, overdesigned ornament, and generic note-template stationery.\"\n  ],\n  \"layout_requirements\": [\n    \"The theme_guide must be LLM-decided from the user's request. For interests such as aquarium lover, koi fish lover, or dog lover, create a more specific visual genre than the literal noun alone.\",\n    \"Prefer distinctive greeting-card concepts over obvious wallpaper: e.g. ritual, habitat, movement, care, place, season, or object-system interpretations tied to the supplied details.\",\n    \"theme_guide is binding, but reuse motifs with restraint: a panel should have one dominant composition idea, not a scattered wallpaper of every motif.\",\n    \"art_direction must name the panel's composition archetype, layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.\",\n    \"visual_cue is binding for the image prompt: make front, inside-left, inside-right, and back visually distinct while still coordinated.\",\n    \"visual_cue should describe concrete objects, light, palette, spacing, and text-safe negative space for that exact panel; do not mention final words, letters, signatures, or fake handwriting.\",\n    \"text_layout controls app-rendered typography only. Choose zones that match the clean text-safe area in visual_cue; never ask the image model to draw the text.\",\n    \"text_layout must use only these values: headline_zone top/upper/center/lower; body_zone upper/center/lower/bottom; alignment left/center/right; font_pairing serif-sans/bold-editorial/minimal-sans/soft-serif; color_mode dark-ink/light-ink/accent-ink/high-contrast; scale compact/standard/large.\",\n    \"front and back should visually match each other; the front carries the strongest hero idea and the back repeats a small quiet echo.\",\n    \"inside-left and inside-right should visually match each other and feel like the opened interior spread.\",\n    \"inside-left and inside-right must keep a calm blank/low-contrast center reserved for app-rendered text; use edge-led artwork, not a generic note-template.\",\n    \"Interior panels should usually be lighter, warmer, and more paper-like than the front/back covers; avoid using the same dark cover field on all four panels.\",\n    \"Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.\",\n    \"Artwork should read as flat editorial stationery: clean print surfaces, integrated negative space, and restrained edge/corner ornament rather than ornate central decoration.\",\n    \"Keep the text-safe field blank, simple, and integrated into the artwork; do not surround it with a central medallion, halo, ornate frame, or decorative ring.\",\n    \"Never rely on a large opaque caption plaque, text box, label, banner, or card-within-card; text-safe space means natural negative space in the artwork.\",\n    \"Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, edge-led gallery illustration, lower-corner object cluster, or mostly blank back mark.\",\n    \"Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.\",\n    \"Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative.\"\n  ],\n  \"image_prompt_requirements\": [\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must describe one separate portrait 5x7 panel, not the whole four-panel set.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must express the LLM-decided visual concept with a unique composition for that panel, not a generic subject collage or repeated motif field.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Reserve clean text-safe space for the app overlay where the panel copy belongs.\",\n    \"Do not describe the app overlay as a recipient name, headline, body, quote, blessing, verse, poem, short message, personal message, or scene-setting message; say only clean text-safe area.\",\n    \"Text-safe areas must stay plain and low-detail: no central medallion, no halo, no ornate frame around copy, no rays behind copy, and no decorative ring under typography.\",\n    \"Do not create a caption plaque, inner card rectangle, blank label, sticky note, banner, or text box; text-safe must be integrated negative space, soft open field, or quiet blank center.\",\n    \"image_prompt must stay visual: concrete motifs, palette, border/frame treatment, background texture, ornament density, composition archetype, and hierarchy only.\",\n    \"For the front, explicitly choose one dominant hero composition or sparse line-art composition with a clean lower or central text-safe area and edge/corner ornament only.\",\n    \"For inside-left and inside-right, explicitly include: quiet center, clean text-safe area, generous margins, light low-contrast interior, and sparse edge/corner or lower-edge artwork only.\",\n    \"For the back, explicitly include mostly negative space and one small coordinating lower mark or border echo.\",\n    \"Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.\",\n    \"Coordinate palette, border style, motifs, and spacing across all four image_prompt values.\",\n    \"For B2B CTA cards, reserve a clean app-overlay area for any QR code or account-manager CTA; do not ask the image model to draw QR codes, labels, or interface elements.\",\n    \"For cards requesting handwriting space, reserve an open note area but do not ask the image model to create handwriting, signatures, script, or fake personal notes.\",\n    \"For sympathy image_prompt values, describe sparse flat support artwork with an integrated quiet text-safe field; keep blank-message template, ruled sheet, card-within-card, and physical-card-display failure terms only in image_negative_prompt.\",\n    \"For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, and clean text-safe space; keep avoid/failure terms for people, hands, display frames, logos, watermarks, and readable text in image_negative_prompt rather than image_prompt.\"\n  ],\n  \"safety_requirements\": [\n    \"Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.\",\n    \"Do not describe a physical paper card, folded card, envelope, tabletop, desk scene, product photo, mockup, shadowed card, framed card, or any object photographed in a scene.\",\n    \"Do not include words, letters, glyphs, calligraphy, handwriting, labels, signatures, fake text, pseudo text, or decorative script marks.\",\n    \"Do not include fake glyph-like marks, pseudo-calligraphy, decorative micro-lettering, or signature-like strokes as ornament.\",\n    \"image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"Avery\",\n    \"recipient\": \"Morgan\",\n    \"relationship\": \"neighbor\",\n    \"occasion\": \"thank-you card\",\n    \"tone\": \"grateful, loyal, lightly playful, specific\",\n    \"style\": \"premium folded greeting card for a dog lover; the LLM must decide the creative theme, exact copy, palette, motifs, and layout\",\n    \"language\": \"English\",\n    \"personal_note\": \"Thank Morgan for helping while Avery was away and for being the kind of dog-loving neighbor who notices what needs doing. It should be grateful and a little playful without turning into paw-print wallpaper.\",\n    \"memory_notes\": [\n      \"Morgan loves dogs and often mentions how a good neighbor is the kind of person a dog trusts.\",\n      \"Morgan helped while Avery was away.\",\n      \"The final artwork should avoid dog portraits and keep a clean print-safe area for Comfy-rendered text.\"\n    ],\n    \"must_include\": [\n      \"Morgan\",\n      \"thank\",\n      \"dog\"\n    ],\n    \"must_avoid\": [\n      \"lorem ipsum\",\n      \"placeholder\",\n      \"extra words\",\n      \"fake lettering\",\n      \"mockup\",\n      \"paw-print wallpaper\"\n    ],\n    \"planner_retry\": {\n      \"reason\": \"Previous card-copy output failed validation. Return the same full schema with all required facts preserved.\",\n      \"issues\": [\n        \"Missing required term: Morgan\"\n      ]\n    }\n  }\n}"
+          }
+        ],
+        "max_tokens": 3200,
+        "temperature": 0.62,
+        "response_format": {
+          "type": "json_schema",
+          "json_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "theme_guide",
+              "panels",
+              "memory_citations"
+            ],
+            "properties": {
+              "theme_guide": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "theme_title",
+                  "palette",
+                  "motifs",
+                  "border_style",
+                  "front_back_pairing",
+                  "interior_pairing"
+                ],
+                "properties": {
+                  "theme_title": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "palette": {
+                    "type": "array",
+                    "minItems": 3,
+                    "maxItems": 6,
+                    "items": {
+                      "type": "string",
+                      "maxLength": 80
+                    }
+                  },
+                  "motifs": {
+                    "type": "array",
+                    "minItems": 3,
+                    "maxItems": 8,
+                    "items": {
+                      "type": "string",
+                      "maxLength": 80
+                    }
+                  },
+                  "border_style": {
+                    "type": "string",
+                    "maxLength": 180
+                  },
+                  "front_back_pairing": {
+                    "type": "string",
+                    "maxLength": 220
+                  },
+                  "interior_pairing": {
+                    "type": "string",
+                    "maxLength": 220
+                  }
+                }
+              },
+              "panels": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "headline",
+                    "body",
+                    "art_direction",
+                    "visual_cue",
+                    "text_layout",
+                    "image_prompt",
+                    "image_negative_prompt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "enum": [
+                        "front",
+                        "inside-left",
+                        "inside-right",
+                        "back"
+                      ]
+                    },
+                    "headline": {
+                      "type": "string",
+                      "maxLength": 120
+                    },
+                    "body": {
+                      "type": "string",
+                      "maxLength": 600
+                    },
+                    "art_direction": {
+                      "type": "string",
+                      "maxLength": 500
+                    },
+                    "visual_cue": {
+                      "type": "string",
+                      "maxLength": 360
+                    },
+                    "text_layout": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "headline_zone",
+                        "body_zone",
+                        "alignment",
+                        "font_pairing",
+                        "color_mode",
+                        "scale"
+                      ],
+                      "properties": {
+                        "headline_zone": {
+                          "type": "string",
+                          "enum": [
+                            "top",
+                            "upper",
+                            "center",
+                            "lower"
+                          ]
+                        },
+                        "body_zone": {
+                          "type": "string",
+                          "enum": [
+                            "upper",
+                            "center",
+                            "lower",
+                            "bottom"
+                          ]
+                        },
+                        "alignment": {
+                          "type": "string",
+                          "enum": [
+                            "left",
+                            "center",
+                            "right"
+                          ]
+                        },
+                        "font_pairing": {
+                          "type": "string",
+                          "enum": [
+                            "serif-sans",
+                            "bold-editorial",
+                            "minimal-sans",
+                            "soft-serif"
+                          ]
+                        },
+                        "color_mode": {
+                          "type": "string",
+                          "enum": [
+                            "dark-ink",
+                            "light-ink",
+                            "accent-ink",
+                            "high-contrast"
+                          ]
+                        },
+                        "scale": {
+                          "type": "string",
+                          "enum": [
+                            "compact",
+                            "standard",
+                            "large"
+                          ]
+                        }
+                      }
+                    },
+                    "image_prompt": {
+                      "type": "string",
+                      "maxLength": 1200
+                    },
+                    "image_negative_prompt": {
+                      "type": "string",
+                      "maxLength": 500
+                    }
+                  }
+                }
+              },
+              "memory_citations": {
+                "type": "array",
+                "maxItems": 4,
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 10105,
+      "body": {
+        "id": "id-1782597157422",
+        "object": "chat.completion",
+        "created": 1782597157,
+        "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "annotations": null,
+              "audio": null,
+              "content": "{\"memory_citations\":[\"Morgan loves dogs and often mentions how a good neighbor is the kind of person a dog trusts.\",\"Morgan helped while Avery was away.\"],\"panels\":[{\"art_direction\":\"Urban Canine Harmony theme: cityscape with abstract dog silhouette in foreground. Clean text-safe area at lower third. Subtle border of woven rope pattern. Warm earth tones with accent of terracotta.\",\"body\":\"For the quiet wins when I was away\",\"headline\":\"Avery Says Thanks, Morgan!\",\"id\":\"front\",\"image_negative_prompt\":\"readable text,fake text,letters,people,face,portrait,hands,folded card mockup,physical card mockup,tabletop scene,product photo\",\"image_prompt\":\"Vertical 5x7 panel showing city skyline at dusk with abstract black dog silhouette in lower third, soft golden hour lighting, woven rope border in warm brown, clean text-safe area at bottom 1/3\",\"text_layout\":{\"alignment\":\"center\",\"body_zone\":\"lower\",\"color_mode\":\"dark-ink\",\"font_pairing\":\"bold-editorial\",\"headline_zone\":\"top\",\"scale\":\"standard\"},\"visual_cue\":\"City skyline with abstract dog silhouette in lower third, soft golden hour lighting, woven rope border in warm brown, clean text-safe area at bottom 1/3\"},{\"art_direction\":\"Interior panel with warm parchment texture. Abstract dog paw print motif in upper corner. Text-safe area centered with generous margins. Soft terracotta accent in border.\",\"body\":\"Your trust is a rare gift - like the kind a dog gives without question\",\"headline\":\"For the Quiet Wins\",\"id\":\"inside-left\",\"image_negative_prompt\":\"readable text,fake text,letters,people,face,portrait,hands,folded card mockup,physical card mockup,tabletop scene,product photo\",\"image_prompt\":\"Vertical 5x7 panel showing warm parchment texture with abstract black paw print in upper left corner, soft terracotta border, centered clean text area\",\"text_layout\":{\"alignment\":\"center\",\"body_zone\":\"center\",\"color_mode\":\"light-ink\",\"font_pairing\":\"soft-serif\",\"headline_zone\":\"upper\",\"scale\":\"standard\"},\"visual_cue\":\"Warm parchment texture with abstract paw print in upper corner, soft terracotta border, centered clean text area\"},{\"art_direction\":\"Interior panel with soft gradient background. Abstract dog silhouette in lower third. Text-safe area centered with 2cm margins. Subtle city grid pattern in background.\",\"body\":\"Thank you for the small acts that made being away feel like home - the walks, the mail, the quiet presence. You're the kind of neighbor a dog would follow anywhere.\",\"headline\":\"Your Trust is a Rare Gift\",\"id\":\"inside-right\",\"image_negative_prompt\":\"readable text,fake text,letters,people,face,portrait,hands,folded card mockup,physical card mockup,tabletop scene,product photo\",\"image_prompt\":\"Vertical 5x7 panel showing soft gradient background with abstract black dog silhouette in lower third, subtle city grid pattern, centered clean text area\",\"text_layout\":{\"alignment\":\"center\",\"body_zone\":\"center\",\"color_mode\":\"light-ink\",\"font_pairing\":\"soft-serif\",\"headline_zone\":\"upper\",\"scale\":\"standard\"},\"visual_cue\":\"Soft gradient background with abstract dog silhouette in lower third, subtle city grid pattern, centered clean text area\"},{\"art_direction\":\"Back panel with minimalist design. Subtle city silhouette in lower corner. Text-safe area centered. Warm brown border with terracotta accent.\",\"body\":\"With gratitude, Avery\",\"headline\":\"\",\"id\":\"back\",\"image_negative_prompt\":\"readable text,fake text,letters,people,face,portrait,hands,folded card mockup,physical card mockup,tabletop scene,product photo\",\"image_prompt\":\"Vertical 5x7 panel showing minimalist design with subtle city silhouette in lower right corner, warm brown border with terracotta accent, centered clean text area\",\"text_layout\":{\"alignment\":\"center\",\"body_zone\":\"center\",\"color_mode\":\"dark-ink\",\"font_pairing\":\"minimal-sans\",\"headline_zone\":\"top\",\"scale\":\"standard\"},\"visual_cue\":\"Minimalist design with subtle city silhouette in lower corner, warm brown border with terracotta accent, centered clean text area\"}],\"theme_guide\":{\"border_style\":\"woven rope pattern with terracotta accent\",\"front_back_pairing\":\"Cityscape with dog silhouette on front, matching city silhouette on back\",\"interior_pairing\":\"Warm parchment texture with paw print motif and gradient background with city grid\",\"motifs\":[\"abstract dog silhouette\",\"city skyline\",\"woven rope\",\"abstract paw print\",\"city grid\"],\"palette\":[\"warm brown\",\"soft terracotta\",\"soft gradient\",\"parchment beige\"],\"theme_title\":\"Urban Canine Harmony\"}}",
+              "function_call": null,
+              "reasoning": "\nOkay, let's tackle this query. The user wants a cohesive 5x7 greeting card in JSON format with four panels. The theme needs to be specific, avoiding generic terms. The input mentions Morgan as a dog-loving neighbor who helped Avery, so the theme should reflect gratitude and playfulness without paw prints.\n\nFirst, the theme guide. Since it's a thank-you card for a dog lover, maybe something like \"Urban Canine Harmony\" to blend city life with dogs. Palette could be earthy tones with a pop of color. Motifs might include abstract dog silhouettes and city elements. Border style could be minimal, maybe a subtle line. Front and back pairing should match, perhaps with a cityscape and a dog silhouette. Interior pairing might be softer, with a warm palette.\n\nFront panel: The headline needs to be catchy. Maybe \"Avery Says Thanks, Morgan!\" with a body that's a short thank you. Art direction should have a cityscape with a dog silhouette. Visual cue: a city skyline with a dog in the foreground. Text layout: headline at the top, body centered. Font pairing could be bold editorial for the headline and minimal sans for the body. Color mode dark ink for contrast. Scale standard.\n\nInside-left: A welcoming message. Maybe \"Your trust is a rare gift\" as the headline. Body could mention the help and dog trust. Art direction with a warm, soft background. Visual cue: a cozy city scene with a dog. Text layout centered, maybe a soft-serif font. Color mode light ink.\n\nInside-right: The main message, thanking Morgan for specific help. Headline \"For the Quiet Wins\" and body detailing the assistance. Art direction with a gentle pattern. Visual cue: a dog sitting by a window. Text layout with a soft-serif font, centered.\n\nBack panel: A quiet closing. \"With gratitude, Avery\" as the headline. Body could be a short note. Art direction with a subtle border. Visual cue: a small dog silhouette in the corner. Text layout centered, minimal sans.\n\nImage prompts need to avoid text and focus on visuals. Front: cityscape with a dog. Inside-left: cozy scene with a dog. Inside-right: gentle pattern with a dog. Back: subtle border with a dog.\n\nCheck for must_include: Morgan, thank, dog. Make sure they're all there. Avoid paw-print wallpaper and other negatives. Ensure each panel's image prompt doesn't include text. Use the specified layout parameters. Double-check the JSON structure and required fields.\n",
+              "reasoning_content": "\nOkay, let's tackle this query. The user wants a cohesive 5x7 greeting card in JSON format with four panels. The theme needs to be specific, avoiding generic terms. The input mentions Morgan as a dog-loving neighbor who helped Avery, so the theme should reflect gratitude and playfulness without paw prints.\n\nFirst, the theme guide. Since it's a thank-you card for a dog lover, maybe something like \"Urban Canine Harmony\" to blend city life with dogs. Palette could be earthy tones with a pop of color. Motifs might include abstract dog silhouettes and city elements. Border style could be minimal, maybe a subtle line. Front and back pairing should match, perhaps with a cityscape and a dog silhouette. Interior pairing might be softer, with a warm palette.\n\nFront panel: The headline needs to be catchy. Maybe \"Avery Says Thanks, Morgan!\" with a body that's a short thank you. Art direction should have a cityscape with a dog silhouette. Visual cue: a city skyline with a dog in the foreground. Text layout: headline at the top, body centered. Font pairing could be bold editorial for the headline and minimal sans for the body. Color mode dark ink for contrast. Scale standard.\n\nInside-left: A welcoming message. Maybe \"Your trust is a rare gift\" as the headline. Body could mention the help and dog trust. Art direction with a warm, soft background. Visual cue: a cozy city scene with a dog. Text layout centered, maybe a soft-serif font. Color mode light ink.\n\nInside-right: The main message, thanking Morgan for specific help. Headline \"For the Quiet Wins\" and body detailing the assistance. Art direction with a gentle pattern. Visual cue: a dog sitting by a window. Text layout with a soft-serif font, centered.\n\nBack panel: A quiet closing. \"With gratitude, Avery\" as the headline. Body could be a short note. Art direction with a subtle border. Visual cue: a small dog silhouette in the corner. Text layout centered, minimal sans.\n\nImage prompts need to avoid text and focus on visuals. Front: cityscape with a dog. Inside-left: cozy scene with a dog. Inside-right: gentle pattern with a dog. Back: subtle border with a dog.\n\nCheck for must_include: Morgan, thank, dog. Make sure they're all there. Avoid paw-print wallpaper and other negatives. Ensure each panel's image prompt doesn't include text. Use the specified layout parameters. Double-check the JSON structure and required fields.\n",
+              "refusal": null,
+              "role": "assistant",
+              "tool_calls": []
+            },
+            "routed_experts": null,
+            "stop_reason": null,
+            "token_ids": null
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 3711,
+          "completion_tokens": 1489,
+          "total_tokens": 5200,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        }
+      }
+    },
+    "durationMs": 10245
+  },
+  {
+    "url": "http://127.0.0.1:8188/prompt",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "Full-bleed flat 2D artwork layer with editorial stationery restraint for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, use edge/corner ornament only, no central medallion, no ornate frame around copy, no caption plaque, and avoid all-over motif wallpaper. Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only. Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story. Use this panel-specific composition: City skyline with abstract dog silhouette in lower third, soft golden hour lighting, woven rope border in warm brown, clean text-safe area at bottom 1/3 Keep natural negative space for app-rendered typography in the lower half; do not draw words, labels, or handwriting. Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark."
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering"
+            }
+          },
+          "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {
+              "batch_size": 1,
+              "height": 1344,
+              "width": 960
+            }
+          },
+          "5": {
+            "class_type": "KSampler",
+            "inputs": {
+              "cfg": 1.5,
+              "denoise": 1,
+              "latent_image": [
+                "4",
+                0
+              ],
+              "model": [
+                "1",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "positive": [
+                "2",
+                0
+              ],
+              "sampler_name": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 324899247,
+              "steps": 2
+            }
+          },
+          "6": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "5",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            }
+          },
+          "7": {
+            "class_type": "CustomCardTextComposer",
+            "inputs": {
+              "alignment": "center",
+              "artwork_guard_color": "#fff6df",
+              "artwork_guard_height": 1344,
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "panel",
+              "artwork_guard_width": 960,
+              "artwork_guard_x": 0,
+              "artwork_guard_y": 0,
+              "body": "For helping in the steady, noticing way a good dog-loving neighbor understands.",
+              "body_box_height": 403,
+              "body_box_background_color": "#fff6df",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "body_box_width": 748,
+              "body_box_x": 106,
+              "body_box_y": 780,
+              "body_fill_color": "#4f432a",
+              "body_font": "arial.ttf",
+              "body_font_size": 28,
+              "body_line_spacing": 6,
+              "body_stroke_color": "#fff6df",
+              "body_stroke_width": 1,
+              "body_vertical_alignment": "middle",
+              "debug_boxes": false,
+              "headline": "Avery Says Thanks, Morgan!",
+              "headline_box_height": 242,
+              "headline_box_background_color": "#fff6df",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "headline_box_width": 788,
+              "headline_box_x": 86,
+              "headline_box_y": 94,
+              "headline_fill_color": "#282923",
+              "headline_font": "arialbd.ttf",
+              "headline_font_size": 72,
+              "headline_line_spacing": 8,
+              "headline_stroke_color": "#fff6df",
+              "headline_stroke_width": 1,
+              "headline_vertical_alignment": "top",
+              "image": [
+                "6",
+                0
+              ],
+              "min_font_size": 16
+            }
+          },
+          "9": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "filename_prefix": "customcard/customcard-production-text-overlay/front",
+              "images": [
+                "7",
+                0
+              ]
+            }
+          }
+        },
+        "client_id": "customcard-local-comfyui-provider",
+        "extra_data": {
+          "customcard": {
+            "workflow_id": "customcard-production-text-overlay",
+            "panel_id": "front",
+            "seed": 324899247,
+            "inputs": {
+              "workflow_id": "customcard-production-text-overlay",
+              "panel_id": "front",
+              "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+              "width": 960,
+              "height": 1344,
+              "steps": 2,
+              "cfg": 1.5,
+              "sampler": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 324899247,
+              "prompt": "Full-bleed flat 2D artwork layer with editorial stationery restraint for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, use edge/corner ornament only, no central medallion, no ornate frame around copy, no caption plaque, and avoid all-over motif wallpaper. Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only. Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story. Use this panel-specific composition: City skyline with abstract dog silhouette in lower third, soft golden hour lighting, woven rope border in warm brown, clean text-safe area at bottom 1/3 Keep natural negative space for app-rendered typography in the lower half; do not draw words, labels, or handwriting. Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark.",
+              "negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering",
+              "artwork_guard": {
+                "x": 0,
+                "y": 0,
+                "width": 960,
+                "height": 1344
+              },
+              "artwork_guard_color": "#fff6df",
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "panel",
+              "headline_text": "Avery Says Thanks, Morgan!",
+              "body_text": "For helping in the steady, noticing way a good dog-loving neighbor understands.",
+              "headline_font_size": 72,
+              "body_font_size": 28,
+              "headline_box": {
+                "x": 86,
+                "y": 94,
+                "width": 788,
+                "height": 242
+              },
+              "headline_box_background_color": "#fff6df",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "body_box": {
+                "x": 106,
+                "y": 780,
+                "width": 748,
+                "height": 403
+              },
+              "body_box_background_color": "#fff6df",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "text_alignment": "center",
+              "min_font_size": 16
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 86,
+      "body": {
+        "prompt_id": "361015f1-99d0-4f4c-a3b7-5a17a17ff7a5",
+        "number": 78,
+        "node_errors": {}
+      }
+    },
+    "durationMs": 4
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/361015f1-99d0-4f4c-a3b7-5a17a17ff7a5",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 4
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/361015f1-99d0-4f4c-a3b7-5a17a17ff7a5",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/361015f1-99d0-4f4c-a3b7-5a17a17ff7a5",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/361015f1-99d0-4f4c-a3b7-5a17a17ff7a5",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/361015f1-99d0-4f4c-a3b7-5a17a17ff7a5",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/361015f1-99d0-4f4c-a3b7-5a17a17ff7a5",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/361015f1-99d0-4f4c-a3b7-5a17a17ff7a5",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 9024,
+      "body": {
+        "361015f1-99d0-4f4c-a3b7-5a17a17ff7a5": {
+          "prompt": [
+            78,
+            "361015f1-99d0-4f4c-a3b7-5a17a17ff7a5",
+            {
+              "1": {
+                "class_type": "CheckpointLoaderSimple",
+                "inputs": {
+                  "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+                }
+              },
+              "2": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "Full-bleed flat 2D artwork layer with editorial stationery restraint for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, use edge/corner ornament only, no central medallion, no ornate frame around copy, no caption plaque, and avoid all-over motif wallpaper. Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only. Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story. Use this panel-specific composition: City skyline with abstract dog silhouette in lower third, soft golden hour lighting, woven rope border in warm brown, clean text-safe area at bottom 1/3 Keep natural negative space for app-rendered typography in the lower half; do not draw words, labels, or handwriting. Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark."
+                }
+              },
+              "3": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering"
+                }
+              },
+              "4": {
+                "class_type": "EmptyLatentImage",
+                "inputs": {
+                  "batch_size": 1,
+                  "height": 1344,
+                  "width": 960
+                }
+              },
+              "5": {
+                "class_type": "KSampler",
+                "inputs": {
+                  "cfg": 1.5,
+                  "denoise": 1,
+                  "latent_image": [
+                    "4",
+                    0
+                  ],
+                  "model": [
+                    "1",
+                    0
+                  ],
+                  "negative": [
+                    "3",
+                    0
+                  ],
+                  "positive": [
+                    "2",
+                    0
+                  ],
+                  "sampler_name": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 324899247,
+                  "steps": 2
+                }
+              },
+              "6": {
+                "class_type": "VAEDecode",
+                "inputs": {
+                  "samples": [
+                    "5",
+                    0
+                  ],
+                  "vae": [
+                    "1",
+                    2
+                  ]
+                }
+              },
+              "7": {
+                "class_type": "CustomCardTextComposer",
+                "inputs": {
+                  "alignment": "center",
+                  "artwork_guard_color": "#fff6df",
+                  "artwork_guard_height": 1344,
+                  "artwork_guard_opacity": 1,
+                  "artwork_guard_radius": 0,
+                  "artwork_guard_style": "panel",
+                  "artwork_guard_width": 960,
+                  "artwork_guard_x": 0,
+                  "artwork_guard_y": 0,
+                  "body": "For helping in the steady, noticing way a good dog-loving neighbor understands.",
+                  "body_box_height": 403,
+                  "body_box_background_color": "#fff6df",
+                  "body_box_background_padding": 24,
+                  "body_box_background_radius": 34,
+                  "body_box_background_opacity": 0.96,
+                  "body_box_background_style": "text-hug",
+                  "body_box_width": 748,
+                  "body_box_x": 106,
+                  "body_box_y": 780,
+                  "body_fill_color": "#4f432a",
+                  "body_font": "arial.ttf",
+                  "body_font_size": 28,
+                  "body_line_spacing": 6,
+                  "body_stroke_color": "#fff6df",
+                  "body_stroke_width": 1,
+                  "body_vertical_alignment": "middle",
+                  "debug_boxes": false,
+                  "headline": "Avery Says Thanks, Morgan!",
+                  "headline_box_height": 242,
+                  "headline_box_background_color": "#fff6df",
+                  "headline_box_background_padding": 24,
+                  "headline_box_background_radius": 34,
+                  "headline_box_background_opacity": 0.96,
+                  "headline_box_background_style": "text-hug",
+                  "headline_box_width": 788,
+                  "headline_box_x": 86,
+                  "headline_box_y": 94,
+                  "headline_fill_color": "#282923",
+                  "headline_font": "arialbd.ttf",
+                  "headline_font_size": 72,
+                  "headline_line_spacing": 8,
+                  "headline_stroke_color": "#fff6df",
+                  "headline_stroke_width": 1,
+                  "headline_vertical_alignment": "top",
+                  "image": [
+                    "6",
+                    0
+                  ],
+                  "min_font_size": 16
+                }
+              },
+              "9": {
+                "class_type": "SaveImage",
+                "inputs": {
+                  "filename_prefix": "customcard/customcard-production-text-overlay/front",
+                  "images": [
+                    "7",
+                    0
+                  ]
+                }
+              }
+            },
+            {
+              "customcard": {
+                "workflow_id": "customcard-production-text-overlay",
+                "panel_id": "front",
+                "seed": 324899247,
+                "inputs": {
+                  "workflow_id": "customcard-production-text-overlay",
+                  "panel_id": "front",
+                  "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+                  "width": 960,
+                  "height": 1344,
+                  "steps": 2,
+                  "cfg": 1.5,
+                  "sampler": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 324899247,
+                  "prompt": "Full-bleed flat 2D artwork layer with editorial stationery restraint for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, use edge/corner ornament only, no central medallion, no ornate frame around copy, no caption plaque, and avoid all-over motif wallpaper. Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only. Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story. Use this panel-specific composition: City skyline with abstract dog silhouette in lower third, soft golden hour lighting, woven rope border in warm brown, clean text-safe area at bottom 1/3 Keep natural negative space for app-rendered typography in the lower half; do not draw words, labels, or handwriting. Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark.",
+                  "negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering",
+                  "artwork_guard": {
+                    "x": 0,
+                    "y": 0,
+                    "width": 960,
+                    "height": 1344
+                  },
+                  "artwork_guard_color": "#fff6df",
+                  "artwork_guard_opacity": 1,
+                  "artwork_guard_radius": 0,
+                  "artwork_guard_style": "panel",
+                  "headline_text": "Avery Says Thanks, Morgan!",
+                  "body_text": "For helping in the steady, noticing way a good dog-loving neighbor understands.",
+                  "headline_font_size": 72,
+                  "body_font_size": 28,
+                  "headline_box": {
+                    "x": 86,
+                    "y": 94,
+                    "width": 788,
+                    "height": 242
+                  },
+                  "headline_box_background_color": "#fff6df",
+                  "headline_box_background_padding": 24,
+                  "headline_box_background_radius": 34,
+                  "headline_box_background_opacity": 0.96,
+                  "headline_box_background_style": "text-hug",
+                  "body_box": {
+                    "x": 106,
+                    "y": 780,
+                    "width": 748,
+                    "height": 403
+                  },
+                  "body_box_background_color": "#fff6df",
+                  "body_box_background_padding": 24,
+                  "body_box_background_radius": 34,
+                  "body_box_background_opacity": 0.96,
+                  "body_box_background_style": "text-hug",
+                  "text_alignment": "center",
+                  "min_font_size": 16
+                }
+              },
+              "client_id": "customcard-local-comfyui-provider",
+              "create_time": 1782597156632
+            },
+            [
+              "9"
+            ]
+          ],
+          "outputs": {
+            "9": {
+              "images": [
+                {
+                  "filename": "front_00039_.png",
+                  "subfolder": "customcard\\customcard-production-text-overlay",
+                  "type": "output"
+                }
+              ]
+            }
+          },
+          "status": {
+            "status_str": "success",
+            "completed": true,
+            "messages": [
+              [
+                "execution_start",
+                {
+                  "prompt_id": "361015f1-99d0-4f4c-a3b7-5a17a17ff7a5",
+                  "timestamp": 1782597156633
+                }
+              ],
+              [
+                "execution_cached",
+                {
+                  "nodes": [
+                    "1",
+                    "4"
+                  ],
+                  "prompt_id": "361015f1-99d0-4f4c-a3b7-5a17a17ff7a5",
+                  "timestamp": 1782597156634
+                }
+              ],
+              [
+                "execution_success",
+                {
+                  "prompt_id": "361015f1-99d0-4f4c-a3b7-5a17a17ff7a5",
+                  "timestamp": 1782597164546
+                }
+              ]
+            ]
+          },
+          "meta": {
+            "9": {
+              "node_id": "9",
+              "display_node": "9",
+              "parent_node": null,
+              "real_node_id": "9"
+            }
+          }
+        }
+      }
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/view?filename=front_00039_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "byteLength": 42632
+    },
+    "durationMs": 4
+  },
+  {
+    "url": "http://127.0.0.1:8188/prompt",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "Full-bleed flat 2D artwork layer with editorial stationery restraint for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, edge-led stationery layout, thin perimeter rule, sparse edge/corner or lower-edge motifs only, quiet blank center, clean text-safe area, generous safe margins, no central medallion, no ornate frame around copy, no inner text box. Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only. Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story. Use this panel-specific composition: Warm parchment texture with abstract paw print in upper corner, soft terracotta border, centered clean text area Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label."
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering"
+            }
+          },
+          "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {
+              "batch_size": 1,
+              "height": 1344,
+              "width": 960
+            }
+          },
+          "5": {
+            "class_type": "KSampler",
+            "inputs": {
+              "cfg": 1.5,
+              "denoise": 1,
+              "latent_image": [
+                "4",
+                0
+              ],
+              "model": [
+                "1",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "positive": [
+                "2",
+                0
+              ],
+              "sampler_name": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 2297562035,
+              "steps": 2
+            }
+          },
+          "6": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "5",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            }
+          },
+          "7": {
+            "class_type": "CustomCardTextComposer",
+            "inputs": {
+              "alignment": "center",
+              "artwork_guard_color": "#111715",
+              "artwork_guard_height": 1344,
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "panel",
+              "artwork_guard_width": 960,
+              "artwork_guard_x": 0,
+              "artwork_guard_y": 0,
+              "body": "Morgan, thank you for helping while I was away. You noticed what needed doing with the same loyal, practical kindness that makes dogs trust a person quickly.",
+              "body_box_height": 484,
+              "body_box_background_color": "#111715",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "body_box_width": 748,
+              "body_box_x": 106,
+              "body_box_y": 497,
+              "body_fill_color": "#f4d77d",
+              "body_font": "georgia.ttf",
+              "body_font_size": 26,
+              "body_line_spacing": 6,
+              "body_stroke_color": "#111715",
+              "body_stroke_width": 2,
+              "body_vertical_alignment": "middle",
+              "debug_boxes": false,
+              "headline": "For the Quiet Wins",
+              "headline_box_height": 269,
+              "headline_box_background_color": "#111715",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "headline_box_width": 788,
+              "headline_box_x": 86,
+              "headline_box_y": 134,
+              "headline_fill_color": "#fff7df",
+              "headline_font": "georgia.ttf",
+              "headline_font_size": 54,
+              "headline_line_spacing": 8,
+              "headline_stroke_color": "#111715",
+              "headline_stroke_width": 2,
+              "headline_vertical_alignment": "middle",
+              "image": [
+                "6",
+                0
+              ],
+              "min_font_size": 16
+            }
+          },
+          "9": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "filename_prefix": "customcard/customcard-production-text-overlay/inside-left",
+              "images": [
+                "7",
+                0
+              ]
+            }
+          }
+        },
+        "client_id": "customcard-local-comfyui-provider",
+        "extra_data": {
+          "customcard": {
+            "workflow_id": "customcard-production-text-overlay",
+            "panel_id": "inside-left",
+            "seed": 2297562035,
+            "inputs": {
+              "workflow_id": "customcard-production-text-overlay",
+              "panel_id": "inside-left",
+              "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+              "width": 960,
+              "height": 1344,
+              "steps": 2,
+              "cfg": 1.5,
+              "sampler": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 2297562035,
+              "prompt": "Full-bleed flat 2D artwork layer with editorial stationery restraint for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, edge-led stationery layout, thin perimeter rule, sparse edge/corner or lower-edge motifs only, quiet blank center, clean text-safe area, generous safe margins, no central medallion, no ornate frame around copy, no inner text box. Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only. Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story. Use this panel-specific composition: Warm parchment texture with abstract paw print in upper corner, soft terracotta border, centered clean text area Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label.",
+              "negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering",
+              "artwork_guard": {
+                "x": 0,
+                "y": 0,
+                "width": 960,
+                "height": 1344
+              },
+              "artwork_guard_color": "#111715",
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "panel",
+              "headline_text": "For the Quiet Wins",
+              "body_text": "Morgan, thank you for helping while I was away. You noticed what needed doing with the same loyal, practical kindness that makes dogs trust a person quickly.",
+              "headline_font_size": 54,
+              "body_font_size": 26,
+              "headline_box": {
+                "x": 86,
+                "y": 134,
+                "width": 788,
+                "height": 269
+              },
+              "headline_box_background_color": "#111715",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "body_box": {
+                "x": 106,
+                "y": 497,
+                "width": 748,
+                "height": 484
+              },
+              "body_box_background_color": "#111715",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "text_alignment": "center",
+              "min_font_size": 16
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 86,
+      "body": {
+        "prompt_id": "236cf5c4-ced3-49cc-85a6-320f4f72a00d",
+        "number": 79,
+        "node_errors": {}
+      }
+    },
+    "durationMs": 12
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/236cf5c4-ced3-49cc-85a6-320f4f72a00d",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 11
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/236cf5c4-ced3-49cc-85a6-320f4f72a00d",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/236cf5c4-ced3-49cc-85a6-320f4f72a00d",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/236cf5c4-ced3-49cc-85a6-320f4f72a00d",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/236cf5c4-ced3-49cc-85a6-320f4f72a00d",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/236cf5c4-ced3-49cc-85a6-320f4f72a00d",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 9335,
+      "body": {
+        "236cf5c4-ced3-49cc-85a6-320f4f72a00d": {
+          "prompt": [
+            79,
+            "236cf5c4-ced3-49cc-85a6-320f4f72a00d",
+            {
+              "1": {
+                "class_type": "CheckpointLoaderSimple",
+                "inputs": {
+                  "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+                }
+              },
+              "2": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "Full-bleed flat 2D artwork layer with editorial stationery restraint for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, edge-led stationery layout, thin perimeter rule, sparse edge/corner or lower-edge motifs only, quiet blank center, clean text-safe area, generous safe margins, no central medallion, no ornate frame around copy, no inner text box. Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only. Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story. Use this panel-specific composition: Warm parchment texture with abstract paw print in upper corner, soft terracotta border, centered clean text area Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label."
+                }
+              },
+              "3": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering"
+                }
+              },
+              "4": {
+                "class_type": "EmptyLatentImage",
+                "inputs": {
+                  "batch_size": 1,
+                  "height": 1344,
+                  "width": 960
+                }
+              },
+              "5": {
+                "class_type": "KSampler",
+                "inputs": {
+                  "cfg": 1.5,
+                  "denoise": 1,
+                  "latent_image": [
+                    "4",
+                    0
+                  ],
+                  "model": [
+                    "1",
+                    0
+                  ],
+                  "negative": [
+                    "3",
+                    0
+                  ],
+                  "positive": [
+                    "2",
+                    0
+                  ],
+                  "sampler_name": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 2297562035,
+                  "steps": 2
+                }
+              },
+              "6": {
+                "class_type": "VAEDecode",
+                "inputs": {
+                  "samples": [
+                    "5",
+                    0
+                  ],
+                  "vae": [
+                    "1",
+                    2
+                  ]
+                }
+              },
+              "7": {
+                "class_type": "CustomCardTextComposer",
+                "inputs": {
+                  "alignment": "center",
+                  "artwork_guard_color": "#111715",
+                  "artwork_guard_height": 1344,
+                  "artwork_guard_opacity": 1,
+                  "artwork_guard_radius": 0,
+                  "artwork_guard_style": "panel",
+                  "artwork_guard_width": 960,
+                  "artwork_guard_x": 0,
+                  "artwork_guard_y": 0,
+                  "body": "Morgan, thank you for helping while I was away. You noticed what needed doing with the same loyal, practical kindness that makes dogs trust a person quickly.",
+                  "body_box_height": 484,
+                  "body_box_background_color": "#111715",
+                  "body_box_background_padding": 24,
+                  "body_box_background_radius": 34,
+                  "body_box_background_opacity": 0.96,
+                  "body_box_background_style": "text-hug",
+                  "body_box_width": 748,
+                  "body_box_x": 106,
+                  "body_box_y": 497,
+                  "body_fill_color": "#f4d77d",
+                  "body_font": "georgia.ttf",
+                  "body_font_size": 26,
+                  "body_line_spacing": 6,
+                  "body_stroke_color": "#111715",
+                  "body_stroke_width": 2,
+                  "body_vertical_alignment": "middle",
+                  "debug_boxes": false,
+                  "headline": "For the Quiet Wins",
+                  "headline_box_height": 269,
+                  "headline_box_background_color": "#111715",
+                  "headline_box_background_padding": 24,
+                  "headline_box_background_radius": 34,
+                  "headline_box_background_opacity": 0.96,
+                  "headline_box_background_style": "text-hug",
+                  "headline_box_width": 788,
+                  "headline_box_x": 86,
+                  "headline_box_y": 134,
+                  "headline_fill_color": "#fff7df",
+                  "headline_font": "georgia.ttf",
+                  "headline_font_size": 54,
+                  "headline_line_spacing": 8,
+                  "headline_stroke_color": "#111715",
+                  "headline_stroke_width": 2,
+                  "headline_vertical_alignment": "middle",
+                  "image": [
+                    "6",
+                    0
+                  ],
+                  "min_font_size": 16
+                }
+              },
+              "9": {
+                "class_type": "SaveImage",
+                "inputs": {
+                  "filename_prefix": "customcard/customcard-production-text-overlay/inside-left",
+                  "images": [
+                    "7",
+                    0
+                  ]
+                }
+              }
+            },
+            {
+              "customcard": {
+                "workflow_id": "customcard-production-text-overlay",
+                "panel_id": "inside-left",
+                "seed": 2297562035,
+                "inputs": {
+                  "workflow_id": "customcard-production-text-overlay",
+                  "panel_id": "inside-left",
+                  "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+                  "width": 960,
+                  "height": 1344,
+                  "steps": 2,
+                  "cfg": 1.5,
+                  "sampler": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 2297562035,
+                  "prompt": "Full-bleed flat 2D artwork layer with editorial stationery restraint for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, edge-led stationery layout, thin perimeter rule, sparse edge/corner or lower-edge motifs only, quiet blank center, clean text-safe area, generous safe margins, no central medallion, no ornate frame around copy, no inner text box. Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only. Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story. Use this panel-specific composition: Warm parchment texture with abstract paw print in upper corner, soft terracotta border, centered clean text area Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label.",
+                  "negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering",
+                  "artwork_guard": {
+                    "x": 0,
+                    "y": 0,
+                    "width": 960,
+                    "height": 1344
+                  },
+                  "artwork_guard_color": "#111715",
+                  "artwork_guard_opacity": 1,
+                  "artwork_guard_radius": 0,
+                  "artwork_guard_style": "panel",
+                  "headline_text": "For the Quiet Wins",
+                  "body_text": "Morgan, thank you for helping while I was away. You noticed what needed doing with the same loyal, practical kindness that makes dogs trust a person quickly.",
+                  "headline_font_size": 54,
+                  "body_font_size": 26,
+                  "headline_box": {
+                    "x": 86,
+                    "y": 134,
+                    "width": 788,
+                    "height": 269
+                  },
+                  "headline_box_background_color": "#111715",
+                  "headline_box_background_padding": 24,
+                  "headline_box_background_radius": 34,
+                  "headline_box_background_opacity": 0.96,
+                  "headline_box_background_style": "text-hug",
+                  "body_box": {
+                    "x": 106,
+                    "y": 497,
+                    "width": 748,
+                    "height": 484
+                  },
+                  "body_box_background_color": "#111715",
+                  "body_box_background_padding": 24,
+                  "body_box_background_radius": 34,
+                  "body_box_background_opacity": 0.96,
+                  "body_box_background_style": "text-hug",
+                  "text_alignment": "center",
+                  "min_font_size": 16
+                }
+              },
+              "client_id": "customcard-local-comfyui-provider",
+              "create_time": 1782597165812
+            },
+            [
+              "9"
+            ]
+          ],
+          "outputs": {
+            "9": {
+              "images": [
+                {
+                  "filename": "inside-left_00039_.png",
+                  "subfolder": "customcard\\customcard-production-text-overlay",
+                  "type": "output"
+                }
+              ]
+            }
+          },
+          "status": {
+            "status_str": "success",
+            "completed": true,
+            "messages": [
+              [
+                "execution_start",
+                {
+                  "prompt_id": "236cf5c4-ced3-49cc-85a6-320f4f72a00d",
+                  "timestamp": 1782597165814
+                }
+              ],
+              [
+                "execution_cached",
+                {
+                  "nodes": [
+                    "1",
+                    "3",
+                    "4"
+                  ],
+                  "prompt_id": "236cf5c4-ced3-49cc-85a6-320f4f72a00d",
+                  "timestamp": 1782597165815
+                }
+              ],
+              [
+                "execution_success",
+                {
+                  "prompt_id": "236cf5c4-ced3-49cc-85a6-320f4f72a00d",
+                  "timestamp": 1782597173349
+                }
+              ]
+            ]
+          },
+          "meta": {
+            "9": {
+              "node_id": "9",
+              "display_node": "9",
+              "parent_node": null,
+              "real_node_id": "9"
+            }
+          }
+        }
+      }
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/view?filename=inside-left_00039_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "byteLength": 43370
+    },
+    "durationMs": 2
+  },
+  {
+    "url": "http://127.0.0.1:8188/prompt",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "Full-bleed flat 2D artwork layer with editorial stationery restraint for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, edge-led stationery layout, thin perimeter rule, sparse edge/corner or lower-edge motifs only, quiet blank center, clean text-safe area, generous safe margins, no central medallion, no ornate frame around copy, no inner text box. Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only. Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story. Use this panel-specific composition: Soft gradient background with abstract dog silhouette in lower third, subtle city grid pattern, centered clean text area Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label."
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering"
+            }
+          },
+          "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {
+              "batch_size": 1,
+              "height": 1344,
+              "width": 960
+            }
+          },
+          "5": {
+            "class_type": "KSampler",
+            "inputs": {
+              "cfg": 1.5,
+              "denoise": 1,
+              "latent_image": [
+                "4",
+                0
+              ],
+              "model": [
+                "1",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "positive": [
+                "2",
+                0
+              ],
+              "sampler_name": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 3064690475,
+              "steps": 2
+            }
+          },
+          "6": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "5",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            }
+          },
+          "7": {
+            "class_type": "CustomCardTextComposer",
+            "inputs": {
+              "alignment": "center",
+              "artwork_guard_color": "#111715",
+              "artwork_guard_height": 1344,
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "panel",
+              "artwork_guard_width": 960,
+              "artwork_guard_x": 0,
+              "artwork_guard_y": 0,
+              "body": "Thank you for the small acts that made being away feel like home - the walks, the mail, the quiet presence. You're the kind of neighbor a dog would follow anywhere.",
+              "body_box_height": 484,
+              "body_box_background_color": "#111715",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "body_box_width": 748,
+              "body_box_x": 106,
+              "body_box_y": 497,
+              "body_fill_color": "#f4d77d",
+              "body_font": "georgia.ttf",
+              "body_font_size": 26,
+              "body_line_spacing": 6,
+              "body_stroke_color": "#111715",
+              "body_stroke_width": 2,
+              "body_vertical_alignment": "middle",
+              "debug_boxes": false,
+              "headline": "Your Trust is a Rare Gift",
+              "headline_box_height": 269,
+              "headline_box_background_color": "#111715",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "headline_box_width": 788,
+              "headline_box_x": 86,
+              "headline_box_y": 134,
+              "headline_fill_color": "#fff7df",
+              "headline_font": "georgia.ttf",
+              "headline_font_size": 54,
+              "headline_line_spacing": 8,
+              "headline_stroke_color": "#111715",
+              "headline_stroke_width": 2,
+              "headline_vertical_alignment": "middle",
+              "image": [
+                "6",
+                0
+              ],
+              "min_font_size": 16
+            }
+          },
+          "9": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "filename_prefix": "customcard/customcard-production-text-overlay/inside-right",
+              "images": [
+                "7",
+                0
+              ]
+            }
+          }
+        },
+        "client_id": "customcard-local-comfyui-provider",
+        "extra_data": {
+          "customcard": {
+            "workflow_id": "customcard-production-text-overlay",
+            "panel_id": "inside-right",
+            "seed": 3064690475,
+            "inputs": {
+              "workflow_id": "customcard-production-text-overlay",
+              "panel_id": "inside-right",
+              "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+              "width": 960,
+              "height": 1344,
+              "steps": 2,
+              "cfg": 1.5,
+              "sampler": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 3064690475,
+              "prompt": "Full-bleed flat 2D artwork layer with editorial stationery restraint for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, edge-led stationery layout, thin perimeter rule, sparse edge/corner or lower-edge motifs only, quiet blank center, clean text-safe area, generous safe margins, no central medallion, no ornate frame around copy, no inner text box. Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only. Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story. Use this panel-specific composition: Soft gradient background with abstract dog silhouette in lower third, subtle city grid pattern, centered clean text area Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label.",
+              "negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering",
+              "artwork_guard": {
+                "x": 0,
+                "y": 0,
+                "width": 960,
+                "height": 1344
+              },
+              "artwork_guard_color": "#111715",
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "panel",
+              "headline_text": "Your Trust is a Rare Gift",
+              "body_text": "Thank you for the small acts that made being away feel like home - the walks, the mail, the quiet presence. You're the kind of neighbor a dog would follow anywhere.",
+              "headline_font_size": 54,
+              "body_font_size": 26,
+              "headline_box": {
+                "x": 86,
+                "y": 134,
+                "width": 788,
+                "height": 269
+              },
+              "headline_box_background_color": "#111715",
+              "headline_box_background_padding": 24,
+              "headline_box_background_radius": 34,
+              "headline_box_background_opacity": 0.96,
+              "headline_box_background_style": "text-hug",
+              "body_box": {
+                "x": 106,
+                "y": 497,
+                "width": 748,
+                "height": 484
+              },
+              "body_box_background_color": "#111715",
+              "body_box_background_padding": 24,
+              "body_box_background_radius": 34,
+              "body_box_background_opacity": 0.96,
+              "body_box_background_style": "text-hug",
+              "text_alignment": "center",
+              "min_font_size": 16
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 86,
+      "body": {
+        "prompt_id": "304a4bde-af3b-4cca-839a-821cfbf74b00",
+        "number": 80,
+        "node_errors": {}
+      }
+    },
+    "durationMs": 14
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/304a4bde-af3b-4cca-839a-821cfbf74b00",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 15
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/304a4bde-af3b-4cca-839a-821cfbf74b00",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/304a4bde-af3b-4cca-839a-821cfbf74b00",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/304a4bde-af3b-4cca-839a-821cfbf74b00",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/304a4bde-af3b-4cca-839a-821cfbf74b00",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/304a4bde-af3b-4cca-839a-821cfbf74b00",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 9403,
+      "body": {
+        "304a4bde-af3b-4cca-839a-821cfbf74b00": {
+          "prompt": [
+            80,
+            "304a4bde-af3b-4cca-839a-821cfbf74b00",
+            {
+              "1": {
+                "class_type": "CheckpointLoaderSimple",
+                "inputs": {
+                  "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+                }
+              },
+              "2": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "Full-bleed flat 2D artwork layer with editorial stationery restraint for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, edge-led stationery layout, thin perimeter rule, sparse edge/corner or lower-edge motifs only, quiet blank center, clean text-safe area, generous safe margins, no central medallion, no ornate frame around copy, no inner text box. Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only. Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story. Use this panel-specific composition: Soft gradient background with abstract dog silhouette in lower third, subtle city grid pattern, centered clean text area Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label."
+                }
+              },
+              "3": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering"
+                }
+              },
+              "4": {
+                "class_type": "EmptyLatentImage",
+                "inputs": {
+                  "batch_size": 1,
+                  "height": 1344,
+                  "width": 960
+                }
+              },
+              "5": {
+                "class_type": "KSampler",
+                "inputs": {
+                  "cfg": 1.5,
+                  "denoise": 1,
+                  "latent_image": [
+                    "4",
+                    0
+                  ],
+                  "model": [
+                    "1",
+                    0
+                  ],
+                  "negative": [
+                    "3",
+                    0
+                  ],
+                  "positive": [
+                    "2",
+                    0
+                  ],
+                  "sampler_name": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 3064690475,
+                  "steps": 2
+                }
+              },
+              "6": {
+                "class_type": "VAEDecode",
+                "inputs": {
+                  "samples": [
+                    "5",
+                    0
+                  ],
+                  "vae": [
+                    "1",
+                    2
+                  ]
+                }
+              },
+              "7": {
+                "class_type": "CustomCardTextComposer",
+                "inputs": {
+                  "alignment": "center",
+                  "artwork_guard_color": "#111715",
+                  "artwork_guard_height": 1344,
+                  "artwork_guard_opacity": 1,
+                  "artwork_guard_radius": 0,
+                  "artwork_guard_style": "panel",
+                  "artwork_guard_width": 960,
+                  "artwork_guard_x": 0,
+                  "artwork_guard_y": 0,
+                  "body": "Thank you for the small acts that made being away feel like home - the walks, the mail, the quiet presence. You're the kind of neighbor a dog would follow anywhere.",
+                  "body_box_height": 484,
+                  "body_box_background_color": "#111715",
+                  "body_box_background_padding": 24,
+                  "body_box_background_radius": 34,
+                  "body_box_background_opacity": 0.96,
+                  "body_box_background_style": "text-hug",
+                  "body_box_width": 748,
+                  "body_box_x": 106,
+                  "body_box_y": 497,
+                  "body_fill_color": "#f4d77d",
+                  "body_font": "georgia.ttf",
+                  "body_font_size": 26,
+                  "body_line_spacing": 6,
+                  "body_stroke_color": "#111715",
+                  "body_stroke_width": 2,
+                  "body_vertical_alignment": "middle",
+                  "debug_boxes": false,
+                  "headline": "Your Trust is a Rare Gift",
+                  "headline_box_height": 269,
+                  "headline_box_background_color": "#111715",
+                  "headline_box_background_padding": 24,
+                  "headline_box_background_radius": 34,
+                  "headline_box_background_opacity": 0.96,
+                  "headline_box_background_style": "text-hug",
+                  "headline_box_width": 788,
+                  "headline_box_x": 86,
+                  "headline_box_y": 134,
+                  "headline_fill_color": "#fff7df",
+                  "headline_font": "georgia.ttf",
+                  "headline_font_size": 54,
+                  "headline_line_spacing": 8,
+                  "headline_stroke_color": "#111715",
+                  "headline_stroke_width": 2,
+                  "headline_vertical_alignment": "middle",
+                  "image": [
+                    "6",
+                    0
+                  ],
+                  "min_font_size": 16
+                }
+              },
+              "9": {
+                "class_type": "SaveImage",
+                "inputs": {
+                  "filename_prefix": "customcard/customcard-production-text-overlay/inside-right",
+                  "images": [
+                    "7",
+                    0
+                  ]
+                }
+              }
+            },
+            {
+              "customcard": {
+                "workflow_id": "customcard-production-text-overlay",
+                "panel_id": "inside-right",
+                "seed": 3064690475,
+                "inputs": {
+                  "workflow_id": "customcard-production-text-overlay",
+                  "panel_id": "inside-right",
+                  "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+                  "width": 960,
+                  "height": 1344,
+                  "steps": 2,
+                  "cfg": 1.5,
+                  "sampler": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 3064690475,
+                  "prompt": "Full-bleed flat 2D artwork layer with editorial stationery restraint for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, edge-led stationery layout, thin perimeter rule, sparse edge/corner or lower-edge motifs only, quiet blank center, clean text-safe area, generous safe margins, no central medallion, no ornate frame around copy, no inner text box. Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only. Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story. Use this panel-specific composition: Soft gradient background with abstract dog silhouette in lower third, subtle city grid pattern, centered clean text area Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label.",
+                  "negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering",
+                  "artwork_guard": {
+                    "x": 0,
+                    "y": 0,
+                    "width": 960,
+                    "height": 1344
+                  },
+                  "artwork_guard_color": "#111715",
+                  "artwork_guard_opacity": 1,
+                  "artwork_guard_radius": 0,
+                  "artwork_guard_style": "panel",
+                  "headline_text": "Your Trust is a Rare Gift",
+                  "body_text": "Thank you for the small acts that made being away feel like home - the walks, the mail, the quiet presence. You're the kind of neighbor a dog would follow anywhere.",
+                  "headline_font_size": 54,
+                  "body_font_size": 26,
+                  "headline_box": {
+                    "x": 86,
+                    "y": 134,
+                    "width": 788,
+                    "height": 269
+                  },
+                  "headline_box_background_color": "#111715",
+                  "headline_box_background_padding": 24,
+                  "headline_box_background_radius": 34,
+                  "headline_box_background_opacity": 0.96,
+                  "headline_box_background_style": "text-hug",
+                  "body_box": {
+                    "x": 106,
+                    "y": 497,
+                    "width": 748,
+                    "height": 484
+                  },
+                  "body_box_background_color": "#111715",
+                  "body_box_background_padding": 24,
+                  "body_box_background_radius": 34,
+                  "body_box_background_opacity": 0.96,
+                  "body_box_background_style": "text-hug",
+                  "text_alignment": "center",
+                  "min_font_size": 16
+                }
+              },
+              "client_id": "customcard-local-comfyui-provider",
+              "create_time": 1782597173466
+            },
+            [
+              "9"
+            ]
+          ],
+          "outputs": {
+            "9": {
+              "images": [
+                {
+                  "filename": "inside-right_00038_.png",
+                  "subfolder": "customcard\\customcard-production-text-overlay",
+                  "type": "output"
+                }
+              ]
+            }
+          },
+          "status": {
+            "status_str": "success",
+            "completed": true,
+            "messages": [
+              [
+                "execution_start",
+                {
+                  "prompt_id": "304a4bde-af3b-4cca-839a-821cfbf74b00",
+                  "timestamp": 1782597173467
+                }
+              ],
+              [
+                "execution_cached",
+                {
+                  "nodes": [
+                    "1",
+                    "3",
+                    "4"
+                  ],
+                  "prompt_id": "304a4bde-af3b-4cca-839a-821cfbf74b00",
+                  "timestamp": 1782597173468
+                }
+              ],
+              [
+                "execution_success",
+                {
+                  "prompt_id": "304a4bde-af3b-4cca-839a-821cfbf74b00",
+                  "timestamp": 1782597180799
+                }
+              ]
+            ]
+          },
+          "meta": {
+            "9": {
+              "node_id": "9",
+              "display_node": "9",
+              "parent_node": null,
+              "real_node_id": "9"
+            }
+          }
+        }
+      }
+    },
+    "durationMs": 89
+  },
+  {
+    "url": "http://127.0.0.1:8188/view?filename=inside-right_00038_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "byteLength": 42643
+    },
+    "durationMs": 2
+  },
+  {
+    "url": "http://127.0.0.1:8188/prompt",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only. Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story. Use this panel-specific composition: Minimalist design with subtle city silhouette in lower corner, warm brown border with terracotta accent, centered clean text area Keep natural negative space for app-rendered typography in the quiet center field; do not draw words, labels, or handwriting. Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark. No central medallion, no halo, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field."
+            }
+          },
+          "3": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+              "clip": [
+                "1",
+                1
+              ],
+              "text": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering"
+            }
+          },
+          "4": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {
+              "batch_size": 1,
+              "height": 1344,
+              "width": 960
+            }
+          },
+          "5": {
+            "class_type": "KSampler",
+            "inputs": {
+              "cfg": 1.5,
+              "denoise": 1,
+              "latent_image": [
+                "4",
+                0
+              ],
+              "model": [
+                "1",
+                0
+              ],
+              "negative": [
+                "3",
+                0
+              ],
+              "positive": [
+                "2",
+                0
+              ],
+              "sampler_name": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 4185940017,
+              "steps": 2
+            }
+          },
+          "6": {
+            "class_type": "VAEDecode",
+            "inputs": {
+              "samples": [
+                "5",
+                0
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            }
+          },
+          "7": {
+            "class_type": "CustomCardTextComposer",
+            "inputs": {
+              "alignment": "center",
+              "artwork_guard_color": "#111715",
+              "artwork_guard_height": 1344,
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "box",
+              "artwork_guard_width": 960,
+              "artwork_guard_x": 0,
+              "artwork_guard_y": 0,
+              "body": "",
+              "body_box_height": 484,
+              "body_box_background_color": "",
+              "body_box_background_padding": 0,
+              "body_box_background_radius": 0,
+              "body_box_background_opacity": 0,
+              "body_box_background_style": "box",
+              "body_box_width": 748,
+              "body_box_x": 106,
+              "body_box_y": 497,
+              "body_fill_color": "#4f432a",
+              "body_font": "arial.ttf",
+              "body_font_size": 22,
+              "body_line_spacing": 6,
+              "body_stroke_color": "#fff6df",
+              "body_stroke_width": 1,
+              "body_vertical_alignment": "middle",
+              "debug_boxes": false,
+              "headline": "",
+              "headline_box_height": 242,
+              "headline_box_background_color": "",
+              "headline_box_background_padding": 0,
+              "headline_box_background_radius": 0,
+              "headline_box_background_opacity": 0,
+              "headline_box_background_style": "box",
+              "headline_box_width": 788,
+              "headline_box_x": 86,
+              "headline_box_y": 94,
+              "headline_fill_color": "#282923",
+              "headline_font": "arial.ttf",
+              "headline_font_size": 42,
+              "headline_line_spacing": 8,
+              "headline_stroke_color": "#fff6df",
+              "headline_stroke_width": 1,
+              "headline_vertical_alignment": "top",
+              "image": [
+                "6",
+                0
+              ],
+              "min_font_size": 14
+            }
+          },
+          "9": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "filename_prefix": "customcard/customcard-production-text-overlay/back",
+              "images": [
+                "7",
+                0
+              ]
+            }
+          }
+        },
+        "client_id": "customcard-local-comfyui-provider",
+        "extra_data": {
+          "customcard": {
+            "workflow_id": "customcard-production-text-overlay",
+            "panel_id": "back",
+            "seed": 4185940017,
+            "inputs": {
+              "workflow_id": "customcard-production-text-overlay",
+              "panel_id": "back",
+              "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+              "width": 960,
+              "height": 1344,
+              "steps": 2,
+              "cfg": 1.5,
+              "sampler": "euler_ancestral",
+              "scheduler": "sgm_uniform",
+              "seed": 4185940017,
+              "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only. Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story. Use this panel-specific composition: Minimalist design with subtle city silhouette in lower corner, warm brown border with terracotta accent, centered clean text area Keep natural negative space for app-rendered typography in the quiet center field; do not draw words, labels, or handwriting. Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark. No central medallion, no halo, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.",
+              "negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering",
+              "artwork_guard": {
+                "x": 0,
+                "y": 0,
+                "width": 960,
+                "height": 1344
+              },
+              "artwork_guard_color": "#111715",
+              "artwork_guard_opacity": 1,
+              "artwork_guard_radius": 0,
+              "artwork_guard_style": "box",
+              "headline_text": "",
+              "body_text": "",
+              "headline_font_size": 42,
+              "body_font_size": 22,
+              "headline_box": {
+                "x": 86,
+                "y": 94,
+                "width": 788,
+                "height": 242
+              },
+              "headline_box_background_color": "",
+              "headline_box_background_padding": 0,
+              "headline_box_background_radius": 0,
+              "headline_box_background_opacity": 0,
+              "headline_box_background_style": "box",
+              "body_box": {
+                "x": 106,
+                "y": 497,
+                "width": 748,
+                "height": 484
+              },
+              "body_box_background_color": "",
+              "body_box_background_padding": 0,
+              "body_box_background_radius": 0,
+              "body_box_background_opacity": 0,
+              "body_box_background_style": "box",
+              "text_alignment": "center",
+              "min_font_size": 14
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 86,
+      "body": {
+        "prompt_id": "79f81177-858d-4d28-b0ac-7c9eb6b27952",
+        "number": 81,
+        "node_errors": {}
+      }
+    },
+    "durationMs": 5
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/79f81177-858d-4d28-b0ac-7c9eb6b27952",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 15
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/79f81177-858d-4d28-b0ac-7c9eb6b27952",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/79f81177-858d-4d28-b0ac-7c9eb6b27952",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 16
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/79f81177-858d-4d28-b0ac-7c9eb6b27952",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 15
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/79f81177-858d-4d28-b0ac-7c9eb6b27952",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/79f81177-858d-4d28-b0ac-7c9eb6b27952",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 2,
+      "body": {}
+    },
+    "durationMs": 18
+  },
+  {
+    "url": "http://127.0.0.1:8188/history/79f81177-858d-4d28-b0ac-7c9eb6b27952",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 8586,
+      "body": {
+        "79f81177-858d-4d28-b0ac-7c9eb6b27952": {
+          "prompt": [
+            81,
+            "79f81177-858d-4d28-b0ac-7c9eb6b27952",
+            {
+              "1": {
+                "class_type": "CheckpointLoaderSimple",
+                "inputs": {
+                  "ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"
+                }
+              },
+              "2": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only. Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story. Use this panel-specific composition: Minimalist design with subtle city silhouette in lower corner, warm brown border with terracotta accent, centered clean text area Keep natural negative space for app-rendered typography in the quiet center field; do not draw words, labels, or handwriting. Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark. No central medallion, no halo, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field."
+                }
+              },
+              "3": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                  "clip": [
+                    "1",
+                    1
+                  ],
+                  "text": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering"
+                }
+              },
+              "4": {
+                "class_type": "EmptyLatentImage",
+                "inputs": {
+                  "batch_size": 1,
+                  "height": 1344,
+                  "width": 960
+                }
+              },
+              "5": {
+                "class_type": "KSampler",
+                "inputs": {
+                  "cfg": 1.5,
+                  "denoise": 1,
+                  "latent_image": [
+                    "4",
+                    0
+                  ],
+                  "model": [
+                    "1",
+                    0
+                  ],
+                  "negative": [
+                    "3",
+                    0
+                  ],
+                  "positive": [
+                    "2",
+                    0
+                  ],
+                  "sampler_name": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 4185940017,
+                  "steps": 2
+                }
+              },
+              "6": {
+                "class_type": "VAEDecode",
+                "inputs": {
+                  "samples": [
+                    "5",
+                    0
+                  ],
+                  "vae": [
+                    "1",
+                    2
+                  ]
+                }
+              },
+              "7": {
+                "class_type": "CustomCardTextComposer",
+                "inputs": {
+                  "alignment": "center",
+                  "artwork_guard_color": "#111715",
+                  "artwork_guard_height": 1344,
+                  "artwork_guard_opacity": 1,
+                  "artwork_guard_radius": 0,
+                  "artwork_guard_style": "box",
+                  "artwork_guard_width": 960,
+                  "artwork_guard_x": 0,
+                  "artwork_guard_y": 0,
+                  "body": "",
+                  "body_box_height": 484,
+                  "body_box_background_color": "",
+                  "body_box_background_padding": 0,
+                  "body_box_background_radius": 0,
+                  "body_box_background_opacity": 0,
+                  "body_box_background_style": "box",
+                  "body_box_width": 748,
+                  "body_box_x": 106,
+                  "body_box_y": 497,
+                  "body_fill_color": "#4f432a",
+                  "body_font": "arial.ttf",
+                  "body_font_size": 22,
+                  "body_line_spacing": 6,
+                  "body_stroke_color": "#fff6df",
+                  "body_stroke_width": 1,
+                  "body_vertical_alignment": "middle",
+                  "debug_boxes": false,
+                  "headline": "",
+                  "headline_box_height": 242,
+                  "headline_box_background_color": "",
+                  "headline_box_background_padding": 0,
+                  "headline_box_background_radius": 0,
+                  "headline_box_background_opacity": 0,
+                  "headline_box_background_style": "box",
+                  "headline_box_width": 788,
+                  "headline_box_x": 86,
+                  "headline_box_y": 94,
+                  "headline_fill_color": "#282923",
+                  "headline_font": "arial.ttf",
+                  "headline_font_size": 42,
+                  "headline_line_spacing": 8,
+                  "headline_stroke_color": "#fff6df",
+                  "headline_stroke_width": 1,
+                  "headline_vertical_alignment": "top",
+                  "image": [
+                    "6",
+                    0
+                  ],
+                  "min_font_size": 14
+                }
+              },
+              "9": {
+                "class_type": "SaveImage",
+                "inputs": {
+                  "filename_prefix": "customcard/customcard-production-text-overlay/back",
+                  "images": [
+                    "7",
+                    0
+                  ]
+                }
+              }
+            },
+            {
+              "customcard": {
+                "workflow_id": "customcard-production-text-overlay",
+                "panel_id": "back",
+                "seed": 4185940017,
+                "inputs": {
+                  "workflow_id": "customcard-production-text-overlay",
+                  "panel_id": "back",
+                  "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+                  "width": 960,
+                  "height": 1344,
+                  "steps": 2,
+                  "cfg": 1.5,
+                  "sampler": "euler_ancestral",
+                  "scheduler": "sgm_uniform",
+                  "seed": 4185940017,
+                  "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only. Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story. Use this panel-specific composition: Minimalist design with subtle city silhouette in lower corner, warm brown border with terracotta accent, centered clean text area Keep natural negative space for app-rendered typography in the quiet center field; do not draw words, labels, or handwriting. Artwork layer only with flat editorial stationery composition, integrated negative space, thin perimeter rules or edge ornaments only when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark. No central medallion, no halo, no ornate frame around copy, no decorative ring under typography, and no rays behind the text-safe field.",
+                  "negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, central medallion, ornate frame around copy, glyph-like marks, halo behind text, decorative ring under typography, rays behind copy, busy text-safe field, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photorealistic mockup, envelope, drop shadow, desk scene, pseudo lettering, decorative micro-lettering",
+                  "artwork_guard": {
+                    "x": 0,
+                    "y": 0,
+                    "width": 960,
+                    "height": 1344
+                  },
+                  "artwork_guard_color": "#111715",
+                  "artwork_guard_opacity": 1,
+                  "artwork_guard_radius": 0,
+                  "artwork_guard_style": "box",
+                  "headline_text": "",
+                  "body_text": "",
+                  "headline_font_size": 42,
+                  "body_font_size": 22,
+                  "headline_box": {
+                    "x": 86,
+                    "y": 94,
+                    "width": 788,
+                    "height": 242
+                  },
+                  "headline_box_background_color": "",
+                  "headline_box_background_padding": 0,
+                  "headline_box_background_radius": 0,
+                  "headline_box_background_opacity": 0,
+                  "headline_box_background_style": "box",
+                  "body_box": {
+                    "x": 106,
+                    "y": 497,
+                    "width": 748,
+                    "height": 484
+                  },
+                  "body_box_background_color": "",
+                  "body_box_background_padding": 0,
+                  "body_box_background_radius": 0,
+                  "body_box_background_opacity": 0,
+                  "body_box_background_style": "box",
+                  "text_alignment": "center",
+                  "min_font_size": 14
+                }
+              },
+              "client_id": "customcard-local-comfyui-provider",
+              "create_time": 1782597181192
+            },
+            [
+              "9"
+            ]
+          ],
+          "outputs": {
+            "9": {
+              "images": [
+                {
+                  "filename": "back_00038_.png",
+                  "subfolder": "customcard\\customcard-production-text-overlay",
+                  "type": "output"
+                }
+              ]
+            }
+          },
+          "status": {
+            "status_str": "success",
+            "completed": true,
+            "messages": [
+              [
+                "execution_start",
+                {
+                  "prompt_id": "79f81177-858d-4d28-b0ac-7c9eb6b27952",
+                  "timestamp": 1782597181193
+                }
+              ],
+              [
+                "execution_cached",
+                {
+                  "nodes": [
+                    "1",
+                    "3",
+                    "4"
+                  ],
+                  "prompt_id": "79f81177-858d-4d28-b0ac-7c9eb6b27952",
+                  "timestamp": 1782597181194
+                }
+              ],
+              [
+                "execution_success",
+                {
+                  "prompt_id": "79f81177-858d-4d28-b0ac-7c9eb6b27952",
+                  "timestamp": 1782597189735
+                }
+              ]
+            ]
+          },
+          "meta": {
+            "9": {
+              "node_id": "9",
+              "display_node": "9",
+              "parent_node": null,
+              "real_node_id": "9"
+            }
+          }
+        }
+      }
+    },
+    "durationMs": 17
+  },
+  {
+    "url": "http://127.0.0.1:8188/view?filename=back_00038_.png&subfolder=customcard%5Ccustomcard-production-text-overlay&type=output",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "byteLength": 11030
+    },
+    "durationMs": 3
+  }
+]

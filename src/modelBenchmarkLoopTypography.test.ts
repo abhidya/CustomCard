@@ -87,9 +87,16 @@ describe("model benchmark typography experiment", () => {
     expect(prompts[2].negativePrompt).toContain("ivory wave");
   });
 
-  it("plans production text runs from customer requests when a local LLM is configured", () => {
+  it("plans production text runs from customer requests with Cloudflare text and local Comfy when configured", () => {
     const runs = localProductionTextRuns({
       text: [
+        {
+          id: "text-cloudflare-baseline",
+          label: "Cloudflare Workers AI chat",
+          adapterId: "cloudflare-workers-ai-chat",
+          model: "@cf/meta/llama-3.1-8b-instruct-fast",
+          configured: true
+        },
         {
           id: "text-local-openai-compatible",
           label: "Local OpenAI-compatible chat",
@@ -117,7 +124,7 @@ describe("model benchmark typography experiment", () => {
     ]);
     expect(storyIds).toEqual(productionTextRequestFixtures.map((story) => story.id));
     expect(runs.every((run) => run.productionTextMode === "llm-generated-copy")).toBe(true);
-    expect(runs.every((run) => run.text.adapterId === "local-openai-compatible-chat")).toBe(true);
+    expect(runs.every((run) => run.text.adapterId === "cloudflare-workers-ai-chat")).toBe(true);
     expect(runs.find((run) => run.storyId === "aquarium-lover-birthday")?.story.request.personal_note).toContain(
       "freshwater aquarium"
     );
@@ -127,6 +134,114 @@ describe("model benchmark typography experiment", () => {
     expect(runs.find((run) => run.storyId === "dog-lover-thank-you")?.story.request.personal_note).not.toContain(
       "You Showed Up Big"
     );
+  });
+
+  it("falls back to local production text planner only when Cloudflare text is unavailable", () => {
+    const runs = localProductionTextRuns({
+      text: [
+        {
+          id: "text-local-openai-compatible",
+          label: "Local OpenAI-compatible chat",
+          adapterId: "local-openai-compatible-chat",
+          model: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+          configured: true
+        }
+      ],
+      image: [
+        {
+          id: "image-local-comfyui",
+          label: "Local ComfyUI",
+          adapterId: "local-comfyui-api-image",
+          model: "sd_xl_turbo_1.0_fp16.safetensors",
+          configured: true
+        }
+      ]
+    });
+
+    expect(runs).toHaveLength(3);
+    expect(runs.every((run) => run.text.adapterId === "local-openai-compatible-chat")).toBe(true);
+  });
+
+  it("prefers Cloudflare Qwen3 30B for production text when available", () => {
+    const runs = localProductionTextRuns({
+      text: [
+        {
+          id: "text-cloudflare-baseline",
+          label: "Cloudflare Workers AI chat",
+          adapterId: "cloudflare-workers-ai-chat",
+          model: "@cf/meta/llama-3.2-3b-instruct",
+          configured: true
+        },
+        {
+          id: "text-cloudflare-qwen3-30b-a3b-fp8",
+          label: "Cloudflare Qwen3 30B A3B FP8 card-copy planner",
+          adapterId: "cloudflare-workers-ai-chat",
+          model: "@cf/qwen/qwen3-30b-a3b-fp8",
+          configured: true
+        }
+      ],
+      image: [
+        {
+          id: "image-local-comfyui",
+          label: "Local ComfyUI",
+          adapterId: "local-comfyui-api-image",
+          model: "sd_xl_turbo_1.0_fp16.safetensors",
+          configured: true
+        }
+      ]
+    });
+
+    expect(runs).toHaveLength(3);
+    expect(new Set(runs.map((run) => run.text.id))).toEqual(new Set(["text-cloudflare-qwen3-30b-a3b-fp8"]));
+    expect(new Set(runs.map((run) => run.text.model))).toEqual(new Set(["@cf/qwen/qwen3-30b-a3b-fp8"]));
+  });
+
+  it("keeps production-text image traffic local while allowing Cloudflare text by default", async () => {
+    const { benchmarkNetworkGuardForRuns } = (await import("../scripts/model-benchmark-loop.mjs")) as unknown as {
+      benchmarkNetworkGuardForRuns: (input: {
+        args?: Record<string, unknown>;
+        phase?: string;
+        plannedRuns?: Array<{
+          productionTextMode?: string;
+          text?: { adapterId?: string };
+        }>;
+      }) => { localOnly: boolean; allowedNonLocalOrigins: string[] };
+    };
+    const runs = localProductionTextRuns({
+      text: [
+        {
+          id: "text-cloudflare-baseline",
+          label: "Cloudflare Workers AI chat",
+          adapterId: "cloudflare-workers-ai-chat",
+          model: "@cf/meta/llama-3.2-3b-instruct",
+          configured: true
+        }
+      ],
+      image: [
+        {
+          id: "image-local-comfyui",
+          label: "Local ComfyUI",
+          adapterId: "local-comfyui-api-image",
+          model: "sd_xl_turbo_1.0_fp16.safetensors",
+          configured: true
+        }
+      ]
+    });
+
+    expect(benchmarkNetworkGuardForRuns({ phase: "local-production-text", plannedRuns: runs })).toEqual({
+      localOnly: true,
+      allowedNonLocalOrigins: ["https://api.cloudflare.com"]
+    });
+    expect(
+      benchmarkNetworkGuardForRuns({
+        args: { "local-only": "true" },
+        phase: "local-production-text",
+        plannedRuns: runs
+      })
+    ).toEqual({
+      localOnly: true,
+      allowedNonLocalOrigins: []
+    });
   });
 
   it("writes production planner runtime budget into local-production-text dry-run artifacts", async () => {
@@ -140,7 +255,10 @@ describe("model benchmark typography experiment", () => {
       CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER: process.env.CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER,
       CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER: process.env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER,
       CUSTOMCARD_COMFYUI_URL: process.env.CUSTOMCARD_COMFYUI_URL,
-      CUSTOMCARD_COMFYUI_CHECKPOINT: process.env.CUSTOMCARD_COMFYUI_CHECKPOINT
+      CUSTOMCARD_COMFYUI_CHECKPOINT: process.env.CUSTOMCARD_COMFYUI_CHECKPOINT,
+      CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
+      CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: process.env.CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN,
+      CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN
     };
     try {
       process.env.CUSTOMCARD_LOCAL_LLM_BASE_URL = "http://127.0.0.1:5003/v1";
@@ -152,6 +270,9 @@ describe("model benchmark typography experiment", () => {
       process.env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER = "false";
       process.env.CUSTOMCARD_COMFYUI_URL = "http://127.0.0.1:8188";
       process.env.CUSTOMCARD_COMFYUI_CHECKPOINT = "sd_xl_turbo_1.0_fp16.safetensors";
+      process.env.CLOUDFLARE_ACCOUNT_ID = "disabled";
+      process.env.CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN = "disabled";
+      process.env.CLOUDFLARE_API_TOKEN = "disabled";
 
       const result = await runModelBenchmarkLoopFromArgs({
         phase: "local-production-text",
@@ -204,7 +325,10 @@ describe("model benchmark typography experiment", () => {
       CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER: process.env.CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER,
       CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER: process.env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER,
       CUSTOMCARD_COMFYUI_URL: process.env.CUSTOMCARD_COMFYUI_URL,
-      CUSTOMCARD_COMFYUI_CHECKPOINT: process.env.CUSTOMCARD_COMFYUI_CHECKPOINT
+      CUSTOMCARD_COMFYUI_CHECKPOINT: process.env.CUSTOMCARD_COMFYUI_CHECKPOINT,
+      CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
+      CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: process.env.CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN,
+      CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN
     };
     try {
       process.env.CUSTOMCARD_LOCAL_LLM_BASE_URL = "http://127.0.0.1:5001/v1";
@@ -216,6 +340,9 @@ describe("model benchmark typography experiment", () => {
       process.env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER = "false";
       process.env.CUSTOMCARD_COMFYUI_URL = "http://127.0.0.1:8188";
       process.env.CUSTOMCARD_COMFYUI_CHECKPOINT = "sd_xl_turbo_1.0_fp16.safetensors";
+      process.env.CLOUDFLARE_ACCOUNT_ID = "disabled";
+      process.env.CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN = "disabled";
+      process.env.CLOUDFLARE_API_TOKEN = "disabled";
 
       await expect(
         runModelBenchmarkLoopFromArgs({
@@ -246,7 +373,10 @@ describe("model benchmark typography experiment", () => {
       CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER: process.env.CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER,
       CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER: process.env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER,
       CUSTOMCARD_COMFYUI_URL: process.env.CUSTOMCARD_COMFYUI_URL,
-      CUSTOMCARD_COMFYUI_CHECKPOINT: process.env.CUSTOMCARD_COMFYUI_CHECKPOINT
+      CUSTOMCARD_COMFYUI_CHECKPOINT: process.env.CUSTOMCARD_COMFYUI_CHECKPOINT,
+      CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
+      CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: process.env.CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN,
+      CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN
     };
     try {
       process.env.CUSTOMCARD_LOCAL_LLM_BASE_URL = "http://127.0.0.1:5013/v1";
@@ -258,6 +388,9 @@ describe("model benchmark typography experiment", () => {
       process.env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER = "false";
       process.env.CUSTOMCARD_COMFYUI_URL = "http://127.0.0.1:8188";
       process.env.CUSTOMCARD_COMFYUI_CHECKPOINT = "sd_xl_turbo_1.0_fp16.safetensors";
+      process.env.CLOUDFLARE_ACCOUNT_ID = "disabled";
+      process.env.CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN = "disabled";
+      process.env.CLOUDFLARE_API_TOKEN = "disabled";
 
       await expect(
         runModelBenchmarkLoopFromArgs(

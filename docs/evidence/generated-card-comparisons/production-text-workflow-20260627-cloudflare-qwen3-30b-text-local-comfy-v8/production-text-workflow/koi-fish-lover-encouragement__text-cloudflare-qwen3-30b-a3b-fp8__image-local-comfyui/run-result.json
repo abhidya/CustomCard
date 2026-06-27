@@ -1,0 +1,92 @@
+{
+  "phase": "local-production-text",
+  "focus": "local-comfy-production-text-generated-copy",
+  "storyId": "koi-fish-lover-encouragement",
+  "productionTextMode": "llm-generated-copy",
+  "textCandidateId": "text-cloudflare-qwen3-30b-a3b-fp8",
+  "textAdapterId": "cloudflare-workers-ai-chat",
+  "textModel": "@cf/qwen/qwen3-30b-a3b-fp8",
+  "imageCandidateId": "image-local-comfyui",
+  "imageAdapterId": "local-comfyui-api-image",
+  "imageModel": "sd_xl_turbo_1.0_fp16.safetensors",
+  "typographyModeId": "customcard-production-text-composer",
+  "typographyModeLabel": "CustomCard production text composer",
+  "typographyStrategy": "llm-planned-copy-comfy-deterministic-text",
+  "runDir": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\koi-fish-lover-encouragement__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui",
+  "startedAt": "2026-06-27T21:51:05.188Z",
+  "finishedAt": "2026-06-27T21:52:15.724Z",
+  "statusCode": 200,
+  "generatedBy": "ai-text-and-image",
+  "cardCopyModel": "@cf/qwen/qwen3-30b-a3b-fp8",
+  "providerFailures": {},
+  "panelCount": 4,
+  "panelFiles": [
+    {
+      "panelId": "front",
+      "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\koi-fish-lover-encouragement__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui\\provider-front.png",
+      "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\koi-fish-lover-encouragement__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui\\preview-front.png",
+      "width": 960,
+      "height": 1344,
+      "prompt": "Full-bleed flat 2D practical-care sympathy illustration for the front of a premium vertical 5x7 print panel; deep moss field, muted ivory title-safe open area, and one lower abstract paper-cut care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the main message field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. Keep the artwork sparse, abstract, camera-free, and free of literal document props; rely on the negative prompt for failure modes. Serene koi encouragement stationery: muted pond green, warm ivory, one slow koi arc, quiet water ripples, generous negative space, restrained hopeful mood, no birthday language or dense ornamental fish pattern. Panel cue: Koi fish center-left with radiating ripples, soft blue-green palette, text-safe area at lower third Required request context to reflect visually, without rendering these words: encouragement. Palette: warm ivory, muted gray-green, deep moss, soft taupe, charcoal ink only; quiet practical sympathy, no religious symbols unless requested. Flat editorial stationery artwork with clean print surfaces and integrated negative space. No readable text. No words, letters, handwriting,",
+      "renderedByComfyTextComposer": true,
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "inside-left",
+      "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\koi-fish-lover-encouragement__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui\\provider-inside-left.png",
+      "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\koi-fish-lover-encouragement__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui\\preview-inside-left.png",
+      "width": 960,
+      "height": 1344,
+      "prompt": "Full-bleed flat 2D practical-care sympathy illustration for a vertical 5x7 inside-left panel; warm ivory open field, generous center text area, and one small lower-edge care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. Keep the artwork sparse, abstract, camera-free, and free of literal document props; rely on the negative prompt for failure modes. Serene koi encouragement stationery: muted pond green, warm ivory, one slow koi arc, quiet water ripples, generous negative space, restrained hopeful mood, no birthday language or dense ornamental fish pattern. Panel cue: Koi near top-left corner with spreading ripples, light blue-green palette, text-safe center area Palette: warm ivory, muted gray-green, deep moss, soft taupe, charcoal ink only; quiet practical sympathy, no religious symbols unless requested. Flat editorial stationery artwork with clean print surfaces and integrated negative space. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No",
+      "renderedByComfyTextComposer": true,
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "inside-right",
+      "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\koi-fish-lover-encouragement__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui\\provider-inside-right.png",
+      "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\koi-fish-lover-encouragement__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui\\preview-inside-right.png",
+      "width": 960,
+      "height": 1344,
+      "prompt": "Full-bleed flat 2D practical-care sympathy illustration for a vertical 5x7 inside-right panel; matching warm ivory open field, generous center text area, and one mirrored lower-edge care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. Keep the artwork sparse, abstract, camera-free, and free of literal document props; rely on the negative prompt for failure modes. Serene koi encouragement stationery: muted pond green, warm ivory, one slow koi arc, quiet water ripples, generous negative space, restrained hopeful mood, no birthday language or dense ornamental fish pattern. Panel cue: Lone koi in lower third, calm water surface, warm blue-green palette, text-safe area above Palette: warm ivory, muted gray-green, deep moss, soft taupe, charcoal ink only; quiet practical sympathy, no religious symbols unless requested. Flat editorial stationery artwork with clean print surfaces and integrated negative space. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No",
+      "renderedByComfyTextComposer": true,
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "back",
+      "path": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\koi-fish-lover-encouragement__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui\\provider-back.png",
+      "previewPath": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\koi-fish-lover-encouragement__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui\\preview-back.png",
+      "width": 960,
+      "height": 1344,
+      "prompt": "Full-bleed flat 2D practical-care sympathy illustration for a minimal vertical 5x7 back panel; deep moss field, readable upper/center text-safe area, and one small lower care-vignette echo. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. Keep the artwork sparse, abstract, camera-free, and free of literal document props; rely on the negative prompt for failure modes. Serene koi encouragement stationery: muted pond green, warm ivory, one slow koi arc, quiet water ripples, generous negative space, restrained hopeful mood, no birthday language or dense ornamental fish pattern. Panel cue: Faint ripples along bottom edge, soft blue-green palette, text-safe area at top Palette: warm ivory, muted gray-green, deep moss, soft taupe, charcoal ink only; quiet practical sympathy, no religious symbols unless requested. Flat editorial stationery artwork with clean print surfaces and integrated negative space. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, fake text, glyph-like marks, or pseudo text. No people. No hands. No logos. No watermark. No",
+      "renderedByComfyTextComposer": true,
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    }
+  ],
+  "contactSheet": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\koi-fish-lover-encouragement__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui\\contact-sheet.png",
+  "effectiveProviderRequests": "D:\\manny\\Documents\\CustomCard\\docs\\evidence\\generated-card-comparisons\\production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8\\production-text-workflow\\koi-fish-lover-encouragement__text-cloudflare-qwen3-30b-a3b-fp8__image-local-comfyui\\effective-provider-requests.json",
+  "providerCallCount": 39,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": true,
+      "noProviderFailure": true,
+      "mustIncludeCovered": true,
+      "mustAvoidClean": true,
+      "providerCalls": 39,
+      "productionTextGeneratedCopy": true,
+      "finalImagesRenderedByComfy": true,
+      "benchmarkPreviewOverlayBypassed": true,
+      "metadataIncludesExactGeneratedCopy": true,
+      "metadataIncludesSafeBoxes": true,
+      "metadataIncludesArtworkGuards": true,
+      "imagePromptsSuppressExactCopy": true
+    },
+    "missingMustInclude": [],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

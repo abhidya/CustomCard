@@ -598,6 +598,13 @@ const textCandidates = [
     requiredEnv: ["CLOUDFLARE_ACCOUNT_ID", ["CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", "CLOUDFLARE_API_TOKEN"]]
   },
   {
+    id: "text-cloudflare-qwen3-30b-a3b-fp8",
+    label: "Cloudflare Qwen3 30B A3B FP8 card-copy planner",
+    adapterId: "cloudflare-workers-ai-chat",
+    model: "@cf/qwen/qwen3-30b-a3b-fp8",
+    requiredEnv: ["CLOUDFLARE_ACCOUNT_ID", ["CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", "CLOUDFLARE_API_TOKEN"]]
+  },
+  {
     id: "text-hf-qwen3-235b-a22b",
     label: "Hugging Face Qwen3 235B A22B Instruct 2507",
     adapterId: "huggingface-chat",
@@ -770,13 +777,6 @@ export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false, gp
   const phaseDirName = args["phase-dir"] || phase;
   const live = args.live === true || args.live === "true" || String(process.env.CUSTOMCARD_BENCHMARK_LIVE || "").toLowerCase() === "enabled";
   const env = loadBenchmarkEnv();
-  const localOnly =
-    args["local-only"] === true ||
-    args["local-only"] === "true" ||
-    phase === "local" ||
-    phase === "local-only" ||
-    phase === "local-typography" ||
-    phase === "local-production-text";
   mkdirSync(outputDir, { recursive: true });
 
   const candidates = buildCandidateCatalog(env);
@@ -801,11 +801,12 @@ export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false, gp
   }
 
   const providerHttp = [];
-  const fetchImpl = createLoggingFetch(providerHttp, env, { localOnly });
-  const service = createAiCardGenerationService({ env, fetchImpl });
   const phaseDir = resolve(outputDir, phaseDirName);
   mkdirSync(phaseDir, { recursive: true });
   const plannedRuns = applyRunFilters(plannedRunsForPhase(phase, candidates), args);
+  const networkGuard = benchmarkNetworkGuardForRuns({ args, phase, plannedRuns });
+  const fetchImpl = createLoggingFetch(providerHttp, env, networkGuard);
+  const service = createAiCardGenerationService({ env, fetchImpl });
   assertProductionTextPlannerRuntime({ phase, plannedRuns, env });
   const productionTextPlannerGpuResidency = assertProductionTextPlannerGpuResidency({
     phase,
@@ -818,7 +819,8 @@ export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false, gp
     phaseDir: phaseDirName,
     createdAtIso: new Date().toISOString(),
     liveProviderCallsEnabled: true,
-    localOnlyNetworkGuard: localOnly,
+    localOnlyNetworkGuard: networkGuard.localOnly,
+    allowedNonLocalOrigins: networkGuard.allowedNonLocalOrigins,
     outputDir: relativePath(outputDir),
     envRouting: {
       aiEnvSources: [".env.local", "infra/env/.env"].filter((filePath) => existsSync(resolve(repoRoot, filePath))),
@@ -949,7 +951,7 @@ function productionTextPlannerRuntimeSummary(env) {
 
 function assertProductionTextPlannerRuntime({ phase, plannedRuns, env }) {
   if (phase !== "local-production-text") return;
-  if (!plannedRuns.some((run) => run.productionTextMode === "llm-generated-copy")) return;
+  if (!plannedRuns.some((run) => run.productionTextMode === "llm-generated-copy" && run.text?.adapterId === "local-openai-compatible-chat")) return;
   const runtime = productionTextPlannerRuntimeSummary(env);
   if (runtime.productionSuitable || (runtime.allowSmallPlanner && runtime.runAllowed)) return;
   const detail = runtime.blockers.length
@@ -962,7 +964,7 @@ function assertProductionTextPlannerRuntime({ phase, plannedRuns, env }) {
 
 function assertProductionTextPlannerGpuResidency({ phase, plannedRuns, env, gpuResidencyProbe }) {
   if (phase !== "local-production-text") return undefined;
-  if (!plannedRuns.some((run) => run.productionTextMode === "llm-generated-copy")) return undefined;
+  if (!plannedRuns.some((run) => run.productionTextMode === "llm-generated-copy" && run.text?.adapterId === "local-openai-compatible-chat")) return undefined;
   const baseUrl = firstUsableEnv(env, ["CUSTOMCARD_LOCAL_LLM_BASE_URL", "LMSTUDIO_BASE_URL", "KOBOLDCPP_BASE_URL"]);
   if (!baseUrl) return undefined;
   const localGpuResidency = inspectLocalKoboldGpuResidency(baseUrl, { probe: gpuResidencyProbe });
@@ -988,6 +990,29 @@ function plannedRunsForPhase(phase, candidates) {
   if (phase === "pipeline-quality" || phase === "quality") return pipelineQualityRuns(candidates);
   if (phase === "all") return [...smokeRuns(candidates), ...fullRuns(candidates)];
   throw new Error(`Unknown benchmark phase: ${phase}`);
+}
+
+export function benchmarkNetworkGuardForRuns({ args = {}, phase, plannedRuns = [] } = {}) {
+  const explicitLocalOnly = args["local-only"] === true || args["local-only"] === "true";
+  const localOnly =
+    explicitLocalOnly ||
+    phase === "local" ||
+    phase === "local-only" ||
+    phase === "local-typography" ||
+    phase === "local-production-text";
+  const allowsCloudflareText =
+    !explicitLocalOnly &&
+    phase === "local-production-text" &&
+    plannedRuns.some(
+      (run) =>
+        run.productionTextMode === "llm-generated-copy" &&
+        run.text?.adapterId === "cloudflare-workers-ai-chat"
+    );
+
+  return {
+    localOnly,
+    allowedNonLocalOrigins: allowsCloudflareText ? ["https://api.cloudflare.com"] : []
+  };
 }
 
 function localOnlyRuns(candidates) {
@@ -1130,19 +1155,26 @@ export function localTypographyRuns(candidates) {
 export function localProductionTextRuns(candidates) {
   const image = firstConfigured(candidates.image, "image-local-comfyui");
   if (!image || image.id !== "image-local-comfyui") return [];
-  const localText = firstConfigured(candidates.text || [], "text-local-openai-compatible");
+  const plannedText =
+    firstConfigured(candidates.text || [], "text-cloudflare-qwen3-30b-a3b-fp8") ||
+    firstConfigured(candidates.text || [], "text-cloudflare-baseline") ||
+    firstConfigured(candidates.text || [], "text-local-openai-compatible");
   const typographyMode = {
     id: "customcard-production-text-composer",
     label: "CustomCard production text composer",
     strategy: "llm-planned-copy-comfy-deterministic-text"
   };
-  if (localText?.id === "text-local-openai-compatible") {
+  if (
+    plannedText?.id === "text-cloudflare-qwen3-30b-a3b-fp8" ||
+    plannedText?.id === "text-cloudflare-baseline" ||
+    plannedText?.id === "text-local-openai-compatible"
+  ) {
     return productionTextRequestFixtures.map((story) => ({
       phase: "local-production-text",
       focus: "local-comfy-production-text-generated-copy",
       storyId: story.id,
       story,
-      text: localText,
+      text: plannedText,
       image,
       typographyMode,
       productionTextMode: "llm-generated-copy"
@@ -2736,7 +2768,7 @@ function autoGrade({ run, payload, panelFiles, providerCalls }) {
   const allText = panels.map((panel) => `${panel.headline || ""} ${panel.body || ""}`).join("\n");
   const allPrompts = panelFiles.map((panel) => panel.prompt || "").join("\n");
   const missingMustInclude = run.story.must_include.filter((term) => !textContains(allText, term) && !textContains(allPrompts, term));
-  const avoidedFailures = run.story.must_avoid.filter((term) => textContains(allText, term) || textContains(allPrompts, term));
+  const avoidedFailures = run.story.must_avoid.filter((term) => textContains(allText, term) || promptContainsUnnegatedTerm(allPrompts, term));
   const productionTextChecks = runUsesFinalComfyTextOutput(run)
     ? productionTextGeneratedAutoChecks({ panels, panelFiles, providerCalls })
     : {};
@@ -2759,7 +2791,7 @@ function autoGrade({ run, payload, panelFiles, providerCalls }) {
 
 function productionTextGeneratedAutoChecks({ panels, panelFiles, providerCalls }) {
   const metadataInputs = productionTextMetadataInputs(providerCalls);
-  const copyPanels = panels.filter((panel) => Boolean(panel?.id && (panel.headline || panel.body)));
+  const copyPanels = panels.filter((panel) => panel?.id !== "back" && Boolean(panel?.id && (panel.headline || panel.body)));
   const promptText = providerCalls
     .filter((call) => String(call.url || "").includes("/prompt"))
     .map((call) => providerRequestPrompt(providerCallBodyObject(call)) || "")
@@ -2800,6 +2832,24 @@ function productionTextGeneratedAutoChecks({ panels, panelFiles, providerCalls }
       ),
     imagePromptsSuppressExactCopy
   };
+}
+
+function promptContainsUnnegatedTerm(prompt, term) {
+  const needle = String(term || "").trim();
+  if (!needle) return false;
+  const regex = new RegExp(escapeRegExp(needle), "gi");
+  let match;
+  while ((match = regex.exec(String(prompt || "")))) {
+    const prefix = String(prompt || "").slice(Math.max(0, match.index - 64), match.index);
+    if (!/\b(?:no|avoid|avoids|without|exclude|excludes|never|not|negative prompt(?:s)?(?: includes?)?)\b[\w\s,;:-]{0,64}$/i.test(prefix)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function productionTextMetadataInputs(providerCalls) {
@@ -3180,7 +3230,8 @@ function loadBenchmarkEnv() {
   return target;
 }
 
-function createLoggingFetch(logs, env, { localOnly = false } = {}) {
+function createLoggingFetch(logs, env, { localOnly = false, allowedNonLocalOrigins = [] } = {}) {
+  const allowedOrigins = new Set(allowedNonLocalOrigins.map((origin) => String(origin || "").toLowerCase().replace(/\/+$/, "")));
   const loggingFetch = async function loggingFetch(url, options = {}) {
     return fetchAndLogProviderRequest(url, options);
   };
@@ -3189,7 +3240,7 @@ function createLoggingFetch(logs, env, { localOnly = false } = {}) {
   return loggingFetch;
 
   async function fetchAndLogProviderRequest(url, options = {}, { localProvider = false, timeoutLabel, timeoutMs } = {}) {
-    if (localOnly) assertLocalBenchmarkUrl(url);
+    if (localOnly) assertLocalBenchmarkUrl(url, { allowedNonLocalOrigins: allowedOrigins });
     const started = Date.now();
     try {
       const response = localProvider
@@ -3233,7 +3284,7 @@ function createLoggingFetch(logs, env, { localOnly = false } = {}) {
   }
 }
 
-function assertLocalBenchmarkUrl(value) {
+function assertLocalBenchmarkUrl(value, { allowedNonLocalOrigins = new Set() } = {}) {
   let parsed;
   try {
     parsed = new URL(String(value));
@@ -3242,9 +3293,9 @@ function assertLocalBenchmarkUrl(value) {
   }
   const host = parsed.hostname.toLowerCase();
   const allowedHosts = new Set(["localhost", "127.0.0.1", "::1", "0.0.0.0"]);
-  if (parsed.protocol !== "http:" || !allowedHosts.has(host)) {
-    throw new Error(`Local-only benchmark blocked non-local provider URL: ${parsed.origin}`);
-  }
+  if (parsed.protocol === "http:" && allowedHosts.has(host)) return;
+  if (allowedNonLocalOrigins.has(parsed.origin.toLowerCase())) return;
+  throw new Error(`Local-only benchmark blocked non-local provider URL: ${parsed.origin}`);
 }
 
 async function postJson(fetchImpl, url, { headers = {}, body }) {
