@@ -258,8 +258,8 @@ export function buildCardCopyPrompt(input) {
         "Coordinate palette, border style, motifs, and spacing across all four image_prompt values.",
         "For B2B CTA cards, reserve a clean app-overlay area for any QR code or account-manager CTA; do not ask the image model to draw QR codes, labels, or interface elements.",
         "For cards requesting handwriting space, reserve an open note area but do not ask the image model to create handwriting, signatures, script, or fake personal notes.",
-        "For sympathy image_prompt values, avoid generic blank-message templates entirely: no framed blank page, no ruled sheet, no card-within-card, and no physical mockup.",
-        "For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, no people/no hands, no physical mockup, and no logos/no watermark/no readable text."
+        "For sympathy image_prompt values, describe sparse flat support artwork with an integrated quiet text-safe field; keep blank-message template, ruled sheet, card-within-card, and physical-card-display failure terms only in image_negative_prompt.",
+        "For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, and clean text-safe space; keep avoid/failure terms for people, hands, display frames, logos, watermarks, and readable text in image_negative_prompt rather than image_prompt."
       ],
       safety_requirements: [
         "Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.",

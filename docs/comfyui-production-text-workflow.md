@@ -96,7 +96,8 @@ quality.
     KoboldCPP planner with 8k context and GPU offload by default
     (`-GpuId 0 -GpuLayers 999`). CPU-only KoboldCPP runs and `--gpulayers 0`
     are invalid for promotion evidence; `tools/run-production-text-benchmark.ps1`
-    refuses a local KoboldCPP planner when it can see those CPU-only flags.
+    refuses a local KoboldCPP planner when it can see those CPU-only flags or
+    when the matching KoboldCPP PID is not listed by `nvidia-smi`.
   - Aggregate:
     `docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-rankings.md`
 - Soft safe-field proof:

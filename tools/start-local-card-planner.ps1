@@ -49,6 +49,32 @@ function Test-KoboldPlannerUsesGpu {
   return $UsesGpuBackend -and $ExplicitGpuLayers -and -not $CpuOnly -and -not $ZeroGpuLayers
 }
 
+function Get-NvidiaSmiProcessIds {
+  $NvidiaSmi = Get-Command nvidia-smi -ErrorAction SilentlyContinue
+  if ($null -eq $NvidiaSmi) {
+    throw "Cannot prove local card planner GPU residency because nvidia-smi was not found on PATH."
+  }
+
+  $ProcessIds = @()
+  $QueryOutput = @(& $NvidiaSmi.Source --query-compute-apps=pid --format=csv,noheader,nounits 2>$null)
+  foreach ($Line in $QueryOutput) {
+    if ([string]$Line -match "^\s*(\d+)\s*$") {
+      $ProcessIds += [int]$Matches[1]
+    }
+  }
+  if ($ProcessIds.Count -gt 0) {
+    return @($ProcessIds | Select-Object -Unique)
+  }
+
+  $TableOutput = @(& $NvidiaSmi.Source 2>$null)
+  foreach ($Line in $TableOutput) {
+    if ([string]$Line -match "\|\s+\d+\s+N/A\s+N/A\s+(\d+)\s+(?:C|G|C\+G)\s+") {
+      $ProcessIds += [int]$Matches[1]
+    }
+  }
+  return @($ProcessIds | Select-Object -Unique)
+}
+
 function Normalize-ModelId {
   param([string]$Value)
   $Text = [System.IO.Path]::GetFileName($Value).Trim().ToLowerInvariant()
@@ -85,9 +111,21 @@ if ($null -ne $ModelsResponse) {
     $ExistingCommand = ($ExistingPlannerProcesses | Select-Object -First 1).CommandLine
     throw "Local card planner is already reachable at $BaseUrl, but the KoboldCPP process is not GPU-backed. Stop it and rerun this script. CommandLine: $ExistingCommand"
   }
+  $GpuResidentPlanner = @()
+  if ($GpuBackedPlanner.Count -gt 0 -and -not $AllowCpuAi) {
+    $NvidiaProcessIds = Get-NvidiaSmiProcessIds
+    $GpuResidentPlanner = @($GpuBackedPlanner | Where-Object {
+      $NvidiaProcessIds -contains [int]$_.ProcessId
+    })
+    if ($GpuResidentPlanner.Count -eq 0) {
+      $PlannerPids = ($GpuBackedPlanner | ForEach-Object { [string]$_.ProcessId }) -join ", "
+      throw "Local card planner is already reachable at $BaseUrl with GPU flags, but no matching PID is listed by nvidia-smi. Candidate PID(s): $PlannerPids"
+    }
+  }
   Write-Host "Local card planner already running at $BaseUrl"
-  if ($GpuBackedPlanner.Count -gt 0) {
-    Write-Host "GPU planner check: existing KoboldCPP process uses GPU offload."
+  if ($GpuResidentPlanner.Count -gt 0) {
+    $GpuPid = ($GpuResidentPlanner | Select-Object -First 1).ProcessId
+    Write-Host "GPU planner check: existing KoboldCPP PID $GpuPid uses GPU offload and is listed by nvidia-smi."
   }
   Write-Host "Set CUSTOMCARD_LOCAL_LLM_BASE_URL=$BaseUrl"
   Write-Host "Set CUSTOMCARD_LOCAL_LLM_MODEL=koboldcpp/$(Split-Path -Leaf $ModelPath)"
@@ -140,9 +178,28 @@ do {
     if ($StartedPlannerProcesses.Count -eq 0) {
       throw "Local card planner responded at $ModelsUrl but no matching KoboldCPP process was found. Logs: $StdoutLog ; $StderrLog"
     }
+    $StartedGpuBackedPlanner = @($StartedPlannerProcesses | Where-Object {
+      Test-KoboldPlannerUsesGpu $_.CommandLine
+    })
+    if ($StartedGpuBackedPlanner.Count -eq 0 -and -not ($AllowCpuAi -and $GpuLayers -eq 0)) {
+      $ExistingCommand = ($StartedPlannerProcesses | Select-Object -First 1).CommandLine
+      throw "Local card planner responded at $ModelsUrl, but the KoboldCPP process is not GPU-backed. Logs: $StdoutLog ; $StderrLog ; CommandLine: $ExistingCommand"
+    }
+    $StartedGpuResidentPlanner = @()
+    if ($StartedGpuBackedPlanner.Count -gt 0 -and -not ($AllowCpuAi -and $GpuLayers -eq 0)) {
+      $NvidiaProcessIds = Get-NvidiaSmiProcessIds
+      $StartedGpuResidentPlanner = @($StartedGpuBackedPlanner | Where-Object {
+        $NvidiaProcessIds -contains [int]$_.ProcessId
+      })
+      if ($StartedGpuResidentPlanner.Count -eq 0) {
+        $PlannerPids = ($StartedGpuBackedPlanner | ForEach-Object { [string]$_.ProcessId }) -join ", "
+        throw "Local card planner responded at $ModelsUrl with GPU flags, but no matching PID is listed by nvidia-smi. Candidate PID(s): $PlannerPids ; Logs: $StdoutLog ; $StderrLog"
+      }
+    }
     Write-Host "Local card planner started at $BaseUrl"
     if (-not ($AllowCpuAi -and $GpuLayers -eq 0)) {
-      Write-Host "GPU planner: CUDA device $GpuId, gpulayers $GpuLayers"
+      $GpuPid = ($StartedGpuResidentPlanner | Select-Object -First 1).ProcessId
+      Write-Host "GPU planner: CUDA device $GpuId, gpulayers $GpuLayers, PID $GpuPid listed by nvidia-smi"
     }
     Write-Host "Set CUSTOMCARD_LOCAL_LLM_BASE_URL=$BaseUrl"
     Write-Host "Set CUSTOMCARD_LOCAL_LLM_MODEL=koboldcpp/$(Split-Path -Leaf $ModelPath)"

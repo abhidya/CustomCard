@@ -1172,7 +1172,7 @@ function buildCloudflareImagePrompt({ panelId, prompt }) {
   if (!isQuietCarePrompt(prompt)) return prompt;
   const role = panelId === "front" ? "front cover" : panelId === "back" ? "back cover" : `${panelId} interior`;
   const shared =
-    "Premium flat 2D vertical 5x7 greeting-card panel artwork, print-ready editorial paper-cut illustration, vector-poster flatness, no camera, no physical paper mockup, no tabletop scene, no open book, no page seam, no real room, no floor, no wall, no people, no hands, no faces, no readable text, no letters, no tiny glyphs, no labels, no logos, no watermark.";
+    "Premium flat 2D vertical 5x7 greeting-card panel artwork layer, print-ready editorial paper-cut illustration, vector-poster flatness, camera-free full-bleed composition, clean text-safe negative space, simple abstract setting, refined stationery finish.";
   if (panelId === "front") {
     return [
       shared,
@@ -1562,7 +1562,7 @@ function buildDeepAiQuietCarePrompt({ panelId }) {
   const role = panelId === "front" ? "front cover" : panelId === "back" ? "back cover" : "interior panel";
   const shared = [
     `Portrait 5x7 ${role} for a premium sympathy greeting card.`,
-    "Flat 2D editorial paper-cut and soft gouache illustration, not a photo, not a mockup, not a book, not a tabletop scene.",
+    "Flat 2D editorial paper-cut and soft gouache illustration layer with a camera-free full-bleed print composition.",
     "Palette only: deep moss, warm ivory, muted gray-green, soft taupe, charcoal ink.",
     "No bright yellow, no neon green, no sun, no sunset, no landscape, no hills, no grass texture, no flowers.",
     "No phone, no device, no blank note card, no envelope, no open book, no page seam, no table, no readable text, no letters, no people."
@@ -1865,13 +1865,13 @@ function buildPanelImagePrompt(input, panelId, panel) {
 
   return [
     panelInstruction,
-    "Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup.",
+    "Safety constraints live in the negative prompt; keep this image prompt affirmative, visual, flat, camera-free, and artwork-layer only.",
     visualBrief,
     `Use this panel-specific composition: ${visualCue}`,
     `Keep natural negative space for app-rendered typography in the ${textSafeCue}; do not draw words, labels, or handwriting.`,
     isSympathy
-      ? "Artwork layer only, not a photographed object. Avoid blank-message templates, ruled sheets, closed frames, card-within-card layouts, mockup frames, tables, envelopes, labels, signs, blank tags, text boxes, and shadowed sheets. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark."
-      : "Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark."
+      ? "Artwork layer only with a camera-free flat print composition. Use sparse integrated support artwork, open message fields, premium full-bleed 2D artwork, minimal clutter, disciplined negative space, restrained hierarchy, and generous safe margins."
+      : "Artwork layer only with flat print composition, integrated negative space, decorative print borders when useful, premium full-bleed 2D artwork, minimal clutter, disciplined hierarchy, restrained patterning, and generous safe margins."
   ].join(" ");
 }
 
@@ -1882,7 +1882,7 @@ function buildSympathyImagePrompt({ panelInstruction, visualBrief, visualCue, te
     `Text contract: keep the ${textSafeCue} empty, plain, low-contrast, and free of objects; put all artwork below or outside that field.`,
     "Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart.",
     "No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template.",
-    "No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene.",
+    "Keep the artwork sparse, abstract, camera-free, and free of literal document props; rely on the negative prompt for failure modes.",
     visualBrief,
     `Panel cue: ${visualCue}`,
     "Palette: warm ivory, muted gray-green, deep moss, soft taupe, charcoal ink only; quiet practical sympathy, no religious symbols unless requested."
@@ -1931,8 +1931,8 @@ function normalizeImagePrompt(prompt, panelId, input, panel) {
         : "Use a light ivory or cream low-contrast note-sheet field for the interior unless the user explicitly requested a dark interior."
     );
   }
-  if (!/\bnot (?:a )?(?:physical|photographed|mockup|photo)\b/i.test(base)) {
-    guardrails.push("Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.");
+  if (!/\b(?:camera-free|flat artwork layer|artwork layer only|not (?:a )?(?:physical|photographed|photo))\b/i.test(base)) {
+    guardrails.push("Camera-free flat artwork layer, not a physical paper card, not a tabletop scene, not a product photograph.");
   }
   return truncate([base, ...guardrails].join(" "), 1800);
 }

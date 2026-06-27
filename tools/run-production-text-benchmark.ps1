@@ -170,6 +170,32 @@ function Test-KoboldPlannerUsesGpu {
   return $UsesGpuBackend -and $ExplicitGpuLayers -and -not $CpuOnly -and -not $ZeroGpuLayers
 }
 
+function Get-NvidiaSmiProcessIds {
+  $NvidiaSmi = Get-Command nvidia-smi -ErrorAction SilentlyContinue
+  if ($null -eq $NvidiaSmi) {
+    throw "Cannot prove local KoboldCPP GPU residency because nvidia-smi was not found on PATH."
+  }
+
+  $ProcessIds = @()
+  $QueryOutput = @(& $NvidiaSmi.Source --query-compute-apps=pid --format=csv,noheader,nounits 2>$null)
+  foreach ($Line in $QueryOutput) {
+    if ([string]$Line -match "^\s*(\d+)\s*$") {
+      $ProcessIds += [int]$Matches[1]
+    }
+  }
+  if ($ProcessIds.Count -gt 0) {
+    return @($ProcessIds | Select-Object -Unique)
+  }
+
+  $TableOutput = @(& $NvidiaSmi.Source 2>$null)
+  foreach ($Line in $TableOutput) {
+    if ([string]$Line -match "\|\s+\d+\s+N/A\s+N/A\s+(\d+)\s+(?:C|G|C\+G)\s+") {
+      $ProcessIds += [int]$Matches[1]
+    }
+  }
+  return @($ProcessIds | Select-Object -Unique)
+}
+
 function Assert-LocalKoboldPlannerUsesGpu {
   param([string]$BaseUrl)
   $Uri = Get-EndpointUri $BaseUrl
@@ -191,7 +217,16 @@ function Assert-LocalKoboldPlannerUsesGpu {
     $ExistingCommand = ($PlannerProcesses | Select-Object -First 1).CommandLine
     throw "Refusing to run production-text benchmark against CPU-backed local KoboldCPP on $BaseUrl. Stop that process and restart with -GpuId/-GpuLayers. CommandLine: $ExistingCommand"
   }
-  Write-Host "Local Kobold GPU check: port $Port uses GPU offload."
+  $NvidiaProcessIds = Get-NvidiaSmiProcessIds
+  $GpuResidentPlanner = @($GpuBackedPlanner | Where-Object {
+    $NvidiaProcessIds -contains [int]$_.ProcessId
+  })
+  if ($GpuResidentPlanner.Count -eq 0) {
+    $PlannerPids = ($GpuBackedPlanner | ForEach-Object { [string]$_.ProcessId }) -join ", "
+    throw "Refusing to run production-text benchmark because local KoboldCPP on $BaseUrl has GPU flags but no matching PID is listed by nvidia-smi. Candidate PID(s): $PlannerPids"
+  }
+  $GpuPid = ($GpuResidentPlanner | Select-Object -First 1).ProcessId
+  Write-Host "Local Kobold GPU check: port $Port PID $GpuPid uses GPU offload and is listed by nvidia-smi."
 }
 
 $ResolvedLocalLlmBaseUrl = Get-FirstUsableEnvValue @(
