@@ -53,4 +53,4 @@ export function resolveAiRouteActivations(
   input?: AiRouteActivationContext | AiRouteActivationContextInput
 ): AiRouteActivation[];
 export function mergeAiFlowAdminConfigs(...groups: unknown[]): AiFlowAdminConfig[];
-export function serverScopedAiFlowConfig(env?: Record<string, string | undefined>): Partial<AiFlowAdminConfig>[];
+export function serverScopedAiFlowConfig(env?: Record<string, string | undefined>): AiFlowAdminConfig[];

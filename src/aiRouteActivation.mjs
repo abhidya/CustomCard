@@ -18,11 +18,11 @@ export function createAiRouteActivationContext({
   loadedAiFlowAdminConfig = []
 } = {}) {
   const mergedAiFlowAdminConfig = mergeAiFlowAdminConfigs(
-    serviceAiFlowAdminConfig,
+    normalizeOptionalAiFlowAdminConfigs(serviceAiFlowAdminConfig, env),
     serverScopedAiFlowConfig(env),
-    extractLoadedAiFlowAdminConfigs(loadedAiFlowAdminConfig),
-    requestContext?.aiFlowAdminConfig,
-    trustedRequestScopedAiFlowConfig(body, requestContext)
+    normalizeOptionalAiFlowAdminConfigs(extractLoadedAiFlowAdminConfigs(loadedAiFlowAdminConfig), env),
+    normalizeOptionalAiFlowAdminConfigs(requestContext?.aiFlowAdminConfig, env),
+    trustedRequestScopedAiFlowConfig(body, env, requestContext)
   );
 
   return {
@@ -74,10 +74,9 @@ export function resolveAiRouteActivations(input = {}) {
 export function mergeAiFlowAdminConfigs(...groups) {
   const byFlowId = new Map();
   for (const group of groups) {
-    for (const config of sparseAiFlowAdminConfigs(group)) {
+    for (const config of normalizedAiFlowAdminConfigs(group)) {
       if (!config?.flowId) continue;
-      const merged = byFlowId.get(config.flowId) ?? { flowId: config.flowId };
-      byFlowId.set(config.flowId, mergeSparseFlowConfig(merged, config));
+      byFlowId.set(config.flowId, config);
     }
   }
   if (byFlowId.size === 0) return [];
@@ -92,7 +91,7 @@ export function serverScopedAiFlowConfig(env = process.env) {
   let parsedConfigs = [];
   if (raw) {
     try {
-      parsedConfigs = extractLoadedAiFlowAdminConfigs(JSON.parse(String(raw)));
+      parsedConfigs = normalizeOptionalAiFlowAdminConfigs(extractLoadedAiFlowAdminConfigs(JSON.parse(String(raw))), env);
     } catch {
       parsedConfigs = [];
     }
@@ -128,24 +127,19 @@ function extractLoadedAiFlowAdminConfigs(input) {
   );
 }
 
-function sparseAiFlowAdminConfigs(input) {
+function normalizedAiFlowAdminConfigs(input) {
   return Array.isArray(input)
     ? input.filter((config) => config && typeof config === "object" && typeof config.flowId === "string")
     : [];
 }
 
-function mergeSparseFlowConfig(base, patch) {
-  const merged = { ...base };
-  for (const [key, value] of Object.entries(patch)) {
-    if (key === "flowId") continue;
-    if (value !== undefined) merged[key] = value;
-  }
-  return merged;
+function normalizeOptionalAiFlowAdminConfigs(input, env) {
+  return Array.isArray(input) && input.length > 0 ? normalizeAiFlowAdminConfigs(input, env) : [];
 }
 
-function trustedRequestScopedAiFlowConfig(body, requestContext = {}) {
+function trustedRequestScopedAiFlowConfig(body, env, requestContext = {}) {
   if (requestContext?.trustRequestAiFlowConfig !== true) return [];
-  return extractLoadedAiFlowAdminConfigs(body);
+  return normalizeOptionalAiFlowAdminConfigs(extractLoadedAiFlowAdminConfigs(body), env);
 }
 
 function configuredEnvKeysForFlow(flow, env = {}) {

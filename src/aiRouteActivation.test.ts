@@ -4,6 +4,7 @@ import {
   resolveAiRouteActivation,
   resolveAiRouteActivations
 } from "./aiRouteActivation.mjs";
+import { normalizeAiFlowAdminConfigs } from "./aiFlowConfigData.mjs";
 
 describe("AI route activation", () => {
   it("keeps the card-copy env model override ahead of admin config defaults", () => {
@@ -88,6 +89,29 @@ describe("AI route activation", () => {
     expect(activation.readyForLiveCalls).toBe(true);
   });
 
+  it("keeps sparse card-copy overrides aligned with generator env semantics under non-default providers", () => {
+    const env = {
+      HUGGINGFACE_API_TOKEN: "hf-token"
+    };
+    const expected = normalizeAiFlowAdminConfigs(
+      [{ flowId: "card-copy", model: "Qwen/Qwen3-32B-Instruct" }],
+      env
+    ).find((config) => config.flowId === "card-copy");
+    const activation = resolveAiRouteActivation("card-copy", {
+      env,
+      loadedAiFlowAdminConfig: {
+        configs: [{ flowId: "card-copy", model: "Qwen/Qwen3-32B-Instruct" }]
+      }
+    });
+
+    expect(expected).toMatchObject({
+      primaryAdapterId: "huggingface-chat",
+      model: "Qwen/Qwen3-32B-Instruct"
+    });
+    expect(activation.selectedAdapterId).toBe(expected?.primaryAdapterId);
+    expect(activation.model).toBe(expected?.model);
+  });
+
   it("preserves unrelated flows when later sparse sources override only one flow", () => {
     const activations = resolveAiRouteActivations({
       env: {
@@ -114,7 +138,7 @@ describe("AI route activation", () => {
     });
 
     expect(activations.find((activation) => activation.flowId === "card-copy")).toMatchObject({
-      selectedAdapterId: "huggingface-chat",
+      selectedAdapterId: "cloudflare-workers-ai-chat",
       readyForLiveCalls: false
     });
     expect(activations.find((activation) => activation.flowId === "card-image")).toMatchObject({
