@@ -7,6 +7,10 @@ import {
 } from "../src/aiFlowConfigData.mjs";
 import { createAiCardGenerationService, loadLocalAiEnvFiles } from "./ai-card-generator.mjs";
 import { resolveLocalComfyWorkerEnv } from "./local-comfy-worker.mjs";
+import {
+  buildProviderWorkerResult,
+  hasLiveProviderNetworkCall
+} from "./provider-worker-payload-contract.mjs";
 
 export function resolveProviderHttpWorkerEnv(env = process.env) {
   const resolved = resolveLocalComfyWorkerEnv(env);
@@ -185,7 +189,7 @@ async function executeLeasedJob({ aiService, job }) {
     throw new Error(`Provider failed with HTTP ${generated.statusCode}${failure ? `: ${failure}` : ""}.`);
   }
   const liveNetworkCalls = hasLiveProviderNetworkCall(generated.payload);
-  return {
+  return buildProviderWorkerResult({
     status: "ai-result-ready",
     routeId: job.route_id,
     httpStatusCode: generated.statusCode,
@@ -193,7 +197,7 @@ async function executeLeasedJob({ aiService, job }) {
     payload: generated.payload,
     liveNetworkCalls,
     evidence: "Provider HTTP worker completed queued AI flow with scoped provider-token auth."
-  };
+  });
 }
 
 function providerFailureFromPayload(payload) {
@@ -321,12 +325,6 @@ function providerRouteScope(routes, env) {
     : String(env.CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS ?? "ai-card-generate").split(/[,\s]+/);
   const normalized = configured.map((routeId) => String(routeId ?? "").trim()).filter(Boolean);
   return Array.from(new Set(normalized.length > 0 ? normalized : ["ai-card-generate"]));
-}
-
-function hasLiveProviderNetworkCall(payload = {}) {
-  return Array.isArray(payload.provider_call_events)
-    ? payload.provider_call_events.some((event) => event?.live_network_call === true && event?.status !== "blocked")
-    : false;
 }
 
 function workerBatchSize(env) {

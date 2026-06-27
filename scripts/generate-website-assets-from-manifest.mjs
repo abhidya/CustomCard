@@ -146,8 +146,32 @@ function selectAssets(manifest, args) {
 }
 
 function buildPrompt({ manifest, batch, asset }) {
-  const rules = batch.id === "theme-inventory-fronts" ? manifest.globalCardArtRules || [] : [];
+  const rules = [
+    ...asArray(manifest.globalCardArtRules),
+    ...asArray(manifest.customArtCardContract?.promptRules),
+    ...asArray(batch.artCardRules),
+    ...formatAssetArtContract(asset.artCardContract)
+  ];
   return [...rules, asset.prompt].filter(Boolean).join(" ");
+}
+
+function asArray(value) {
+  return Array.isArray(value) ? value.filter(Boolean) : [];
+}
+
+function formatAssetArtContract(contract) {
+  if (!contract) return [];
+  const pairs = [
+    ["Recipient relationship", contract.relationship],
+    ["Remembered object", contract.memoryObject],
+    ["Emotional job", contract.emotionalTruth],
+    ["Art move", contract.artMove],
+    ["Forbidden cliches", Array.isArray(contract.forbiddenCliches) ? contract.forbiddenCliches.join(", ") : contract.forbiddenCliches],
+    ["Text-safe composition", contract.textSafeComposition]
+  ];
+  return pairs
+    .filter(([, value]) => typeof value === "string" && value.trim().length > 0)
+    .map(([label, value]) => `${label}: ${value}.`);
 }
 
 function renderWorkflowTemplate(source, variables) {

@@ -7,6 +7,11 @@ import { persistGeneratedImageArtifacts as persistGeneratedImageArtifactsToObjec
 import { createObjectStoreRuntime } from "./object-store-runtime.mjs";
 import { createPostgresRuntime } from "./postgres-runtime.mjs";
 import {
+  buildProviderWorkerResult,
+  compactProviderWorkerResultPayload,
+  hasLiveProviderNetworkCall
+} from "./provider-worker-payload-contract.mjs";
+import {
   validateWorkerRuntimeEnv,
   workerRequiredEnv
 } from "./runtime-env-contract.mjs";
@@ -455,48 +460,14 @@ async function runQueuedAiJob({ job, aiService, method, persistGeneratedImageArt
       ? await persistGeneratedImageArtifacts({ authContext: requestContext.authContext, payload: result.payload })
       : undefined;
   const payload = persisted?.payload ?? result.payload;
-  return {
+  return buildProviderWorkerResult({
     status: "ai-result-ready",
     routeId: job.routeId,
     httpStatusCode: result.statusCode,
     providerCallMode: hasLiveProviderNetworkCall(payload) ? "live-provider" : "provider-disabled",
-    payload: compactAiWorkerPayload(payload),
+    payload: compactProviderWorkerResultPayload(payload),
     evidence: "Worker completed queued AI flow with server-selected provider config and durable cost gate."
-  };
-}
-
-function hasLiveProviderNetworkCall(payload = {}) {
-  return Array.isArray(payload.provider_call_events)
-    ? payload.provider_call_events.some((event) => event?.live_network_call === true && event?.status !== "blocked")
-    : false;
-}
-
-function compactAiWorkerPayload(payload = {}) {
-  if (!Array.isArray(payload.images)) return payload;
-  // Job status is stored in Postgres and may be polled by customers, so inline
-  // image bytes stay out of api_jobs.result until object storage owns them.
-  let omittedInlineImages = 0;
-  const images = payload.images.map((image) => {
-    if (!String(image?.image_url ?? "").startsWith("data:")) return image;
-    omittedInlineImages += 1;
-    return {
-      ...image,
-      image_url: "",
-      image_inline_bytes_persisted: false,
-      image_omitted_reason: "inline-image-result-not-stored-in-job-result"
-    };
   });
-  if (omittedInlineImages === 0) return payload;
-  return {
-    ...payload,
-    images,
-    generated_image_persistence: {
-      status: "blocked",
-      omittedInlineImages,
-      inlineImageBytesPersisted: false,
-      blocker: "Persist generated images to object storage before returning signed URLs from queued job status."
-    }
-  };
 }
 
 function normalizeJobRow(row) {

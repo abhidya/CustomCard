@@ -12,6 +12,7 @@ from card_gen.domain import (
     CardDraftInput,
     CardGenerationResult,
     CardImageResult,
+    ImageNormalizationProof,
     PanelCopy,
 )
 
@@ -159,7 +160,20 @@ class TestCardGenerationResult:
 
     def test_text_and_image_result(self) -> None:
         images = [
-            CardImageResult(panel_id=pid, image_url=f"https://cdn.example.com/{pid}.png")
+            CardImageResult(
+                panel_id=pid,
+                image_url=f"data:image/jpeg;base64,{pid}",
+                width=1500,
+                height=2100,
+                normalization=ImageNormalizationProof(
+                    status="normalized-to-render-packet",
+                    source_width=1024,
+                    source_height=1792,
+                    target_width=1500,
+                    target_height=2100,
+                    operation="resize-crop",
+                ),
+            )
             for pid in ("front", "inside-left", "inside-right", "back")
         ]
         result = CardGenerationResult(

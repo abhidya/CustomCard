@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 import httpx
 
 from .domain import CardImageResult, PanelCopy, PanelId
+from .image_normalization import ProviderImageNormalizationAdapter
 
 _OPENAI_IMAGE_URL = "https://api.openai.com/v1/images/generations"
 
@@ -31,6 +32,7 @@ class CardImageAgentFactory:
     model: str = "dall-e-3"
     quality: str = "standard"
     timeout_seconds: float = 90.0
+    normalizer: ProviderImageNormalizationAdapter = field(default_factory=ProviderImageNormalizationAdapter)
 
     async def generate_panel(self, panel: PanelCopy) -> CardImageResult:
         prompt = _build_prompt(panel)
@@ -48,7 +50,8 @@ class CardImageAgentFactory:
             )
             response.raise_for_status()
             data = response.json()["data"][0]
-            return CardImageResult(
+            return await self.normalizer.normalize_url(
+                client=client,
                 panel_id=panel.id,
                 image_url=data["url"],
                 revised_prompt=data.get("revised_prompt"),
@@ -79,10 +82,12 @@ def _build_prompt(panel: PanelCopy) -> str:
     }
     role = panel_roles.get(panel.id, panel.id)
     return (
-        f"5×7 print-quality greeting card artwork, 300 DPI, {role}. "
+        f"5x7 print-quality greeting card artwork, 300 DPI, {role}. "
         f"{panel.art_direction} "
-        "Leave a clean text-safe area for the card's printed message. "
-        "No text, words, or letters in the image. "
-        "Photorealistic or illustrated as appropriate to the art direction. "
-        "Bleed edges, professional print layout."
+        "The remembered object or scene should feel specific to a real relationship, not like stock occasion art. "
+        "Leave a deliberate clean text-safe area for the card's printed message. "
+        "No text, words, letters, fake handwriting, logos, people, faces, or hands in the image. "
+        "Avoid generic greeting-card clipart unless the art direction explicitly earns it. "
+        "Photorealistic, illustrated, collage, letterpress, or paper-art treatment as appropriate. "
+        "Bleed edges, professional print layout, premium tactile material feel."
     )

@@ -1,3 +1,5 @@
+import { defineReadinessRegister } from "./readinessRegister.mjs";
+
 export type ProductionLaunchGateStatus = "contract-ready" | "evidence-missing" | "blocked";
 
 export interface ProductionLaunchGate {
@@ -21,6 +23,22 @@ export interface ProductionReadinessSummary {
   requiredEvidence: string[];
   blockers: string[];
 }
+
+export const requiredProductionLaunchGateIds = [
+  "production-user-auth",
+  "live-oauth-provider-imports",
+  "live-ai-generation",
+  "live-vendor-quotes",
+  "live-payment-charges-refunds",
+  "direct-retail-printer-ordering",
+  "live-telemetry-alerting",
+  "cloud-bucket-iam-proof",
+  "deployed-postgres-api",
+  "vercel-deployment-db-access",
+  "native-mobile-artifact",
+  "external-audits",
+  "physical-print-certification"
+] as const;
 
 export const productionLaunchGates: ProductionLaunchGate[] = [
   {
@@ -181,29 +199,14 @@ export const productionLaunchGates: ProductionLaunchGate[] = [
   }
 ];
 
-export function summarizeProductionReadiness(
-  gates: ProductionLaunchGate[] = productionLaunchGates
-): ProductionReadinessSummary {
-  const requiredEvidence = Array.from(new Set(gates.flatMap((gate) => gate.requiredEvidence))).sort();
-  return {
-    total: gates.length,
-    contractReady: gates.filter((gate) => gate.status === "contract-ready").length,
-    evidenceMissing: gates.filter((gate) => gate.status === "evidence-missing").length,
-    blocked: gates.filter((gate) => gate.status === "blocked").length,
-    liveEnabled: gates.filter((gate) => gate.liveEnabled).length,
-    requiredEvidence,
-    blockers: gates.filter((gate) => gate.status !== "contract-ready").map((gate) => gate.blocker)
-  };
-}
-
-export function validateProductionReadiness(gates: ProductionLaunchGate[] = productionLaunchGates): string[] {
-  const issues: string[] = [];
-  const ids = new Set<string>();
-
-  for (const gate of gates) {
-    if (ids.has(gate.id)) issues.push(`Duplicate production launch gate: ${gate.id}`);
-    ids.add(gate.id);
-
+const productionReadinessRegister = defineReadinessRegister<ProductionLaunchGate>({
+  domainLabel: "production launch",
+  items: productionLaunchGates,
+  requiredIds: [...requiredProductionLaunchGateIds],
+  duplicateMessage: (id) => `Duplicate production launch gate: ${id}.`,
+  missingMessage: (id) => `Missing production launch gate: ${id}.`,
+  itemRules(gate) {
+    const issues: string[] = [];
     if (gate.liveEnabled) {
       issues.push(`Production launch gate ${gate.id} must not enable live behavior without external evidence.`);
     }
@@ -216,7 +219,30 @@ export function validateProductionReadiness(gates: ProductionLaunchGate[] = prod
     if (gate.status !== "contract-ready" && !gate.blocker) {
       issues.push(`Production launch gate ${gate.id} must explain its blocker.`);
     }
+    return issues;
+  },
+  summarize(gates) {
+    return {
+      contractReady: gates.filter((gate) => gate.status === "contract-ready").length,
+      evidenceMissing: gates.filter((gate) => gate.status === "evidence-missing").length,
+      blocked: gates.filter((gate) => gate.status === "blocked").length,
+      liveEnabled: gates.filter((gate) => gate.liveEnabled).length,
+      requiredEvidence: Array.from(new Set(gates.flatMap((gate) => gate.requiredEvidence))).sort()
+    };
   }
+});
 
-  return issues;
+export function summarizeProductionReadiness(
+  gates: ProductionLaunchGate[] = productionLaunchGates
+): ProductionReadinessSummary {
+  type ProductionRegisterSummary = Omit<ProductionReadinessSummary, "blockers">;
+  const registerSummary = productionReadinessRegister.summarize(gates) as unknown as ProductionRegisterSummary;
+  return {
+    ...registerSummary,
+    blockers: gates.filter((gate) => gate.status !== "contract-ready").map((gate) => gate.blocker)
+  };
+}
+
+export function validateProductionReadiness(gates: ProductionLaunchGate[] = productionLaunchGates): string[] {
+  return productionReadinessRegister.validate(gates);
 }

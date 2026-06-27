@@ -1,10 +1,17 @@
-import { readFileSync } from "node:fs";
 import {
   cloudArtifactProofReadinessItems,
   summarizeCloudArtifactProofReadiness,
   validateCloudArtifactProofReadiness
 } from "../src/cloudArtifactProofReadinessData.mjs";
-import { checkArrayIncludes, checkExact, checkIncludes, checkNoBlockers } from "./doctor-harness.mjs";
+import {
+  checkArrayIncludes,
+  checkExact,
+  checkIncludes,
+  checkItemsHaveKeys,
+  checkNoBlockers,
+  readTextFiles,
+  runDoctorManifest
+} from "./doctor-harness.mjs";
 
 const files = {
   readinessTest: "src/cloudArtifactProofReadiness.test.ts",
@@ -29,9 +36,7 @@ const files = {
   viteConfig: "vite.config.ts"
 };
 
-const contents = Object.fromEntries(
-  Object.entries(files).map(([key, path]) => [key, readFileSync(path, "utf8")])
-);
+const contents = readTextFiles(files);
 
 const summary = summarizeCloudArtifactProofReadiness(cloudArtifactProofReadinessItems);
 const validationBlockers = validateCloudArtifactProofReadiness(cloudArtifactProofReadinessItems);
@@ -76,7 +81,44 @@ const checks = [
     "secret-manager-env-sync",
     "retention-restore-drill"
   ]),
-  checkItemsShape("register", "cloud-artifact-proof-readiness-item-shape", cloudArtifactProofReadinessItems),
+  checkItemsHaveKeys(
+    "register",
+    "cloud-artifact-proof-readiness-item-shape",
+    cloudArtifactProofReadinessItems,
+    [
+      "id",
+      "label",
+      "lane",
+      "status",
+      "terraformFiles",
+      "envOutputNames",
+      "requiredSourceSignals",
+      "requiresAppliedCloud",
+      "requiresBucketArnProof",
+      "requiresIamPolicyProof",
+      "requiresSignedUrlProbe",
+      "requiresAccessLogProof",
+      "requiresSecretSync",
+      "requiresRestoreDrill",
+      "terraformApplyExecuted",
+      "appliedBucketArnAttached",
+      "iamPolicyOutputAttached",
+      "signedUrlProbeAttached",
+      "accessLogAttached",
+      "secretSyncAttached",
+      "restoreDrillAttached",
+      "externalNetworkCalls",
+      "liveProviderCalls",
+      "realOrdersEnabled",
+      "currentEvidence",
+      "requiredEvidence",
+      "blocker"
+    ],
+    {
+      readyDetail: `Validated ${cloudArtifactProofReadinessItems.length} executable cloud artifact proof readiness item shapes.`,
+      missingPrefix: "Missing cloud artifact proof readiness fields"
+    }
+  ),
   checkIncludes("tests", "cloud-artifact-proof-readiness-tests", contents.readinessTest, [
     "tracks applied cloud bucket and IAM evidence without claiming production proof",
     "covers Terraform source, runtime env outputs, signed URL probes, IAM, and restore requirements",
@@ -139,99 +181,31 @@ const checks = [
   ])
 ];
 
-const lanes = Array.from(new Set(checks.map((check) => check.lane))).map((lane) => {
-  const laneChecks = checks.filter((check) => check.lane === lane);
-  return {
-    lane,
-    passed: laneChecks.filter((check) => check.passed).length,
-    total: laneChecks.length,
-    status: laneChecks.every((check) => check.passed) ? "repo-consistent" : "contract-drift"
-  };
+runDoctorManifest({
+  service: "customcard-cloud-artifact-proof-readiness-doctor",
+  metrics: {
+    items: summary.total,
+    repoLocalReady: summary.repoLocalReady,
+    evidenceMissing: summary.evidenceMissing,
+    appliedCloudRequired: summary.appliedCloudRequired,
+    bucketArnProofRequired: summary.bucketArnProofRequired,
+    iamPolicyProofRequired: summary.iamPolicyProofRequired,
+    signedUrlProbeRequired: summary.signedUrlProbeRequired,
+    accessLogProofRequired: summary.accessLogProofRequired,
+    secretSyncRequired: summary.secretSyncRequired,
+    restoreDrillRequired: summary.restoreDrillRequired,
+    terraformFileContracts: summary.terraformFileContracts,
+    envOutputContracts: summary.envOutputContracts,
+    terraformApplyExecutions: summary.terraformApplyExecutions,
+    appliedBucketArnProofs: summary.appliedBucketArnProofs,
+    iamPolicyOutputProofs: summary.iamPolicyOutputProofs,
+    signedUrlProbeProofs: summary.signedUrlProbeProofs,
+    accessLogProofs: summary.accessLogProofs,
+    secretSyncProofs: summary.secretSyncProofs,
+    restoreDrillProofs: summary.restoreDrillProofs,
+    externalNetworkCalls: summary.externalNetworkCalls,
+    liveProviderCalls: summary.liveProviderCalls,
+    realOrdersEnabled: summary.realOrdersEnabled
+  },
+  checks
 });
-const failed = checks.filter((check) => !check.passed);
-
-console.log(
-  JSON.stringify(
-    {
-      service: "customcard-cloud-artifact-proof-readiness-doctor",
-      status: failed.length === 0 ? "repo-consistent" : "contract-drift",
-      scope: "repo-local",
-      items: summary.total,
-      repoLocalReady: summary.repoLocalReady,
-      evidenceMissing: summary.evidenceMissing,
-      appliedCloudRequired: summary.appliedCloudRequired,
-      bucketArnProofRequired: summary.bucketArnProofRequired,
-      iamPolicyProofRequired: summary.iamPolicyProofRequired,
-      signedUrlProbeRequired: summary.signedUrlProbeRequired,
-      accessLogProofRequired: summary.accessLogProofRequired,
-      secretSyncRequired: summary.secretSyncRequired,
-      restoreDrillRequired: summary.restoreDrillRequired,
-      terraformFileContracts: summary.terraformFileContracts,
-      envOutputContracts: summary.envOutputContracts,
-      terraformApplyExecutions: summary.terraformApplyExecutions,
-      appliedBucketArnProofs: summary.appliedBucketArnProofs,
-      iamPolicyOutputProofs: summary.iamPolicyOutputProofs,
-      signedUrlProbeProofs: summary.signedUrlProbeProofs,
-      accessLogProofs: summary.accessLogProofs,
-      secretSyncProofs: summary.secretSyncProofs,
-      restoreDrillProofs: summary.restoreDrillProofs,
-      externalNetworkCalls: summary.externalNetworkCalls,
-      liveProviderCalls: summary.liveProviderCalls,
-      realOrdersEnabled: summary.realOrdersEnabled,
-      lanes,
-      checks,
-      registerIssues: failed.map((check) => ({ id: check.id, lane: check.lane, detail: check.detail }))
-    },
-    null,
-    2
-  )
-);
-
-if (failed.length > 0) process.exit(1);
-
-function checkItemsShape(lane, id, items) {
-  const requiredKeys = [
-    "id",
-    "label",
-    "lane",
-    "status",
-    "terraformFiles",
-    "envOutputNames",
-    "requiredSourceSignals",
-    "requiresAppliedCloud",
-    "requiresBucketArnProof",
-    "requiresIamPolicyProof",
-    "requiresSignedUrlProbe",
-    "requiresAccessLogProof",
-    "requiresSecretSync",
-    "requiresRestoreDrill",
-    "terraformApplyExecuted",
-    "appliedBucketArnAttached",
-    "iamPolicyOutputAttached",
-    "signedUrlProbeAttached",
-    "accessLogAttached",
-    "secretSyncAttached",
-    "restoreDrillAttached",
-    "externalNetworkCalls",
-    "liveProviderCalls",
-    "realOrdersEnabled",
-    "currentEvidence",
-    "requiredEvidence",
-    "blocker"
-  ];
-  const missing = [];
-  for (const item of items) {
-    for (const key of requiredKeys) {
-      if (!(key in item)) missing.push(`${item.id ?? "unknown"}.${key}`);
-    }
-  }
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Validated ${items.length} executable cloud artifact proof readiness item shapes.`
-        : `Missing cloud artifact proof readiness fields: ${missing.join(", ")}`
-  };
-}

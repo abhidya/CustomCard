@@ -1,4 +1,16 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import {
+  hasLiveProviderNetworkCall,
+  normalizeProviderCompletionResult,
+  providerArtifactUploadContract,
+  sanitizeProviderJobPayload
+} from "./provider-worker-payload-contract.mjs";
+
+export {
+  normalizeProviderCompletionResult,
+  providerArtifactUploadContract,
+  sanitizeProviderJobPayload
+} from "./provider-worker-payload-contract.mjs";
 
 export function createProviderJobRuntime({
   env = process.env,
@@ -320,57 +332,6 @@ export function providerLeasePayload({ row, workerId, leaseSeconds, env }) {
   };
 }
 
-export function providerArtifactUploadContract() {
-  return {
-    mode: "api-complete-inline-data-url",
-    r2CredentialsExposed: false,
-    directR2UploadPlanned: true,
-    detail: "The provider posts generated image data to complete; the production API persists artifacts to object storage."
-  };
-}
-
-export function normalizeProviderCompletionResult(result) {
-  const normalized = result && typeof result === "object" && !Array.isArray(result) ? result : {};
-  const payload = normalized.payload && typeof normalized.payload === "object" && !Array.isArray(normalized.payload)
-    ? normalized.payload
-    : {};
-  return {
-    status: safeId(normalized.status, "ai-result-ready"),
-    routeId: safeId(normalized.routeId ?? normalized.route_id, "ai-card-generate"),
-    httpStatusCode: safeInteger(normalized.httpStatusCode ?? normalized.http_status_code, 200, 100, 599),
-    providerCallMode: safeId(normalized.providerCallMode ?? normalized.provider_call_mode, "live-provider"),
-    payload,
-    evidence: safeText(normalized.evidence, "Provider worker completed the leased job."),
-    liveNetworkCalls: Boolean(normalized.liveNetworkCalls ?? normalized.live_network_calls ?? hasLiveProviderNetworkCall(payload))
-  };
-}
-
-export function sanitizeProviderJobPayload(payload) {
-  const normalized = normalizeJson(payload);
-  const requestContext = normalized.requestContext && typeof normalized.requestContext === "object"
-    ? normalized.requestContext
-    : {};
-  const authContext = requestContext.authContext && typeof requestContext.authContext === "object"
-    ? requestContext.authContext
-    : {};
-  return {
-    ...normalized,
-    requestContext: {
-      ...requestContext,
-      authContext: {
-        ...authContext,
-        sessionId: "provider-lease"
-      }
-    },
-    security: {
-      ...(normalized.security ?? {}),
-      providerLeaseScoped: true,
-      credentialsPersisted: false,
-      rawProviderContentStored: false
-    }
-  };
-}
-
 function authError(statusCode, status, route) {
   return {
     ok: false,
@@ -601,12 +562,6 @@ async function writeProviderJobFailure({ postgresRuntime, job, status, physicalS
 
 function isDeadLetterStatusConstraintError(error) {
   return error?.code === "23514" && /api_jobs_status_check|dead_lettered|status/i.test(String(error?.message ?? ""));
-}
-
-function hasLiveProviderNetworkCall(payload = {}) {
-  return Array.isArray(payload.provider_call_events)
-    ? payload.provider_call_events.some((event) => event?.live_network_call === true && event?.status !== "blocked")
-    : false;
 }
 
 function safeDateIso(value) {

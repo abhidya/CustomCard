@@ -17,6 +17,11 @@ coverage/
 card_gen/.venv/
 card_gen/**/__pycache__/
 card_gen/**/*.pyc
+comfyui-custom-nodes/**/__pycache__/
+comfyui-custom-nodes/**/*.pyc
+CustomCard/
+docs/evidence/generated-card-comparisons/
+docs/evidence/website-generated-assets/
 # Local env files with real secrets — never commit
 infra/env/.env
 infra/env/.env.dev
@@ -24,3 +29,7 @@ infra/env/.env.qa
 infra/env/.env.prod
 .env
 .env.local
+
+.env*
+!.env.example
+!**/.env.example

@@ -1,8 +1,16 @@
 import {
-  retailPrinterRegistryLinkObservedAtIso as observedAtIso,
   retailPrinterRegistryOperationKinds,
   retailPrinterRegistryProductLinks
 } from "./retailPrinterRegistryData.mjs";
+import {
+  buildRetailPrinterOperationBlockers,
+  buildRetailPrinterOperationExpectedInputFields,
+  buildRetailPrinterOperationPolicy,
+  buildRetailPrinterOperationSourceLink,
+  buildRetailPrinterProviderOperationEntrypoint,
+  getRetailPrinterOperationProfile,
+  retailPrinterSharedForbiddenFields
+} from "./retailPrinterOperationPacketData.mjs";
 import {
   buildSharedPrinterCouponCollectionPlan,
   getPrinterCouponCollectionContract,
@@ -13,53 +21,6 @@ import {
 export const retailPrinterOperationStartRoute = "/api/retail-printers/operations/start";
 export const retailPrinterOperationKinds = retailPrinterRegistryOperationKinds;
 export const retailPrinterProductLinks = retailPrinterRegistryProductLinks;
-
-const sharedForbiddenFields = ["raw relationship memories", "raw payment card data", "unapproved recipient PII"];
-const sharedGateIds = ["vendor-certification", "real-order-kill-switch", "customer-approval"];
-
-const operationShapes = {
-  "fetch-price": {
-    label: "Fetch price",
-    requiredInputFields: ["storeOrShippingZip"],
-    optionalInputFields: ["productUrl", "productSku", "quantity", "fulfillmentMode", "couponCode"],
-    sourceBackedFields: ["productUrl", "productSku"],
-    evidenceMode: "public-product-price-review",
-    couponMode: "same-cart-provider-portal-proof",
-    requiredEvidence: [
-      "Official product page price evidence",
-      "Tax and coupon portal application proof",
-      "Store availability or shipping-window proof"
-    ],
-    requiredGateIds: ["provider-coupon-portal-proof", "retail-price-freshness-proof", "vendor-certification"],
-    blockedReason: "Live quote collection remains blocked until provider portal coupon proof and certification are attached."
-  },
-  "upload-image": {
-    label: "Upload image",
-    requiredInputFields: ["providerAccountReference"],
-    optionalInputFields: ["renderPacketArtifactUris", "panelManifestChecksum", "productSku", "customerApprovalId"],
-    sourceBackedFields: ["productSku"],
-    evidenceMode: "provider-project-preview-review",
-    couponMode: "preserve-price-cart-coupon-state",
-    requiredEvidence: [
-      "Vendor upload API or certified browser automation contract",
-      "Asset-size acceptance proof",
-      "Crop/fold preview screenshot"
-    ],
-    requiredGateIds: ["vendor-certification", "asset-upload-proof", "customer-approval"],
-    blockedReason: "Image upload remains blocked until a certified transport and provider preview proof exist."
-  },
-  "place-order": {
-    label: "Place order",
-    requiredInputFields: ["providerCartId", "paymentAuthorizationReference"],
-    optionalInputFields: ["quoteEvidenceId", "customerApprovalId", "cancellationRecoveryPlanId"],
-    sourceBackedFields: ["quoteEvidenceId"],
-    evidenceMode: "provider-cart-final-review",
-    couponMode: "final-cart-coupon-recheck",
-    requiredEvidence: ["Vendor certification", "Explicit customer approval record", "Payment and cancellation recovery proof"],
-    requiredGateIds: ["vendor-certification", "real-order-kill-switch", "customer-approval"],
-    blockedReason: "Live ordering remains blocked until certification, customer approval, tokenized payment, and recovery gates pass."
-  }
-};
 
 export function buildRetailPrinterOperationStartPackets() {
   return Object.values(retailPrinterProductLinks).flatMap((productLink) =>
@@ -292,11 +253,12 @@ export function parseRetailPrinterOperationKind(value) {
 
 function buildRetailPrinterOperationStartPacket(vendorId, operation) {
   const productLink = retailPrinterProductLinks[vendorId] ?? retailPrinterProductLinks.walgreens;
-  const operationShape = operationShapes[operation] ?? operationShapes["fetch-price"];
-  const expectedInputFields = [...operationShape.requiredInputFields, ...operationShape.optionalInputFields];
+  const operationShape = getRetailPrinterOperationProfile(operation);
+  const expectedInputFields = buildRetailPrinterOperationExpectedInputFields(operation);
   const couponCollectionPlan = buildSharedPrinterCouponCollectionPlan(productLink, {
     quantity: operation === "fetch-price" ? productLink.minimumQuantity : 1
   });
+  const providerEntrypoint = buildRetailPrinterProviderOperationEntrypoint(productLink, operation);
 
   return {
     id: `${productLink.vendorId}-${operation}-operation-start`,
@@ -326,29 +288,12 @@ function buildRetailPrinterOperationStartPacket(vendorId, operation) {
     liveQuoteEnabled: false,
     imageUploadEnabled: false,
     orderPlacementEnabled: false,
-    sourceLink: {
-      purpose: operation,
-      label: `${productLink.vendorName} ${operation}`,
-      url: productLink.productUrl,
-      sourceKind: "retailer-product-page",
-      observedAtIso,
-      evidenceMode: operationShape.evidenceMode
-    },
+    sourceLink: buildRetailPrinterOperationSourceLink(productLink, operation),
     providerEntrypoint: {
-      operation,
-      label: `${productLink.vendorName} ${operation}`,
-      url: productLink.productUrl,
-      portalHost: productLink.portalHost,
-      productSku: productLink.productSku,
-      productIdentityTokens: productLink.requiredUrlTokens,
-      evidenceMode: operationShape.evidenceMode,
+      ...providerEntrypoint,
       couponMode: operationShape.couponMode,
-      requiresCustomerApproval: true,
-      noNetwork: true,
-      requestPreparationBlocked: true,
-      orderSubmissionBlocked: true
     },
-    operationPolicy: buildOperationPolicy(productLink, operation),
+    operationPolicy: buildRetailPrinterOperationPolicy(productLink, operation),
     couponCollectionPlan,
     couponPortalApplicationRequired: true,
     bestPriceRequiresProviderPortalEvidence: true,
@@ -359,8 +304,8 @@ function buildRetailPrinterOperationStartPacket(vendorId, operation) {
     sourceBackedFields: operationShape.sourceBackedFields,
     requiredEvidence: operationShape.requiredEvidence,
     requiredGateIds: operationShape.requiredGateIds,
-    blockers: buildOperationStartBlockers(operation, operationShape.requiredGateIds),
-    forbiddenFields: sharedForbiddenFields,
+    blockers: buildRetailPrinterOperationBlockers(operation, operationShape.requiredGateIds),
+    forbiddenFields: retailPrinterSharedForbiddenFields,
     operatorSteps: buildRetailPrinterOperationSteps(productLink, operation, couponCollectionPlan),
     safetyChecks: [
       "Do not send a network request from CustomCard.",
@@ -370,44 +315,6 @@ function buildRetailPrinterOperationStartPacket(vendorId, operation) {
     ],
     blockedReason: operationShape.blockedReason
   };
-}
-
-function buildOperationPolicy(productLink, operation) {
-  if (operation === "fetch-price") {
-    return {
-      kind: "fetch-price",
-      minimumQuantity: productLink.minimumQuantity,
-      quantityIncrement: productLink.quantityIncrement,
-      supportedFulfillmentModes: productLink.supportedFulfillmentModes,
-      couponProof: "same-cart-provider-portal",
-      requiredEvidenceFields: ["subtotal", "taxStatus", "couponApplicationStatus", "pickupOrShippingWindow"]
-    };
-  }
-  if (operation === "upload-image") {
-    return {
-      kind: "upload-image",
-      acceptedArtifactKinds: productLink.acceptedArtifactKinds,
-      providerAccountMode: productLink.providerAccountMode,
-      preflightChecks: productLink.uploadPreflightChecks,
-      previewEvidenceFields: ["providerPreviewScreenshot", "assetAcceptanceResult", "cropFoldState"]
-    };
-  }
-  return {
-    kind: "place-order",
-    requiredApprovalFields: ["customerApprovalId", "quoteEvidenceId", "paymentAuthorizationReference"],
-    prohibitedUntilEvidence: ["vendorCertification", "physicalPrintQa", "realOrderKillSwitch", "customerFinalApproval"],
-    recoveryEvidenceFields: ["cancellationRecoveryPlanId", "wrongStoreRecoveryPlanId"]
-  };
-}
-
-function buildOperationStartBlockers(operation, requiredGateIds) {
-  if (operation === "fetch-price") {
-    return [...requiredGateIds, "provider-coupon-portal-proof", "retail-price-freshness-proof"];
-  }
-  if (operation === "upload-image") {
-    return [...requiredGateIds, "asset-upload-proof", "provider-preview-proof"];
-  }
-  return requiredGateIds;
 }
 
 function buildRetailPrinterOperationSteps(productLink, operation, couponCollectionPlan) {

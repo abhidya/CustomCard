@@ -1,10 +1,9 @@
 import { renderPacketFileName, renderPacketTarget } from "./renderPacketContract";
+import { buildPanelTextLayoutPlan } from "./panelTextLayoutPlanData.mjs";
 import type {
   CardImageFocus,
   CardImagePlacement,
   CardPanel,
-  CardTextLayout,
-  TextAlignment,
   VisualStylePreset
 } from "./cardDraft";
 
@@ -24,7 +23,18 @@ ${buildArtworkLayer(panel.imageUrl, panel.imagePlacement, { fullBleed: true })}
 </svg>`;
   }
   const artworkLayer = panel.imageUrl ? buildArtworkLayer(panel.imageUrl, panel.imagePlacement) : layout.decoration(panel, accent);
-  const textPlan = buildTextPlan(panel, layout, accent, styleId);
+  const textPlan = buildPanelTextLayoutPlan({
+    panelId: panel.id,
+    textLayout: panel.textLayout,
+    headlineFormat: panel.textFormat?.headline,
+    bodyFormat: panel.textFormat?.body,
+    accent,
+    hasArtwork: Boolean(panel.imageUrl),
+    imageFrame: imageFrame(panel.imagePlacement),
+    rtl: panel.rtl,
+    styleId,
+    legacyLayout: layout
+  });
   const headlineLines = wrapSvgText(panel.headline, textPlan.headlineMaxChars).slice(0, textPlan.headlineMaxLines);
   const bodyLines = wrapSvgText(panel.body, textPlan.bodyMaxChars).slice(0, textPlan.bodyMaxLines);
 
@@ -42,29 +52,6 @@ ${layout.footer(panel, accent, textPlan.anchor, textPlan.x)}
 </svg>`;
 }
 
-interface TextPlan {
-  x: number;
-  anchor: "start" | "middle" | "end";
-  headlineFont: string;
-  headlineSize: number;
-  headlineWeight: number;
-  headlineStyle: "normal" | "italic";
-  headlineLeading: number;
-  headlineY: number;
-  headlineFill: string;
-  headlineMaxChars: number;
-  headlineMaxLines: number;
-  bodyFont: string;
-  bodySize: number;
-  bodyWeight: number;
-  bodyStyle: "normal" | "italic";
-  bodyLeading: number;
-  bodyY: number;
-  bodyFill: string;
-  bodyMaxChars: number;
-  bodyMaxLines: number;
-}
-
 interface StyleLayout {
   background: (panel: CardPanel) => string;
   frame: (accent: string) => string;
@@ -78,182 +65,6 @@ interface StyleLayout {
   bodyY: number;
   textFill: string;
   bodyFill: string;
-}
-
-function buildTextPlan(
-  panel: CardPanel,
-  layout: StyleLayout,
-  accent: string,
-  styleId: VisualStylePreset
-): TextPlan {
-  const artworkCoversText = Boolean(panel.imageUrl && imageFrame(panel.imagePlacement) === "fill");
-  const headlineFormat = panel.textFormat?.headline;
-  const bodyFormat = panel.textFormat?.body;
-  if (!panel.textLayout) {
-    const photoWindow = panel.imagePlacement?.frame === "photo-window";
-    const anchor = photoWindow ? "middle" : panel.rtl ? "end" : "start";
-    const x = photoWindow ? 750 : panel.rtl ? 1240 : 260;
-    const headlineFill = artworkCoversText ? "#ffffff" : layout.textFill;
-    const bodyFill = artworkCoversText ? "rgba(255,255,255,0.92)" : layout.bodyFill;
-    return {
-      x,
-      anchor,
-      headlineFont: layout.headlineFont,
-      headlineSize: layout.headlineSize,
-      headlineWeight: headlineFormat?.bold ? Math.max(layout.headlineWeight, 800) : layout.headlineWeight,
-      headlineStyle: headlineFormat?.italic ? "italic" : "normal",
-      headlineLeading: layout.headlineLeading,
-      headlineY: photoWindow ? 1280 : layout.headlineY,
-      headlineFill: headlineFormat?.accent ? accent : headlineFill,
-      headlineMaxChars: styleId === "bold-type" ? 14 : 24,
-      headlineMaxLines: 3,
-      bodyFont: "Arial, sans-serif",
-      bodySize: 54,
-      bodyWeight: bodyFormat?.bold ? 700 : 400,
-      bodyStyle: bodyFormat?.italic ? "italic" : "normal",
-      bodyLeading: 74,
-      bodyY: photoWindow ? 1520 : layout.bodyY,
-      bodyFill: bodyFormat?.accent ? accent : bodyFill,
-      bodyMaxChars: 34,
-      bodyMaxLines: 8
-    };
-  }
-
-  const font = fontPairingPreset(panel.textLayout);
-  const scale = scalePreset(panel.textLayout.scale);
-  const headlineSize = Math.round(font.headlineSize * scale);
-  const bodySize = Math.round(font.bodySize * scale);
-  const colors = colorPreset(panel.textLayout, layout, accent, Boolean(panel.imageUrl), styleId);
-  return {
-    x: xForAlignment(panel.textLayout.alignment),
-    anchor: anchorForAlignment(panel.textLayout.alignment),
-    headlineFont: font.headlineFont,
-    headlineSize,
-    headlineWeight: headlineFormat?.bold ? Math.max(font.headlineWeight, 800) : font.headlineWeight,
-    headlineStyle: headlineFormat?.italic ? "italic" : "normal",
-    headlineLeading: Math.round(headlineSize * 1.18),
-    headlineY: yForHeadlineZone(panel.textLayout.headlineZone),
-    headlineFill: headlineFormat?.accent ? accent : colors.headline,
-    headlineMaxChars: maxCharsForScale(panel.textLayout.scale, panel.textLayout.fontPairing, "headline"),
-    headlineMaxLines: panel.textLayout.scale === "large" ? 2 : 3,
-    bodyFont: font.bodyFont,
-    bodySize,
-    bodyWeight: bodyFormat?.bold ? 700 : 400,
-    bodyStyle: bodyFormat?.italic ? "italic" : "normal",
-    bodyLeading: Math.round(bodySize * 1.38),
-    bodyY: yForBodyZone(panel.textLayout.bodyZone),
-    bodyFill: bodyFormat?.accent ? accent : colors.body,
-    bodyMaxChars: maxCharsForScale(panel.textLayout.scale, panel.textLayout.fontPairing, "body"),
-    bodyMaxLines: panel.textLayout.scale === "large" ? 7 : 8
-  };
-}
-
-function fontPairingPreset(layout: CardTextLayout): {
-  headlineFont: string;
-  bodyFont: string;
-  headlineSize: number;
-  bodySize: number;
-  headlineWeight: number;
-} {
-  const presets = {
-    "serif-sans": {
-      headlineFont: "Georgia, serif",
-      bodyFont: "Arial, sans-serif",
-      headlineSize: 92,
-      bodySize: 54,
-      headlineWeight: 700
-    },
-    "bold-editorial": {
-      headlineFont: "Helvetica, Arial, sans-serif",
-      bodyFont: "Helvetica, Arial, sans-serif",
-      headlineSize: 132,
-      bodySize: 58,
-      headlineWeight: 800
-    },
-    "minimal-sans": {
-      headlineFont: "Helvetica, Arial, sans-serif",
-      bodyFont: "Arial, sans-serif",
-      headlineSize: 82,
-      bodySize: 50,
-      headlineWeight: 600
-    },
-    "soft-serif": {
-      headlineFont: "Georgia, serif",
-      bodyFont: "Georgia, serif",
-      headlineSize: 86,
-      bodySize: 52,
-      headlineWeight: 700
-    }
-  };
-  return presets[layout.fontPairing];
-}
-
-function scalePreset(scale: CardTextLayout["scale"]): number {
-  if (scale === "compact") return 0.86;
-  if (scale === "large") return 1.14;
-  return 1;
-}
-
-function colorPreset(
-  textLayout: CardTextLayout,
-  layout: StyleLayout,
-  accent: string,
-  hasArtwork: boolean,
-  styleId: VisualStylePreset
-): { headline: string; body: string } {
-  if (textLayout.colorMode === "light-ink") {
-    if (hasArtwork || styleId === "bold-type") return { headline: "#ffffff", body: "#f7f1df" };
-    return { headline: layout.textFill, body: layout.bodyFill };
-  }
-  if (textLayout.colorMode === "accent-ink") return { headline: accent, body: layout.bodyFill };
-  if (textLayout.colorMode === "high-contrast") {
-    if (hasArtwork || styleId === "bold-type") return { headline: "#ffffff", body: "#ffffff" };
-    return { headline: "#0e1116", body: "#151a21" };
-  }
-  return { headline: layout.textFill, body: layout.bodyFill };
-}
-
-function xForAlignment(alignment: TextAlignment): number {
-  if (alignment === "center") return 750;
-  if (alignment === "right") return 1240;
-  return 260;
-}
-
-function anchorForAlignment(alignment: TextAlignment): "start" | "middle" | "end" {
-  if (alignment === "center") return "middle";
-  if (alignment === "right") return "end";
-  return "start";
-}
-
-function yForHeadlineZone(zone: CardTextLayout["headlineZone"]): number {
-  const zones = {
-    top: 290,
-    upper: 470,
-    center: 860,
-    lower: 1280
-  };
-  return zones[zone];
-}
-
-function yForBodyZone(zone: CardTextLayout["bodyZone"]): number {
-  const zones = {
-    upper: 650,
-    center: 930,
-    lower: 1320,
-    bottom: 1660
-  };
-  return zones[zone];
-}
-
-function maxCharsForScale(
-  scale: CardTextLayout["scale"],
-  fontPairing: CardTextLayout["fontPairing"],
-  role: "headline" | "body"
-): number {
-  const base = role === "headline" ? (fontPairing === "bold-editorial" ? 15 : 24) : 34;
-  if (scale === "compact") return base + 6;
-  if (scale === "large") return Math.max(12, base - 5);
-  return base;
 }
 
 const styleLayouts: Record<VisualStylePreset, StyleLayout> = {

@@ -6,6 +6,7 @@ import sharp from "sharp";
 import { createAiCardGenerationService, loadLocalAiEnvFiles } from "./ai-card-generator.mjs";
 import { createObjectStoreRuntime } from "./object-store-runtime.mjs";
 import { resolveAiFlowConfigs } from "../src/aiFlowConfigData.mjs";
+import { buildPanelTextLayoutPlan } from "../src/panelTextLayoutPlanData.mjs";
 
 const repoRoot = resolve(import.meta.dirname, "..");
 const outputRoot = resolve(repoRoot, "docs/evidence/generated-card-comparisons");
@@ -823,7 +824,7 @@ function panelLayout(panelId, theme = "stationery", rawTextLayout) {
       ? "#fffaf0"
       : "#31584e";
   if (panelId === "front") {
-    return applyPanelTextLayout({
+    return applyPanelTextLayout(panelId, {
       box: { x: 142, y: 1328, width: 1216, height: 506, fill: "#fffaf0", opacity: 0 },
       headlineY: 1410,
       bodyY: 1580,
@@ -839,7 +840,7 @@ function panelLayout(panelId, theme = "stationery", rawTextLayout) {
     }, rawTextLayout);
   }
   if (panelId === "back") {
-    return applyPanelTextLayout({
+    return applyPanelTextLayout(panelId, {
       box: { x: 190, y: 1520, width: 1120, height: 300, fill: "#fffaf0", opacity: 0 },
       headlineY: 1588,
       bodyY: 1694,
@@ -854,7 +855,7 @@ function panelLayout(panelId, theme = "stationery", rawTextLayout) {
       frameOpacity: darkCover ? 0.82 : 0.7
     }, rawTextLayout);
   }
-  return applyPanelTextLayout({
+  return applyPanelTextLayout(panelId, {
     box: { x: 150, y: 360, width: 1200, height: 1360, fill: "#fffdf7", opacity: 0 },
     headlineY: 560,
     bodyY: 740,
@@ -870,7 +871,7 @@ function panelLayout(panelId, theme = "stationery", rawTextLayout) {
   }, rawTextLayout);
 }
 
-function applyPanelTextLayout(base, rawTextLayout) {
+function applyPanelTextLayout(panelId, base, rawTextLayout) {
   const shared = {
     ...base,
     x: 750,
@@ -878,49 +879,46 @@ function applyPanelTextLayout(base, rawTextLayout) {
     headlineFont: "Georgia, Times New Roman, serif",
     bodyFont: "Inter, Arial, sans-serif"
   };
-  const layout = normalizePreviewTextLayout(rawTextLayout);
-  if (!layout) return shared;
-  const scale = layout.scale === "compact" ? 0.86 : layout.scale === "large" ? 1.14 : 1;
-  const font = layout.font_pairing === "bold-editorial"
-    ? { headlineFont: "Inter, Arial, sans-serif", bodyFont: "Inter, Arial, sans-serif", headlineSize: 116, bodySize: 42, headlineChars: 16, bodyChars: 34 }
-    : layout.font_pairing === "minimal-sans"
-      ? { headlineFont: "Inter, Arial, sans-serif", bodyFont: "Inter, Arial, sans-serif", headlineSize: 70, bodySize: 34, headlineChars: 28, bodyChars: 48 }
-      : layout.font_pairing === "soft-serif"
-        ? { headlineFont: "Georgia, Times New Roman, serif", bodyFont: "Georgia, Times New Roman, serif", headlineSize: 76, bodySize: 36, headlineChars: 26, bodyChars: 42 }
-        : { headlineFont: "Georgia, Times New Roman, serif", bodyFont: "Inter, Arial, sans-serif", headlineSize: 82, bodySize: 38, headlineChars: 24, bodyChars: 44 };
+  if (!rawTextLayout || typeof rawTextLayout !== "object") return shared;
+  const plan = buildPanelTextLayoutPlan({
+    panelId,
+    textLayout: rawTextLayout,
+    accent: base.frameColor,
+    hasArtwork: false,
+    styleId: base.frameOpacity > 0.8 ? "bold-type" : "botanical",
+    legacyLayout: {
+      headlineFont: shared.headlineFont,
+      headlineSize: base.headlineSize,
+      headlineWeight: 700,
+      headlineLeading: Math.round(base.headlineSize * 1.08),
+      headlineY: base.headlineY,
+      textFill: base.headlineColor,
+      bodyFill: base.bodyColor,
+      bodyFont: shared.bodyFont,
+      bodySize: base.bodySize,
+      bodyLeading: Math.round(base.bodySize * 1.25),
+      bodyY: base.bodyY,
+      bodyMaxChars: base.bodyChars,
+      bodyMaxLines: base.bodyLines
+    },
+    fontSystem: "preview"
+  });
   return {
     ...shared,
-    x: layout.alignment === "left" ? 260 : layout.alignment === "right" ? 1240 : 750,
-    anchor: layout.alignment === "left" ? "start" : layout.alignment === "right" ? "end" : "middle",
-    headlineY: { top: 290, upper: 470, center: 860, lower: 1280 }[layout.headline_zone],
-    bodyY: { upper: 650, center: 930, lower: 1320, bottom: 1660 }[layout.body_zone],
-    headlineSize: Math.round(font.headlineSize * scale),
-    bodySize: Math.round(font.bodySize * scale),
-    headlineChars: layout.scale === "large" ? Math.max(12, font.headlineChars - 5) : layout.scale === "compact" ? font.headlineChars + 6 : font.headlineChars,
-    bodyChars: layout.scale === "large" ? Math.max(28, font.bodyChars - 6) : layout.scale === "compact" ? font.bodyChars + 6 : font.bodyChars,
-    headlineFont: font.headlineFont,
-    bodyFont: font.bodyFont,
-    headlineColor: layout.color_mode === "light-ink" || layout.color_mode === "high-contrast" ? "#fff8dc" : layout.color_mode === "accent-ink" ? base.frameColor : base.headlineColor,
-    bodyColor: layout.color_mode === "light-ink" || layout.color_mode === "high-contrast" ? "#f4e6b0" : base.bodyColor
+    x: plan.x,
+    anchor: plan.anchor,
+    headlineY: plan.headlineY,
+    bodyY: plan.bodyY,
+    headlineSize: plan.headlineSize,
+    bodySize: plan.bodySize,
+    headlineChars: plan.headlineMaxChars,
+    bodyChars: plan.bodyMaxChars,
+    bodyLines: plan.bodyMaxLines,
+    headlineFont: plan.headlineFont,
+    bodyFont: plan.bodyFont,
+    headlineColor: plan.headlineFill,
+    bodyColor: plan.bodyFill
   };
-}
-
-function normalizePreviewTextLayout(value) {
-  if (!value || typeof value !== "object") return undefined;
-  const layout = {
-    headline_zone: cleanLayoutEnum(value.headline_zone || value.headlineZone, ["top", "upper", "center", "lower"]),
-    body_zone: cleanLayoutEnum(value.body_zone || value.bodyZone, ["upper", "center", "lower", "bottom"]),
-    alignment: cleanLayoutEnum(value.alignment, ["left", "center", "right"]),
-    font_pairing: cleanLayoutEnum(value.font_pairing || value.fontPairing, ["serif-sans", "bold-editorial", "minimal-sans", "soft-serif"]),
-    color_mode: cleanLayoutEnum(value.color_mode || value.colorMode, ["dark-ink", "light-ink", "accent-ink", "high-contrast"]),
-    scale: cleanLayoutEnum(value.scale, ["compact", "standard", "large"])
-  };
-  return Object.values(layout).every(Boolean) ? layout : undefined;
-}
-
-function cleanLayoutEnum(value, allowed) {
-  const normalized = String(value || "").trim().toLowerCase();
-  return allowed.includes(normalized) ? normalized : undefined;
 }
 
 async function renderContactSheet({ fixtureDir, fixture, competitor, panelFiles }) {

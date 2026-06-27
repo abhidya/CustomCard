@@ -24,6 +24,7 @@ import {
   type RetailPrinterSourceLinkPurpose,
   type RetailPrinterVendorId
 } from "./retailPrinterContracts";
+import { buildRetailPrinterOperationSafetyChecks } from "./retailPrinterOperationPacketData.mjs";
 import { buildPrinterCouponCollectionPlan, type PrinterCouponCollectionPlan } from "./printerPricing";
 
 export {
@@ -383,7 +384,7 @@ function buildOperationPacket(
     operationPolicy,
     evidenceChecklist: operation.requiredEvidence,
     operatorSteps: buildOperatorSteps(adapter, operation.kind, sourceLink, operationPolicy, couponCollectionPlan),
-    safetyChecks: buildOperationSafetyChecks(operation),
+    safetyChecks: buildRetailPrinterOperationSafetyChecks(operation.certificationGateIds),
     forbiddenFields: operation.requestBlueprint.forbiddenFields,
     certificationPacket: buildRetailPrinterCertificationPacket(adapter, operation, sourceLink)
   };
@@ -506,15 +507,5 @@ function buildPolicyViolations(
     ...(!String(orderInput.cancellationRecoveryPlanId ?? "").trim()
       ? [`${adapter.vendorId} place-order requires cancellation recovery plan id.`]
       : [])
-  ];
-}
-
-function buildOperationSafetyChecks(operation: RetailPrinterOperationContract): string[] {
-  return [
-    "Do not send a network request from CustomCard.",
-    "Do not prepare a provider API payload in app runtime.",
-    "Do not upload raw relationship memories or unapproved recipient PII.",
-    "Do not submit payment or place a live order until every certification gate is proven.",
-    ...operation.certificationGateIds.map((gateId) => `Gate required: ${gateId}`)
   ];
 }

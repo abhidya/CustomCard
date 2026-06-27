@@ -14,18 +14,31 @@ from typing import Any
 from .domain import CardCopyOutput, CardDraftInput
 
 _PANEL_INSTRUCTIONS = """
-You are generating copy for a 5×7 folded greeting card. Return exactly 4 panels:
+You are generating copy for a 5x7 folded greeting card. Return exactly 4 panels:
 
-  front        — Cover. Striking headline only, ≤ 10 words. No body text.
-  inside-left  — Heartfelt opening message, 2–3 sentences.
-  inside-right — Personal closing + room for handwritten signature, 2–3 sentences.
-  back         — Subtle back-cover tagline, ≤ 8 words.
+  front        - Cover. Headline <= 10 words. Body is one short support line, <= 14 words.
+  inside-left  - Heartfelt opening message, 2-3 sentences.
+  inside-right - Personal closing + room for handwritten signature, 2-3 sentences.
+  back         - Subtle back-cover tagline, <= 8 words, plus a tiny production note body.
 
-For EACH panel also provide art_direction: a concise visual prompt (style, palette,
-mood, key motifs, no text in image) for an image generation model.
+Make the card feel custom, not like an occasion template:
 
-Match the tone, style, and language requested. Incorporate memory_notes only when
-they add genuine personalisation. Never invent facts about the recipient.
+  - Start from the relationship and any personal_note or memory_notes.
+  - Choose one remembered object, scene, phrase, habit, or practical act as the card's anchor.
+  - Name the emotional job: pride, comfort, gratitude, repair, encouragement, or celebration.
+  - Avoid greeting-card aisle shorthand unless the memory specifically earns it.
+  - Never invent facts about the recipient. If details are sparse, ask the copy to notice the sparseness honestly.
+
+For EACH panel also provide art_direction for an image generation model. Each art_direction must include:
+
+  - the remembered object or scene
+  - the emotional job
+  - composition and text-safe zone
+  - style, palette, and material feel
+  - at least two forbidden cliches to avoid
+  - "no readable text, no logos, no people, no faces, no hands"
+
+Use memory_citations for the exact personal_note or memory_notes that influenced the card.
 """
 
 
@@ -108,13 +121,22 @@ class CardTextAgentFactory:
         imp = _load_imports()
         agent = self.build_agent()
         deps = CardTextAgentDeps(draft_input=draft_input)
-        prompt = (
-            f"Write a {draft_input.occasion} greeting card "
-            f"from {draft_input.sender!r} to {draft_input.recipient!r} "
-            f"({draft_input.relationship}). "
-            f"Tone: {draft_input.tone}. Style: {draft_input.style}. "
-            f"Language: {draft_input.language}."
+        prompt_parts = [
+            f"Write a {draft_input.occasion} greeting card",
+            f"from {draft_input.sender!r} to {draft_input.recipient!r}",
+            f"relationship: {draft_input.relationship}.",
+            f"Tone: {draft_input.tone}.",
+            f"Style: {draft_input.style}.",
+            f"Language: {draft_input.language}.",
+        ]
+        if draft_input.personal_note:
+            prompt_parts.append(f"Personal note to honor: {draft_input.personal_note}.")
+        if draft_input.memory_notes:
+            prompt_parts.append(f"Memory notes to cite when used: {draft_input.memory_notes!r}.")
+        prompt_parts.append(
+            "Before writing, silently choose the remembered object, emotional job, and forbidden cliches for the card."
         )
+        prompt = " ".join(prompt_parts)
         result = await agent.run(
             prompt,
             deps=deps,

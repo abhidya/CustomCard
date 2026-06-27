@@ -2,14 +2,51 @@
   "name": "customcard-website-asset-generation-v1",
   "status": "draft-ready",
   "createdFor": "website refresh, theme inventory, and marketing material",
-  "globalNegativePrompt": "readable text, letters, words, numbers, fake calligraphy, signature, logo, watermark, QR code, barcode, caption plaque, text box, brand mark, product label, dense wallpaper, low contrast text-safe zone, people, faces, hands, cropped bodies, distorted anatomy",
+  "globalNegativePrompt": "readable text, letters, words, numbers, fake calligraphy, pseudo-handwriting, signature, logo, watermark, QR code, barcode, caption plaque, text box, brand mark, product label, dense wallpaper, low contrast text-safe zone, generic greeting card clipart, people, faces, hands, cropped bodies, distorted anatomy",
   "globalCardArtRules": [
     "Card background art must be text-free. CustomCard overlays exact copy later.",
     "Keep a clean text-safe area and generous margins.",
     "Use portrait 5:7 composition for card backgrounds.",
     "Avoid competitor references and brand marks.",
-    "Prefer distinct occasion signals over repeating the same botanical motif."
+    "Prefer one specific remembered object over repeating broad occasion symbols."
   ],
+  "customArtCardContract": {
+    "purpose": "A great CustomCard asset must feel like it came from a relationship, not an occasion aisle.",
+    "requiredAssetFields": [
+      "relationship",
+      "memoryObject",
+      "emotionalTruth",
+      "artMove",
+      "forbiddenCliches",
+      "textSafeComposition"
+    ],
+    "promptRules": [
+      "Every custom art card prompt must include the recipient relationship, remembered object, emotional job, art move, and forbidden cliches.",
+      "The remembered object should be visually primary; the occasion symbol should be secondary or absent.",
+      "Do not generate raster text; all readable copy is rendered later by CustomCard.",
+      "Leave a deliberate proof-safe copy zone with enough contrast for app-rendered text.",
+      "Avoid greeting-card aisle shorthand unless it is grounded in the specific memory.",
+      "Prefer tactile art direction: paper cuts, letterpress, editorial still life, risograph, gouache, ink wash, collage, or photographed stationery materials."
+    ],
+    "gradingRubric": [
+      {
+        "name": "specificity",
+        "pass": "A viewer can name the relationship detail without reading the label."
+      },
+      {
+        "name": "emotional fit",
+        "pass": "The asset supports the message's job: comfort, repair, pride, gratitude, or celebration."
+      },
+      {
+        "name": "print usability",
+        "pass": "The center or chosen copy zone remains calm, high contrast, and margin-safe."
+      },
+      {
+        "name": "anti-generic check",
+        "pass": "The card would be worse if reduced to balloons, hearts, caps, rings, stars, or florals alone."
+      }
+    ]
+  },
   "outputs": {
     "cardBackgrounds": "public/generated/theme-inventory/",
     "marketingAssets": "public/generated/marketing/",
@@ -59,7 +96,133 @@
       ]
     },
     {
+      "id": "custom-art-card-studies-v2",
+      "recommendedGenerator": "comfy-card-background-or-built-in-imagegen",
+      "width": 960,
+      "height": 1344,
+      "artCardRules": [
+        "Generate a portrait 5:7 custom art card background, not a finished raster-text card.",
+        "Make the remembered object visually primary and emotionally plausible.",
+        "Keep the copy zone clean enough for deterministic app-rendered text.",
+        "No people, faces, hands, readable text, logos, or brand marks.",
+        "Do not use generic occasion symbols unless the asset contract names why that symbol belongs."
+      ],
+      "assets": [
+        {
+          "id": "study-dad-tomato-garden",
+          "filename": "public/generated/theme-inventory/study-dad-tomato-garden.webp",
+          "occasion": "birthday",
+          "artCardContract": {
+            "relationship": "Birthday card for the parent who texts harvest photos before saying hello",
+            "memoryObject": "sun-warmed tomatoes, twine knots, seed packet dates",
+            "emotionalTruth": "You notice the ordinary care he puts into growing things",
+            "artMove": "Letterpress tomato trellis around a clean center, late-July light, hand-cut paper texture",
+            "forbiddenCliches": [
+              "balloons",
+              "cake clipart",
+              "generic party confetti"
+            ],
+            "textSafeComposition": "Open ivory center with quiet edge detail and high contrast for dark app text"
+          },
+          "prompt": "Premium custom greeting-card background inspired by a backyard tomato garden: tomato vines tied to twine, seed packet shapes without readable text, warm late-summer light, tactile letterpress paper, terracotta, leaf green, butter yellow, and deep ink accents."
+        },
+        {
+          "id": "study-lena-basil-thanks",
+          "filename": "public/generated/theme-inventory/study-lena-basil-thanks.webp",
+          "occasion": "thank-you",
+          "artCardContract": {
+            "relationship": "Thank-you card for the neighbor who kept the apartment alive while you were gone",
+            "memoryObject": "windowsill basil, chipped ceramic watering can, one orange on the counter",
+            "emotionalTruth": "Small practical help became real care",
+            "artMove": "Controlled citrus and herb corner illustration with a quiet proof-safe middle",
+            "forbiddenCliches": [
+              "big THANK YOU lettering",
+              "gift bows",
+              "generic gratitude florals"
+            ],
+            "textSafeComposition": "Sparse top-left and lower-right objects, uncluttered center"
+          },
+          "prompt": "Portrait stationery artwork for a neighbor thank-you card: basil leaves in a windowsill, tiny ceramic watering-can silhouette, one warm orange, editorial paper texture, sage, citrus, ivory, and warm clay palette, intimate and specific."
+        },
+        {
+          "id": "study-maya-blue-pencil-thesis",
+          "filename": "public/generated/theme-inventory/study-maya-blue-pencil-thesis.webp",
+          "occasion": "graduation",
+          "artCardContract": {
+            "relationship": "Graduation card from a sibling who saw the edits, doubts, and last push",
+            "memoryObject": "blue pencil marks, library receipt, coffee ring on a draft",
+            "emotionalTruth": "The accomplishment was earned in private before it became public",
+            "artMove": "Navy editorial paper with one gold margin line and abstract annotation rhythm",
+            "forbiddenCliches": [
+              "cap as the whole concept",
+              "diploma scroll",
+              "school seal"
+            ],
+            "textSafeComposition": "Calm center panel with abstract margin marks kept outside the copy zone"
+          },
+          "prompt": "Custom graduation card background built from thesis-draft materials: abstract blue pencil marks, a blank library receipt shape with no text, coffee ring, deep navy paper, muted gold rule line, scholarly but personal, tactile print texture."
+        },
+        {
+          "id": "study-foil-covered-casserole",
+          "filename": "public/generated/theme-inventory/study-foil-covered-casserole.webp",
+          "occasion": "sympathy",
+          "artCardContract": {
+            "relationship": "Sympathy card for showing up with practical care when words are thin",
+            "memoryObject": "foil-covered casserole, house key, quiet porch light",
+            "emotionalTruth": "Care can be useful and quiet instead of dramatic",
+            "artMove": "Low-saturation still life cropped like a small act of service",
+            "forbiddenCliches": [
+              "lilies",
+              "crosses",
+              "sunset silhouettes",
+              "dramatic sorrow"
+            ],
+            "textSafeComposition": "Large calm upper field with still-life objects weighted low"
+          },
+          "prompt": "Restrained sympathy card background: foil-covered casserole dish, small house-key shape, quiet warm porch-light glow, gray-green and ivory palette, soft paper grain, compassionate but practical, no religious symbols."
+        },
+        {
+          "id": "study-coffee-rings-apart",
+          "filename": "public/generated/theme-inventory/study-coffee-rings-apart.webp",
+          "occasion": "friendship",
+          "artCardContract": {
+            "relationship": "Long-distance friendship card for the person who still knows the old joke",
+            "memoryObject": "two coffee rings, transit-line curve, folded note corner",
+            "emotionalTruth": "The friendship still has a shared table even across distance",
+            "artMove": "Warm paper field with a map-line gesture between two small table marks",
+            "forbiddenCliches": [
+              "best-friend slogans",
+              "stars",
+              "cartoon mugs"
+            ],
+            "textSafeComposition": "Objects sit near opposite corners with a quiet center path"
+          },
+          "prompt": "Everyday friendship card background with two subtle coffee-ring marks, a curved transit-map line with no station names, folded note-paper corner, warm ivory paper, deep teal, ochre, and ink accents, intimate and unposed."
+        },
+        {
+          "id": "study-client-sample-swatches",
+          "filename": "public/generated/theme-inventory/study-client-sample-swatches.webp",
+          "occasion": "business customer anniversary",
+          "artCardContract": {
+            "relationship": "Customer anniversary card that feels like a human account memory, not a CRM blast",
+            "memoryObject": "sample swatches, package insert, date stamp, tiny product token",
+            "emotionalTruth": "The business remembers concrete work, not just an account date",
+            "artMove": "Editorial stationery composition with tactile samples and disciplined professional color",
+            "forbiddenCliches": [
+              "handshake icons",
+              "corporate swooshes",
+              "dashboards",
+              "logos"
+            ],
+            "textSafeComposition": "Structured blank center with small objects along one edge"
+          },
+          "prompt": "Professional custom card background for a customer anniversary: sample swatches, blank package insert, abstract date-stamp shape with no numbers, tiny product token, deep green, terracotta, ivory, muted gold, premium editorial stationery."
+        }
+      ]
+    },
+    {
       "id": "theme-inventory-fronts",
+      "status": "legacy-fallback",
       "recommendedGenerator": "comfy-card-background",
       "width": 960,
       "height": 1344,

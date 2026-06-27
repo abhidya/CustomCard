@@ -36,13 +36,30 @@
       "memory_notes": { "maxItems": 12, "itemMinLength": 1, "itemMaxLength": 500 }
     }
   },
+  "qualityContract": {
+    "customArtCardPrinciples": [
+      "A strong card is anchored in a relationship detail, not an occasion label.",
+      "The card must choose one remembered object, scene, habit, phrase, or practical act as its visual anchor.",
+      "Copy should name the emotional job: pride, comfort, gratitude, repair, encouragement, or celebration.",
+      "Art direction must preserve a text-safe zone because readable copy is rendered by CustomCard, not the image model.",
+      "The generator should avoid generic greeting-card symbols unless the memory specifically earns them."
+    ],
+    "artDirectionMustInclude": [
+      "remembered object or scene",
+      "emotional job",
+      "composition and text-safe zone",
+      "style, palette, and material feel",
+      "forbidden cliches",
+      "no readable text, no logos, no people, no faces, no hands"
+    ]
+  },
   "panelCopy": {
     "wireFields": ["id", "headline", "body", "art_direction"],
     "panelIdsSource": "render-packet-contract.json",
     "copyLimitsSource": "render-packet-contract.json"
   },
   "imageResult": {
-    "wireFields": ["panel_id", "image_url", "revised_prompt", "width", "height"],
+    "wireFields": ["panel_id", "image_url", "revised_prompt", "width", "height", "normalization"],
     "targetSource": "render-packet-contract.json"
   },
   "response": {

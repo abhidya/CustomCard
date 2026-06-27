@@ -124,6 +124,28 @@ Make the website prove three things in the first 30 seconds:
 
 The strongest next visual direction is "proofs with memory." Keep the warm stationery desk, but show actual 5 x 7 proofs with short, deterministic, readable app text layered by the product. Generated background art should remain text-free; the website mockups can show app-rendered text.
 
+## Custom Art Card Contract
+
+The previous "theme inventory" direction was too category-first. More occasions did not make the product feel more custom; it made it feel like a template aisle with nicer paper. A great CustomCard front should pass this contract before it is allowed into the website:
+
+| Contract field | What it must do | Reject when |
+| --- | --- | --- |
+| Relationship | Names who the card is really for, not just the occasion. | It could be sent to any coworker, parent, friend, or customer. |
+| Remembered object | Gives the art one concrete anchor: tomato twine, blue pencil marks, basil, foil casserole, coffee rings, sample swatches. | The only idea is balloons, hearts, caps, rings, flowers, stars, or confetti. |
+| Emotional job | Says what the card is trying to do: pride, comfort, gratitude, repair, encouragement, celebration. | It only says "warm," "premium," or "heartfelt." |
+| Art move | Chooses a material and composition: letterpress trellis, editorial still life, paper collage, margin annotations, low-saturation care package. | It reads like stock greeting-card background art. |
+| Copy zone | Protects a deliberate area for app-rendered text. | The image model is asked to render words or the art crowds the message area. |
+| Forbidden cliches | Lists what the card refuses to use. | The prompt has no negative taste boundary. |
+
+Good examples to generate next:
+
+- Dad's tomato garden birthday: tomato vines, twine, seed packet dates; avoid balloons and cake clipart.
+- Maya's blue-pencil thesis: abstract annotations, library receipt, coffee ring; avoid caps as the whole concept.
+- Lena watered the basil: windowsill basil, chipped watering can, one orange; avoid generic thank-you script.
+- Foil-covered casserole sympathy: practical care still life; avoid lilies, crosses, sunset silhouettes.
+- Two coffee rings apart: long-distance friendship through table marks and transit-line motion; avoid best-friend slogans.
+- Client sample swatches: business anniversary with tactile account memory; avoid handshake icons and CRM dashboards.
+
 ## Better Asset Ideas To Add
 
 ### Priority 1 - Replace The Hero With A CustomCard-Specific Proof

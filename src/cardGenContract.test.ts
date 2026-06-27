@@ -58,6 +58,21 @@ const validResponse: CardGenResponse = {
   generatedBy: "ai-text-only"
 };
 
+const normalizedImage = {
+  panelId: "front" as const,
+  imageUrl: "data:image/jpeg;base64,abc123",
+  width: renderPacketTarget.widthPixels,
+  height: renderPacketTarget.heightPixels,
+  normalization: {
+    status: "normalized-to-render-packet" as const,
+    sourceWidth: 1024,
+    sourceHeight: 1792,
+    targetWidth: renderPacketTarget.widthPixels,
+    targetHeight: renderPacketTarget.heightPixels,
+    operation: "resize-crop" as const
+  }
+};
+
 describe("buildCardGenSidecarContract", () => {
   it("exports the shared sidecar schema contract", () => {
     expect(cardGenSchemaContract.request.wireFields).toEqual([
@@ -259,11 +274,30 @@ describe("validateCardGenResponse", () => {
   it("rejects image result with wrong dimensions", () => {
     const response: CardGenResponse = {
       ...validResponse,
-      images: [{ panelId: "front", imageUrl: "https://example.com/img.png", width: 1024, height: 1024 }],
+      images: [{ ...normalizedImage, width: 1024, height: 1024 }],
       generatedBy: "ai-text-and-image"
     };
     const issues = validateCardGenResponse(response);
     expect(issues).toEqual(expect.arrayContaining([expect.stringContaining("1500×2100")]));
+  });
+
+  it("rejects image result without normalization proof", () => {
+    const response = {
+      ...validResponse,
+      images: [{ panelId: "front", imageUrl: "https://example.com/img.png", width: 1500, height: 2100 }],
+      generatedBy: "ai-text-and-image"
+    } as CardGenResponse;
+    const issues = validateCardGenResponse(response);
+    expect(issues).toEqual(expect.arrayContaining([expect.stringContaining("normalization proof")]));
+  });
+
+  it("accepts image result only after normalization proof targets Render Packet size", () => {
+    const response: CardGenResponse = {
+      ...validResponse,
+      images: [normalizedImage],
+      generatedBy: "ai-text-and-image"
+    };
+    expect(validateCardGenResponse(response)).toEqual([]);
   });
 
   it("rejects ai-text-and-image claim with no images", () => {

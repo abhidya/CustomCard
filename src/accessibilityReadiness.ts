@@ -1,3 +1,5 @@
+import { defineReadinessRegister } from "./readinessRegister.mjs";
+
 export const requiredAccessibilityGateIds = [
   "keyboard-path",
   "labels-and-names",
@@ -254,49 +256,14 @@ export const accessibilityReadinessGates: AccessibilityReadinessGate[] = [
   }
 ];
 
-export function summarizeAccessibilityReadiness(
-  gates: AccessibilityReadinessGate[] = accessibilityReadinessGates
-): AccessibilityReadinessSummary {
-  const validationIssues = validateAccessibilityReadiness(gates);
-  const localEvidenceRequired = gates.filter((gate) => gate.status === "local-evidence-required").length;
-  const externalAuditBlocked = gates.filter((gate) => gate.status === "external-audit-blocked").length;
-
-  return {
-    total: gates.length,
-    repoLocalSignals: gates.filter((gate) => gate.status === "repo-local-signal").length,
-    localEvidenceRequired,
-    externalAuditBlocked,
-    customerWebGates: gates.filter((gate) => gate.surfaces.includes("customer-web")).length,
-    adminWebGates: gates.filter((gate) => gate.surfaces.includes("admin-web")).length,
-    publicLaunchBlocked: gates.filter((gate) => gate.blocksPublicLaunch).length,
-    externalAuditRequired: gates.filter((gate) => gate.externalAuditRequired).length,
-    publicClaimsAllowed: gates.filter((gate) => gate.publicClaimAllowed).length,
-    liveAuditClaims: gates.filter((gate) => gate.liveAuditClaimed).length,
-    auditArtifactsAttached: gates.reduce((total, gate) => total + gate.auditArtifactRefs.length, 0),
-    requiredGateIds: [...requiredAccessibilityGateIds],
-    requiredEvidence: Array.from(new Set(gates.flatMap((gate) => gate.requiredEvidence))).sort(),
-    validationCommands: Array.from(new Set(gates.flatMap((gate) => gate.validationCommands))).sort(),
-    blockers: gates.flatMap((gate) => (gate.blocker ? [gate.blocker] : [])),
-    validationIssues,
-    status:
-      validationIssues.length > 0
-        ? "invalid-readiness-contract"
-        : localEvidenceRequired > 0 || externalAuditBlocked > 0
-          ? "blocked-on-local-and-external-evidence"
-          : "ready-for-external-audit-request"
-  };
-}
-
-export function validateAccessibilityReadiness(
-  gates: AccessibilityReadinessGate[] = accessibilityReadinessGates
-): string[] {
-  const issues: string[] = [];
-  const gatesById = new Map<string, AccessibilityReadinessGate>();
-
-  for (const gate of gates) {
-    if (gatesById.has(gate.id)) issues.push(`Duplicate accessibility readiness gate: ${gate.id}.`);
-    gatesById.set(gate.id, gate);
-
+const accessibilityReadinessRegister = defineReadinessRegister<AccessibilityReadinessGate>({
+  domainLabel: "accessibility",
+  items: accessibilityReadinessGates,
+  requiredIds: [...requiredAccessibilityGateIds],
+  duplicateMessage: (id) => `Duplicate accessibility readiness gate: ${id}.`,
+  missingMessage: (id) => `Missing accessibility readiness gate: ${id}.`,
+  itemRules(gate) {
+    const issues: string[] = [];
     if (!allowedStatuses.has(gate.status)) {
       issues.push(`Accessibility readiness gate ${gate.id} has unsupported status.`);
     }
@@ -341,13 +308,53 @@ export function validateAccessibilityReadiness(
     if (containsUnsafeAuditClaim(gate)) {
       issues.push(`Accessibility readiness gate ${gate.id} contains unsafe live-audit or certification claim language.`);
     }
+    return issues;
+  },
+  summarize(gates) {
+    return {
+      repoLocalSignals: gates.filter((gate) => gate.status === "repo-local-signal").length,
+      localEvidenceRequired: gates.filter((gate) => gate.status === "local-evidence-required").length,
+      externalAuditBlocked: gates.filter((gate) => gate.status === "external-audit-blocked").length,
+      customerWebGates: gates.filter((gate) => gate.surfaces.includes("customer-web")).length,
+      adminWebGates: gates.filter((gate) => gate.surfaces.includes("admin-web")).length,
+      publicLaunchBlocked: gates.filter((gate) => gate.blocksPublicLaunch).length,
+      externalAuditRequired: gates.filter((gate) => gate.externalAuditRequired).length,
+      publicClaimsAllowed: gates.filter((gate) => gate.publicClaimAllowed).length,
+      liveAuditClaims: gates.filter((gate) => gate.liveAuditClaimed).length,
+      auditArtifactsAttached: gates.reduce((total, gate) => total + gate.auditArtifactRefs.length, 0),
+      requiredGateIds: [...requiredAccessibilityGateIds],
+      requiredEvidence: Array.from(new Set(gates.flatMap((gate) => gate.requiredEvidence))).sort(),
+      validationCommands: Array.from(new Set(gates.flatMap((gate) => gate.validationCommands))).sort()
+    };
   }
+});
 
-  for (const requiredId of requiredAccessibilityGateIds) {
-    if (!gatesById.has(requiredId)) issues.push(`Missing accessibility readiness gate: ${requiredId}.`);
-  }
+export function summarizeAccessibilityReadiness(
+  gates: AccessibilityReadinessGate[] = accessibilityReadinessGates
+): AccessibilityReadinessSummary {
+  type AccessibilityRegisterSummary = Omit<
+    AccessibilityReadinessSummary,
+    "blockers" | "validationIssues" | "status"
+  > & { registerIssues: string[] };
+  const registerSummary = accessibilityReadinessRegister.summarize(gates) as unknown as AccessibilityRegisterSummary;
 
-  return issues;
+  return {
+    ...registerSummary,
+    blockers: gates.flatMap((gate) => (gate.blocker ? [gate.blocker] : [])),
+    validationIssues: registerSummary.registerIssues,
+    status:
+      registerSummary.registerIssues.length > 0
+        ? "invalid-readiness-contract"
+        : registerSummary.localEvidenceRequired > 0 || registerSummary.externalAuditBlocked > 0
+          ? "blocked-on-local-and-external-evidence"
+          : "ready-for-external-audit-request"
+  };
+}
+
+export function validateAccessibilityReadiness(
+  gates: AccessibilityReadinessGate[] = accessibilityReadinessGates
+): string[] {
+  return accessibilityReadinessRegister.validate(gates);
 }
 
 function containsUnsafeAuditClaim(gate: AccessibilityReadinessGate): boolean {

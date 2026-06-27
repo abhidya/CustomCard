@@ -1,5 +1,11 @@
 import type { VendorId } from "./customerWorkflow";
 import {
+  buildRetailPrinterOperationPolicy as buildSharedRetailPrinterOperationPolicy,
+  buildRetailPrinterProviderOperationEntrypoint as buildSharedRetailPrinterProviderOperationEntrypoint,
+  getRetailPrinterOperationProfile,
+  retailPrinterSharedForbiddenFields
+} from "./retailPrinterOperationPacketData.mjs";
+import {
   retailPrinterRegistryOperationKinds,
   retailPrinterRegistryProductLinks,
   retailPrinterRegistryRequiredVendorIds
@@ -164,6 +170,15 @@ export interface RetailPrinterProductLinkContract {
   pricingObservationId: string;
   requiredUrlTokens: string[];
   operationEvidence: Record<RetailPrinterOperationKind, RetailPrinterProviderOperationEvidence>;
+  portalHost: string;
+  minimumQuantity: number;
+  quantityIncrement: number;
+  supportedFulfillmentModes: RetailPrinterFulfillmentMode[];
+  providerAccountMode: RetailPrinterProviderAccountMode;
+  acceptedArtifactKinds: RetailPrinterUploadArtifactKind[];
+  uploadPreflightChecks: string[];
+  candidateOfferCodes: string[];
+  portalApplicationPacketIds: string[];
 }
 
 export interface RetailPrinterCertificationPacket {
@@ -190,23 +205,11 @@ export const retailPrinterRequiredVendorIds = retailPrinterRegistryRequiredVendo
 export const retailPrinterOperationKinds = retailPrinterRegistryOperationKinds as RetailPrinterOperationKind[];
 export const retailPrinterProductLinks = retailPrinterRegistryProductLinks as Record<RetailPrinterVendorId, RetailPrinterProductLinkContract>;
 
-const vendorEvidence = {
-  price: [
-    "Official current price extraction",
-    "Tax and coupon portal application proof",
-    "Store availability or shipping-window proof"
-  ],
-  upload: ["Vendor upload API or certified browser automation contract", "Asset-size acceptance proof", "Crop/fold preview screenshot"],
-  order: ["Vendor certification", "Explicit customer approval record", "Payment and cancellation recovery proof"]
-};
-
-const sharedForbiddenFields = ["raw relationship memories", "raw payment card data", "unapproved recipient PII"];
-const sharedGateIds = ["vendor-certification", "real-order-kill-switch", "customer-approval"];
 export const retailPrinterVendorOperationPolicies: Record<RetailPrinterVendorId, RetailPrinterVendorOperationPolicy> = {
-  walmart: buildRetailPrinterVendorOperationPolicy(retailPrinterProductLinks.walmart, retailPrinterRegistryProductLinks.walmart),
-  fedex: buildRetailPrinterVendorOperationPolicy(retailPrinterProductLinks.fedex, retailPrinterRegistryProductLinks.fedex),
-  cvs: buildRetailPrinterVendorOperationPolicy(retailPrinterProductLinks.cvs, retailPrinterRegistryProductLinks.cvs),
-  walgreens: buildRetailPrinterVendorOperationPolicy(retailPrinterProductLinks.walgreens, retailPrinterRegistryProductLinks.walgreens)
+  walmart: buildRetailPrinterVendorOperationPolicy(retailPrinterProductLinks.walmart),
+  fedex: buildRetailPrinterVendorOperationPolicy(retailPrinterProductLinks.fedex),
+  cvs: buildRetailPrinterVendorOperationPolicy(retailPrinterProductLinks.cvs),
+  walgreens: buildRetailPrinterVendorOperationPolicy(retailPrinterProductLinks.walgreens)
 };
 
 export function getRetailPrinterProductLink(vendorId: RetailPrinterVendorId): RetailPrinterProductLinkContract {
@@ -236,7 +239,7 @@ export function buildRetailPrinterAdapterContract(
   uploadAssetExpectation: string
 ): RetailPrinterAdapterContract {
   const operationPolicy = getRetailPrinterVendorOperationPolicy(productLink.vendorId);
-  const providerEntrypoints = buildProviderEntrypoints(productLink, operationPolicy.portalHost);
+  const providerEntrypoints = buildProviderEntrypoints(productLink);
   return {
     vendorId: productLink.vendorId,
     providerAdapterId: productLink.providerAdapterId,
@@ -342,14 +345,14 @@ export function validateRetailPrinterProviderEntrypoints(adapter: RetailPrinterA
   const issues: string[] = [];
   const productLink = getRetailPrinterProductLink(adapter.vendorId);
   const expectedModes: Record<RetailPrinterOperationKind, RetailPrinterEntrypointEvidenceMode> = {
-    "fetch-price": "public-product-price-review",
-    "upload-image": "provider-project-preview-review",
-    "place-order": "provider-cart-final-review"
+    "fetch-price": getRetailPrinterOperationProfile("fetch-price").evidenceMode,
+    "upload-image": getRetailPrinterOperationProfile("upload-image").evidenceMode,
+    "place-order": getRetailPrinterOperationProfile("place-order").evidenceMode
   };
   const expectedCouponModes: Record<RetailPrinterOperationKind, RetailPrinterEntrypointCouponMode> = {
-    "fetch-price": "apply-during-price-collection",
-    "upload-image": "preserve-price-collection-coupon-state",
-    "place-order": "final-cart-coupon-recheck"
+    "fetch-price": getRetailPrinterOperationProfile("fetch-price").providerEntrypointCouponMode,
+    "upload-image": getRetailPrinterOperationProfile("upload-image").providerEntrypointCouponMode,
+    "place-order": getRetailPrinterOperationProfile("place-order").providerEntrypointCouponMode
   };
 
   for (const kind of retailPrinterOperationKinds) {
@@ -469,7 +472,7 @@ export function validateRetailPrinterOperationBlueprint(
   if (operation.requestBlueprint.responseEvidence.length < 3) {
     issues.push(`${vendorId} ${operation.kind} operation must define response evidence.`);
   }
-  for (const forbiddenField of sharedForbiddenFields) {
+  for (const forbiddenField of retailPrinterSharedForbiddenFields) {
     if (!operation.requestBlueprint.forbiddenFields.includes(forbiddenField)) {
       issues.push(`${vendorId} ${operation.kind} operation must forbid ${forbiddenField}.`);
     }
@@ -574,6 +577,10 @@ function buildOperations(
     return entrypoint;
   };
 
+  const priceProfile = getRetailPrinterOperationProfile("fetch-price");
+  const uploadProfile = getRetailPrinterOperationProfile("upload-image");
+  const orderProfile = getRetailPrinterOperationProfile("place-order");
+
   return [
     {
       kind: "fetch-price",
@@ -583,10 +590,10 @@ function buildOperations(
       providerEntrypoint: getEntrypoint("fetch-price"),
       noNetwork: true,
       preparesRequest: false,
-      requiredEvidence: vendorEvidence.price,
-      certificationGateIds: sharedGateIds,
+      requiredEvidence: priceProfile.adapterRequiredEvidence,
+      certificationGateIds: priceProfile.adapterCertificationGateIds,
       requestBlueprint: buildPriceBlueprint(),
-      blockedReason: "Only review-only public price observations are available; no certified live quote endpoint is configured."
+      blockedReason: priceProfile.adapterBlockedReason
     },
     {
       kind: "upload-image",
@@ -596,10 +603,10 @@ function buildOperations(
       providerEntrypoint: getEntrypoint("upload-image"),
       noNetwork: true,
       preparesRequest: false,
-      requiredEvidence: vendorEvidence.upload,
-      certificationGateIds: sharedGateIds,
+      requiredEvidence: uploadProfile.adapterRequiredEvidence,
+      certificationGateIds: uploadProfile.adapterCertificationGateIds,
       requestBlueprint: buildUploadBlueprint(),
-      blockedReason: "Image upload requires vendor certification plus a certified API or reviewed browser-session automation contract."
+      blockedReason: uploadProfile.adapterBlockedReason
     },
     {
       kind: "place-order",
@@ -609,65 +616,18 @@ function buildOperations(
       providerEntrypoint: getEntrypoint("place-order"),
       noNetwork: true,
       preparesRequest: false,
-      requiredEvidence: vendorEvidence.order,
-      certificationGateIds: [...sharedGateIds, "payment-certification", "cancellation-recovery", "physical-print-qa"],
+      requiredEvidence: orderProfile.adapterRequiredEvidence,
+      certificationGateIds: orderProfile.adapterCertificationGateIds,
       requestBlueprint: buildOrderBlueprint(),
-      blockedReason: "Order placement remains disabled until vendor certification, payment, recovery, and kill-switch gates are proven."
+      blockedReason: orderProfile.adapterBlockedReason
     }
   ];
 }
 
-function buildProviderEntrypoints(
-  productLink: RetailPrinterProductLinkContract,
-  portalHost: string
-): RetailPrinterProviderOperationEntrypoint[] {
-  return [
-    {
-      operation: "fetch-price",
-      label: `${productLink.vendorName} price collection entrypoint`,
-      url: productLink.productUrl,
-      portalHost,
-      productSku: productLink.productSku,
-      productIdentityTokens: productLink.requiredUrlTokens,
-      publicEvidence: productLink.operationEvidence["fetch-price"],
-      evidenceMode: "public-product-price-review",
-      couponMode: "apply-during-price-collection",
-      requiresCustomerApproval: true,
-      noNetwork: true,
-      requestPreparationBlocked: true,
-      orderSubmissionBlocked: true
-    },
-    {
-      operation: "upload-image",
-      label: `${productLink.vendorName} upload preview entrypoint`,
-      url: productLink.productUrl,
-      portalHost,
-      productSku: productLink.productSku,
-      productIdentityTokens: productLink.requiredUrlTokens,
-      publicEvidence: productLink.operationEvidence["upload-image"],
-      evidenceMode: "provider-project-preview-review",
-      couponMode: "preserve-price-collection-coupon-state",
-      requiresCustomerApproval: true,
-      noNetwork: true,
-      requestPreparationBlocked: true,
-      orderSubmissionBlocked: true
-    },
-    {
-      operation: "place-order",
-      label: `${productLink.vendorName} final cart review entrypoint`,
-      url: productLink.productUrl,
-      portalHost,
-      productSku: productLink.productSku,
-      productIdentityTokens: productLink.requiredUrlTokens,
-      publicEvidence: productLink.operationEvidence["place-order"],
-      evidenceMode: "provider-cart-final-review",
-      couponMode: "final-cart-coupon-recheck",
-      requiresCustomerApproval: true,
-      noNetwork: true,
-      requestPreparationBlocked: true,
-      orderSubmissionBlocked: true
-    }
-  ];
+function buildProviderEntrypoints(productLink: RetailPrinterProductLinkContract): RetailPrinterProviderOperationEntrypoint[] {
+  return retailPrinterOperationKinds.map(
+    (operation) => buildSharedRetailPrinterProviderOperationEntrypoint(productLink, operation) as RetailPrinterProviderOperationEntrypoint
+  );
 }
 
 function buildPriceBlueprint(): RetailPrinterOperationRequestBlueprint {
@@ -687,7 +647,7 @@ function buildPriceBlueprint(): RetailPrinterOperationRequestBlueprint {
       "Coupon application status",
       "Pickup or shipping window"
     ],
-    forbiddenFields: sharedForbiddenFields,
+    forbiddenFields: retailPrinterSharedForbiddenFields,
     successCriteria: [
       "Quote evidence matches the persisted product URL and SKU",
       "No payment or order submission occurs while fetching price"
@@ -711,7 +671,7 @@ function buildUploadBlueprint(): RetailPrinterOperationRequestBlueprint {
       "Crop/fold preview state",
       "Provider project or cart reference without order submission"
     ],
-    forbiddenFields: sharedForbiddenFields,
+    forbiddenFields: retailPrinterSharedForbiddenFields,
     successCriteria: [
       "Preview shows the intended 5x7 panels",
       "No raw memory text leaves the system",
@@ -736,7 +696,7 @@ function buildOrderBlueprint(): RetailPrinterOperationRequestBlueprint {
       "Cancellation/refund policy snapshot",
       "Audit event IDs for approval, payment, and order submission"
     ],
-    forbiddenFields: sharedForbiddenFields,
+    forbiddenFields: retailPrinterSharedForbiddenFields,
     successCriteria: [
       "Order confirmation references the approved cart and quote evidence",
       "Payment capture, cancellation, and recovery audit events are persisted"
@@ -744,48 +704,17 @@ function buildOrderBlueprint(): RetailPrinterOperationRequestBlueprint {
   };
 }
 
-interface RetailPrinterVendorPolicyOptions {
-  portalHost: string;
-  minimumQuantity: number;
-  quantityIncrement: number;
-  supportedFulfillmentModes: RetailPrinterFulfillmentMode[];
-  providerAccountMode: RetailPrinterProviderAccountMode;
-  acceptedArtifactKinds: RetailPrinterUploadArtifactKind[];
-  uploadPreflightChecks: string[];
-}
-
-function buildRetailPrinterVendorOperationPolicy(
-  productLink: RetailPrinterProductLinkContract,
-  options: RetailPrinterVendorPolicyOptions
-): RetailPrinterVendorOperationPolicy {
+function buildRetailPrinterVendorOperationPolicy(productLink: RetailPrinterProductLinkContract): RetailPrinterVendorOperationPolicy {
   return {
     vendorId: productLink.vendorId,
     providerAdapterId: productLink.providerAdapterId,
     productUrl: productLink.productUrl,
     productSku: productLink.productSku,
-    portalHost: options.portalHost,
+    portalHost: productLink.portalHost,
     productIdentityTokens: productLink.requiredUrlTokens,
-    price: {
-      kind: "fetch-price",
-      minimumQuantity: options.minimumQuantity,
-      quantityIncrement: options.quantityIncrement,
-      supportedFulfillmentModes: options.supportedFulfillmentModes,
-      couponProof: "same-cart-provider-portal",
-      requiredEvidenceFields: ["subtotal", "taxStatus", "couponApplicationStatus", "pickupOrShippingWindow"]
-    },
-    upload: {
-      kind: "upload-image",
-      acceptedArtifactKinds: options.acceptedArtifactKinds,
-      providerAccountMode: options.providerAccountMode,
-      preflightChecks: options.uploadPreflightChecks,
-      previewEvidenceFields: ["providerPreviewScreenshot", "assetAcceptanceResult", "cropFoldState"]
-    },
-    order: {
-      kind: "place-order",
-      requiredApprovalFields: ["customerApprovalId", "quoteEvidenceId", "paymentAuthorizationReference"],
-      prohibitedUntilEvidence: ["vendorCertification", "physicalPrintQa", "realOrderKillSwitch", "customerFinalApproval"],
-      recoveryEvidenceFields: ["cancellationRecoveryPlanId", "wrongStoreRecoveryPlanId"]
-    }
+    price: buildSharedRetailPrinterOperationPolicy(productLink, "fetch-price") as unknown as RetailPrinterPriceOperationPolicy,
+    upload: buildSharedRetailPrinterOperationPolicy(productLink, "upload-image") as unknown as RetailPrinterUploadOperationPolicy,
+    order: buildSharedRetailPrinterOperationPolicy(productLink, "place-order") as unknown as RetailPrinterOrderOperationPolicy
   };
 }
 

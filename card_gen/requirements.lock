@@ -79,6 +79,8 @@ opentelemetry-api==1.42.1
     # via pydantic-ai-slim
 packaging==26.2
     # via pytest
+pillow==10.4.0
+    # via card-gen (card_gen/pyproject.toml)
 pluggy==1.6.0
     # via pytest
 pydantic==2.13.4

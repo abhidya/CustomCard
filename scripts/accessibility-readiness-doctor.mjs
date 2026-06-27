@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { checkIncludes, readTextFiles, runDoctorManifest } from "./doctor-harness.mjs";
 
 const files = {
   source: "src/accessibilityReadiness.ts",
@@ -7,9 +7,7 @@ const files = {
   packageJson: "package.json"
 };
 
-const contents = Object.fromEntries(
-  Object.entries(files).map(([key, path]) => [key, readFileSync(path, "utf8")])
-);
+const contents = readTextFiles(files);
 
 const requiredGateIds = [
   "keyboard-path",
@@ -63,46 +61,12 @@ const checks = [
   ])
 ];
 
-const lanes = Array.from(new Set(checks.map((check) => check.lane))).map((lane) => {
-  const laneChecks = checks.filter((check) => check.lane === lane);
-  return {
-    lane,
-    passed: laneChecks.filter((check) => check.passed).length,
-    total: laneChecks.length,
-    status: laneChecks.every((check) => check.passed) ? "ready" : "blocked"
-  };
+runDoctorManifest({
+  service: "customcard-accessibility-readiness-doctor",
+  metrics: {
+    requiredGates: requiredGateIds.length,
+    liveExternalAuditClaimed: false,
+    publicAuditClaimsAllowed: false
+  },
+  checks
 });
-
-const failed = checks.filter((check) => !check.passed);
-
-console.log(
-  JSON.stringify(
-    {
-      service: "customcard-accessibility-readiness-doctor",
-      status: failed.length === 0 ? "ready" : "blocked",
-      requiredGates: requiredGateIds.length,
-      liveExternalAuditClaimed: false,
-      publicAuditClaimsAllowed: false,
-      lanes,
-      checks,
-      blockers: failed.map((check) => ({ id: check.id, lane: check.lane, detail: check.detail }))
-    },
-    null,
-    2
-  )
-);
-
-if (failed.length > 0) process.exit(1);
-
-function checkIncludes(lane, id, text, required) {
-  const missing = required.filter((needle) => !text.includes(needle));
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Found ${required.length} required accessibility readiness signals.`
-        : `Missing accessibility readiness signals: ${missing.join(", ")}`
-  };
-}

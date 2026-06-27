@@ -1,13 +1,7 @@
-export const requiredPanelIds = ["front", "inside-left", "inside-right", "back"];
+import { panelTextLayoutDefaults, panelTextLayoutEnums } from "../src/panelTextLayoutPlanData.mjs";
 
-export const textLayoutEnums = {
-  headline_zone: ["top", "upper", "center", "lower"],
-  body_zone: ["upper", "center", "lower", "bottom"],
-  alignment: ["left", "center", "right"],
-  font_pairing: ["serif-sans", "bold-editorial", "minimal-sans", "soft-serif"],
-  color_mode: ["dark-ink", "light-ink", "accent-ink", "high-contrast"],
-  scale: ["compact", "standard", "large"]
-};
+export const requiredPanelIds = ["front", "inside-left", "inside-right", "back"];
+export const textLayoutEnums = panelTextLayoutEnums;
 
 export const cardCopyJsonSchema = {
   type: "object",
@@ -83,14 +77,7 @@ export const panelDefaults = {
     body: "A card made with care.",
     art_direction: "Coordinated front cover artwork with safe margins.",
     visual_cue: "One dominant front-cover symbol with a clean upper or lower text-safe area.",
-    text_layout: {
-      headline_zone: "upper",
-      body_zone: "lower",
-      alignment: "center",
-      font_pairing: "serif-sans",
-      color_mode: "dark-ink",
-      scale: "standard"
-    },
+    text_layout: panelTextLayoutDefaults.front,
     image_prompt:
       "Full-bleed flat 2D artwork layer for a premium 5x7 vertical front print panel, one clear hero visual idea, disciplined negative space for app-added typography, restrained edge ornament, refined print stationery composition, no all-over wallpaper pattern, no words, no letters, no typography, no logos, no watermark.",
     image_negative_prompt:
@@ -101,14 +88,7 @@ export const panelDefaults = {
     body: "A note for this moment.",
     art_direction: "Soft interior panel with room for a short message.",
     visual_cue: "Quiet left-interior opening panel with border detail and a calm center for the first note.",
-    text_layout: {
-      headline_zone: "upper",
-      body_zone: "center",
-      alignment: "center",
-      font_pairing: "soft-serif",
-      color_mode: "dark-ink",
-      scale: "standard"
-    },
+    text_layout: panelTextLayoutDefaults["inside-left"],
     image_prompt:
       "Full-bleed flat 2D artwork layer for a soft 5x7 vertical inside-left print panel, border-first stationery layout, thin refined frame, sparse corner or lower-edge motif, large quiet blank center for app-added typography, no all-over wallpaper pattern, no words, no letters, no typography, no logos, no watermark.",
     image_negative_prompt:
@@ -119,14 +99,7 @@ export const panelDefaults = {
     body: "With warm wishes.",
     art_direction: "Main message panel with readable typography and generous margins.",
     visual_cue: "Quiet right-interior message panel with matching border detail and generous open space for the main note.",
-    text_layout: {
-      headline_zone: "upper",
-      body_zone: "center",
-      alignment: "center",
-      font_pairing: "serif-sans",
-      color_mode: "dark-ink",
-      scale: "standard"
-    },
+    text_layout: panelTextLayoutDefaults["inside-right"],
     image_prompt:
       "Full-bleed flat 2D artwork layer for a clean 5x7 vertical inside-right print panel, matching border-first stationery layout, thin refined frame, sparse corner or lower-edge motif, generous quiet text-safe center for app-added typography, no all-over wallpaper pattern, no words, no letters, no typography, no logos, no watermark.",
     image_negative_prompt:
@@ -137,14 +110,7 @@ export const panelDefaults = {
     body: "Made with CustomCard. Printed locally.",
     art_direction: "Clean coordinating back panel with minimal ornamentation.",
     visual_cue: "Minimal back-cover echo with one small coordinating mark and a clean lower text-safe area.",
-    text_layout: {
-      headline_zone: "lower",
-      body_zone: "bottom",
-      alignment: "center",
-      font_pairing: "minimal-sans",
-      color_mode: "dark-ink",
-      scale: "compact"
-    },
+    text_layout: panelTextLayoutDefaults.back,
     image_prompt:
       "Full-bleed flat 2D artwork layer for a minimal 5x7 vertical back print panel, mostly negative space, one small coordinating lower mark or border echo, refined print stationery finish, no all-over wallpaper pattern, no words, no letters, no typography, no logos, no watermark.",
     image_negative_prompt:

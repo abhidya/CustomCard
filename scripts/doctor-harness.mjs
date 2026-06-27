@@ -138,6 +138,15 @@ export function buildDoctorReport(baseReport, checks) {
   };
 }
 
+export function buildDoctorManifest({ service, metrics = {}, checks }) {
+  return buildDoctorReport({ service, ...metrics }, checks);
+}
+
+export function runDoctorManifest(manifest) {
+  printDoctorReport(buildDoctorManifest(manifest));
+  exitIfBlocked(manifest.checks);
+}
+
 export function runDoctorReport(baseReport, checks) {
   printDoctorReport(buildDoctorReport(baseReport, checks));
   exitIfBlocked(checks);

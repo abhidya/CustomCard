@@ -38,6 +38,7 @@ const doctorManifest = defineDoctorManifest({
     retailPrinterRegistry: "src/retailPrinterRegistryData.mjs",
     retailPrinterContracts: "src/retailPrinterContracts.ts",
     retailPrinterAdapters: "src/retailPrinterAdapters.ts",
+    retailPrinterOperationPacketData: "src/retailPrinterOperationPacketData.mjs",
     docs: "docs/platform-expansion-design.md",
     pricingDocs: "docs/printer-pricing-research.md"
   },
@@ -124,7 +125,8 @@ const checks = [
       "providerRuntime",
       "retailPrinterRegistry",
       "retailPrinterContracts",
-      "retailPrinterAdapters"
+      "retailPrinterAdapters",
+      "retailPrinterOperationPacketData"
     ],
     signals: [
       "manual-vendor-handoff",

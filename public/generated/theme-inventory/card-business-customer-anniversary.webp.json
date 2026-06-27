@@ -1,0 +1,20 @@
+{
+  "assetId": "business-customer-anniversary",
+  "batchId": "theme-inventory-fronts",
+  "outputPath": "public/generated/theme-inventory/card-business-customer-anniversary.webp",
+  "prompt": "Card background art must be text-free. CustomCard overlays exact copy later. Keep a clean text-safe area and generous margins. Use portrait 5:7 composition for card backgrounds. Avoid competitor references and brand marks. Prefer distinct occasion signals over repeating the same botanical motif. Portrait 5:7 business customer anniversary card background. Clean editorial stationery, abstract package insert, receipt-free appreciation note shape, small product-memory token, deep green, terracotta, ivory, and muted gold palette, professional and human, wide blank center. No storefront, no people, no CRM logos, no readable text.",
+  "negativePrompt": "readable text, letters, words, numbers, fake calligraphy, signature, logo, watermark, QR code, barcode, caption plaque, text box, brand mark, product label, dense wallpaper, low contrast text-safe zone, people, faces, hands, cropped bodies, distorted anatomy",
+  "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+  "steps": 2,
+  "cfg": 1.5,
+  "sampler": "euler_ancestral",
+  "scheduler": "sgm_uniform",
+  "seed": 124465409,
+  "width": 960,
+  "height": 1344,
+  "promptId": "c1ce8baf-6774-468e-b137-660a3d5cd871",
+  "comfyUrl": "http://127.0.0.1:8188",
+  "workflowPath": "comfyui-workflows/customcard-sdxl-checkpoint.json",
+  "durationMs": 9352,
+  "bytes": 302704
+}

@@ -100,14 +100,26 @@ class CardCopyOutput(BaseModel):
     )
 
 
+class ImageNormalizationProof(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    status: Literal["normalized-to-render-packet", "verified-render-packet"]
+    source_width: int
+    source_height: int
+    target_width: int = PANEL_WIDTH
+    target_height: int = PANEL_HEIGHT
+    operation: Literal["resize-crop", "verified-target-size"]
+
+
 class CardImageResult(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     panel_id: PanelId
     image_url: str
     revised_prompt: str | None = None
-    width: int = PANEL_WIDTH
-    height: int = PANEL_HEIGHT
+    width: int
+    height: int
+    normalization: ImageNormalizationProof
 
 
 class CardGenerationResult(BaseModel):

@@ -42,6 +42,10 @@ const occasions: Array<{ label: string; value: string; color: string }> = [
   { label: "Anniversary", value: "anniversary", color: "#c2484f" },
   { label: "Thank you", value: "thank-you", color: "#33685a" },
   { label: "Sympathy", value: "sympathy", color: "#6b7280" },
+  { label: "Get well", value: "get-well", color: "#50856f" },
+  { label: "New baby", value: "new-baby", color: "#6d8ec7" },
+  { label: "Congrats", value: "congratulations", color: "#c28b2c" },
+  { label: "For work", value: "business customer anniversary", color: "#2f6c6a" },
   { label: "I’m late", value: "belated card", color: "#b4654a" },
   { label: "Not sure what to say", value: "", color: "#7d7a72" }
 ];
@@ -84,24 +88,130 @@ const trustPoints = [
   "Saved personal details are yours to edit or delete at any time."
 ];
 
-// One example per distinct artwork. Wedding and anniversary share the same art asset,
-// so they're shown as a single honest example rather than the identical card twice.
-const exampleCards = [
-  { label: "Birthday", category: "birthday", imageUrl: cardImageByCategory.birthday },
-  { label: "Graduation", category: "graduation", imageUrl: cardImageByCategory.graduation },
-  { label: "Wedding & anniversary", category: "wedding", imageUrl: cardImageByCategory.wedding },
-  { label: "Thank you", category: "thank-you", imageUrl: cardImageByCategory["thank-you"] },
-  { label: "Sympathy", category: "sympathy", imageUrl: cardImageByCategory.sympathy },
-  { label: "Friendship", category: "friendship", imageUrl: cardImageByCategory.friendship }
+interface ThemeInventoryCard {
+  title: string;
+  category: string;
+  imageUrl: string;
+  relationship: string;
+  memoryObject: string;
+  artBrief: string;
+  avoid: string;
+  tag: string;
+}
+
+const themeInventoryCards: ThemeInventoryCard[] = [
+  {
+    title: "Dad's tomato garden",
+    category: "birthday",
+    imageUrl: cardImageByCategory.birthday,
+    relationship: "Birthday card for the parent who texts harvest photos before saying hello.",
+    memoryObject: "sun-warmed tomatoes, twine knots, seed packet dates",
+    artBrief: "A letterpress tomato trellis wraps a clean center, with late-July light and hand-cut paper texture.",
+    avoid: "balloons, cake clipart, generic party confetti",
+    tag: "memory object"
+  },
+  {
+    title: "Lena watered the basil",
+    category: "thank-you",
+    imageUrl: cardImageByCategory["thank-you"],
+    relationship: "Thank-you card for the neighbor who kept the apartment alive while you were gone.",
+    memoryObject: "windowsill basil, chipped ceramic watering can, one orange on the counter",
+    artBrief: "Controlled citrus and herb illustration in two corners, leaving a quiet proof-safe middle.",
+    avoid: "big THANK YOU lettering, gift bows, generic gratitude florals",
+    tag: "specific thanks"
+  },
+  {
+    title: "Maya's blue-pencil thesis",
+    category: "graduation",
+    imageUrl: cardImageByCategory.graduation,
+    relationship: "Graduation card from a sibling who saw the edits, the doubts, and the last push.",
+    memoryObject: "blue pencil marks, library receipt, coffee ring on a draft",
+    artBrief: "Navy editorial paper, one gold margin line, annotated-page rhythm without readable text.",
+    avoid: "caps as the whole concept, diplomas, school seals",
+    tag: "earned detail"
+  },
+  {
+    title: "The foil-covered casserole",
+    category: "sympathy",
+    imageUrl: cardImageByCategory.sympathy,
+    relationship: "Sympathy card for showing up with practical care when words are thin.",
+    memoryObject: "foil-covered casserole, house key, quiet porch light",
+    artBrief: "Low-saturation still life cropped like a small act of service, with generous breathing room.",
+    avoid: "lilies, crosses, sunset silhouettes, dramatic sorrow",
+    tag: "quiet care"
+  },
+  {
+    title: "Two coffee rings apart",
+    category: "friendship",
+    imageUrl: cardImageByCategory.friendship,
+    relationship: "Long-distance friendship card for the person who still knows the old joke.",
+    memoryObject: "two coffee rings, transit-line curve, folded note corner",
+    artBrief: "Warm paper field with map-line motion between two small table marks, intimate and unposed.",
+    avoid: "best-friend slogans, stars, cartoon mugs",
+    tag: "shared ritual"
+  },
+  {
+    title: "Recovery window tea",
+    category: "get-well",
+    imageUrl: cardImageByCategory["get-well"],
+    relationship: "Get-well card that says steady support instead of forced cheer.",
+    memoryObject: "tea steam, folded blanket, rectangle of morning window light",
+    artBrief: "Soft blue-green sunlight, abstract cup shape, and a calm unfilled center for exact copy.",
+    avoid: "medical icons, smiley faces, peppy slogans",
+    tag: "tone boundary"
+  },
+  {
+    title: "Client sample swatches",
+    category: "business customer anniversary",
+    imageUrl: cardImageByCategory.business,
+    relationship: "Customer anniversary card that feels like a human account memory, not a CRM blast.",
+    memoryObject: "sample swatches, package insert, date stamp, tiny product token",
+    artBrief: "Editorial stationery composition with tactile samples and a disciplined professional palette.",
+    avoid: "handshake icons, corporate swooshes, dashboards, logos",
+    tag: "business memory"
+  },
+  {
+    title: "The ordinary beautiful yes",
+    category: "anniversary",
+    imageUrl: cardImageByCategory.anniversary,
+    relationship: "Anniversary card for the couple whose life is built from small routines.",
+    memoryObject: "two mugs in the sink, receipt from the first place, ribbon from saved wrapping",
+    artBrief: "Two quiet paper ribbons loop around ordinary keepsakes, romantic without being bridal.",
+    avoid: "hearts, rings, champagne flutes, scripted love quotes",
+    tag: "emotional truth"
+  },
+  {
+    title: "Tiny sock, no baby face",
+    category: "new-baby",
+    imageUrl: cardImageByCategory["new-baby"],
+    relationship: "New-baby card that centers the parents' tenderness and privacy.",
+    memoryObject: "tiny sock, folded blanket edge, moon-shaped night light",
+    artBrief: "Soft edge motifs with a protected blank field, tender but not invasive.",
+    avoid: "baby faces, bodies, cartoon animals, gendered cliches",
+    tag: "privacy"
+  },
+  {
+    title: "Late, but not careless",
+    category: "belated card",
+    imageUrl: cardImageByCategory.belated,
+    relationship: "Belated birthday repair note that owns the miss without turning it into a joke.",
+    memoryObject: "open note, calendar corner, one pencil mark",
+    artBrief: "Sparse clock-hand arc and folded paper shape, sincere with a little human warmth.",
+    avoid: "alarm clocks with numbers, apology cartoons, fake handwriting",
+    tag: "repair"
+  }
 ];
 
-const heroMorphCards = [
-  { label: "Birthday", imageUrl: cardImageByCategory.birthday },
-  { label: "Graduation", imageUrl: cardImageByCategory.graduation },
-  { label: "Thanks", imageUrl: cardImageByCategory["thank-you"] },
-  { label: "Wedding", imageUrl: cardImageByCategory.wedding },
-  { label: "Friendship", imageUrl: cardImageByCategory.friendship }
-];
+const heroMorphCards = themeInventoryCards.map((card) => ({
+  label: card.title,
+  imageUrl: card.imageUrl,
+  proofLine: card.memoryObject.split(",")[0]
+}));
+
+const heroRackCards = themeInventoryCards.map((card) => ({
+  label: card.title,
+  imageUrl: card.imageUrl
+}));
 
 export function HomeView({
   draft,
@@ -122,7 +232,6 @@ export function HomeView({
 }) {
   // Auto-expand when an invite is already pasted (e.g. returning from a calendar redirect).
   const [importOpen, setImportOpen] = useState(() => importProps.inviteText.trim().length > 0);
-  // Admin-featured real cards replace the built-in examples when available.
   const [featuredCategories, setFeaturedCategories] = useState<FeaturedCategory[]>([]);
   useEffect(() => {
     let cancelled = false;
@@ -140,13 +249,13 @@ export function HomeView({
     <>
       <section className="hero landingHero reveal">
         <div className="landingHeroCopy">
-          <span className="eyebrow">Thoughtful cards, without the blank page.</span>
+          <span className="eyebrow">Story-first custom art cards.</span>
           <h1>
-            Make the card you <em>meant</em> to send.
+            Make a card only <em>they</em> would recognize.
           </h1>
           <p>
-            Start with a name, occasion, messy note, invite, or calendar event. CustomCard helps turn it into a
-            personal 5 × 7 card you can edit, review, and print through your preferred print shop.
+            Start with a name, an occasion, and the one detail that proves you know them. CustomCard turns that
+            into a personal 5 x 7 proof you can edit, review, and print through your preferred print shop.
           </p>
           <div className="landingHeroActions">
             <button className="btn btn-primary" onClick={onCreate} type="button">
@@ -166,11 +275,23 @@ export function HomeView({
           </p>
         </div>
         <div
-          aria-label="Greeting card designs morphing between occasion options"
+          aria-label="Custom art card studies morphing between relationship-specific ideas"
           className="landingHeroVisual"
           role="img"
         >
           <div className="landingHeroStage">
+            <div className="heroRack" aria-hidden="true">
+              {heroRackCards.map((card, index) => (
+                <img
+                  alt=""
+                  className={`heroRackCard heroRackCard-${index + 1}`}
+                  decoding="async"
+                  key={`rack-${card.label}`}
+                  loading="lazy"
+                  src={card.imageUrl}
+                />
+              ))}
+            </div>
             <div className="heroStack" aria-hidden="true">
               {heroMorphCards.slice(1, 4).map((card, index) => (
                 <img
@@ -184,23 +305,61 @@ export function HomeView({
               ))}
             </div>
             <div className="heroMorphCard" aria-hidden="true">
-              {heroMorphCards.map((card) => (
+              {heroMorphCards.map((card, index) => (
                 <img
                   alt=""
                   className="heroMorphImage"
                   decoding="async"
                   key={card.label}
+                  style={{ animationDelay: `${index * 4}s` }}
                   src={card.imageUrl}
                 />
               ))}
+              <div className="heroProofCopy">
+                {heroMorphCards.map((card, index) => (
+                  <span key={`proof-${card.label}`} style={{ animationDelay: `${index * 4}s` }}>
+                    <b>{card.label}</b>
+                    <small>{card.proofLine}</small>
+                  </span>
+                ))}
+              </div>
             </div>
             <div className="heroMorphRail" aria-hidden="true">
-              {heroMorphCards.map((card) => (
-                <span key={card.label}>{card.label}</span>
+              {heroMorphCards.map((card, index) => (
+                <span key={card.label} style={{ animationDelay: `${index * 4}s` }}>{card.label}</span>
               ))}
             </div>
+            <div className="heroProofTicker" aria-hidden="true">
+              <span>memory object locked</span>
+              <span>cliche check passed</span>
+              <span>print-safe copy zone</span>
+            </div>
           </div>
-          <span className="landingHeroCaption">5 × 7 fronts morph between real occasion directions</span>
+          <span className="landingHeroCaption">Generated card studies briefed around real details, ready for exact app text</span>
+        </div>
+      </section>
+
+      <section className="inventoryStrip reveal reveal-1" aria-label="Custom art card contract examples">
+        <div className="inventoryStripHead">
+          <span>Art-card contract</span>
+          <strong>{themeInventoryCards.length} story studies</strong>
+          <small>Relationship, remembered object, emotional truth, art move, and forbidden cliches.</small>
+        </div>
+        <div className="inventoryRail" aria-label="Browse story-led card studies">
+          {themeInventoryCards.slice(0, 18).map((card) => (
+            <button
+              className="inventoryRailCard"
+              key={`${card.title}-${card.category}`}
+              onClick={() => onOccasion(card.category)}
+              type="button"
+            >
+              <img alt="" decoding="async" loading="lazy" src={card.imageUrl} />
+              <span>
+                <strong>{card.title}</strong>
+                <small>{card.tag}</small>
+              </span>
+            </button>
+          ))}
         </div>
       </section>
 
@@ -230,8 +389,7 @@ export function HomeView({
       </section>
 
       <p className="occasionsLead reveal reveal-1">
-        Pick the occasion — we&rsquo;ll start the card, you make it theirs. You can change the tone, message,
-        language, and design later.
+        Pick the occasion, then add the detail. You can change the tone, message, language, and design later.
       </p>
       <div className="occasions reveal reveal-1">
         {occasions.map((occasion) => (
@@ -292,7 +450,19 @@ export function HomeView({
       </section>
 
       <section className="examples reveal reveal-3" aria-label="Example cards" id="examples">
-        <h2>Made for real moments</h2>
+        <div className="examplesHead">
+          <div>
+            <h2>What a great custom card starts with</h2>
+            <p className="examplesLead">
+              Not templates in costumes. Each study starts with one remembered detail, one emotional job, and a list
+              of cliches the card is not allowed to use.
+            </p>
+          </div>
+          <div className="examplesScore" aria-hidden="true">
+            <strong>{themeInventoryCards.length}</strong>
+            <span>studies</span>
+          </div>
+        </div>
         {featuredCategories.length > 0 ? (
           <>
             <p className="examplesLead">Real cards people made with CustomCard, shared with permission.</p>
@@ -307,23 +477,9 @@ export function HomeView({
             </div>
           </>
         ) : (
-          <>
-            <p className="examplesLead">Every example below is a real print panel rendered by CustomCard.</p>
-            <div className="examplesGrid">
-              {exampleCards.map((example) => (
-                <button
-                  className="examplecard"
-                  key={example.label}
-                  onClick={() => onOccasion(example.category)}
-                  type="button"
-                >
-                  <img alt={`${example.label} card example`} decoding="async" loading="lazy" src={example.imageUrl} />
-                  <span>{example.label}</span>
-                </button>
-              ))}
-            </div>
-          </>
+          <p className="examplesLead">Shared customer cards will appear here after review; these story-led studies are ready now.</p>
         )}
+        <ThemeInventoryGrid onOccasion={onOccasion} />
       </section>
 
       <section className="trustnotes reveal reveal-3" aria-label="Pricing and privacy promises">
@@ -354,6 +510,42 @@ export function HomeView({
   );
 }
 
+function ThemeInventoryGrid({ onOccasion }: { onOccasion: (occasion: string) => void }) {
+  return (
+    <div className="themeInventoryGrid">
+      {themeInventoryCards.map((card) => (
+        <button
+          className="themeInventoryCard"
+          key={`${card.title}-${card.category}`}
+          onClick={() => onOccasion(card.category)}
+          type="button"
+        >
+          <img alt="" decoding="async" loading="lazy" src={card.imageUrl} />
+          <span className="themeInventoryCardBody">
+            <span className="themeInventoryTag">{card.tag}</span>
+            <strong>{card.title}</strong>
+            <small>{card.relationship}</small>
+            <span className="themeInventoryFacts">
+              <span>
+                <b>Memory</b>
+                {card.memoryObject}
+              </span>
+              <span>
+                <b>Art move</b>
+                {card.artBrief}
+              </span>
+              <span>
+                <b>Avoid</b>
+                {card.avoid}
+              </span>
+            </span>
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function FeaturedCardFace({ card, category }: { card: FeaturedCard; category: string }) {
   if (card.frontSvg) {
     return (
@@ -365,9 +557,7 @@ function FeaturedCardFace({ card, category }: { card: FeaturedCard; category: st
   }
   const imageUrl =
     normalizeBrowserImageUrl(card.thumbnailUrl) ??
-    normalizeBrowserImageUrl(card.frontImageUrl) ??
-    cardImageByCategory[category] ??
-    cardImageByCategory.custom;
+    normalizeBrowserImageUrl(card.frontImageUrl);
   if (imageUrl) return <img alt={`${card.title} card front`} src={imageUrl} />;
   return <span aria-hidden="true" className="carditem-thumbfallback" />;
 }

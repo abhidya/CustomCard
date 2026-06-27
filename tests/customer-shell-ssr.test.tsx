@@ -298,9 +298,9 @@ describe("customer shell server render", () => {
   it("keeps the customer create flow visible when signed out", () => {
     const { text } = renderShell({ signedIn: false });
 
-    expect(text).toContain("Make the card you meant to send.");
+    expect(text).toContain("Make a card only they would recognize.");
     expect(text).toContain("Make my card now");
-    expect(text).toContain("Pick the occasion");
+    expect(text).toContain("Pick the occasion, then add the detail");
     expect(text).toContain("Sign in");
     expect(text).toContain("Sign up");
     expect(text).toContain("Start from invite or calendar");
@@ -330,20 +330,20 @@ describe("customer shell server render", () => {
     expect(print.text).not.toContain("Account required");
   });
 
-  it("renders the first-run home around the occasion-first hero", () => {
+  it("renders the first-run home around the story-first hero", () => {
     const { text } = renderShell();
 
       expect(text).toContain("CustomCard");
-      expect(text).toContain("Make the card you meant to send.");
+      expect(text).toContain("Make a card only they would recognize.");
       expect(text).toContain("edit, review, and print through your preferred print shop");
       expect(text).toContain("Make my card now");
       expect(text).toContain("Start from invite or calendar");
       expect(text).toContain("See example cards");
-      expect(text).toContain("Pick the occasion");
+      expect(text).toContain("Pick the occasion, then add the detail");
       for (const label of ["Birthday", "Anniversary", "Wedding", "Thank you", "Graduation", "Sympathy"]) {
         expect(text).toContain(label);
       }
-      expect(text).toContain("Made for real moments");
+      expect(text).toContain("What a great custom card starts with");
       // Landing sections explain the product and the print-shop payment boundary.
       expect(text).toContain("How it works");
       expect(text).toContain("Pick a moment");
@@ -351,7 +351,7 @@ describe("customer shell server render", () => {
       expect(text).toContain("AI drafts");
       expect(text).toContain("You review");
       expect(text).toContain("Finish at a print shop");
-      expect(text).toContain("Made for real moments");
+      expect(text).toContain("Art-card contract");
       expect(text).toContain("Free to create. Private by default.");
       expect(text).toContain("Free to create. Pay the print shop only if you print.");
       expect(text).toContain("You choose the printer and confirm payment directly with them.");
@@ -473,8 +473,8 @@ describe("customer shell server render", () => {
       expect(html).toContain("Type a tone");
       expect(html).toContain("Type a style");
       expect(text).toContain("Start from a design");
-      expect(text).toContain("Birthday glow");
-      expect(text).toContain("Friendship stars");
+      expect(text).toContain("Memory birthday");
+      expect(text).toContain("Coffee rings");
       expect(text).toContain("Make it personal");
       expect(text).toContain("Set up the card first");
       expect(text).toContain("Draft your card with AI");

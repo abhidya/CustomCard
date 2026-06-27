@@ -15,8 +15,7 @@ import {
   buildCardCopyResponseFormat,
   createAiCardDraftPolicy,
   panelDefaults,
-  requiredPanelIds,
-  textLayoutEnums
+  requiredPanelIds
 } from "./ai-card-draft-policy.mjs";
 import {
   createAiProviderExecutionAdapter,
@@ -27,6 +26,7 @@ import {
   localComfyTypographyVariables,
   localComfyWorkflowInputsForMetadata
 } from "./local-comfy-production-text.mjs";
+import { normalizePanelTextLayout, sourceTextFromCardInput } from "../src/panelTextLayoutPlanData.mjs";
 
 export const aiCardGenerateRoute = "/api/ai/card/generate";
 export const aiChatRespondRoute = "/api/ai/chat/respond";
@@ -2600,176 +2600,10 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
 }
 
 function normalizeTextLayout(value, panelId, input) {
-  const raw = value && typeof value === "object" ? value : {};
-  const fallback = panelTextLayoutFallback(panelId, input);
-  if (textLayoutTooGenericForSource(raw, panelId, input)) return fallback;
-  const layout = {
-    headline_zone: enumTextValue(raw.headline_zone || raw.headlineZone, textLayoutEnums.headline_zone, fallback.headline_zone),
-    body_zone: enumTextValue(raw.body_zone || raw.bodyZone, textLayoutEnums.body_zone, fallback.body_zone),
-    alignment: enumTextValue(raw.alignment, textLayoutEnums.alignment, fallback.alignment),
-    font_pairing: enumTextValue(raw.font_pairing || raw.fontPairing, textLayoutEnums.font_pairing, fallback.font_pairing),
-    color_mode: enumTextValue(raw.color_mode || raw.colorMode, textLayoutEnums.color_mode, fallback.color_mode),
-    scale: enumTextValue(raw.scale, textLayoutEnums.scale, fallback.scale)
-  };
-  const source = `${input.occasion} ${input.tone} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")}`.toLowerCase();
-  if (
-    /\b(med|medical|doctor|physician|md|residen(?:cy|t)|white[- ]coat|stethoscope)\b/.test(source) &&
-    (panelId === "inside-left" || panelId === "inside-right") &&
-    layout.alignment === "center"
-  ) {
-    return { ...layout, alignment: fallback.alignment };
-  }
-  if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
-    if (panelId === "inside-left" || panelId === "inside-right") {
-      return {
-        ...layout,
-        headline_zone: fallback.headline_zone,
-        body_zone: fallback.body_zone,
-        alignment: fallback.alignment,
-        font_pairing: fallback.font_pairing,
-        color_mode: "dark-ink",
-        scale: "large"
-      };
-    }
-    if (panelId === "front") {
-      return {
-        ...layout,
-        headline_zone: fallback.headline_zone,
-        body_zone: fallback.body_zone,
-        font_pairing: fallback.font_pairing,
-        color_mode: fallback.color_mode,
-        scale: "large"
-      };
-    }
-    if (panelId === "back") {
-      return {
-        ...fallback,
-        scale: "large"
-      };
-    }
-  }
-  return layout;
-}
-
-function textLayoutTooGenericForSource(raw, panelId, input) {
-  const source = `${input.occasion} ${input.tone} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")}`.toLowerCase();
-  if (!/\b(med|medical|doctor|physician|md|residen(?:cy|t)|white[- ]coat|stethoscope)\b/.test(source)) return false;
-  const defaults = panelDefaults[panelId]?.text_layout || panelDefaults.front.text_layout;
-  return textLayoutValue(raw, "headline_zone", "headlineZone") === defaults.headline_zone &&
-    textLayoutValue(raw, "body_zone", "bodyZone") === defaults.body_zone &&
-    textLayoutValue(raw, "alignment") === defaults.alignment &&
-    textLayoutValue(raw, "font_pairing", "fontPairing") === defaults.font_pairing &&
-    textLayoutValue(raw, "color_mode", "colorMode") === defaults.color_mode &&
-    textLayoutValue(raw, "scale") === defaults.scale;
-}
-
-function textLayoutValue(raw, key, camelKey = key) {
-  return raw?.[key] ?? raw?.[camelKey];
-}
-
-function panelTextLayoutFallback(panelId, input) {
-  const source = `${input.occasion} ${input.tone} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")}`.toLowerCase();
-  if (!/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source) &&
-    /\b(bold type|bold-type|poster|editorial)\b/.test(source)) {
-    return {
-      headline_zone: panelId === "back" ? "lower" : "upper",
-      body_zone: panelId === "front" ? "lower" : panelId === "back" ? "bottom" : "center",
-      alignment: "center",
-      font_pairing: "bold-editorial",
-      color_mode: "high-contrast",
-      scale: panelId === "back" ? "compact" : "large"
-    };
-  }
-  if (/\b(photo note|photo-note|scrapbook|caption|polaroid)\b/.test(source)) {
-    return {
-      headline_zone: panelId === "front" ? "lower" : "upper",
-      body_zone: panelId === "front" ? "bottom" : "lower",
-      alignment: "left",
-      font_pairing: "soft-serif",
-      color_mode: "dark-ink",
-      scale: panelId === "back" ? "compact" : "standard"
-    };
-  }
-  if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
-    const layouts = {
-      front: {
-        headline_zone: "upper",
-        body_zone: "upper",
-        alignment: "center",
-        font_pairing: "soft-serif",
-        color_mode: "light-ink",
-        scale: "standard"
-      },
-      "inside-left": {
-        headline_zone: "upper",
-        body_zone: "center",
-        alignment: "center",
-        font_pairing: "soft-serif",
-        color_mode: "dark-ink",
-        scale: "large"
-      },
-      "inside-right": {
-        headline_zone: "upper",
-        body_zone: "center",
-        alignment: "center",
-        font_pairing: "soft-serif",
-        color_mode: "dark-ink",
-        scale: "large"
-      },
-      back: {
-        headline_zone: "upper",
-        body_zone: "center",
-        alignment: "center",
-        font_pairing: "soft-serif",
-        color_mode: "light-ink",
-        scale: "standard"
-      }
-    };
-    return layouts[panelId];
-  }
-  if (/\b(med|medical|doctor|physician|md|residen(?:cy|t)|white[- ]coat|stethoscope)\b/.test(source)) {
-    const layouts = {
-      front: {
-        headline_zone: "upper",
-        body_zone: "lower",
-        alignment: "center",
-        font_pairing: "serif-sans",
-        color_mode: "light-ink",
-        scale: "standard"
-      },
-      "inside-left": {
-        headline_zone: "upper",
-        body_zone: "center",
-        alignment: "left",
-        font_pairing: "soft-serif",
-        color_mode: "dark-ink",
-        scale: "standard"
-      },
-      "inside-right": {
-        headline_zone: "upper",
-        body_zone: "center",
-        alignment: "left",
-        font_pairing: "serif-sans",
-        color_mode: "dark-ink",
-        scale: "standard"
-      },
-      back: {
-        headline_zone: "lower",
-        body_zone: "bottom",
-        alignment: "center",
-        font_pairing: "minimal-sans",
-        color_mode: "dark-ink",
-        scale: "compact"
-      }
-    };
-    return layouts[panelId];
-  }
-  return panelDefaults[panelId]?.text_layout || panelDefaults.front.text_layout;
-}
-
-function enumTextValue(value, allowed, fallback) {
-  const normalized = cleanText(value || "").toLowerCase();
-  return allowed.includes(normalized) ? normalized : fallback;
+  return normalizePanelTextLayout(value, {
+    panelId,
+    sourceText: sourceTextFromCardInput(input)
+  });
 }
 
 function textContains(value, term) {

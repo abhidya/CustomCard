@@ -53,6 +53,18 @@ export interface CardCopyOutput {
   memoryCitations: string[];
 }
 
+export type CardImageNormalizationStatus = "normalized-to-render-packet" | "verified-render-packet";
+export type CardImageNormalizationOperation = "resize-crop" | "verified-target-size";
+
+export interface CardImageNormalization {
+  status: CardImageNormalizationStatus;
+  sourceWidth: number;
+  sourceHeight: number;
+  targetWidth: number;
+  targetHeight: number;
+  operation: CardImageNormalizationOperation;
+}
+
 /** Image generation result per panel — mirrors CardImageResult in domain.py */
 export interface CardImageResult {
   panelId: CardPanelId;
@@ -60,6 +72,7 @@ export interface CardImageResult {
   revisedPrompt?: string;
   width: number;
   height: number;
+  normalization: CardImageNormalization;
 }
 
 /** POST /generate response — mirrors CardGenerationResult in domain.py */
@@ -214,6 +227,33 @@ export function validateCardGenResponse(response: CardGenResponse): string[] {
         `Image result for panel ${image.panelId} must be ${renderPacketTarget.widthPixels}×${renderPacketTarget.heightPixels}, got ${image.width}×${image.height}.`
       );
     }
+    if (!image.normalization) {
+      issues.push(`Image result for panel ${image.panelId} missing normalization proof.`);
+    } else {
+      if (
+        image.normalization.targetWidth !== renderPacketTarget.widthPixels ||
+        image.normalization.targetHeight !== renderPacketTarget.heightPixels
+      ) {
+        issues.push(
+          `Image result for panel ${image.panelId} normalization target must be ${renderPacketTarget.widthPixels}×${renderPacketTarget.heightPixels}.`
+        );
+      }
+      if (image.normalization.status === "verified-render-packet") {
+        if (
+          image.normalization.sourceWidth !== renderPacketTarget.widthPixels ||
+          image.normalization.sourceHeight !== renderPacketTarget.heightPixels ||
+          image.normalization.operation !== "verified-target-size"
+        ) {
+          issues.push(`Image result for panel ${image.panelId} cannot claim verified Render Packet size without matching source dimensions.`);
+        }
+      } else if (image.normalization.status === "normalized-to-render-packet") {
+        if (image.normalization.operation !== "resize-crop") {
+          issues.push(`Image result for panel ${image.panelId} normalized proof must use resize-crop operation.`);
+        }
+      } else {
+        issues.push(`Image result for panel ${image.panelId} has unknown normalization status.`);
+      }
+    }
   }
 
   if (!cardGenGeneratedByModes.has(response.generatedBy)) {
@@ -226,32 +266,73 @@ export function validateCardGenResponse(response: CardGenResponse): string[] {
   return issues;
 }
 
+function truncateSentence(value: string, maxLength: number): string {
+  const trimmed = value.trim().replace(/\s+/g, " ");
+  if (trimmed.length <= maxLength) return trimmed;
+  return `${trimmed.slice(0, Math.max(0, maxLength - 1)).trimEnd()}.`;
+}
+
+function primaryMemory(req: CardGenRequest): string {
+  return (
+    req.memoryNotes?.find((note) => note.trim())?.trim() ||
+    req.personalNote?.trim() ||
+    `the real history between ${req.sender} and ${req.recipient}`
+  );
+}
+
+function emotionalJob(req: CardGenRequest): string {
+  const source = `${req.occasion} ${req.tone}`.toLowerCase();
+  if (source.includes("sympathy") || source.includes("condolence")) return "comfort";
+  if (source.includes("thank")) return "gratitude";
+  if (source.includes("sorry") || source.includes("belated") || source.includes("apology")) return "repair";
+  if (source.includes("graduation") || source.includes("congrat")) return "pride";
+  if (source.includes("get well") || source.includes("encourage")) return "encouragement";
+  return "celebration";
+}
+
+function stubArtDirection(req: CardGenRequest, composition: string): string {
+  return truncateSentence(
+    `${req.style} custom 5x7 card art anchored in this remembered detail: ${primaryMemory(req)}. ` +
+      `Emotional job: ${emotionalJob(req)} for a ${req.relationship}. Composition: ${composition}, with a clean text-safe zone. ` +
+      "Avoid generic balloons, hearts, caps, rings, fake handwriting, logos, people, faces, and hands.",
+    390
+  );
+}
+
 /** Build a stub CardGenResponse for local testing (no sidecar required). */
 export function buildStubCardGenResponse(req: CardGenRequest): CardGenResponse {
+  const memory = primaryMemory(req);
+  const job = emotionalJob(req);
   const panels: CardPanelCopy[] = [
     {
       id: "front",
       headline: `For ${req.recipient}`,
-      body: `A card made with care${req.occasion ? ` for ${req.occasion}` : ""}.`,
-      artDirection: `${req.style} style, warm palette, suitable for ${req.occasion || "celebration"}.`
+      body: truncateSentence(`A ${job} card shaped around ${memory}.`, 120),
+      artDirection: stubArtDirection(req, "one strong remembered object near the edge, calm center for exact front copy")
     },
     {
       id: "inside-left",
       headline: "Thinking of you",
-      body: `With ${req.tone || "warm"} thoughts${req.personalNote ? `: ${req.personalNote.slice(0, 80)}` : "."}.`,
-      artDirection: `${req.style} interior panel, soft texture, minimal.`
+      body: truncateSentence(
+        `This is not just a ${req.occasion} note. It remembers ${memory} and the way that detail belongs to you.`,
+        220
+      ),
+      artDirection: stubArtDirection(req, "quiet interior texture with the remembered object repeated as a small margin motif")
     },
     {
       id: "inside-right",
       headline: "From the heart",
-      body: `From ${req.sender}${req.memoryNotes && req.memoryNotes.length > 0 ? ` — inspired by what matters to ${req.recipient}` : ""}.`,
-      artDirection: `${req.style} panel, complementary to inside-left.`
+      body: truncateSentence(
+        `From ${req.sender}, with ${req.tone || "care"} care for the part no shelf card would know.`,
+        180
+      ),
+      artDirection: stubArtDirection(req, "lighter companion panel with generous blank space for handwritten signature")
     },
     {
       id: "back",
       headline: "CustomCard",
       body: "Made with CustomCard · Printed locally.",
-      artDirection: "Clean back panel, logo placement, minimal."
+      artDirection: stubArtDirection(req, "minimal back panel, small production mark area, mostly paper grain")
     }
   ];
 

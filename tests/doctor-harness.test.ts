@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   registerIssuesFromFailedChecks,
+  buildDoctorManifest,
   buildDoctorReport,
   checkAbsent,
   checkArrayIncludes,
@@ -49,6 +50,12 @@ describe("doctor harness", () => {
         { id: "absent", lane: "docs", detail: "Forbidden signals present: world" },
         { id: "shape", lane: "shape", detail: "Missing item fields: one.status" }
       ]
+    });
+    expect(buildDoctorManifest({ service: "unit-manifest", metrics: { items: 3 }, checks })).toMatchObject({
+      service: "unit-manifest",
+      items: 3,
+      status: "contract-drift",
+      scope: "repo-local"
     });
   });
 });

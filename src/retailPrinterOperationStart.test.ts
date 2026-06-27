@@ -9,7 +9,8 @@ import {
   retailPrinterOperationStartRoute,
   validateRetailPrinterOperationStartPackets
 } from "./retailPrinterOperationStart";
-import { retailPrinterOperationKinds, retailPrinterProductLinks } from "./retailPrinterAdapters";
+import { getRetailPrinterAdapter, retailPrinterOperationKinds, retailPrinterProductLinks } from "./retailPrinterAdapters";
+import { getRetailPrinterOperationProfile } from "./retailPrinterOperationPacketData.mjs";
 import {
   retailPrinterRegistryOperationKinds,
   retailPrinterRegistryProductLinks
@@ -203,6 +204,29 @@ describe("retail printer operation start packets", () => {
       });
       expect(packet?.couponCollectionPlan.operatorSteps.join(" ")).toContain("do not invent third-party coupon candidates");
     }
+  });
+
+  it("drives operation-start and adapter packets from one operation profile", () => {
+    const profile = getRetailPrinterOperationProfile("upload-image");
+    const startPacket = buildRetailPrinterOperationStartPackets().find(
+      (packet) => packet.id === "walgreens-upload-image-operation-start"
+    );
+    const adapterOperation = getRetailPrinterAdapter("walgreens").operations.find(
+      (operation) => operation.kind === "upload-image"
+    );
+
+    expect(startPacket?.requiredEvidence).toBe(profile.requiredEvidence);
+    expect(startPacket?.forbiddenFields).toEqual(["raw relationship memories", "raw payment card data", "unapproved recipient PII"]);
+    expect(startPacket?.providerEntrypoint).toMatchObject({
+      evidenceMode: profile.evidenceMode,
+      couponMode: profile.couponMode
+    });
+    expect(adapterOperation?.requiredEvidence).toBe(profile.adapterRequiredEvidence);
+    expect(adapterOperation?.certificationGateIds).toBe(profile.adapterCertificationGateIds);
+    expect(adapterOperation?.providerEntrypoint).toMatchObject({
+      evidenceMode: profile.evidenceMode,
+      couponMode: profile.providerEntrypointCouponMode
+    });
   });
 
   it("parses only supported vendors and operations", () => {
