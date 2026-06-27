@@ -44,6 +44,7 @@ export function buildProductionTextRerunPlan(args = {}) {
   const recommended = {
     plannerBaseUrl: String(args["planner-base-url"] || "http://127.0.0.1:5013/v1"),
     plannerModel: String(args["planner-model"] || productionTextPlannerPolicy.recommendedModels[0]),
+    plannerModelPath: String(args["planner-model-path"] || defaultPlannerModelPath(args["planner-model"] || productionTextPlannerPolicy.recommendedModels[0])),
     contextTokens: numberOr(args["context-tokens"], productionTextPlannerPolicy.minContextTokens),
     maxOutputTokens: numberOr(args["max-output-tokens"], productionTextPlannerPolicy.recommendedOutputTokens),
     requestTimeoutMs: numberOr(args["request-timeout-ms"], 1_200_000),
@@ -134,12 +135,11 @@ export function buildProductionTextRerunPlan(args = {}) {
 }
 
 function buildCommands({ recommended, paths }) {
-  const modelLeaf = recommended.plannerModel.replace(/^koboldcpp\//, "");
   return [
     {
       step: 1,
       title: "Start or configure production planner",
-      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/start-local-card-planner.ps1 -ModelPath D:\\models\\${modelLeaf}.gguf -Port 5013 -ContextSize ${recommended.contextTokens} -GpuId ${recommended.gpuId} -GpuLayers ${recommended.gpuLayers}`,
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/start-local-card-planner.ps1 -ModelPath ${recommended.plannerModelPath} -Port 5013 -ContextSize ${recommended.contextTokens} -GpuId ${recommended.gpuId} -GpuLayers ${recommended.gpuLayers}`,
       why: "Starts a production-suitable local planner with GPU offload. Use an equivalent hosted/self-hosted HTTPS OpenAI-compatible endpoint if local VRAM cannot run the planner."
     },
     {
@@ -163,7 +163,7 @@ function buildCommands({ recommended, paths }) {
     {
       step: 5,
       title: "Run full production-text matrix",
-      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl ${recommended.plannerBaseUrl} -LocalLlmModel ${recommended.plannerModel} -OutputDir ${paths.benchmarkOutput} -Checkpoint ${recommended.checkpoint} -Steps ${recommended.steps} -Cfg ${recommended.cfg} -Sampler ${recommended.sampler} -Scheduler ${recommended.scheduler} -PlannerMaxTokens ${recommended.maxOutputTokens} -PlannerContextSize ${recommended.contextTokens} -PlannerRequestTimeoutMs ${recommended.requestTimeoutMs} -PlannerGpuId ${recommended.gpuId} -PlannerGpuLayers ${recommended.gpuLayers}`,
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl ${recommended.plannerBaseUrl} -LocalLlmModel ${recommended.plannerModel} -OutputDir ${paths.benchmarkOutput} -Checkpoint ${recommended.checkpoint} -Steps ${recommended.steps} -Cfg ${recommended.cfg} -Sampler ${recommended.sampler} -Scheduler ${recommended.scheduler} -PlannerMaxTokens ${recommended.maxOutputTokens} -PlannerContextSize ${recommended.contextTokens} -PlannerRequestTimeoutMs ${recommended.requestTimeoutMs} -PlannerGpuId ${recommended.gpuId} -PlannerGpuLayers ${recommended.gpuLayers} -ProductionPlannerModelPath ${recommended.plannerModelPath}`,
       why: "Runs aquarium/koi/dog customer requests through the production Comfy text workflow with LLM-owned theme/copy/layout; when the dedicated local planner port is missing, the wrapper starts the configured GPU-backed planner before the live run."
     },
     {
@@ -285,6 +285,10 @@ function writeMarkdown(filePath, value) {
 function numberOr(value, fallback) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function defaultPlannerModelPath(modelName) {
+  return `D:\\models\\${String(modelName || "").replace(/^koboldcpp\//, "")}.gguf`;
 }
 
 function relativePath(filePath) {

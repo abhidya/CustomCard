@@ -1,0 +1,60 @@
+{
+  "sender": "Avery",
+  "recipient": "Morgan",
+  "relationship": "neighbor",
+  "occasion": "thank-you card",
+  "tone": "grateful, loyal, lightly playful, specific",
+  "style": "premium folded greeting card for a dog lover; the LLM must decide the creative theme, exact copy, palette, motifs, and layout",
+  "language": "English",
+  "personal_note": "Thank Morgan for helping while Avery was away and for being the kind of dog-loving neighbor who notices what needs doing. It should be grateful and a little playful without turning into paw-print wallpaper.",
+  "memory_notes": [
+    "Morgan loves dogs and often mentions how a good neighbor is the kind of person a dog trusts.",
+    "Morgan helped while Avery was away.",
+    "The final artwork should avoid dog portraits and keep a clean print-safe area for Comfy-rendered text."
+  ],
+  "must_include": [
+    "Morgan",
+    "thank",
+    "dog"
+  ],
+  "must_avoid": [
+    "lorem ipsum",
+    "placeholder",
+    "extra words",
+    "fake lettering",
+    "mockup",
+    "paw-print wallpaper"
+  ],
+  "aiFlowConfig": [
+    {
+      "flowId": "card-copy",
+      "primaryAdapterId": "local-openai-compatible-chat",
+      "fallbackAdapterId": "",
+      "model": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": false,
+      "rateLimitPerMinute": 4,
+      "monthlyBudgetCents": 5000,
+      "perRequestBudgetCents": 5,
+      "maxRetries": 1,
+      "maxTokens": 3200,
+      "temperature": 0.62
+    },
+    {
+      "flowId": "card-image",
+      "primaryAdapterId": "local-comfyui-api-image",
+      "fallbackAdapterId": "",
+      "model": "DreamShaper_8_pruned.safetensors",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": false,
+      "rateLimitPerMinute": 4,
+      "monthlyBudgetCents": 4000,
+      "perRequestBudgetCents": 1,
+      "maxRetries": 1,
+      "maxTokens": 0,
+      "temperature": 0
+    }
+  ]
+}

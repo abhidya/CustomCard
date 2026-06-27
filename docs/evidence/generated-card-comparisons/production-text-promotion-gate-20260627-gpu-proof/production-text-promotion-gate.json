@@ -1,0 +1,259 @@
+{
+  "createdAtIso": "2026-06-27T05:19:56.546Z",
+  "status": "blocked",
+  "promotionReady": false,
+  "advisory": false,
+  "requiredFixtures": [
+    "aquarium-lover-birthday",
+    "koi-fish-lover-encouragement",
+    "dog-lover-thank-you"
+  ],
+  "evidenceIndex": "docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-gpu-proof/evidence-index",
+  "latest": {
+    "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-gpu-proof-magistral-5013/production-text-readiness.json",
+    "modelCoverage": "docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current/local-model-coverage.json",
+    "rerunPlan": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-gpu-proof/production-text-rerun-plan.json",
+    "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-planner-preflight.json",
+    "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260627T040924Z/production-text-preflight.json",
+    "dryRun": "docs/evidence/generated-card-comparisons/production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json",
+    "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-gpu-proof-magistral-5013-rerun/production-text-manual-grade-checklist.json",
+    "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-20260627-production-text-gpu-proof-magistral-5013-rerun/benchmark-aggregate.json",
+    "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json"
+  },
+  "requirements": [
+    {
+      "name": "live ComfyUI preflight passed",
+      "ok": true,
+      "details": {
+        "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260627T040924Z/production-text-preflight.json",
+        "preflightCreatedAtIso": "2026-06-27T04:09:25.120Z",
+        "liveComfyReachable": true,
+        "liveNodeAvailable": true
+      }
+    },
+    {
+      "name": "live ComfyUI proof is current",
+      "ok": true,
+      "details": {
+        "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260627T040924Z/production-text-preflight.json",
+        "preflightCreatedAtIso": "2026-06-27T04:09:25.120Z",
+        "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-gpu-proof-magistral-5013/production-text-readiness.json",
+        "readinessCreatedAtIso": "2026-06-27T04:08:18.667Z",
+        "preflightLiveComfyReachable": true,
+        "preflightLiveNodeAvailable": true,
+        "readinessComfyReachable": true,
+        "readinessHasTextComposer": true,
+        "staleReason": ""
+      }
+    },
+    {
+      "name": "planner preflight is production-ready",
+      "ok": true,
+      "details": {
+        "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-planner-preflight.json",
+        "activeModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+        "classification": "production-suitable",
+        "reportedContextTokens": 8192,
+        "maxOutputTokens": 3200,
+        "blockers": []
+      }
+    },
+    {
+      "name": "local planner GPU residency is proven",
+      "ok": true,
+      "details": {
+        "plannerPreflight": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-planner-preflight.json",
+        "localGpuResidency": {
+          "required": true,
+          "ok": true,
+          "status": "gpu-backed",
+          "baseUrl": "http://127.0.0.1:5013/v1",
+          "port": 5013,
+          "pids": [
+            46488
+          ],
+          "candidatePids": [
+            44156,
+            46488
+          ],
+          "nvidiaProcessIds": [
+            38428,
+            46528,
+            39752,
+            1632,
+            46488
+          ]
+        }
+      }
+    },
+    {
+      "name": "planner preflight matches benchmark runtime",
+      "ok": true,
+      "details": {
+        "preflight": {
+          "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-planner-preflight.json",
+          "baseUrl": "http://127.0.0.1:5013/v1",
+          "model": "koboldcpp/Magistral-Small-2509-Q4_K_M"
+        },
+        "benchmark": {
+          "path": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json",
+          "plannerBaseUrls": [
+            "http://127.0.0.1:5013/v1"
+          ],
+          "textModels": [
+            "koboldcpp/Magistral-Small-2509-Q4_K_M"
+          ]
+        },
+        "blockers": []
+      }
+    },
+    {
+      "name": "readiness doctor is promotion-ready",
+      "ok": true,
+      "details": {
+        "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-gpu-proof-magistral-5013/production-text-readiness.json",
+        "blockers": []
+      }
+    },
+    {
+      "name": "local model coverage is tracked",
+      "ok": true,
+      "details": {
+        "modelCoverage": "docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current/local-model-coverage.json",
+        "installedModelFiles": 47,
+        "recommendedInstalled": 9,
+        "recommendedEvaluated": 3,
+        "recommendedMissing": 1
+      }
+    },
+    {
+      "name": "production planner candidate is available",
+      "ok": true,
+      "details": {
+        "modelCoverage": "docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current/local-model-coverage.json",
+        "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-gpu-proof-magistral-5013/production-text-readiness.json",
+        "productionSuitablePlannerReachable": true,
+        "installedProductionPlanners": [
+          "gemma-4-31b-it",
+          "magistral-small-2509",
+          "deepseek-v4-flash"
+        ],
+        "unevaluatedProductionPlanners": [
+          "gemma-4-31b-it",
+          "magistral-small-2509",
+          "deepseek-v4-flash"
+        ],
+        "missingProductionPlanners": [
+          "qwen3-14b-instruct"
+        ]
+      }
+    },
+    {
+      "name": "production-suitable planner endpoint is reachable",
+      "ok": true,
+      "details": {
+        "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-gpu-proof-magistral-5013/production-text-readiness.json",
+        "activePlannerModels": [
+          "koboldcpp/Magistral-Small-2509-Q4_K_M"
+        ]
+      }
+    },
+    {
+      "name": "no small smoke planner is active or used",
+      "ok": true,
+      "details": {
+        "readinessSmallPlannerActive": false,
+        "benchmarkSmallPlannerUsed": false,
+        "textModels": [
+          "koboldcpp/Magistral-Small-2509-Q4_K_M"
+        ]
+      }
+    },
+    {
+      "name": "LLM-planned customer request matrix completed",
+      "ok": false,
+      "details": {
+        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json",
+        "requiredFixtures": [
+          "aquarium-lover-birthday",
+          "koi-fish-lover-encouragement",
+          "dog-lover-thank-you"
+        ],
+        "fixtures": [
+          "aquarium-lover-birthday",
+          "koi-fish-lover-encouragement",
+          "dog-lover-thank-you"
+        ],
+        "completedRuns": 0,
+        "failedRuns": 3
+      }
+    },
+    {
+      "name": "final images came from Comfy text composer",
+      "ok": false,
+      "details": {
+        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json",
+        "completedRuns": 0,
+        "failedRuns": 3,
+        "failedBeforeImageGeneration": 3,
+        "finalImagesRenderedByComfy": false,
+        "deterministicTextComposerUsed": false
+      }
+    },
+    {
+      "name": "planner preserved required terms and avoided forbidden terms",
+      "ok": false,
+      "details": {
+        "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json",
+        "missingMustInclude": [
+          "Nina",
+          "birthday",
+          "aquarium",
+          "Uncle Ken",
+          "koi",
+          "encouragement",
+          "Morgan",
+          "thank",
+          "dog"
+        ],
+        "mustAvoidFailures": []
+      }
+    },
+    {
+      "name": "manual grade checklist is promotion-ready",
+      "ok": false,
+      "details": {
+        "manualGradeChecklist": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-gpu-proof-magistral-5013-rerun/production-text-manual-grade-checklist.json",
+        "totalRuns": 3,
+        "gradableRuns": 0,
+        "gradedGeneratedRuns": 0,
+        "missingGrades": 0,
+        "invalidGrades": 0,
+        "failedBeforeImageGeneration": 0,
+        "blockers": [
+          "Automated must_include checks failed for: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog."
+        ]
+      }
+    },
+    {
+      "name": "manual aggregate is promotion-ready",
+      "ok": false,
+      "details": {
+        "aggregate": "docs/evidence/generated-card-comparisons/benchmark-aggregate-20260627-production-text-gpu-proof-magistral-5013-rerun/benchmark-aggregate.json",
+        "totalRuns": 3,
+        "statuses": {
+          "status-502": 3
+        },
+        "bestScore": 73,
+        "blockingFailures": []
+      }
+    }
+  ],
+  "nextSteps": [
+    "Run the full aquarium/koi/dog production-text matrix to completion.",
+    "Keep the full prompt and correct planner runtime; retry/repair planner output until must_include and must_avoid checks pass before Comfy work.",
+    "Run the manual grade checklist after grading every generated run, then resolve missing/invalid/blocked grades before aggregation.",
+    "Manually grade every run and regenerate the aggregate only after all candidates pass."
+  ],
+  "reportDir": "docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-gpu-proof"
+}

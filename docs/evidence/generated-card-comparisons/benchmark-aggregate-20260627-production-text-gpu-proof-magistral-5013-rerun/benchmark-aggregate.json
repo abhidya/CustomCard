@@ -1,0 +1,89 @@
+{
+  "createdAtIso": "2026-06-27T05:10:03.478Z",
+  "inputDir": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun",
+  "outputDir": "docs/evidence/generated-card-comparisons/benchmark-aggregate-20260627-production-text-gpu-proof-magistral-5013-rerun",
+  "phaseFilter": [
+    "local-production-text"
+  ],
+  "totalRuns": 3,
+  "ranked": [
+    {
+      "rank": 1,
+      "benchmarkKind": "model-benchmark-loop",
+      "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json",
+      "runId": "production-text-workflow:dog-lover-thank-you:text-local-openai-compatible:image-local-comfyui",
+      "phase": "local-production-text",
+      "createdAtIso": "2026-06-27T05:09:27.517Z",
+      "fixtureId": "dog-lover-thank-you",
+      "textAdapterId": "local-openai-compatible-chat",
+      "textModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+      "imageAdapterId": "local-comfyui-api-image",
+      "provider": "local-comfyui-api-image",
+      "technique": "llm-planned-copy-comfy-deterministic-text",
+      "score": 73,
+      "status": "status-502",
+      "passed": 8,
+      "total": 11,
+      "autoScore": 73,
+      "panelCount": 0,
+      "providerCallCount": 2,
+      "settings": {
+        "phase": "local-production-text",
+        "phaseDir": "production-text-workflow",
+        "localOnlyNetworkGuard": true
+      }
+    },
+    {
+      "rank": 2,
+      "benchmarkKind": "model-benchmark-loop",
+      "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json",
+      "runId": "production-text-workflow:koi-fish-lover-encouragement:text-local-openai-compatible:image-local-comfyui",
+      "phase": "local-production-text",
+      "createdAtIso": "2026-06-27T04:49:27.501Z",
+      "fixtureId": "koi-fish-lover-encouragement",
+      "textAdapterId": "local-openai-compatible-chat",
+      "textModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+      "imageAdapterId": "local-comfyui-api-image",
+      "provider": "local-comfyui-api-image",
+      "technique": "llm-planned-copy-comfy-deterministic-text",
+      "score": 73,
+      "status": "status-502",
+      "passed": 8,
+      "total": 11,
+      "autoScore": 73,
+      "panelCount": 0,
+      "providerCallCount": 2,
+      "settings": {
+        "phase": "local-production-text",
+        "phaseDir": "production-text-workflow",
+        "localOnlyNetworkGuard": true
+      }
+    },
+    {
+      "rank": 3,
+      "benchmarkKind": "model-benchmark-loop",
+      "sourceFile": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json",
+      "runId": "production-text-workflow:aquarium-lover-birthday:text-local-openai-compatible:image-local-comfyui",
+      "phase": "local-production-text",
+      "createdAtIso": "2026-06-27T04:29:27.478Z",
+      "fixtureId": "aquarium-lover-birthday",
+      "textAdapterId": "local-openai-compatible-chat",
+      "textModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+      "imageAdapterId": "local-comfyui-api-image",
+      "provider": "local-comfyui-api-image",
+      "technique": "llm-planned-copy-comfy-deterministic-text",
+      "score": 73,
+      "status": "status-502",
+      "passed": 8,
+      "total": 11,
+      "autoScore": 73,
+      "panelCount": 0,
+      "providerCallCount": 2,
+      "settings": {
+        "phase": "local-production-text",
+        "phaseDir": "production-text-workflow",
+        "localOnlyNetworkGuard": true
+      }
+    }
+  ]
+}

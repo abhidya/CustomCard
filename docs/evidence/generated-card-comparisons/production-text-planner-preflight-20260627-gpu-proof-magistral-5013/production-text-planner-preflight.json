@@ -1,0 +1,61 @@
+{
+  "createdAtIso": "2026-06-27T04:08:17.658Z",
+  "status": "promotion-ready",
+  "promotionReady": true,
+  "runAllowed": true,
+  "advisory": false,
+  "baseUrl": "http://127.0.0.1:5013/v1",
+  "modelsUrl": "http://127.0.0.1:5013/v1/models",
+  "reachable": true,
+  "requestedModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+  "activeModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+  "models": [
+    "koboldcpp/Magistral-Small-2509-Q4_K_M"
+  ],
+  "localGpuResidency": {
+    "required": true,
+    "ok": true,
+    "status": "gpu-backed",
+    "baseUrl": "http://127.0.0.1:5013/v1",
+    "port": 5013,
+    "pids": [
+      46488
+    ],
+    "candidatePids": [
+      44156,
+      46488
+    ],
+    "nvidiaProcessIds": [
+      38428,
+      46528,
+      39752,
+      1632,
+      46488
+    ]
+  },
+  "classification": {
+    "model": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+    "smallPlanner": false,
+    "qualityPlanner": true,
+    "productionSuitable": true,
+    "classification": "production-suitable",
+    "reportedContextTokens": 8192,
+    "maxOutputTokens": 3200,
+    "minimumOpenWeightPlannerClass": "14B+ dense/open-weight planner or stronger hosted model",
+    "minContextTokens": 8192,
+    "minOutputTokens": 3200,
+    "recommendedOutputTokens": 3200,
+    "recommendedModels": [
+      "koboldcpp/gemma-4-31B-it-Q4_K_M",
+      "koboldcpp/Magistral-Small-2509-Q4_K_M",
+      "koboldcpp/Qwen3-14B-Q4_K_M",
+      "hosted/self-hosted GPT, Claude, Gemini, DeepSeek, Mistral, or Qwen 14B+ endpoint"
+    ],
+    "blockers": [],
+    "warnings": []
+  },
+  "blockers": [],
+  "warnings": [],
+  "nextSteps": [],
+  "reportDir": "docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-gpu-proof-magistral-5013"
+}

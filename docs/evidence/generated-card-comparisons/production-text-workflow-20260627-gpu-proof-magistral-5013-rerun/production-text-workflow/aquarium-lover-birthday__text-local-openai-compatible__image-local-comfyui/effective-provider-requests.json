@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "phase": "local-production-text",
+  "storyId": "aquarium-lover-birthday",
+  "textCandidateId": "text-local-openai-compatible",
+  "imageCandidateId": "image-local-comfyui",
+  "imageAdapterId": "local-comfyui-api-image",
+  "imageModel": "DreamShaper_8_pruned.safetensors",
+  "requestCount": 0,
+  "requests": []
+}

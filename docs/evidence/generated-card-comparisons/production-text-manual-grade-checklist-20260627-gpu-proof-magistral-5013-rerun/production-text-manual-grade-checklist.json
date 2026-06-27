@@ -1,0 +1,143 @@
+{
+  "createdAtIso": "2026-06-27T05:10:03.447Z",
+  "status": "blocked",
+  "promotionReady": false,
+  "advisory": false,
+  "benchmarkSummary": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json",
+  "benchmarkCreatedAtIso": "2026-06-27T04:09:27.438Z",
+  "phase": "local-production-text",
+  "phaseDir": "production-text-workflow",
+  "summary": {
+    "totalRuns": 3,
+    "gradableRuns": 0,
+    "generatedVisualRuns": 0,
+    "gradedGeneratedRuns": 0,
+    "gradedRuns": 0,
+    "validGrades": 0,
+    "missingGrades": 0,
+    "invalidGrades": 0,
+    "passingGrades": 0,
+    "blockedGrades": 0,
+    "failedBeforeImageGeneration": 0,
+    "failedRuns": 0,
+    "stories": [
+      "aquarium-lover-birthday",
+      "koi-fish-lover-encouragement",
+      "dog-lover-thank-you"
+    ]
+  },
+  "blockers": [
+    "Automated must_include checks failed for: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog."
+  ],
+  "runs": [
+    {
+      "storyId": "aquarium-lover-birthday",
+      "productionTextMode": "llm-generated-copy",
+      "textModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+      "imageModel": "",
+      "runDir": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow/aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui",
+      "generatedVisuals": false,
+      "failedBeforeImageGeneration": false,
+      "status": "",
+      "statusCode": 502,
+      "error": "",
+      "panelCount": 0,
+      "providerCallCount": 2,
+      "contactSheet": "",
+      "manualGradeTemplate": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow/aquarium-lover-birthday__text-local-openai-compatible__image-local-comfyui/manual-grade-template.md",
+      "manualGradePath": "",
+      "gradeExpected": false,
+      "gradePresent": false,
+      "gradeValid": false,
+      "gradeIssues": [
+        "manual-visual-grade.json is missing"
+      ],
+      "gradeStatus": "",
+      "passed": false,
+      "productionRecommendation": "",
+      "blockingFailures": [],
+      "notes": "",
+      "missingMustInclude": [
+        "Nina",
+        "birthday",
+        "aquarium"
+      ],
+      "avoidedFailures": [],
+      "benchmarkSummary": "2026-06-27T04:09:27.438Z"
+    },
+    {
+      "storyId": "koi-fish-lover-encouragement",
+      "productionTextMode": "llm-generated-copy",
+      "textModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+      "imageModel": "",
+      "runDir": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow/koi-fish-lover-encouragement__text-local-openai-compatible__image-local-comfyui",
+      "generatedVisuals": false,
+      "failedBeforeImageGeneration": false,
+      "status": "",
+      "statusCode": 502,
+      "error": "",
+      "panelCount": 0,
+      "providerCallCount": 2,
+      "contactSheet": "",
+      "manualGradeTemplate": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow/koi-fish-lover-encouragement__text-local-openai-compatible__image-local-comfyui/manual-grade-template.md",
+      "manualGradePath": "",
+      "gradeExpected": false,
+      "gradePresent": false,
+      "gradeValid": false,
+      "gradeIssues": [
+        "manual-visual-grade.json is missing"
+      ],
+      "gradeStatus": "",
+      "passed": false,
+      "productionRecommendation": "",
+      "blockingFailures": [],
+      "notes": "",
+      "missingMustInclude": [
+        "Uncle Ken",
+        "koi",
+        "encouragement"
+      ],
+      "avoidedFailures": [],
+      "benchmarkSummary": "2026-06-27T04:09:27.438Z"
+    },
+    {
+      "storyId": "dog-lover-thank-you",
+      "productionTextMode": "llm-generated-copy",
+      "textModel": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+      "imageModel": "",
+      "runDir": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow/dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui",
+      "generatedVisuals": false,
+      "failedBeforeImageGeneration": false,
+      "status": "",
+      "statusCode": 502,
+      "error": "",
+      "panelCount": 0,
+      "providerCallCount": 2,
+      "contactSheet": "",
+      "manualGradeTemplate": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow/dog-lover-thank-you__text-local-openai-compatible__image-local-comfyui/manual-grade-template.md",
+      "manualGradePath": "",
+      "gradeExpected": false,
+      "gradePresent": false,
+      "gradeValid": false,
+      "gradeIssues": [
+        "manual-visual-grade.json is missing"
+      ],
+      "gradeStatus": "",
+      "passed": false,
+      "productionRecommendation": "",
+      "blockingFailures": [],
+      "notes": "",
+      "missingMustInclude": [
+        "Morgan",
+        "thank",
+        "dog"
+      ],
+      "avoidedFailures": [],
+      "benchmarkSummary": "2026-06-27T04:09:27.438Z"
+    }
+  ],
+  "nextSteps": [
+    "Fix planner contract adherence before spending more Comfy image work."
+  ],
+  "reportDir": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-gpu-proof-magistral-5013-rerun"
+}

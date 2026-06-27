@@ -111,10 +111,12 @@ describe("production text rerun plan", () => {
     expect(plan.commands[0].command).toContain("-GpuId 0");
     expect(plan.commands[0].command).toContain("-GpuLayers 999");
     expect(plan.commands[0].command).toContain("-Port 5013");
+    expect(plan.commands[0].command).toContain("-ModelPath D:\\models\\gemma-4-31B-it-Q4_K_M.gguf");
     expect(plan.commands[4].command).toContain("-PlannerMaxTokens 3200");
     expect(plan.commands[4].command).toContain("-PlannerRequestTimeoutMs 1200000");
     expect(plan.commands[4].command).toContain("-PlannerGpuId 0");
     expect(plan.commands[4].command).toContain("-PlannerGpuLayers 999");
+    expect(plan.commands[4].command).toContain("-ProductionPlannerModelPath D:\\models\\gemma-4-31B-it-Q4_K_M.gguf");
     expect(plan.commands[4].command).not.toContain("-AllowSmallPlanner");
     expect(plan.commands[6].command).toContain("production-text-manual-grade-checklist.mjs");
     expect(plan.acceptanceChecks).toContain("planner preflight is production-ready");
@@ -124,5 +126,39 @@ describe("production text rerun plan", () => {
     expect(plan.acceptanceChecks).toContain("manual grade checklist is promotion-ready");
     expect(existsSync(join(outputDir, "production-text-rerun-plan.json"))).toBe(true);
     expect(existsSync(join(outputDir, "production-text-rerun-plan.md"))).toBe(true);
+  });
+
+  it("records exact local planner model paths for non-flat model directories", () => {
+    const root = mkdtempSync(join(tmpdir(), "production-text-rerun-plan-model-path-"));
+    const gatePath = join(root, "production-text-promotion-gate.json");
+    const indexPath = join(root, "production-text-evidence-index.json");
+    const outputDir = join(root, "rerun-plan");
+    const modelPath = "D:\\models\\lmstudio-community\\Magistral-Small-2509-GGUF\\Magistral-Small-2509-Q4_K_M.gguf";
+
+    writeJson(gatePath, {
+      status: "blocked",
+      promotionReady: false,
+      requirements: [{ name: "LLM-planned customer request matrix completed", ok: false }]
+    });
+    writeJson(indexPath, {
+      plannerPreflights: [],
+      benchmarkSummaries: [],
+      modelCoverageReports: [],
+      aggregates: []
+    });
+
+    const plan = buildProductionTextRerunPlan({
+      gate: gatePath,
+      index: indexPath,
+      "output-dir": outputDir,
+      "planner-model": "koboldcpp/Magistral-Small-2509-Q4_K_M",
+      "planner-model-path": modelPath,
+      "gpu-id": 1
+    });
+
+    expect(plan.productionPlannerContract.requiredLocalGpu.gpuId).toBe(1);
+    expect(plan.commands[0].command).toContain(`-ModelPath ${modelPath}`);
+    expect(plan.commands[4].command).toContain(`-ProductionPlannerModelPath ${modelPath}`);
+    expect(plan.commands[4].command).toContain("-PlannerGpuId 1");
   });
 });

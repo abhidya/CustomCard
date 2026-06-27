@@ -1,10 +1,11 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { buildProductionTextEvidenceIndex } from "../scripts/production-text-evidence-index.mjs";
 
 function writeJson(path: string, value: unknown) {
+  mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
 }
 
@@ -393,6 +394,64 @@ describe("production text evidence index", () => {
       finalImagesRenderedByComfy: false,
       deterministicTextComposerUsed: false
     });
+  });
+
+  it("treats production-suitable local-production-text aggregates as LLM-planned evidence", () => {
+    const root = mkdtempSync(join(tmpdir(), "production-text-evidence-index-production-aggregate-"));
+    const outputDir = join(root, "index");
+
+    writeJson(join(root, "old-small", "benchmark-aggregate.json"), {
+      createdAtIso: "2026-06-26T04:30:00.000Z",
+      totalRuns: 3,
+      ranked: [
+        {
+          fixtureId: "aquarium-lover-birthday",
+          status: "blocked",
+          score: 38,
+          textModel: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
+          manualVisualGrade: {
+            score: 38,
+            status: "blocked",
+            passed: false,
+            blockingFailures: ["Small planner evidence is smoke-only."]
+          }
+        }
+      ]
+    });
+    writeJson(join(root, "new-gpu-production", "benchmark-aggregate.json"), {
+      createdAtIso: "2026-06-27T04:30:00.000Z",
+      phaseFilter: ["local-production-text"],
+      totalRuns: 3,
+      ranked: [
+        {
+          fixtureId: "dog-lover-thank-you",
+          phase: "local-production-text",
+          status: "failed",
+          score: 73,
+          textModel: "koboldcpp/Magistral-Small-2509-Q4_K_M",
+          manualVisualGrade: {
+            score: 73,
+            status: "failed",
+            passed: false,
+            blockingFailures: ["Planner timed out before image generation."]
+          }
+        }
+      ]
+    });
+
+    const report = buildProductionTextEvidenceIndex({
+      input: root,
+      "output-dir": outputDir,
+      "include-untracked": true
+    });
+
+    expect(report.aggregates[0]).toMatchObject({
+      kind: "llm-planned",
+      phases: ["local-production-text"],
+      textModels: ["koboldcpp/Magistral-Small-2509-Q4_K_M"]
+    });
+    expect(report.latest.aggregate).toContain("new-gpu-production");
+    expect(report.findings.join("\n")).toContain("best score 73");
   });
 
   it("treats legacy aggregate-only readiness blockers as non-runtime evidence", () => {

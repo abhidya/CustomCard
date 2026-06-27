@@ -420,8 +420,14 @@ function aggregateEntry(filePath) {
   const payload = readJson(filePath);
   if (!payload) return undefined;
   const ranked = Array.isArray(payload.ranked) ? payload.ranked : [];
+  const phaseFilter = Array.isArray(payload.phaseFilter) ? payload.phaseFilter : [];
+  const phases = unique([
+    ...phaseFilter,
+    ...ranked.map((entry) => entry.phase)
+  ].filter(Boolean));
   const textModels = unique(ranked.map((entry) => entry.textModel).filter(Boolean));
   const statuses = countBy(ranked.map((entry) => entry.status || "unknown"));
+  const isLocalProductionTextAggregate = phases.includes("local-production-text");
   const manualGrades = ranked
     .map((entry) => ({
       fixtureId: entry.fixtureId || "",
@@ -438,7 +444,9 @@ function aggregateEntry(filePath) {
   return {
     path: relativePath(filePath),
     createdAtIso: payload.createdAtIso || fileMtime(filePath),
-    kind: textModels.some(isSmallPlanner) ? "llm-planned" : "production-text-candidate",
+    kind: isLocalProductionTextAggregate || textModels.some(isSmallPlanner) ? "llm-planned" : "production-text-candidate",
+    phaseFilter,
+    phases,
     totalRuns: Number(payload.totalRuns ?? ranked.length ?? 0),
     statuses,
     promotionReady,

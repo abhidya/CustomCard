@@ -1,0 +1,33 @@
+# Production Text Promotion Gate
+
+Created: 2026-06-27T05:19:56.546Z
+Status: blocked
+Promotion ready: no
+Evidence index: docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-gpu-proof/evidence-index
+
+## Requirements
+
+| Requirement | Status | Details |
+| --- | --- | --- |
+| live ComfyUI preflight passed | ok | {"preflight":"docs/evidence/generated-card-comparisons/production-text-preflight-20260627T040924Z/production-text-preflight.json","preflightCreatedAtIso":"2026-06-27T04:09:25.120Z","liveComfyReachable":true,"liveNodeAvailable":true} |
+| live ComfyUI proof is current | ok | {"preflight":"docs/evidence/generated-card-comparisons/production-text-preflight-20260627T040924Z/production-text-preflight.json","preflightCreatedAtIso":"2026-06-27T04:09:25.120Z","readiness":"docs/evidence/generated-card-comparisons/production-text-readiness-20260627-gpu-proof-magistral-5013/production-text-readiness.json","readinessCreatedAtIso":"2026-06-27T04:08:18.667Z","preflightLiveComfyReachable":true,"preflightLiveNodeAvailable":true,"readinessComfyReachable":true,"readinessHasTextComposer":true,"staleReason":""} |
+| planner preflight is production-ready | ok | {"plannerPreflight":"docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-planner-preflight.json","activeModel":"koboldcpp/Magistral-Small-2509-Q4_K_M","classification":"production-suitable","reportedContextTokens":8192,"maxOutputTokens":3200,"blockers":[]} |
+| local planner GPU residency is proven | ok | {"plannerPreflight":"docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-planner-preflight.json","localGpuResidency":{"required":true,"ok":true,"status":"gpu-backed","baseUrl":"http://127.0.0.1:5013/v1","port":5013,"pids":[46488],"candidatePids":[44156,46488],"nvidiaProcessIds":[38428,46528,39752,1632,46488]}} |
+| planner preflight matches benchmark runtime | ok | {"preflight":{"path":"docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-planner-preflight.json","baseUrl":"http://127.0.0.1:5013/v1","model":"koboldcpp/Magistral-Small-2509-Q4_K_M"},"benchmark":{"path":"docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json","plannerBaseUrls":["http://127.0.0.1:5013/v1"],"textModels":["koboldcpp/Magistral-Small-2509-Q4_K_M"]},"blockers":[]} |
+| readiness doctor is promotion-ready | ok | {"readiness":"docs/evidence/generated-card-comparisons/production-text-readiness-20260627-gpu-proof-magistral-5013/production-text-readiness.json","blockers":[]} |
+| local model coverage is tracked | ok | {"modelCoverage":"docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current/local-model-coverage.json","installedModelFiles":47,"recommendedInstalled":9,"recommendedEvaluated":3,"recommendedMissing":1} |
+| production planner candidate is available | ok | {"modelCoverage":"docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current/local-model-coverage.json","readiness":"docs/evidence/generated-card-comparisons/production-text-readiness-20260627-gpu-proof-magistral-5013/production-text-readiness.json","productionSuitablePlannerReachable":true,"installedProductionPlanners":["gemma-4-31b-it","magistral-small-2509","deepseek-v4-flash"],"unevaluatedProductionPlanners":["gemma-4-31b-it","magistral-small-2509","deepseek-v4-flash"],"missingProductionPlanners":["qwen3-14b-instruct"]} |
+| production-suitable planner endpoint is reachable | ok | {"readiness":"docs/evidence/generated-card-comparisons/production-text-readiness-20260627-gpu-proof-magistral-5013/production-text-readiness.json","activePlannerModels":["koboldcpp/Magistral-Small-2509-Q4_K_M"]} |
+| no small smoke planner is active or used | ok | {"readinessSmallPlannerActive":false,"benchmarkSmallPlannerUsed":false,"textModels":["koboldcpp/Magistral-Small-2509-Q4_K_M"]} |
+| LLM-planned customer request matrix completed | fail | {"benchmark":"docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json","requiredFixtures":["aquarium-lover-birthday","koi-fish-lover-encouragement","dog-lover-thank-you"],"fixtures":["aquarium-lover-birthday","koi-fish-lover-encouragement","dog-lover-thank-you"],"completedRuns":0,"failedRuns":3} |
+| final images came from Comfy text composer | fail | {"benchmark":"docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json","completedRuns":0,"failedRuns":3,"failedBeforeImageGeneration":3,"finalImagesRenderedByComfy":false,"deterministicTextComposerUsed":false} |
+| planner preserved required terms and avoided forbidden terms | fail | {"benchmark":"docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun/production-text-workflow-summary.json","missingMustInclude":["Nina","birthday","aquarium","Uncle Ken","koi","encouragement","Morgan","thank","dog"],"mustAvoidFailures":[]} |
+| manual grade checklist is promotion-ready | fail | {"manualGradeChecklist":"docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-gpu-proof-magistral-5013-rerun/production-text-manual-grade-checklist.json","totalRuns":3,"gradableRuns":0,"gradedGeneratedRuns":0,"missingGrades":0,"invalidGrades":0,"failedBeforeImageGeneration":0,"blockers":["Automated must_include checks failed for: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog."]} |
+| manual aggregate is promotion-ready | fail | {"aggregate":"docs/evidence/generated-card-comparisons/benchmark-aggregate-20260627-production-text-gpu-proof-magistral-5013-rerun/benchmark-aggregate.json","totalRuns":3,"statuses":{"status-502":3},"bestScore":73,"blockingFailures":[]} |
+
+## Next Steps
+
+- Run the full aquarium/koi/dog production-text matrix to completion.
+- Keep the full prompt and correct planner runtime; retry/repair planner output until must_include and must_avoid checks pass before Comfy work.
+- Run the manual grade checklist after grading every generated run, then resolve missing/invalid/blocked grades before aggregation.
+- Manually grade every run and regenerate the aggregate only after all candidates pass.

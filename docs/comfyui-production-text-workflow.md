@@ -448,66 +448,48 @@ customer-theme quality.
 12. Promote only after aggregate benchmark evidence beats the current
    app-compositor baseline.
 
-Current status: gates 1, 2, 3, and the runtime-readiness portion of 4 have
-current local evidence for the 2026-06-27 production-planner runtime. The
-current live Comfy preflight is
-`docs/evidence/generated-card-comparisons/production-text-preflight-20260627-production-planner`:
-the target ComfyUI server is reachable and `CustomCardTextComposer` is loaded.
-The current planner preflight report is
-`docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627T023006Z`:
-Magistral Small is promotion-ready with 8192 context and 3200 output tokens at the
-matching `http://127.0.0.1:5013/v1` benchmark planner endpoint. The current readiness report is
-`docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner`:
-local Comfy is reachable, but the dedicated `5013` production planner endpoint
-is not currently listening; failed aggregate quality is tracked separately from
-runtime readiness. The current
-local model coverage is
-`docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current`;
-Gemma 31B, Magistral Small, and DeepSeek V4 Flash are installed; Magistral Small
-now has tracked one-run production-text failure evidence, but none of the
-installed production planners has a passing full-matrix evaluation. Qwen3 14B
-remains an optional missing fallback if installed planners are too slow. The current rerun plan is
-`docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-production-planner`:
-it turns the 7 current failed gate requirements into 10 ordered commands for
-the full production-planner matrix, grading, aggregation, and final gate. The
-current evidence index is
-`docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner`,
-the current promotion gate is
-`docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-production-planner`,
-and the current research rollup is
-`docs/evidence/generated-card-comparisons/production-text-research-rollup-20260627-production-planner`.
-Together they keep promotion blocked on full matrix completion, final
-Comfy-rendered image proof, must-include/must-avoid adherence, manual grade
-checklist readiness, manual aggregate readiness, and a currently unavailable
-production planner endpoint. The current gate fails 7 requirements total after
-refreshing live runtime readiness. A full matrix attempt is
-recorded at
-`docs/evidence/generated-card-comparisons/production-text-runtime-attempt-20260627-production-planner`
-and
-`docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu`:
-the first attempt exposed CPU-only Gemma startup and the GPU attempt proved
-CUDA offload, but a stale Qwen3-8B Kobold worker on port `5003` stole the port
-mid-request and produced `ECONNRESET`/`ECONNREFUSED` text-provider failures
-before image generation. Treat those as runtime-isolation evidence, not prompt
-quality evidence: use the dedicated `5013` production planner port, require
-`/models` to match the requested planner, keep `-PlannerRequestTimeoutMs
-1200000`, and switch hosted/self-hosted only if local GPU throughput remains
-too slow. A follow-up isolated-port Gemma run on `5013` still reset the
-connection during the first full-contract JSON response; the latest tracked
-Magistral Small GPU run on `5013` reached the production planner path but failed
-the first aquarium request before image generation because the planner output
-still contained forbidden `mockup` language after retry. Gate 9's
-older live LLM-planned matrix ran through
-KoboldCPP Qwen3-4B and local Comfy, then failed quality review: aquarium scored
-38/100, dog scored 34/100, and koi failed before image generation because the
-local LLM returned truncated invalid JSON. The code now keeps full prompt
-quality and requires a stronger planner plus validated card-copy output before
-spending Comfy image work. Gate 10 still blocks promotion, and gate 11 is not
-satisfied because both the production-text candidate aggregate and the
-LLM-planner aggregate rank every candidate as blocked after applying manual
-visual grades. The best structural compositor grade remains 72/100, but the
-customer-request matrix shows the planner/runtime contract is weaker than the
-text compositor.
+Current status: the 2026-06-27 GPU-proof evidence proves the correct runtime
+path but still blocks promotion on planner throughput. The current planner
+preflight is
+`docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-gpu-proof-magistral-5013`:
+Magistral Small is promotion-ready with 8192 context, 3200 output tokens, and
+local GPU residency proven for the KoboldCPP PID on GPU 1. The matching
+readiness report is
+`docs/evidence/generated-card-comparisons/production-text-readiness-20260627-gpu-proof-magistral-5013`:
+local Comfy, `CustomCardTextComposer`, and the production-suitable planner
+endpoint are reachable. CPU-only local planners, `--gpulayers 0`, stale model
+endpoints, and Qwen3-4B/8B smoke planners are rejected before promotion
+evidence can run.
+
+The full GPU-backed matrix attempt is
+`docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun`.
+It ran aquarium, koi, and dog customer requests against
+`http://127.0.0.1:5013/v1` with `koboldcpp/Magistral-Small-2509-Q4_K_M`, the
+full production card-copy JSON contract, 8192 context, 3200 output tokens, and
+a 1200000ms request timeout. All three runs failed before image generation
+because the local LLM chat completion timed out after 1200000ms. This is not a
+CPU fallback, not a small-model benchmark, and not a reduced-prompt run. It is
+evidence that the current local Magistral runtime is too slow for the full
+contract on this hardware.
+
+The current evidence index, promotion gate, rerun plan, and research rollup are:
+
+- `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-gpu-proof`
+- `docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-gpu-proof`
+- `docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-gpu-proof`
+- `docs/evidence/generated-card-comparisons/production-text-research-rollup-20260627-gpu-proof`
+
+The gate now fails 5 requirements: the LLM-planned matrix did not complete,
+final images were not generated by the Comfy text composer, required customer
+terms were not preserved in generated output because no output completed, the
+manual grade checklist is blocked, and the manual aggregate is blocked. The
+aggregate selection is current:
+`docs/evidence/generated-card-comparisons/benchmark-aggregate-20260627-production-text-gpu-proof-magistral-5013-rerun`.
+The rerun plan records the exact Magistral GGUF path and GPU flags so another
+agent does not accidentally run CPU or guess a flat `D:\models` filename. The
+next production attempt should use a faster production-class endpoint, evaluate
+the installed DeepSeek V4 Flash candidate, or use a hosted/self-hosted stronger
+planner while keeping the full creative contract intact.
 
 ## Open Engineering Work
 
@@ -516,10 +498,12 @@ text compositor.
   looking pasted on.
 - Use a correct planner runtime for the full contract: keep theme/palette/motif
   and panel-layout decisions with the LLM, keep the full prompt quality rather
-  than shrinking the creative brief for a small model, run promotion evidence
-  through Gemma 31B with GPU/offload, Qwen3 14B+ or Magistral Small for routine
-  local loops, or a hosted larger planner. Use Qwen3-4B/8B only for
-  smoke/failure evidence with `-AllowSmallPlanner`.
+  than shrinking the creative brief for a small model, and run promotion
+  evidence only through a GPU-backed or hosted production-class planner. The
+  latest Magistral Small GPU run proves runtime correctness but times out on
+  the full JSON contract, so the next candidate should improve throughput
+  rather than lower quality. Use Qwen3-4B/8B only for smoke/failure evidence
+  with `-AllowSmallPlanner`.
 - Prove the tightened planner output handling in a fresh run: preserve
   `must_include` terms in copy/theme/prompt output, reject or retry
   `must_avoid` violations before Comfy image generation, preserve useful loose
