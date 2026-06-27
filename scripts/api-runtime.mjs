@@ -452,6 +452,7 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
         idempotencyKey: prepared.idempotencyKey
       });
       if (route.runtimeMode === "queue-backed") {
+        const queuedAtIso = new Date().toISOString();
         queuedJobs.push({
           id: queueJob.id,
           userId: authContext.userId,
@@ -461,7 +462,9 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
           result: {},
           attemptCount: 0,
           maxAttempts: queueJob.maxAttempts,
-          createdAtIso: new Date().toISOString()
+          createdAtIso: queuedAtIso,
+          runAfterIso: queuedAtIso,
+          updatedAtIso: queuedAtIso
         });
       }
 
@@ -895,7 +898,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
     async readQueuedJob({ authContext, jobId }) {
       const pool = await getPool();
       const result = await pool.query(
-        `SELECT id, user_id, route_id, status, result, attempt_count, max_attempts, last_error, created_at, updated_at
+        `SELECT id, user_id, route_id, status, result, attempt_count, max_attempts, last_error, run_after, created_at, updated_at
          FROM api_jobs
          WHERE id = $1 AND user_id = $2
          LIMIT 1`,
@@ -912,6 +915,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
             attemptCount: Number(row.attempt_count ?? 0),
             maxAttempts: Number(row.max_attempts ?? 3),
             lastError: row.last_error ?? "",
+            runAfterIso: new Date(row.run_after).toISOString(),
             createdAtIso: new Date(row.created_at).toISOString(),
             updatedAtIso: new Date(row.updated_at).toISOString()
           }

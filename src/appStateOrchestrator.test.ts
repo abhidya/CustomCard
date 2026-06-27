@@ -152,6 +152,32 @@ describe("queued AI generation responses", () => {
       retryAfterSeconds: 4
     });
   });
+
+  it("reports GPU retry waits without exhausting the queue poller too early", async () => {
+    const response = new Response(
+      JSON.stringify({
+        status: "job-retry-waiting",
+        job_id: "job-ai-card-3",
+        queue_status: "queued",
+        queue_status_detail: "retry-waiting",
+        result_available: false,
+        retry_after_seconds: 17,
+        attempt_count: 2,
+        max_attempts: 3
+      }),
+      { status: 200, headers: { "content-type": "application/json" } }
+    );
+
+    await expect(readAiGenerationJobStatusResponse(response)).resolves.toMatchObject({
+      status: "pending",
+      jobId: "job-ai-card-3",
+      queueStatus: "queued",
+      retryAfterSeconds: 17,
+      attemptCount: 2,
+      maxAttempts: 3,
+      statusText: "AI draft is waiting for the GPU worker to retry. Attempt 3/3. Retrying in about 17s."
+    });
+  });
 });
 
 describe("active draft pipeline", () => {

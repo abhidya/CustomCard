@@ -89,6 +89,8 @@ export type AiGenerationJobPollResult =
       queueStatus: string;
       retryAfterSeconds: number;
       statusText: string;
+      attemptCount: number;
+      maxAttempts: number;
     };
 
 export interface AppState {
@@ -634,12 +636,23 @@ export async function readAiGenerationJobStatusResponse(response: Response): Pro
     return { status: "ready", result };
   }
 
+  const retryAfterSeconds = coerceRetryAfterSeconds(payload.retry_after_seconds ?? payload.retryAfterSeconds, response.headers.get("retry-after"));
+  const attemptCount = coercePositiveInteger(payload.attempt_count ?? payload.attemptCount, 0);
+  const maxAttempts = coercePositiveInteger(payload.max_attempts ?? payload.maxAttempts, 3);
   return {
     status: "pending",
     jobId,
     queueStatus: queueStatus || "queued",
-    retryAfterSeconds: coerceRetryAfterSeconds(payload.retry_after_seconds ?? payload.retryAfterSeconds, response.headers.get("retry-after")),
-    statusText: formatQueuedAiGenerationStatus(queueStatus || "queued")
+    retryAfterSeconds,
+    statusText: formatQueuedAiGenerationStatus({
+      attemptCount,
+      maxAttempts,
+      queueStatus: queueStatus || "queued",
+      retryAfterSeconds,
+      statusDetail: readOptionalString(payload.queue_status_detail ?? payload.queueStatusDetail)
+    }),
+    attemptCount,
+    maxAttempts
   };
 }
 
@@ -648,7 +661,7 @@ async function pollQueuedAiGenerationJob({
   jobId,
   statusUrl,
   onStatus,
-  maxAttempts = 60
+  maxAttempts = 180
 }: {
   getCustomerApiToken?: CustomerApiTokenProvider;
   jobId?: string;
@@ -670,7 +683,7 @@ async function pollQueuedAiGenerationJob({
     onStatus?.(status);
   }
 
-  throw new Error("AI card generation is still queued. You can keep editing the template and try again in a moment.");
+  throw new Error("AI card generation is taking longer than expected. You can keep editing the template; the worker may still finish this draft in the background.");
 }
 
 function readCompletedAiGenerationPayload(payload: Record<string, unknown>): AiGenerationApiResult | undefined {
@@ -706,9 +719,26 @@ function normalizeAiJobStatusUrl(statusUrl: string | undefined, jobId: string | 
   return `${parsed.pathname}${parsed.search}`;
 }
 
-function formatQueuedAiGenerationStatus(queueStatus: string): string {
+function formatQueuedAiGenerationStatus({
+  attemptCount,
+  maxAttempts,
+  queueStatus,
+  retryAfterSeconds,
+  statusDetail
+}: {
+  attemptCount: number;
+  maxAttempts: number;
+  queueStatus: string;
+  retryAfterSeconds: number;
+  statusDetail: string;
+}): string {
   if (queueStatus === "running") return "AI is writing the card now. The template stays editable while it works.";
-  if (queueStatus === "queued") return "AI draft is queued. The template stays editable while the worker starts.";
+  if (queueStatus === "queued" && statusDetail === "retry-waiting") {
+    const attemptText = attemptCount > 0 ? ` Attempt ${Math.min(attemptCount + 1, maxAttempts)}/${maxAttempts}.` : "";
+    const retryText = retryAfterSeconds > 5 ? ` Retrying in about ${retryAfterSeconds}s.` : "";
+    return `AI draft is waiting for the GPU worker to retry.${attemptText}${retryText}`;
+  }
+  if (queueStatus === "queued") return "AI draft is queued for the GPU worker. The template stays editable while it starts.";
   return `AI draft is ${queueStatus}. The template stays editable while the worker updates.`;
 }
 
@@ -718,6 +748,11 @@ function coerceRetryAfterSeconds(payloadValue: unknown, headerValue: string | nu
   const headerNumber = Number(headerValue);
   if (Number.isFinite(headerNumber) && headerNumber > 0) return Math.min(30, Math.max(1, Math.round(headerNumber)));
   return 2;
+}
+
+function coercePositiveInteger(value: unknown, fallback: number): number {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? Math.floor(number) : fallback;
 }
 
 function readOptionalString(value: unknown): string {

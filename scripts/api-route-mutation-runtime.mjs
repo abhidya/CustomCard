@@ -281,6 +281,7 @@ export function createRouteMutationRuntime({
   function buildQueuedJobRecord({ route, authContext, idempotencyKey, idempotencyKeyId = null, bodyText }) {
     if (route.runtimeMode !== "queue-backed") return undefined;
     const safeIdempotencyKey = safeId(idempotencyKey, stableRuntimeId("idempotency", authContext.userId, route.id, bodyText || "{}"));
+    const queuedAtIso = new Date().toISOString();
     return {
       id: stableRuntimeId("job", authContext.userId, route.id, safeIdempotencyKey),
       userId: authContext.userId,
@@ -290,7 +291,10 @@ export function createRouteMutationRuntime({
       payload: buildQueuedJobPayload({ route, authContext, idempotencyKey: safeIdempotencyKey, bodyText }),
       result: {},
       attemptCount: 0,
-      maxAttempts: 3
+      maxAttempts: 3,
+      runAfterIso: queuedAtIso,
+      createdAtIso: queuedAtIso,
+      updatedAtIso: queuedAtIso
     };
   }
 
@@ -413,26 +417,59 @@ export function createRouteMutationRuntime({
     const normalizedResult = normalizeJson(job.result ?? {});
     const result = normalizedResult && typeof normalizedResult === "object" ? normalizedResult : {};
     const resultAvailable = job.status === "succeeded" && Object.keys(result).length > 0;
+    const retryAfterSeconds = queuedJobRetryAfterSeconds({ job, resultAvailable });
+    const runAfterIso = safeDateIso(job.runAfterIso);
     return {
       statusCode,
       payload: {
         service: "customcard-api",
-        status: resultAvailable ? "job-result-ready" : `job-${job.status}`,
+        status: resultAvailable ? "job-result-ready" : publicQueuedJobStatus({ job, retryAfterSeconds }),
         runtimeMode,
         authenticatedUserId: authContext.userId,
         job_id: job.id,
         route_id: job.routeId,
         queue_status: job.status,
+        queue_status_detail: publicQueuedJobStatusDetail({ job, retryAfterSeconds }),
         result_available: resultAvailable,
         attempt_count: Number(job.attemptCount ?? 0),
         max_attempts: Number(job.maxAttempts ?? 3),
-        retry_after_seconds: resultAvailable || job.status === "dead_lettered" ? undefined : 2,
+        retry_after_seconds: retryAfterSeconds,
+        run_after: runAfterIso,
         last_error: job.lastError || undefined,
         created_at: job.createdAtIso,
         updated_at: job.updatedAtIso,
         result: resultAvailable ? result : undefined
       }
     };
+  }
+
+  function publicQueuedJobStatus({ job, retryAfterSeconds }) {
+    if (job.status === "queued" && Number(job.attemptCount ?? 0) > 0 && Number(retryAfterSeconds ?? 0) > 2) {
+      return "job-retry-waiting";
+    }
+    return `job-${job.status}`;
+  }
+
+  function publicQueuedJobStatusDetail({ job, retryAfterSeconds }) {
+    if (job.status === "queued" && Number(job.attemptCount ?? 0) > 0 && Number(retryAfterSeconds ?? 0) > 2) {
+      return "retry-waiting";
+    }
+    if (job.status === "running") return "worker-running";
+    return job.status;
+  }
+
+  function queuedJobRetryAfterSeconds({ job, resultAvailable }) {
+    if (resultAvailable || job.status === "dead_lettered" || job.status === "failed") return undefined;
+    if (job.status !== "queued") return 2;
+    const runAfterMs = Date.parse(String(job.runAfterIso ?? ""));
+    if (!Number.isFinite(runAfterMs)) return 2;
+    const remainingSeconds = Math.ceil((runAfterMs - Date.now()) / 1000);
+    return Math.min(120, Math.max(2, remainingSeconds));
+  }
+
+  function safeDateIso(value) {
+    const date = new Date(value ?? Date.now());
+    return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
   }
 
   return {
