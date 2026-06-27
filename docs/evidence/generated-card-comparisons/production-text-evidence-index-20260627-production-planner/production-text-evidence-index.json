@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T03:32:44.787Z",
+  "createdAtIso": "2026-06-27T03:35:02.581Z",
   "status": "blocked",
   "promotionReady": false,
   "evidenceRoot": "docs/evidence/generated-card-comparisons",
@@ -20,6 +20,7 @@
     "Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.",
     "Latest dry-run planning proof keeps the full production card-copy JSON contract on koboldcpp/gemma-4-31B-it-Q4_K_M with 8192+ context, 3200 output tokens, and 1200000ms timeout across aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you.",
     "Latest planner preflight passed with koboldcpp/gemma-4-31B-it-Q4_K_M.",
+    "No production-suitable planner endpoint is reachable/configured in the latest readiness report.",
     "Installed production planner candidates found locally: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
     "Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
     "Recommended production planner candidates still missing locally: qwen3-14b-instruct.",
@@ -30,6 +31,7 @@
     "Latest manual grade checklist is blocked: 0/0 generated run(s) graded, 0 failed before image generation."
   ],
   "nextSteps": [
+    "Run the planner preflight, then start or configure a production-suitable planner endpoint with 8192+ context before collecting promotion evidence.",
     "Run production-text planner preflight and benchmark evidence against installed production planner candidate(s): gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.",
     "Resolve local model pull queue if the installed planner is too slow: qwen3-14b-instruct.",
     "Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.",
@@ -226,24 +228,25 @@
   "readinessReports": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json",
-      "createdAtIso": "2026-06-27T01:49:05.479Z",
-      "status": "promotion-ready",
-      "promotionReady": true,
+      "createdAtIso": "2026-06-27T03:34:49.522Z",
+      "status": "blocked",
+      "promotionReady": false,
       "aggregatePromotionReady": false,
-      "blockerCount": 0,
-      "blockers": [],
-      "aggregateCheckBlockers": [
-        "latest LLM-planned aggregate is passing"
+      "blockerCount": 2,
+      "blockers": [
+        "configured production planner endpoint is reachable",
+        "configured production planner endpoint is production-suitable"
       ],
+      "aggregateCheckBlockers": [],
       "comfyReachable": true,
       "hasTextComposer": true,
-      "activePlannerModels": [
-        "koboldcpp/gemma-4-31B-it-Q4_K_M"
-      ],
-      "productionSuitablePlannerReachable": true,
+      "activePlannerModels": [],
+      "productionSuitablePlannerReachable": false,
       "smallPlannerActive": false,
       "nextSteps": [
-        "Run the full LLM-planned matrix with a production-suitable planner, manually grade every run, then aggregate."
+        "Start the configured local/hosted OpenAI-compatible planner endpoint before running promotion evidence.",
+        "Run tools/start-local-card-planner.ps1 with 8192+ context and 3200 output tokens, use a hosted/self-hosted production planner, or point -LocalLlmBaseUrl at that endpoint.",
+        "Promotion gate still needs a passing full LLM-planned matrix, manual grades, and aggregate; readiness only proves the runtime can run it."
       ]
     },
     {
@@ -489,7 +492,7 @@
   "preflights": [
     {
       "path": "docs/evidence/generated-card-comparisons/production-text-preflight-20260627-production-planner/production-text-preflight.json",
-      "createdAtIso": "2026-06-27T01:49:04.402Z",
+      "createdAtIso": "2026-06-27T03:34:49.196Z",
       "status": "promotion-ready",
       "promotionReady": true,
       "liveComfyReachable": true,

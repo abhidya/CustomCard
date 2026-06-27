@@ -1,12 +1,14 @@
 # Production Text Rerun Plan
 
-Created: 2026-06-27T03:32:21.927Z
+Created: 2026-06-27T03:35:12.554Z
 Status: rerun-required
 Gate: docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-production-planner/production-text-promotion-gate.json
 Evidence index: docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner/production-text-evidence-index.json
 
 ## Current Blockers
 
+- readiness doctor is promotion-ready
+- production-suitable planner endpoint is reachable
 - LLM-planned customer request matrix completed
 - final images came from Comfy text composer
 - planner preserved required terms and avoided forbidden terms

@@ -457,15 +457,16 @@ The current planner preflight report is
 Gemma 31B is promotion-ready with 8192 context and 3200 output tokens at the
 matching `http://127.0.0.1:5013/v1` benchmark planner endpoint. The current readiness report is
 `docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner`:
-local Comfy and the production planner endpoint are both reachable; failed
-aggregate quality is tracked separately from runtime readiness. The current
+local Comfy is reachable, but the dedicated `5013` production planner endpoint
+is not currently listening; failed aggregate quality is tracked separately from
+runtime readiness. The current
 local model coverage is
 `docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current`;
 Gemma 31B, Magistral Small, and DeepSeek V4 Flash are installed but still need
 local production-text evaluation, while Qwen3 14B remains an optional missing
 fallback if installed planners are too slow. The current rerun plan is
 `docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-production-planner`:
-it turns the 5 remaining failed gate requirements into 10 ordered commands for
+it turns the 7 current failed gate requirements into 10 ordered commands for
 the full production-planner matrix, grading, aggregation, and final gate. The
 current evidence index is
 `docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner`,
@@ -475,8 +476,9 @@ and the current research rollup is
 `docs/evidence/generated-card-comparisons/production-text-research-rollup-20260627-production-planner`.
 Together they keep promotion blocked on full matrix completion, final
 Comfy-rendered image proof, must-include/must-avoid adherence, manual grade
-checklist readiness, and manual aggregate readiness. The current gate fails 5
-requirements total after separating runtime readiness from aggregate quality. A full matrix attempt is
+checklist readiness, manual aggregate readiness, and a currently unavailable
+production planner endpoint. The current gate fails 7 requirements total after
+refreshing live runtime readiness. A full matrix attempt is
 recorded at
 `docs/evidence/generated-card-comparisons/production-text-runtime-attempt-20260627-production-planner`
 and

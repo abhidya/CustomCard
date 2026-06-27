@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T03:32:21.927Z",
+  "createdAtIso": "2026-06-27T03:35:12.554Z",
   "status": "rerun-required",
   "promotionReady": false,
   "reportDir": "docs/evidence/generated-card-comparisons/production-text-rerun-plan-20260627-production-planner",
@@ -31,6 +31,23 @@
     "bestScore": 38
   },
   "failedRequirements": [
+    {
+      "name": "readiness doctor is promotion-ready",
+      "details": {
+        "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json",
+        "blockers": [
+          "configured production planner endpoint is reachable",
+          "configured production planner endpoint is production-suitable"
+        ]
+      }
+    },
+    {
+      "name": "production-suitable planner endpoint is reachable",
+      "details": {
+        "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json",
+        "activePlannerModels": []
+      }
+    },
     {
       "name": "LLM-planned customer request matrix completed",
       "details": {

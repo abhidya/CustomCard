@@ -1,8 +1,9 @@
 {
-  "createdAtIso": "2026-06-27T01:49:05.479Z",
+  "createdAtIso": "2026-06-27T03:34:49.522Z",
   "status": "blocked",
   "advisory": true,
   "promotionReady": false,
+  "aggregatePromotionReady": false,
   "workflowPath": "comfyui-workflows/customcard-production-text-overlay.json",
   "nodeSource": "comfyui-custom-nodes/CustomCardTextComposer",
   "aggregatePath": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
@@ -14,50 +15,28 @@
     "objectInfoKeyCount": 1889
   },
   "configuredPlannerUrls": [
-    "http://127.0.0.1:5003/v1"
+    "http://127.0.0.1:5013/v1"
   ],
   "activePlannerEndpoints": [
     {
-      "baseUrl": "http://127.0.0.1:5003/v1",
-      "reachable": true,
-      "activeModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
-      "models": [
-        "koboldcpp/gemma-4-31B-it-Q4_K_M"
-      ],
-      "reportedContextTokens": 8192,
-      "maxOutputTokens": 3200,
+      "baseUrl": "http://127.0.0.1:5013/v1",
+      "reachable": false,
+      "activeModel": "",
+      "models": [],
       "smallPlanner": false,
-      "productionSuitable": true,
-      "plannerClass": "production-suitable",
-      "plannerPolicy": {
-        "minContextTokens": 8192,
-        "minOutputTokens": 3200,
-        "recommendedOutputTokens": 3200,
-        "blockers": [],
-        "warnings": []
-      }
+      "productionSuitable": false,
+      "error": "fetch failed"
     }
   ],
   "plannerEndpoints": [
     {
-      "baseUrl": "http://127.0.0.1:5003/v1",
-      "reachable": true,
-      "activeModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
-      "models": [
-        "koboldcpp/gemma-4-31B-it-Q4_K_M"
-      ],
-      "reportedContextTokens": 8192,
-      "maxOutputTokens": 3200,
+      "baseUrl": "http://127.0.0.1:5013/v1",
+      "reachable": false,
+      "activeModel": "",
+      "models": [],
       "smallPlanner": false,
-      "productionSuitable": true,
-      "plannerClass": "production-suitable",
-      "plannerPolicy": {
-        "minContextTokens": 8192,
-        "minOutputTokens": 3200,
-        "recommendedOutputTokens": 3200,
-        "blockers": [],
-        "warnings": []
-      }
+      "productionSuitable": false,
+      "error": "fetch failed"
     },
     {
       "baseUrl": "http://127.0.0.1:5001/v1",
@@ -67,6 +46,28 @@
       "smallPlanner": false,
       "productionSuitable": false,
       "error": "fetch failed"
+    },
+    {
+      "baseUrl": "http://127.0.0.1:5003/v1",
+      "reachable": true,
+      "activeModel": "koboldcpp/Qwen3-8B-Q4_K_M",
+      "models": [
+        "koboldcpp/Qwen3-8B-Q4_K_M"
+      ],
+      "reportedContextTokens": 8192,
+      "maxOutputTokens": 3200,
+      "smallPlanner": true,
+      "productionSuitable": false,
+      "plannerClass": "smoke-only",
+      "plannerPolicy": {
+        "minContextTokens": 8192,
+        "minOutputTokens": 3200,
+        "recommendedOutputTokens": 3200,
+        "blockers": [
+          "Planner model 'koboldcpp/Qwen3-8B-Q4_K_M' is below the production model floor for production text and is smoke-only; use Gemma 31B, Magistral Small, Qwen3 14B+, or a stronger hosted planner."
+        ],
+        "warnings": []
+      }
     }
   ],
   "aggregateSummary": {
@@ -154,7 +155,7 @@
     {
       "name": "latest LLM-planned aggregate exists",
       "ok": true,
-      "required": true,
+      "required": false,
       "details": {
         "aggregatePath": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json"
       }
@@ -162,7 +163,7 @@
     {
       "name": "latest LLM-planned aggregate covers three customer requests",
       "ok": true,
-      "required": true,
+      "required": false,
       "details": {
         "aggregatePath": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
         "exists": true,
@@ -192,7 +193,7 @@
     {
       "name": "latest LLM-planned aggregate is passing",
       "ok": false,
-      "required": true,
+      "required": false,
       "details": {
         "aggregatePath": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
         "exists": true,
@@ -235,66 +236,44 @@
     },
     {
       "name": "configured production planner endpoint is reachable",
-      "ok": true,
+      "ok": false,
       "required": true,
       "details": {
         "configuredPlannerUrls": [
-          "http://127.0.0.1:5003/v1"
+          "http://127.0.0.1:5013/v1"
         ],
         "discoveryMode": false,
         "activePlannerEndpoints": [
           {
-            "baseUrl": "http://127.0.0.1:5003/v1",
-            "reachable": true,
-            "activeModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
-            "models": [
-              "koboldcpp/gemma-4-31B-it-Q4_K_M"
-            ],
-            "reportedContextTokens": 8192,
-            "maxOutputTokens": 3200,
+            "baseUrl": "http://127.0.0.1:5013/v1",
+            "reachable": false,
+            "activeModel": "",
+            "models": [],
             "smallPlanner": false,
-            "productionSuitable": true,
-            "plannerClass": "production-suitable",
-            "plannerPolicy": {
-              "minContextTokens": 8192,
-              "minOutputTokens": 3200,
-              "recommendedOutputTokens": 3200,
-              "blockers": [],
-              "warnings": []
-            }
+            "productionSuitable": false,
+            "error": "fetch failed"
           }
         ]
       }
     },
     {
       "name": "configured production planner endpoint is production-suitable",
-      "ok": true,
+      "ok": false,
       "required": true,
       "details": {
         "configuredPlannerUrls": [
-          "http://127.0.0.1:5003/v1"
+          "http://127.0.0.1:5013/v1"
         ],
         "discoveryMode": false,
         "activePlannerEndpoints": [
           {
-            "baseUrl": "http://127.0.0.1:5003/v1",
-            "reachable": true,
-            "activeModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
-            "models": [
-              "koboldcpp/gemma-4-31B-it-Q4_K_M"
-            ],
-            "reportedContextTokens": 8192,
-            "maxOutputTokens": 3200,
+            "baseUrl": "http://127.0.0.1:5013/v1",
+            "reachable": false,
+            "activeModel": "",
+            "models": [],
             "smallPlanner": false,
-            "productionSuitable": true,
-            "plannerClass": "production-suitable",
-            "plannerPolicy": {
-              "minContextTokens": 8192,
-              "minOutputTokens": 3200,
-              "recommendedOutputTokens": 3200,
-              "blockers": [],
-              "warnings": []
-            }
+            "productionSuitable": false,
+            "error": "fetch failed"
           }
         ]
       }
@@ -305,29 +284,18 @@
       "required": true,
       "details": {
         "configuredPlannerUrls": [
-          "http://127.0.0.1:5003/v1"
+          "http://127.0.0.1:5013/v1"
         ],
         "discoveryMode": false,
         "activePlannerEndpoints": [
           {
-            "baseUrl": "http://127.0.0.1:5003/v1",
-            "reachable": true,
-            "activeModel": "koboldcpp/gemma-4-31B-it-Q4_K_M",
-            "models": [
-              "koboldcpp/gemma-4-31B-it-Q4_K_M"
-            ],
-            "reportedContextTokens": 8192,
-            "maxOutputTokens": 3200,
+            "baseUrl": "http://127.0.0.1:5013/v1",
+            "reachable": false,
+            "activeModel": "",
+            "models": [],
             "smallPlanner": false,
-            "productionSuitable": true,
-            "plannerClass": "production-suitable",
-            "plannerPolicy": {
-              "minContextTokens": 8192,
-              "minOutputTokens": 3200,
-              "recommendedOutputTokens": 3200,
-              "blockers": [],
-              "warnings": []
-            }
+            "productionSuitable": false,
+            "error": "fetch failed"
           }
         ]
       }
@@ -335,38 +303,54 @@
   ],
   "blockers": [
     {
-      "name": "latest LLM-planned aggregate is passing",
+      "name": "configured production planner endpoint is reachable",
       "ok": false,
       "required": true,
       "details": {
-        "aggregatePath": "docs/evidence/generated-card-comparisons/benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json",
-        "exists": true,
-        "totalRuns": 3,
-        "statuses": {
-          "blocked": 2,
-          "failed": 1
-        },
-        "bestScore": 38,
-        "bestRun": "aquarium-lover-birthday",
-        "textModels": [
-          "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S"
+        "configuredPlannerUrls": [
+          "http://127.0.0.1:5013/v1"
         ],
-        "promotionReady": false,
-        "blockingFailures": [
-          "Planner missed required recipient/name/theme terms: Nina and aquarium are absent.",
-          "Artwork and copy drifted into botanical birthday stationery instead of aquarium-lover stationery.",
-          "Back panel is too dark, contains visible text, and does not behave as a sparse no-copy back cover.",
-          "Planner missed required recipient/name/theme terms: Morgan and dog are absent.",
-          "Copy invents plant-watering context and says the plants are grateful, which contradicts the dog-lover thank-you request.",
-          "Local Qwen3-4B planner returned invalid JSON.",
-          "The LLM response hit the 2200-token completion cap with finish_reason length.",
-          "No image panels were generated for the koi encouragement request."
+        "discoveryMode": false,
+        "activePlannerEndpoints": [
+          {
+            "baseUrl": "http://127.0.0.1:5013/v1",
+            "reachable": false,
+            "activeModel": "",
+            "models": [],
+            "smallPlanner": false,
+            "productionSuitable": false,
+            "error": "fetch failed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "configured production planner endpoint is production-suitable",
+      "ok": false,
+      "required": true,
+      "details": {
+        "configuredPlannerUrls": [
+          "http://127.0.0.1:5013/v1"
+        ],
+        "discoveryMode": false,
+        "activePlannerEndpoints": [
+          {
+            "baseUrl": "http://127.0.0.1:5013/v1",
+            "reachable": false,
+            "activeModel": "",
+            "models": [],
+            "smallPlanner": false,
+            "productionSuitable": false,
+            "error": "fetch failed"
+          }
         ]
       }
     }
   ],
   "nextSteps": [
-    "Run the full LLM-planned matrix with a production-suitable planner, manually grade every run, then aggregate."
+    "Start the configured local/hosted OpenAI-compatible planner endpoint before running promotion evidence.",
+    "Run tools/start-local-card-planner.ps1 with 8192+ context and 3200 output tokens, use a hosted/self-hosted production planner, or point -LocalLlmBaseUrl at that endpoint.",
+    "Promotion gate still needs a passing full LLM-planned matrix, manual grades, and aggregate; readiness only proves the runtime can run it."
   ],
   "reportDir": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner"
 }

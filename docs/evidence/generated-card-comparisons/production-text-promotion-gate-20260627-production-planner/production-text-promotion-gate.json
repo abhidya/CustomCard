@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T03:32:44.790Z",
+  "createdAtIso": "2026-06-27T03:35:02.588Z",
   "status": "blocked",
   "promotionReady": false,
   "advisory": true,
@@ -26,7 +26,7 @@
       "ok": true,
       "details": {
         "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260627-production-planner/production-text-preflight.json",
-        "preflightCreatedAtIso": "2026-06-27T01:49:04.402Z",
+        "preflightCreatedAtIso": "2026-06-27T03:34:49.196Z",
         "liveComfyReachable": true,
         "liveNodeAvailable": true
       }
@@ -36,9 +36,9 @@
       "ok": true,
       "details": {
         "preflight": "docs/evidence/generated-card-comparisons/production-text-preflight-20260627-production-planner/production-text-preflight.json",
-        "preflightCreatedAtIso": "2026-06-27T01:49:04.402Z",
+        "preflightCreatedAtIso": "2026-06-27T03:34:49.196Z",
         "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json",
-        "readinessCreatedAtIso": "2026-06-27T01:49:05.479Z",
+        "readinessCreatedAtIso": "2026-06-27T03:34:49.522Z",
         "preflightLiveComfyReachable": true,
         "preflightLiveNodeAvailable": true,
         "readinessComfyReachable": true,
@@ -81,10 +81,13 @@
     },
     {
       "name": "readiness doctor is promotion-ready",
-      "ok": true,
+      "ok": false,
       "details": {
         "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json",
-        "blockers": []
+        "blockers": [
+          "configured production planner endpoint is reachable",
+          "configured production planner endpoint is production-suitable"
+        ]
       }
     },
     {
@@ -104,7 +107,7 @@
       "details": {
         "modelCoverage": "docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current/local-model-coverage.json",
         "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json",
-        "productionSuitablePlannerReachable": true,
+        "productionSuitablePlannerReachable": false,
         "installedProductionPlanners": [
           "gemma-4-31b-it",
           "magistral-small-2509",
@@ -122,12 +125,10 @@
     },
     {
       "name": "production-suitable planner endpoint is reachable",
-      "ok": true,
+      "ok": false,
       "details": {
         "readiness": "docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner/production-text-readiness.json",
-        "activePlannerModels": [
-          "koboldcpp/gemma-4-31B-it-Q4_K_M"
-        ]
+        "activePlannerModels": []
       }
     },
     {
@@ -232,6 +233,7 @@
     }
   ],
   "nextSteps": [
+    "Run the planner preflight and readiness doctor after starting a production-suitable planner endpoint with 8192+ context.",
     "Run the full aquarium/koi/dog production-text matrix to completion.",
     "Keep the full prompt and correct planner runtime; retry/repair planner output until must_include and must_avoid checks pass before Comfy work.",
     "Run the manual grade checklist after grading every generated run, then resolve missing/invalid/blocked grades before aggregation.",

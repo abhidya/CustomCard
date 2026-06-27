@@ -1,6 +1,6 @@
 # Production Text Evidence Index
 
-Created: 2026-06-27T03:32:44.787Z
+Created: 2026-06-27T03:35:02.581Z
 Status: blocked
 Promotion ready: no
 
@@ -9,6 +9,7 @@ Promotion ready: no
 - Live ComfyUI and CustomCardTextComposer are proven available in the latest preflight.
 - Latest dry-run planning proof keeps the full production card-copy JSON contract on koboldcpp/gemma-4-31B-it-Q4_K_M with 8192+ context, 3200 output tokens, and 1200000ms timeout across aquarium-lover-birthday, koi-fish-lover-encouragement, dog-lover-thank-you.
 - Latest planner preflight passed with koboldcpp/gemma-4-31B-it-Q4_K_M.
+- No production-suitable planner endpoint is reachable/configured in the latest readiness report.
 - Installed production planner candidates found locally: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Installed production planner candidates still need local production-text evaluation: gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Recommended production planner candidates still missing locally: qwen3-14b-instruct.
@@ -20,6 +21,7 @@ Promotion ready: no
 
 ## Next Steps
 
+- Run the planner preflight, then start or configure a production-suitable planner endpoint with 8192+ context before collecting promotion evidence.
 - Run production-text planner preflight and benchmark evidence against installed production planner candidate(s): gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash.
 - Resolve local model pull queue if the installed planner is too slow: qwen3-14b-instruct.
 - Run the full aquarium/koi/dog LLM-planned production-text matrix with the production-suitable planner, not a reduced prompt.
@@ -33,7 +35,7 @@ Promotion ready: no
 | Rerun Plan | [open](../production-text-rerun-plan-20260627-production-planner/production-text-rerun-plan.json) | rerun-required | 5 failed requirement(s); commands=10 |
 | Planner | [open](../production-text-planner-preflight-20260627T021918Z/production-text-planner-preflight.json) | promotion-ready | production-suitable; model=koboldcpp/gemma-4-31B-it-Q4_K_M; context=8192 |
 | Planner/Benchmark Alignment | [open](../production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json) | aligned | preflight=http://127.0.0.1:5013/v1 koboldcpp/gemma-4-31B-it-Q4_K_M; benchmark=http://127.0.0.1:5013/v1 koboldcpp/gemma-4-31B-it-Q4_K_M; blockers=0 |
-| Readiness | [open](../production-text-readiness-20260627-production-planner/production-text-readiness.json) | promotion-ready | 0 blocker(s); planner=koboldcpp/gemma-4-31B-it-Q4_K_M |
+| Readiness | [open](../production-text-readiness-20260627-production-planner/production-text-readiness.json) | blocked | 2 blocker(s); planner=none |
 | Model Coverage | [open](../local-model-coverage-20260627-current/local-model-coverage.json) | action-needed | 9 recommended installed; unevaluated production planners=gemma-4-31b-it, magistral-small-2509, deepseek-v4-flash |
 | Preflight | [open](../production-text-preflight-20260627-production-planner/production-text-preflight.json) | promotion-ready | comfy=yes node=yes |
 | Dry Run | [open](../production-text-dry-run-20260627-production-planner/production-text-workflow-dry-run.json) | planning-proof | production-suitable koboldcpp/gemma-4-31B-it-Q4_K_M; planned=3; contract=full-production-card-copy-json |
