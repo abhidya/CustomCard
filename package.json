@@ -87,6 +87,7 @@
     "runtime:doctor": "node scripts/validate-runtime-env.mjs",
     "provider:setup": "node scripts/provider-control.mjs setup",
     "provider:status": "node scripts/provider-control.mjs status",
+    "provider:dashboard": "node scripts/provider-dashboard.mjs",
     "provider:doctor": "node scripts/provider-control.mjs doctor",
     "provider:start": "node scripts/provider-control.mjs start",
     "provider:once": "node scripts/provider-control.mjs once",

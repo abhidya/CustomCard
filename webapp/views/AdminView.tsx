@@ -25,6 +25,7 @@ import type { AiGenerationJobEvidence } from "../../src/aiGenerationJobs";
 import { buildBrowserIdempotencyKey, fetchBrowser, requestBrowserJson } from "../../src/browserRequestAdapter";
 import { resolveCardGenerationEndpoint } from "../../src/browserGatePolicy";
 import { providerCatalog } from "../../src/providerCatalog";
+import { ProviderQueueStatusPanel, useProviderQueueStatus } from "../../src/providerQueueStatusPanel";
 import { normalizeBrowserImageUrl } from "../browserImageUrl";
 import { AdminCardGalleryView } from "./AdminCardGalleryView";
 
@@ -274,6 +275,7 @@ export function AdminView({
 
   const apiResult = results.api;
   const serviceUp = apiResult !== undefined && apiResult !== "running" && apiResult.ok;
+  const providerQueueStatus = useProviderQueueStatus(getAdminApiToken);
 
   /* ---------- safety controls ---------- */
   const [safetyControls, setSafetyControls] = useState<AdminSafetyControlsPayload | null>(null);
@@ -671,6 +673,12 @@ export function AdminView({
       </header>
 
       <div className="opsGrid">
+        <ProviderQueueStatusPanel
+          className="opsCard-wide adminProviderQueueCard"
+          onRefresh={providerQueueStatus.refresh}
+          state={providerQueueStatus.state}
+        />
+
         {/* ---- Service status ---- */}
         <section className="panelcard opsCard">
           <div className="opsCardHead">
