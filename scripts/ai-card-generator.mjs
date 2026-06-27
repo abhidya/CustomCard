@@ -804,6 +804,10 @@ async function executeGoogleGeminiChat({ flow, env, fetchImpl, systemPrompt, use
 }
 
 async function executeOpenAiCompatibleTextProvider({ flow, fetchImpl, systemPrompt, userPrompt, responseFormat }, compatible) {
+  if (compatible.localModelGuard) {
+    await assertLocalOpenAiModelMatch(fetchImpl, compatible, flow.model);
+  }
+  const useResponseFormat = responseFormat && (!compatible.localProvider || truthyEnv(compatible.strictResponseFormat));
   const data = await postJson(fetchImpl, compatible.url, {
     headers: compatible.headers,
     localProvider: Boolean(compatible.localProvider),
@@ -814,7 +818,7 @@ async function executeOpenAiCompatibleTextProvider({ flow, fetchImpl, systemProm
       messages: buildMessages(systemPrompt, userPrompt),
       max_tokens: flow.maxTokens || 700,
       temperature: flow.temperature,
-      ...(responseFormat ? { response_format: responseFormat } : {})
+      ...(useResponseFormat ? { response_format: responseFormat } : {})
     }
   });
   return extractText(data);
@@ -1475,6 +1479,18 @@ function localOpenAiChatCompletionsUrl(env) {
   return parsed.toString();
 }
 
+function localOpenAiModelsUrl(chatCompletionsUrl) {
+  const parsed = new URL(chatCompletionsUrl);
+  let normalizedPath = parsed.pathname.replace(/\/+$/, "");
+  if (normalizedPath.endsWith("/chat/completions")) {
+    normalizedPath = normalizedPath.slice(0, -"/chat/completions".length).replace(/\/+$/, "");
+  }
+  parsed.pathname = `${normalizedPath || "/v1"}/models`.replace(/\/{2,}/g, "/");
+  parsed.search = "";
+  parsed.hash = "";
+  return parsed.toString();
+}
+
 function localComfyUiBaseUrl(env) {
   const baseUrl = firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_URL", "COMFYUI_URL"]) || "http://127.0.0.1:8188";
   return assertLocalProviderBaseUrl(baseUrl, "Local ComfyUI URL").toString().replace(/\/+$/, "");
@@ -1614,10 +1630,14 @@ function openAiCompatibleAdapter(adapterId, env) {
   }
   if (adapterId === "local-openai-compatible-chat") {
     const apiKey = firstUsableEnv(env, ["CUSTOMCARD_LOCAL_LLM_API_KEY", "LMSTUDIO_API_KEY", "KOBOLDCPP_API_KEY"]);
+    const url = localOpenAiChatCompletionsUrl(env);
     return {
-      url: localOpenAiChatCompletionsUrl(env),
+      url,
       headers: apiKey ? { authorization: `Bearer ${apiKey}` } : {},
       localProvider: true,
+      localModelGuard: truthyEnv(firstUsableEnv(env, ["CUSTOMCARD_LOCAL_LLM_REQUIRE_MODEL_MATCH", "KOBOLDCPP_REQUIRE_MODEL_MATCH"])),
+      modelsUrl: localOpenAiModelsUrl(url),
+      strictResponseFormat: firstUsableEnv(env, ["CUSTOMCARD_LOCAL_LLM_STRICT_RESPONSE_FORMAT", "KOBOLDCPP_STRICT_RESPONSE_FORMAT"]),
       timeoutLabel: "Local LLM chat completion request",
       timeoutMs: localLlmRequestTimeoutMs(env)
     };
@@ -1640,7 +1660,10 @@ async function postJson(fetchImpl, url, { headers = {}, body, localProvider = fa
     },
     body: JSON.stringify(body)
   });
-  if (!response.ok) throw new Error(`AI provider returned ${response.status}.`);
+  if (!response.ok) {
+    const contentType = response.headers?.get?.("content-type") ?? "";
+    throw new Error(`AI provider returned ${response.status}: ${await readProviderError(response, contentType)}.`);
+  }
   const data = await response.json();
   if (data?.success === false) {
     throw new Error(data?.errors?.[0]?.message || "AI provider rejected the request.");
@@ -1659,6 +1682,40 @@ function localLlmRequestTimeoutMs(env) {
     3_600_000,
     defaultLocalLlmRequestTimeoutMs
   );
+}
+
+async function assertLocalOpenAiModelMatch(fetchImpl, compatible, requestedModel) {
+  const expectedModel = normalizeLocalOpenAiModelId(requestedModel);
+  if (!expectedModel) return;
+  const requestFetch = localProviderFetch(fetchImpl, {
+    timeoutLabel: "Local LLM model guard request",
+    timeoutMs: Math.min(compatible.timeoutMs || defaultLocalLlmRequestTimeoutMs, 30_000)
+  });
+  const response = await requestFetch(compatible.modelsUrl, {
+    method: "GET",
+    headers: compatible.headers || {}
+  });
+  if (!response.ok) throw new Error(`Local LLM model guard returned ${response.status}.`);
+  const body = await response.json();
+  const models = (body?.data || []).map((item) => String(item?.id || "")).filter(Boolean);
+  const matched = models.some((model) => normalizeLocalOpenAiModelId(model) === expectedModel);
+  if (!matched) {
+    throw new Error(
+      `Local LLM model mismatch: requested ${requestedModel}, but /models reported ${models.join(", ") || "none"}.`
+    );
+  }
+}
+
+function normalizeLocalOpenAiModelId(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^koboldcpp\//, "")
+    .replace(/\.gguf$/, "");
+}
+
+function truthyEnv(value) {
+  return /^(1|true|yes|on)$/i.test(String(value || "").trim());
 }
 
 function localProviderFetch(fetchImpl, { timeoutLabel, timeoutMs }) {

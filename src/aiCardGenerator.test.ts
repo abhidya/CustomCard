@@ -281,6 +281,7 @@ describe("AI card generator service", () => {
         timeoutMs: 123456
       });
       expect(body.max_tokens).toBe(3200);
+      expect(body.response_format).toBeUndefined();
       expect(userPrompt.task).toContain("The LLM owns the creative concept");
       return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
         status: 200,
@@ -322,6 +323,54 @@ describe("AI card generator service", () => {
     expect(localProviderFetch).toHaveBeenCalledTimes(1);
     expect(fetchImpl).not.toHaveBeenCalled();
     expect(JSON.stringify(result.payload)).toContain("Happy Birthday Sara");
+  });
+
+  it("blocks local planner requests when the serving model does not match the requested model", async () => {
+    const localProviderFetch = vi.fn(async (url: RequestInfo | URL) => {
+      const requestUrl = String(url);
+      if (requestUrl === "http://127.0.0.1:5013/v1/models") {
+        return new Response(JSON.stringify({ data: [{ id: "koboldcpp/Qwen3-8B-Q4_K_M" }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      throw new Error(`Unexpected local provider request: ${requestUrl}`);
+    });
+    const fetchImpl = Object.assign(
+      vi.fn(async () => {
+        throw new Error("Unexpected generic fetch for local planner");
+      }),
+      { localProviderFetch }
+    );
+    const service = createAiCardGenerationService({
+      env: {
+        CUSTOMCARD_LOCAL_LLM_BASE_URL: "http://127.0.0.1:5013/v1",
+        CUSTOMCARD_LOCAL_LLM_MODEL: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+        CUSTOMCARD_LOCAL_LLM_REQUIRE_MODEL_MATCH: "true"
+      },
+      fetchImpl,
+      aiFlowAdminConfig: buildDefaultAiFlowAdminConfigs().map((config) => {
+        if (config.flowId === "card-copy") {
+          return {
+            ...config,
+            primaryAdapterId: "local-openai-compatible-chat",
+            fallbackAdapterId: "",
+            model: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+            liveProviderCallsEnabled: true
+          };
+        }
+        if (config.flowId === "card-image") return { ...config, liveProviderCallsEnabled: false };
+        return config;
+      })
+    });
+
+    const result = await service.generateCard(cardRequest, { rateKey: "test-local-planner-model-guard" });
+
+    expect(result.statusCode).toBe(503);
+    expect(localProviderFetch).toHaveBeenCalledTimes(1);
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(JSON.stringify(result.payload)).toContain("Local LLM model mismatch");
+    expect(JSON.stringify(result.payload)).toContain("Qwen3-8B");
   });
 
   it("passes trusted local Comfy workflow templates, ids, and input metadata from worker env", async () => {

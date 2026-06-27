@@ -1,6 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import {
+  normalizeAiFlowAdminConfigs,
+  resolveAiFlowConfig
+} from "../src/aiFlowConfigData.mjs";
 import { createAiCardGenerationService, loadLocalAiEnvFiles } from "./ai-card-generator.mjs";
 import { resolveLocalComfyWorkerEnv } from "./local-comfy-worker.mjs";
 
@@ -28,6 +32,7 @@ export function createProviderHttpWorkerRuntime({
   const workerId = resolvedEnv.CUSTOMCARD_WORKER_ID;
   const token = String(resolvedEnv.CUSTOMCARD_PROVIDER_WORKER_TOKEN ?? "").trim();
   const routeScope = providerRouteScope(routes, resolvedEnv);
+  const aiFlowReadiness = providerAiFlowReadiness(resolvedEnv);
   const aiService = createAiCardGenerationService({ env: resolvedEnv, fetchImpl });
 
   return {
@@ -38,8 +43,12 @@ export function createProviderHttpWorkerRuntime({
         workerId,
         apiBaseUrl: baseUrl || null,
         routeScope,
+        copyAdapter: aiFlowReadiness.cardCopy.adapterId,
+        copyModel: aiFlowReadiness.cardCopy.model,
         imageAdapter: resolvedEnv.CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID,
+        imageModel: aiFlowReadiness.cardImage.model,
         comfyUrl: resolvedEnv.CUSTOMCARD_COMFYUI_URL || resolvedEnv.COMFYUI_URL || null,
+        aiFlowReadiness,
         hasProviderToken: token.length >= 32,
         pollIntervalMs: workerPollIntervalMs(resolvedEnv)
       };
@@ -48,6 +57,7 @@ export function createProviderHttpWorkerRuntime({
       const blockers = [];
       if (!baseUrl) blockers.push("CUSTOMCARD_PROVIDER_API_BASE_URL is required.");
       if (token.length < 32) blockers.push("CUSTOMCARD_PROVIDER_WORKER_TOKEN must be at least 32 characters.");
+      blockers.push(...providerAiFlowBlockers(aiFlowReadiness));
       return blockers;
     },
     async runOnce({ limit = workerBatchSize(resolvedEnv) } = {}) {
@@ -170,7 +180,10 @@ async function executeLeasedJob({ aiService, job }) {
   const requestContext = payload.requestContext && typeof payload.requestContext === "object" ? payload.requestContext : {};
   const generated = await aiService.generateCard(body, requestContext);
   if (generated.statusCode === 429) throw new Error("Provider rate limited.");
-  if (generated.statusCode >= 500) throw new Error(`Provider failed with HTTP ${generated.statusCode}.`);
+  if (generated.statusCode >= 500) {
+    const failure = providerFailureFromPayload(generated.payload);
+    throw new Error(`Provider failed with HTTP ${generated.statusCode}${failure ? `: ${failure}` : ""}.`);
+  }
   const liveNetworkCalls = hasLiveProviderNetworkCall(generated.payload);
   return {
     status: "ai-result-ready",
@@ -181,6 +194,27 @@ async function executeLeasedJob({ aiService, job }) {
     liveNetworkCalls,
     evidence: "Provider HTTP worker completed queued AI flow with scoped provider-token auth."
   };
+}
+
+function providerFailureFromPayload(payload) {
+  if (!payload || typeof payload !== "object") return "";
+  const direct = firstUsefulFailure(payload.detail, payload.error, payload.provider_failure);
+  if (direct) return direct;
+  const aiFlow = payload.ai_flow && typeof payload.ai_flow === "object" ? payload.ai_flow : {};
+  for (const flow of Object.values(aiFlow)) {
+    if (!flow || typeof flow !== "object") continue;
+    const failure = firstUsefulFailure(flow.provider_failure);
+    if (failure) return failure;
+  }
+  return "";
+}
+
+function firstUsefulFailure(...values) {
+  for (const value of values) {
+    const text = String(value ?? "").replace(/\s+/g, " ").trim();
+    if (text) return text.length > 500 ? `${text.slice(0, 500)}...` : text;
+  }
+  return "";
 }
 
 async function postJson({ fetchImpl, token, url, body }) {
@@ -202,7 +236,7 @@ async function postJson({ fetchImpl, token, url, body }) {
   return { ok: response.ok, status: response.status, payload, text };
 }
 
-function loadProviderWorkerEnvFiles({ cwd = process.cwd(), target = process.env } = {}) {
+export function loadProviderWorkerEnvFiles({ cwd = process.cwd(), target = process.env } = {}) {
   for (const { filePath, override } of [
     { filePath: ".env.local", override: false },
     { filePath: "infra/env/.env", override: false },
@@ -236,7 +270,49 @@ function parseDotenv(text) {
 }
 
 function isProviderWorkerEnvKey(key) {
-  return /^(CUSTOMCARD_PROVIDER_.+|CUSTOMCARD_HOSTED_API_BASE_URL|PUBLIC_APP_ORIGIN)$/.test(key);
+  return /^(CUSTOMCARD_PROVIDER_.+|CUSTOMCARD_HOSTED_API_BASE_URL|PUBLIC_APP_ORIGIN|CUSTOMCARD_AI_|CUSTOMCARD_RUNCOMFY_|CUSTOMCARD_COMFYUI_|COMFYUI_|CLOUDFLARE_|RUNCOMFY_)/
+    .test(key);
+}
+
+function providerAiFlowReadiness(env) {
+  const adminConfig = providerAiFlowAdminConfig(env);
+  const cardCopy = resolveAiFlowConfig("card-copy", env, adminConfig);
+  const cardImage = resolveAiFlowConfig("card-image", env, adminConfig);
+  return {
+    cardCopy: flowReadinessSummary(cardCopy),
+    cardImage: flowReadinessSummary(cardImage)
+  };
+}
+
+function flowReadinessSummary(flow) {
+  return {
+    flowId: flow.flowId,
+    adapterId: flow.primaryAdapterId,
+    fallbackAdapterId: flow.fallbackAdapterId,
+    model: flow.model,
+    readyForLiveCalls: flow.readyForLiveCalls,
+    blockedReasons: flow.blockedReasons
+  };
+}
+
+function providerAiFlowBlockers(readiness) {
+  return [readiness.cardCopy, readiness.cardImage].flatMap((flow) =>
+    flow.readyForLiveCalls ? [] : flow.blockedReasons.map((reason) => `${flow.flowId}: ${reason}`)
+  );
+}
+
+function providerAiFlowAdminConfig(env) {
+  const raw = env.CUSTOMCARD_AI_FLOW_CONFIG_JSON ?? env.CUSTOMCARD_AI_FLOW_ADMIN_CONFIG_JSON ?? "";
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(String(raw));
+    return normalizeAiFlowAdminConfigs(
+      Array.isArray(parsed) ? parsed : parsed.flows ?? parsed.aiFlowConfig ?? parsed.ai_flow_config ?? [],
+      env
+    );
+  } catch {
+    return [];
+  }
 }
 
 function providerRouteScope(routes, env) {
