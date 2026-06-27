@@ -258,4 +258,54 @@ describe("production text promotion gate", () => {
     expect(JSON.stringify(alignment?.details)).toContain("5013");
     expect(report.nextSteps.join("\n")).toContain("exact endpoint/model used by the latest benchmark");
   });
+
+  it("blocks final Comfy image proof when all benchmark runs fail before image generation", () => {
+    const root = mkdtempSync(join(tmpdir(), "production-text-promotion-gate-no-generated-panels-"));
+    writeBaseEvidence(root, { ready: true });
+    const textModel = "koboldcpp/gemma-4-31B-it-Q4_K_M";
+    writeJson(join(root, "production-text-workflow-summary.json"), {
+      createdAtIso: "2026-06-26T04:15:00.000Z",
+      phase: "local-production-text",
+      envRouting: {
+        productionTextPlannerRuntime: {
+          baseUrl: "http://127.0.0.1:5003/v1",
+          model: textModel
+        }
+      },
+      plannedRuns: fixtures.map((storyId) => ({ storyId, textModel })),
+      runs: fixtures.map((storyId) => ({
+        storyId,
+        productionTextMode: "llm-generated-copy",
+        textModel,
+        status: "failed",
+        statusCode: 502,
+        panelCount: 0,
+        typographyModeId: "customcard-production-text-composer",
+        providerFailures: { text: "read ECONNRESET" },
+        autoChecks: {
+          missingMustInclude: [],
+          avoidedFailures: [],
+          checks: { finalImagesRenderedByComfy: true }
+        }
+      }))
+    });
+
+    const report = runProductionTextPromotionGate({
+      input: root,
+      "output-dir": join(root, "gate"),
+      "include-untracked": true,
+      advisory: true
+    });
+
+    const finalImageProof = report.requirements.find((item) => item.name === "final images came from Comfy text composer");
+    expect(report.status).toBe("blocked");
+    expect(finalImageProof?.ok).toBe(false);
+    expect(finalImageProof?.details).toMatchObject({
+      completedRuns: 0,
+      failedRuns: fixtures.length,
+      failedBeforeImageGeneration: fixtures.length,
+      finalImagesRenderedByComfy: false,
+      deterministicTextComposerUsed: false
+    });
+  });
 });

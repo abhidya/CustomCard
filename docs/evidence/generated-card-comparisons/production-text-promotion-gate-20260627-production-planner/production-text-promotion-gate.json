@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T03:11:28.159Z",
+  "createdAtIso": "2026-06-27T03:18:12.083Z",
   "status": "blocked",
   "promotionReady": false,
   "advisory": true,
@@ -166,11 +166,14 @@
     },
     {
       "name": "final images came from Comfy text composer",
-      "ok": true,
+      "ok": false,
       "details": {
         "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
-        "finalImagesRenderedByComfy": true,
-        "deterministicTextComposerUsed": true
+        "completedRuns": 0,
+        "failedRuns": 3,
+        "failedBeforeImageGeneration": 3,
+        "finalImagesRenderedByComfy": false,
+        "deterministicTextComposerUsed": false
       }
     },
     {

@@ -434,7 +434,8 @@ function benchmarkSummaryEntry(filePath) {
   if (!payload || !Array.isArray(payload.runs)) return undefined;
   const runs = payload.runs;
   const plannedRuns = Array.isArray(payload.plannedRuns) ? payload.plannedRuns : [];
-  const completedRuns = runs.filter((run) => run.statusCode === 200 || run.panelCount > 0).length;
+  const completedRunEntries = runs.filter(isCompletedBenchmarkRun);
+  const completedRuns = completedRunEntries.length;
   const failedRunEntries = runs.filter(isFailedBenchmarkRun);
   const failedRuns = failedRunEntries.length;
   const missingMustInclude = unique(runs.flatMap((run) => run.autoChecks?.missingMustInclude || []));
@@ -464,9 +465,14 @@ function benchmarkSummaryEntry(filePath) {
     imageModels: unique(runs.map((run) => run.imageModel).filter(Boolean)),
     missingMustInclude,
     mustAvoidFailures,
-    finalImagesRenderedByComfy: runs.every((run) => run.status === "failed" || run.autoChecks?.checks?.finalImagesRenderedByComfy === true),
-    deterministicTextComposerUsed: runs.some((run) => run.typographyModeId === "customcard-production-text-composer")
+    finalImagesRenderedByComfy: completedRunEntries.length > 0 &&
+      completedRunEntries.every((run) => run.autoChecks?.checks?.finalImagesRenderedByComfy === true),
+    deterministicTextComposerUsed: completedRunEntries.some((run) => run.typographyModeId === "customcard-production-text-composer")
   };
+}
+
+function isCompletedBenchmarkRun(run) {
+  return Number(run?.statusCode || 0) === 200 || Number(run?.panelCount || 0) > 0;
 }
 
 function isFailedBenchmarkRun(run) {

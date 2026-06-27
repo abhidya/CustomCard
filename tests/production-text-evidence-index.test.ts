@@ -311,7 +311,9 @@ describe("production text evidence index", () => {
       providerFailures: ["koi-fish-lover-encouragement: text provider read ECONNRESET"],
       plannerBaseUrls: ["http://127.0.0.1:5002/v1"],
       smallPlannerUsed: true,
-      missingMustInclude: ["Nina", "aquarium"]
+      missingMustInclude: ["Nina", "aquarium"],
+      finalImagesRenderedByComfy: true,
+      deterministicTextComposerUsed: true
     });
     expect(report.plannerEvidenceAlignment).toMatchObject({
       checked: true,
@@ -338,5 +340,58 @@ describe("production text evidence index", () => {
     expect(report.nextSteps.join("\n")).toContain("planner preflight");
     expect(report.nextSteps.join("\n")).toContain("exact endpoint/model used by the latest benchmark");
     expect(report.nextSteps.join("\n")).toContain("manual grade checklist blockers");
+  });
+
+  it("does not credit Comfy final images when every benchmark run fails before image generation", () => {
+    const root = mkdtempSync(join(tmpdir(), "production-text-evidence-index-all-failed-"));
+    const outputDir = join(root, "index");
+
+    writeJson(join(root, "production-text-workflow-summary.json"), {
+      createdAtIso: "2026-06-26T04:15:00.000Z",
+      phase: "local-production-text",
+      plannedRuns: [
+        { storyId: "aquarium-lover-birthday", textModel: "koboldcpp/gemma-4-31B-it-Q4_K_M" },
+        { storyId: "koi-fish-lover-encouragement", textModel: "koboldcpp/gemma-4-31B-it-Q4_K_M" }
+      ],
+      runs: [
+        {
+          storyId: "aquarium-lover-birthday",
+          productionTextMode: "llm-generated-copy",
+          textModel: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+          status: "failed",
+          statusCode: 502,
+          panelCount: 0,
+          typographyModeId: "customcard-production-text-composer",
+          providerFailures: { text: "read ECONNRESET" },
+          autoChecks: { checks: { finalImagesRenderedByComfy: true } }
+        },
+        {
+          storyId: "koi-fish-lover-encouragement",
+          productionTextMode: "llm-generated-copy",
+          textModel: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+          status: "failed",
+          statusCode: 502,
+          panelCount: 0,
+          typographyModeId: "customcard-production-text-composer",
+          providerFailures: { text: "HTTP 502" },
+          autoChecks: { checks: { finalImagesRenderedByComfy: true } }
+        }
+      ]
+    });
+
+    const report = buildProductionTextEvidenceIndex({
+      input: root,
+      "output-dir": outputDir,
+      "include-untracked": true
+    });
+
+    expect(report.benchmarkSummaries[0]).toMatchObject({
+      totalRuns: 2,
+      completedRuns: 0,
+      failedRuns: 2,
+      failedBeforeImageGeneration: 2,
+      finalImagesRenderedByComfy: false,
+      deterministicTextComposerUsed: false
+    });
   });
 });

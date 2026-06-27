@@ -1,5 +1,5 @@
 {
-  "createdAtIso": "2026-06-27T03:11:44.860Z",
+  "createdAtIso": "2026-06-27T03:18:19.532Z",
   "status": "blocked",
   "promotionReady": false,
   "reportDir": "docs/evidence/generated-card-comparisons/production-text-research-rollup-20260627-production-planner",
@@ -158,8 +158,8 @@
         "dog"
       ],
       "mustAvoidFailures": [],
-      "finalImagesRenderedByComfy": true,
-      "deterministicTextComposerUsed": true
+      "finalImagesRenderedByComfy": false,
+      "deterministicTextComposerUsed": false
     },
     "manualGrades": {
       "path": "docs/evidence/generated-card-comparisons/production-text-manual-grade-checklist-20260627-production-planner/production-text-manual-grade-checklist.json",
@@ -251,6 +251,17 @@
           ],
           "completedRuns": 0,
           "failedRuns": 3
+        }
+      },
+      {
+        "name": "final images came from Comfy text composer",
+        "details": {
+          "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
+          "completedRuns": 0,
+          "failedRuns": 3,
+          "failedBeforeImageGeneration": 3,
+          "finalImagesRenderedByComfy": false,
+          "deterministicTextComposerUsed": false
         }
       },
       {
@@ -393,14 +404,6 @@
             "koboldcpp/gemma-4-31B-it-Q4_K_M"
           ]
         }
-      },
-      {
-        "name": "final images came from Comfy text composer",
-        "details": {
-          "benchmark": "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner-gpu-5013/production-text-workflow-summary.json",
-          "finalImagesRenderedByComfy": true,
-          "deterministicTextComposerUsed": true
-        }
       }
     ]
   },
@@ -489,7 +492,7 @@
     "Required customer terms still missing: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog.",
     "Manual grade readiness is blocked: 0 blocked grade(s), 0 run(s) failed before image generation.",
     "Best current LLM-planned score is 38/100 and remains blocked.",
-    "Promotion gate currently fails 6 requirement(s): planner preflight matches benchmark runtime, readiness doctor is promotion-ready, LLM-planned customer request matrix completed, planner preserved required terms and avoided forbidden terms, manual grade checklist is promotion-ready, manual aggregate is promotion-ready."
+    "Promotion gate currently fails 7 requirement(s): planner preflight matches benchmark runtime, readiness doctor is promotion-ready, LLM-planned customer request matrix completed, final images came from Comfy text composer, planner preserved required terms and avoided forbidden terms, manual grade checklist is promotion-ready, manual aggregate is promotion-ready."
   ],
   "nextSteps": [
     "Refresh planner preflight against the exact endpoint/model used by the latest benchmark before treating planner evidence as current.",

@@ -1,6 +1,6 @@
 # Production Text Research Rollup
 
-Created: 2026-06-27T03:11:44.860Z
+Created: 2026-06-27T03:18:19.532Z
 Status: blocked
 Promotion ready: no
 
@@ -32,7 +32,7 @@ Promotion ready: no
 - Required customer terms still missing: Nina, birthday, aquarium, Uncle Ken, koi, encouragement, Morgan, thank, dog.
 - Manual grade readiness is blocked: 0 blocked grade(s), 0 run(s) failed before image generation.
 - Best current LLM-planned score is 38/100 and remains blocked.
-- Promotion gate currently fails 6 requirement(s): planner preflight matches benchmark runtime, readiness doctor is promotion-ready, LLM-planned customer request matrix completed, planner preserved required terms and avoided forbidden terms, manual grade checklist is promotion-ready, manual aggregate is promotion-ready.
+- Promotion gate currently fails 7 requirement(s): planner preflight matches benchmark runtime, readiness doctor is promotion-ready, LLM-planned customer request matrix completed, final images came from Comfy text composer, planner preserved required terms and avoided forbidden terms, manual grade checklist is promotion-ready, manual aggregate is promotion-ready.
 
 ## Evidence Summary
 
@@ -54,6 +54,7 @@ Failed requirements:
 - planner preflight matches benchmark runtime
 - readiness doctor is promotion-ready
 - LLM-planned customer request matrix completed
+- final images came from Comfy text composer
 - planner preserved required terms and avoided forbidden terms
 - manual grade checklist is promotion-ready
 - manual aggregate is promotion-ready
@@ -66,7 +67,6 @@ Passed requirements:
 - production planner candidate is available
 - production-suitable planner endpoint is reachable
 - no small smoke planner is active or used
-- final images came from Comfy text composer
 
 ## Next Commands
 

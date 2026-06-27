@@ -113,8 +113,11 @@ export function runProductionTextPromotionGate(args = {}) {
       completedRuns: latestBenchmark?.completedRuns ?? 0,
       failedRuns: latestBenchmark?.failedRuns ?? 0
     }),
-    requirement("final images came from Comfy text composer", latestBenchmark?.finalImagesRenderedByComfy && latestBenchmark?.deterministicTextComposerUsed, {
+    requirement("final images came from Comfy text composer", latestBenchmark?.completedRuns > 0 && latestBenchmark?.finalImagesRenderedByComfy && latestBenchmark?.deterministicTextComposerUsed, {
       benchmark: latestBenchmark?.path || "",
+      completedRuns: latestBenchmark?.completedRuns ?? 0,
+      failedRuns: latestBenchmark?.failedRuns ?? 0,
+      failedBeforeImageGeneration: latestBenchmark?.failedBeforeImageGeneration ?? 0,
       finalImagesRenderedByComfy: latestBenchmark?.finalImagesRenderedByComfy,
       deterministicTextComposerUsed: latestBenchmark?.deterministicTextComposerUsed
     }),
