@@ -473,8 +473,8 @@ describe("customer shell server render", () => {
       expect(html).toContain("Type a tone");
       expect(html).toContain("Type a style");
       expect(text).toContain("Start from a design");
-      expect(text).toContain("Memory birthday");
-      expect(text).toContain("Coffee rings");
+      expect(text).toContain("Candle ritual");
+      expect(text).toContain("War-room wall");
       expect(text).toContain("Make it personal");
       expect(text).toContain("Set up the card first");
       expect(text).toContain("Draft your card with AI");

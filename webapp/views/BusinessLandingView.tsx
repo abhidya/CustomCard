@@ -17,6 +17,7 @@ import {
 import type { BusinessEngagementReadinessLane, BusinessEngagementReadinessStatus } from "../../src/businessEngagementReadiness";
 import { businessEngagementReadinessItems, summarizeBusinessEngagementReadiness } from "../../src/businessEngagementReadiness";
 import type { CardDraft } from "../../src/customerWorkflow";
+import { storyThemeCards } from "../storyThemes";
 import { PanelArt } from "../ui";
 
 const summary = summarizeBusinessEngagementReadiness();
@@ -69,26 +70,20 @@ const pipeline = [
   }
 ];
 
-const moments = [
-  {
-    label: "Birthday",
-    img: "/generated/card-birthday.webp",
-    alt: "Birthday card front: warm candle-glow dots and a soft terracotta ribbon framing an open center.",
-    detail: "A dated, personal hello — reviewed every time, never auto-sent."
-  },
-  {
-    label: "Purchase anniversary",
-    img: "/generated/card-thank-you.webp",
-    alt: "Thank-you card front: a controlled citrus-and-sage corner illustration with open editorial space.",
-    detail: "Thank a customer for a year, tied to their real purchase date."
-  },
-  {
-    label: "Warranty anniversary",
-    img: "/generated/card-default-botanical.webp",
-    alt: "Botanical card front: a loose terracotta and sage branch wrapping a calm blank field.",
-    detail: "A useful check-in moment, routed through approval first."
-  }
-];
+const businessMomentIds = ["first-payroll-friday", "trade-show-tape-booth", "project-war-room-wall"] as const;
+const moments = businessMomentIds.flatMap((id) => {
+  const story = storyThemeCards.find((candidate) => candidate.id === id);
+  return story
+    ? [
+        {
+          label: story.title,
+          img: story.imageUrl,
+          alt: `${story.title} card study: ${story.memoryObject}.`,
+          detail: story.relationship
+        }
+      ]
+    : [];
+});
 
 const features = [
   {
@@ -246,7 +241,7 @@ export function BusinessLandingView({
       <section className="bizMoments" aria-label="Lifecycle moments worth a card">
         <div className="bizSectionHead">
           <h2>The moments worth a real card.</h2>
-          <p>Three lifecycle triggers, shown with real CustomCard art — not stock sentiment.</p>
+          <p>Three business stories, shown with real CustomCard art — not stock sentiment.</p>
         </div>
         <div className="bizMomentRow">
           {moments.map((moment, index) => (

@@ -84,12 +84,12 @@ These are useful for documentation, not production UI. Keep them out of runtime 
 
 ## Current Usage Map
 
-- Home hero: `landing-hero-product.webp` plus `card-birthday.jpg` as a partially hidden peek.
-- Home examples: six built-in category cards from `cardImageByCategory`, or admin-featured cards from `/api/public/featured-cards`.
-- Studio template picker: six templates from `webapp/cardTemplates.ts`, plus the photo milestone template.
+- Home hero: morphing story studies from `webapp/storyThemes.ts`, with generated art visible and proof labels overlaid by the app.
+- Home examples: ten story-contract cards from `webapp/storyThemes.ts`, or admin-featured cards from `/api/public/featured-cards`.
+- Studio template picker: the same ten story themes from `webapp/cardTemplates.ts`, so the landing page and selectable themes stay aligned.
 - Studio setup/product context: `landing-hero-product.webp`.
 - Print handoff: `print-handoff-fulfillment.webp`.
-- B2B landing: currently uses an in-code lifecycle queue and `PanelArt`; the standalone `b2b-lifecycle-workflow.webp` is not currently referenced by the frontend.
+- B2B landing: uses the in-code lifecycle queue plus three generated story assets: first payroll Friday, the booth built from tape, and the project war-room wall.
 - Admin gallery empty state: `admin-gallery-empty.webp`.
 - Brand: `icon-192.png` in the app wordmark; related PNG marks in AI and OAuth surfaces.
 
@@ -131,20 +131,24 @@ The previous "theme inventory" direction was too category-first. More occasions 
 | Contract field | What it must do | Reject when |
 | --- | --- | --- |
 | Relationship | Names who the card is really for, not just the occasion. | It could be sent to any coworker, parent, friend, or customer. |
-| Remembered object | Gives the art one concrete anchor: tomato twine, blue pencil marks, basil, foil casserole, coffee rings, sample swatches. | The only idea is balloons, hearts, caps, rings, flowers, stars, or confetti. |
+| Remembered object | Gives the art one concrete anchor: a reused candle stub, pickup sign, payroll envelope, gaffer tape, bus transfer, floor scratch, hair ties, faded receipt, order ticket, or war-room wall. | The only idea is balloons, hearts, caps, rings, flowers, stars, or confetti. |
 | Emotional job | Says what the card is trying to do: pride, comfort, gratitude, repair, encouragement, celebration. | It only says "warm," "premium," or "heartfelt." |
 | Art move | Chooses a material and composition: letterpress trellis, editorial still life, paper collage, margin annotations, low-saturation care package. | It reads like stock greeting-card background art. |
 | Copy zone | Protects a deliberate area for app-rendered text. | The image model is asked to render words or the art crowds the message area. |
 | Forbidden cliches | Lists what the card refuses to use. | The prompt has no negative taste boundary. |
 
-Good examples to generate next:
+Current v3 story studies now wired into the website:
 
-- Dad's tomato garden birthday: tomato vines, twine, seed packet dates; avoid balloons and cake clipart.
-- Maya's blue-pencil thesis: abstract annotations, library receipt, coffee ring; avoid caps as the whole concept.
-- Lena watered the basil: windowsill basil, chipped watering can, one orange; avoid generic thank-you script.
-- Foil-covered casserole sympathy: practical care still life; avoid lilies, crosses, sunset silhouettes.
-- Two coffee rings apart: long-distance friendship through table marks and transit-line motion; avoid best-friend slogans.
-- Client sample swatches: business anniversary with tactile account memory; avoid handshake icons and CRM dashboards.
+- The candle they kept reusing: birthday built from the weird saved object; avoid balloons, cake as the whole idea, and party confetti.
+- The airport pickup sign: welcome-home/friendship card around a handmade arrivals sign; avoid planes, flags, and fake airport codes.
+- First payroll Friday: founder/team thank-you around a payroll envelope, lamp, pizza box edge, and office plant; avoid money icons and dashboards.
+- The booth built from tape: B2B follow-up around gaffer tape, lanyards, floor plan, and sample tray; avoid networking icons and handshakes.
+- The night-class bus route: graduation through a blank transfer slip, route line, backpack, and pencil shavings; avoid caps and diplomas as the whole idea.
+- The closing-day floor scratch: new-home/realtor congratulations around the tiny scratch, keys, tape, and swatches; avoid sold signs and house silhouettes.
+- The nurse with extra hair ties: thank-you around practical care objects; avoid red crosses, stethoscopes, and superhero healthcare cliches.
+- The receipt from the night everything changed: anniversary from a faded blank receipt and table ring; avoid hearts, rings, champagne, and roses.
+- The off-menu regular order: small-business loyalty card around a blank order ticket and counter ritual; avoid storefront stock and punch-card stars.
+- The project war-room wall: client-launch congratulations around sticky notes, tape, marker cap, and flow lines; avoid dashboards, rocket icons, and trophies.
 
 ## Better Asset Ideas To Add
 
@@ -170,17 +174,17 @@ Needed assets:
 
 | Occasion | Asset idea |
 | --- | --- |
-| Birthday | Not ribbons only. Try candle-light table, confetti edge, or illustrated cake slice with a quiet text field. |
-| Graduation | Make the cap/diploma signal clearer without school logos. Navy/gold is good; add one recognizable graduation object. |
-| Wedding | Separate from anniversary. Use formal florals, vellum, and subtle gold, with space for names. |
-| Anniversary | Use rings? Avoid cliche if possible. Better: two interlocking paper ribbons or a shared-date keepsake motif. |
-| Thank you | Keep citrus, but add a small-business/customer thank-you variant. |
-| Sympathy | Keep minimal, but make it readable at thumbnail size with a gentle branch or soft gray-blue wash. |
-| Friendship | Replace the blue ribbon with a more everyday signal: coffee mugs, long-distance map line, small stars, or two small notes. |
-| Get well | Soft care package, tea, blanket texture, or sunlight by a window. |
-| New baby | Gentle pattern, no faces. Use blanket fold, moon, tiny socks, or nursery shapes. |
-| Apology / belated | Time motif, open note, or "late but sincere" visual without fake lettering. |
-| Business thank-you | Cleaner, less sentimental: paper note, product memory token, package insert, or receipt-free customer appreciation card. |
+| Birthday | A saved object from the ritual: crooked candle stub, matchbox, cake-plate shadow, kitchen light. |
+| Graduation | The private route to the public win: blank bus transfer, edited draft edge, backpack wear, study-table grit. |
+| Wedding | The exact making-of detail: venue floorplan fold, ribbon sample, wax seal misprint, place-card stack with no text. |
+| Anniversary | Ordinary evidence made sacred: blank receipt, table ring, matchbook, two glass reflections, no hearts or rings. |
+| Thank you | Practical care noticed: extra hair ties, blank badge reel, shift-note folds, tiny object everyone needed. |
+| Sympathy | Useful quiet support: porch light, house key, errand list shapes with no words, one simple meal-carrying cue. |
+| Friendship | Shared table across distance: two table rings, transit curve, folded note corner, old-joke artifact without slogans. |
+| Get well | Recovery texture: folded blanket ridge, pill organizer silhouette with no marks, window light, cared-for stillness. |
+| New baby | First quiet night home: receiving blanket edge, dim hallway glow, unmarked hospital bracelet shape. |
+| Apology / belated | The almost-sent message: torn envelope flap, crossed-out calendar box with no numbers, saved draft paper edge. |
+| Business thank-you | Concrete account memory: blank order ticket, sample tray, gaffer tape, payroll envelope, or project wall evidence. |
 
 ### Priority 3 - Add Finished Example Cards, Not Only Backgrounds
 

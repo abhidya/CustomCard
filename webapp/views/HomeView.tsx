@@ -14,8 +14,8 @@ import {
 import { useEffect, useState } from "react";
 import { getBrowserJson } from "../../src/browserRequestAdapter";
 import type { CardDraft } from "../../src/customerWorkflow";
-import { cardImageByCategory } from "../cardTemplates";
 import { normalizeBrowserImageUrl } from "../browserImageUrl";
+import { storyThemeCards, type StoryThemeCard } from "../storyThemes";
 import { PanelArt } from "../ui";
 import { ImportSection, type ImportSectionProps } from "./EventsView";
 
@@ -88,119 +88,7 @@ const trustPoints = [
   "Saved personal details are yours to edit or delete at any time."
 ];
 
-interface ThemeInventoryCard {
-  title: string;
-  category: string;
-  imageUrl: string;
-  relationship: string;
-  memoryObject: string;
-  artBrief: string;
-  avoid: string;
-  tag: string;
-}
-
-const themeInventoryCards: ThemeInventoryCard[] = [
-  {
-    title: "Dad's tomato garden",
-    category: "birthday",
-    imageUrl: cardImageByCategory.birthday,
-    relationship: "Birthday card for the parent who texts harvest photos before saying hello.",
-    memoryObject: "sun-warmed tomatoes, twine knots, seed packet dates",
-    artBrief: "A letterpress tomato trellis wraps a clean center, with late-July light and hand-cut paper texture.",
-    avoid: "balloons, cake clipart, generic party confetti",
-    tag: "memory object"
-  },
-  {
-    title: "Lena watered the basil",
-    category: "thank-you",
-    imageUrl: cardImageByCategory["thank-you"],
-    relationship: "Thank-you card for the neighbor who kept the apartment alive while you were gone.",
-    memoryObject: "windowsill basil, chipped ceramic watering can, one orange on the counter",
-    artBrief: "Controlled citrus and herb illustration in two corners, leaving a quiet proof-safe middle.",
-    avoid: "big THANK YOU lettering, gift bows, generic gratitude florals",
-    tag: "specific thanks"
-  },
-  {
-    title: "Maya's blue-pencil thesis",
-    category: "graduation",
-    imageUrl: cardImageByCategory.graduation,
-    relationship: "Graduation card from a sibling who saw the edits, the doubts, and the last push.",
-    memoryObject: "blue pencil marks, library receipt, coffee ring on a draft",
-    artBrief: "Navy editorial paper, one gold margin line, annotated-page rhythm without readable text.",
-    avoid: "caps as the whole concept, diplomas, school seals",
-    tag: "earned detail"
-  },
-  {
-    title: "The foil-covered casserole",
-    category: "sympathy",
-    imageUrl: cardImageByCategory.sympathy,
-    relationship: "Sympathy card for showing up with practical care when words are thin.",
-    memoryObject: "foil-covered casserole, house key, quiet porch light",
-    artBrief: "Low-saturation still life cropped like a small act of service, with generous breathing room.",
-    avoid: "lilies, crosses, sunset silhouettes, dramatic sorrow",
-    tag: "quiet care"
-  },
-  {
-    title: "Two coffee rings apart",
-    category: "friendship",
-    imageUrl: cardImageByCategory.friendship,
-    relationship: "Long-distance friendship card for the person who still knows the old joke.",
-    memoryObject: "two coffee rings, transit-line curve, folded note corner",
-    artBrief: "Warm paper field with map-line motion between two small table marks, intimate and unposed.",
-    avoid: "best-friend slogans, stars, cartoon mugs",
-    tag: "shared ritual"
-  },
-  {
-    title: "Recovery window tea",
-    category: "get-well",
-    imageUrl: cardImageByCategory["get-well"],
-    relationship: "Get-well card that says steady support instead of forced cheer.",
-    memoryObject: "tea steam, folded blanket, rectangle of morning window light",
-    artBrief: "Soft blue-green sunlight, abstract cup shape, and a calm unfilled center for exact copy.",
-    avoid: "medical icons, smiley faces, peppy slogans",
-    tag: "tone boundary"
-  },
-  {
-    title: "Client sample swatches",
-    category: "business customer anniversary",
-    imageUrl: cardImageByCategory.business,
-    relationship: "Customer anniversary card that feels like a human account memory, not a CRM blast.",
-    memoryObject: "sample swatches, package insert, date stamp, tiny product token",
-    artBrief: "Editorial stationery composition with tactile samples and a disciplined professional palette.",
-    avoid: "handshake icons, corporate swooshes, dashboards, logos",
-    tag: "business memory"
-  },
-  {
-    title: "The ordinary beautiful yes",
-    category: "anniversary",
-    imageUrl: cardImageByCategory.anniversary,
-    relationship: "Anniversary card for the couple whose life is built from small routines.",
-    memoryObject: "two mugs in the sink, receipt from the first place, ribbon from saved wrapping",
-    artBrief: "Two quiet paper ribbons loop around ordinary keepsakes, romantic without being bridal.",
-    avoid: "hearts, rings, champagne flutes, scripted love quotes",
-    tag: "emotional truth"
-  },
-  {
-    title: "Tiny sock, no baby face",
-    category: "new-baby",
-    imageUrl: cardImageByCategory["new-baby"],
-    relationship: "New-baby card that centers the parents' tenderness and privacy.",
-    memoryObject: "tiny sock, folded blanket edge, moon-shaped night light",
-    artBrief: "Soft edge motifs with a protected blank field, tender but not invasive.",
-    avoid: "baby faces, bodies, cartoon animals, gendered cliches",
-    tag: "privacy"
-  },
-  {
-    title: "Late, but not careless",
-    category: "belated card",
-    imageUrl: cardImageByCategory.belated,
-    relationship: "Belated birthday repair note that owns the miss without turning it into a joke.",
-    memoryObject: "open note, calendar corner, one pencil mark",
-    artBrief: "Sparse clock-hand arc and folded paper shape, sincere with a little human warmth.",
-    avoid: "alarm clocks with numbers, apology cartoons, fake handwriting",
-    tag: "repair"
-  }
-];
+const themeInventoryCards: StoryThemeCard[] = storyThemeCards;
 
 const heroMorphCards = themeInventoryCards.map((card) => ({
   label: card.title,
@@ -233,6 +121,7 @@ export function HomeView({
   // Auto-expand when an invite is already pasted (e.g. returning from a calendar redirect).
   const [importOpen, setImportOpen] = useState(() => importProps.inviteText.trim().length > 0);
   const [featuredCategories, setFeaturedCategories] = useState<FeaturedCategory[]>([]);
+  const [heroStoryIndex, setHeroStoryIndex] = useState(0);
   useEffect(() => {
     let cancelled = false;
     getBrowserJson<{ categories?: FeaturedCategory[] }>("/api/public/featured-cards")
@@ -244,6 +133,17 @@ export function HomeView({
       cancelled = true;
     };
   }, []);
+  useEffect(() => {
+    if (heroMorphCards.length <= 1) return undefined;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reduceMotion.matches) return undefined;
+    const interval = window.setInterval(() => {
+      setHeroStoryIndex((current) => (current + 1) % heroMorphCards.length);
+    }, 3600);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  const activeHeroCard = heroMorphCards[heroStoryIndex] ?? heroMorphCards[0];
 
   return (
     <>
@@ -310,29 +210,23 @@ export function HomeView({
                   alt=""
                   className="heroMorphImage"
                   decoding="async"
+                  data-active={index === heroStoryIndex ? "true" : "false"}
                   key={card.label}
-                  style={{ animationDelay: `${index * 4}s` }}
                   src={card.imageUrl}
                 />
               ))}
               <div className="heroProofCopy">
-                {heroMorphCards.map((card, index) => (
-                  <span key={`proof-${card.label}`} style={{ animationDelay: `${index * 4}s` }}>
-                    <b>{card.label}</b>
-                    <small>{card.proofLine}</small>
-                  </span>
-                ))}
+                <span key={`proof-${activeHeroCard.label}`}>
+                  <b>{activeHeroCard.label}</b>
+                  {" "}
+                  <small>{activeHeroCard.proofLine}</small>
+                </span>
               </div>
             </div>
             <div className="heroMorphRail" aria-hidden="true">
               {heroMorphCards.map((card, index) => (
-                <span key={card.label} style={{ animationDelay: `${index * 4}s` }}>{card.label}</span>
+                <span data-active={index === heroStoryIndex ? "true" : "false"} key={card.label} />
               ))}
-            </div>
-            <div className="heroProofTicker" aria-hidden="true">
-              <span>memory object locked</span>
-              <span>cliche check passed</span>
-              <span>print-safe copy zone</span>
             </div>
           </div>
           <span className="landingHeroCaption">Generated card studies briefed around real details, ready for exact app text</span>

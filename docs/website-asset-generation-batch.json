@@ -96,7 +96,8 @@
       ]
     },
     {
-      "id": "custom-art-card-studies-v2",
+      "id": "custom-art-card-studies-v3",
+      "status": "active",
       "recommendedGenerator": "comfy-card-background-or-built-in-imagegen",
       "width": 960,
       "height": 1344,
@@ -109,114 +110,195 @@
       ],
       "assets": [
         {
-          "id": "study-dad-tomato-garden",
-          "filename": "public/generated/theme-inventory/study-dad-tomato-garden.webp",
+          "id": "story-birthday-candle-stub",
+          "filename": "public/generated/theme-inventory/story-birthday-candle-stub.webp",
           "occasion": "birthday",
           "artCardContract": {
-            "relationship": "Birthday card for the parent who texts harvest photos before saying hello",
-            "memoryObject": "sun-warmed tomatoes, twine knots, seed packet dates",
-            "emotionalTruth": "You notice the ordinary care he puts into growing things",
-            "artMove": "Letterpress tomato trellis around a clean center, late-July light, hand-cut paper texture",
+            "relationship": "Birthday card for the sibling whose family saved the same crooked candle for years",
+            "memoryObject": "half-melted candle stub, matchbox, cake-plate shadow",
+            "emotionalTruth": "The joke matters because it proves the years were shared",
+            "artMove": "Warm keepsake still life with the candle treated like evidence, not party decor",
             "forbiddenCliches": [
               "balloons",
-              "cake clipart",
-              "generic party confetti"
+              "cake as the whole idea",
+              "party confetti",
+              "generic birthday script"
             ],
-            "textSafeComposition": "Open ivory center with quiet edge detail and high contrast for dark app text"
+            "textSafeComposition": "Objects sit around the edge with a clean ivory center"
           },
-          "prompt": "Premium custom greeting-card background inspired by a backyard tomato garden: tomato vines tied to twine, seed packet shapes without readable text, warm late-summer light, tactile letterpress paper, terracotta, leaf green, butter yellow, and deep ink accents."
+          "prompt": "Premium custom greeting-card background about the birthday candle they kept reusing: a crooked half-melted candle stub, a matchbox, wax flakes, folded napkin corner, cake-plate shadow, warm kitchen light, marigold wax, oxblood, cobalt accent, tactile editorial still life, no readable text."
         },
         {
-          "id": "study-lena-basil-thanks",
-          "filename": "public/generated/theme-inventory/study-lena-basil-thanks.webp",
-          "occasion": "thank-you",
+          "id": "story-airport-pickup-sign",
+          "filename": "public/generated/theme-inventory/story-airport-pickup-sign.webp",
+          "occasion": "welcome home",
           "artCardContract": {
-            "relationship": "Thank-you card for the neighbor who kept the apartment alive while you were gone",
-            "memoryObject": "windowsill basil, chipped ceramic watering can, one orange on the counter",
-            "emotionalTruth": "Small practical help became real care",
-            "artMove": "Controlled citrus and herb corner illustration with a quiet proof-safe middle",
+            "relationship": "Welcome-home card for the person whose people always meet them with a handmade sign",
+            "memoryObject": "blank poster board, suitcase stickers, marker cap, terminal glow",
+            "emotionalTruth": "Coming back matters because someone still shows up at arrivals",
+            "artMove": "Blue-hour airport collage with a blank sign and luggage details framing the proof",
             "forbiddenCliches": [
-              "big THANK YOU lettering",
-              "gift bows",
-              "generic gratitude florals"
+              "airplane icons",
+              "tourist postcards",
+              "flags",
+              "readable airport codes"
             ],
-            "textSafeComposition": "Sparse top-left and lower-right objects, uncluttered center"
+            "textSafeComposition": "Poster and luggage stay low while the center/top remains copy-safe"
           },
-          "prompt": "Portrait stationery artwork for a neighbor thank-you card: basil leaves in a windowsill, tiny ceramic watering-can silhouette, one warm orange, editorial paper texture, sage, citrus, ivory, and warm clay palette, intimate and specific."
+          "prompt": "Premium custom greeting-card background about an airport pickup sign: blank poster board with colored tape, suitcase sticker shapes, marker cap, abstract terminal arrivals glow with unreadable bars, blue-hour light, terminal amber and midnight blue, no readable text."
         },
         {
-          "id": "study-maya-blue-pencil-thesis",
-          "filename": "public/generated/theme-inventory/study-maya-blue-pencil-thesis.webp",
+          "id": "story-first-payroll-friday",
+          "filename": "public/generated/theme-inventory/story-first-payroll-friday.webp",
+          "occasion": "team thank-you",
+          "artCardContract": {
+            "relationship": "Founder thank-you for the first employees after payroll finally cleared without panic",
+            "memoryObject": "blank payroll envelope, cold pizza box edge, office plant, desk lamp",
+            "emotionalTruth": "The milestone is trust, relief, and people staying through uncertainty",
+            "artMove": "Late-night office still life with disciplined dark space and warm lamp proof area",
+            "forbiddenCliches": [
+              "money icons",
+              "dashboards",
+              "handshakes",
+              "startup stock imagery"
+            ],
+            "textSafeComposition": "Objects frame one side and lower edge, leaving clean contrast"
+          },
+          "prompt": "Premium custom greeting-card background about first payroll Friday: blank payroll envelope corner, cold pizza box edge with no label, desk lamp, resilient office plant, blank sticky-note shapes, deep graphite, payroll green, warm ivory, no readable text."
+        },
+        {
+          "id": "story-trade-show-tape-booth",
+          "filename": "public/generated/theme-inventory/story-trade-show-tape-booth.webp",
+          "occasion": "client thank-you",
+          "artCardContract": {
+            "relationship": "Conference follow-up for a client whose improvised booth became the place everyone gathered",
+            "memoryObject": "gaffer tape, folded floor plan, blank lanyards, sample tray",
+            "emotionalTruth": "Scrappy work can become the part everyone remembers",
+            "artMove": "Bright expo-table composition with tape diagonals and a clean center field",
+            "forbiddenCliches": [
+              "crowds",
+              "conference logos",
+              "networking icons",
+              "handshakes"
+            ],
+            "textSafeComposition": "Diagonal tape and lanyards frame a clear message zone"
+          },
+          "prompt": "Premium custom greeting-card background about the booth built from tape: matte black gaffer tape, folded floor-plan paper with no labels, blank badge lanyards, sample tray, half-empty water bottle, cobalt, safety orange, white expo light, no readable text."
+        },
+        {
+          "id": "story-night-class-bus-route",
+          "filename": "public/generated/theme-inventory/story-night-class-bus-route.webp",
           "occasion": "graduation",
           "artCardContract": {
-            "relationship": "Graduation card from a sibling who saw the edits, doubts, and last push",
-            "memoryObject": "blue pencil marks, library receipt, coffee ring on a draft",
-            "emotionalTruth": "The accomplishment was earned in private before it became public",
-            "artMove": "Navy editorial paper with one gold margin line and abstract annotation rhythm",
+            "relationship": "Graduation card for someone who earned the degree through late buses and edited drafts",
+            "memoryObject": "blank bus transfer, route line, worn backpack, pencil shavings",
+            "emotionalTruth": "The public win was built from private persistence",
+            "artMove": "Transit-map collage and study-table artifacts with the accomplishment implied, not shouted",
             "forbiddenCliches": [
-              "cap as the whole concept",
-              "diploma scroll",
-              "school seal"
+              "cap as the whole idea",
+              "diploma scrolls",
+              "school seals",
+              "confetti"
             ],
-            "textSafeComposition": "Calm center panel with abstract margin marks kept outside the copy zone"
+            "textSafeComposition": "Route line and study objects stay on edges around a calm field"
           },
-          "prompt": "Custom graduation card background built from thesis-draft materials: abstract blue pencil marks, a blank library receipt shape with no text, coffee ring, deep navy paper, muted gold rule line, scholarly but personal, tactile print texture."
+          "prompt": "Premium custom greeting-card background about the night-class bus route: worn backpack corner, blank bus transfer slip, abstract campus-map route line with no labels, pencil shavings, library lamp glow, transit blue, sodium yellow, graphite, no readable text."
         },
         {
-          "id": "study-foil-covered-casserole",
-          "filename": "public/generated/theme-inventory/study-foil-covered-casserole.webp",
-          "occasion": "sympathy",
+          "id": "story-closing-floor-scratch",
+          "filename": "public/generated/theme-inventory/story-closing-floor-scratch.webp",
+          "occasion": "new home",
           "artCardContract": {
-            "relationship": "Sympathy card for showing up with practical care when words are thin",
-            "memoryObject": "foil-covered casserole, house key, quiet porch light",
-            "emotionalTruth": "Care can be useful and quiet instead of dramatic",
-            "artMove": "Low-saturation still life cropped like a small act of service",
+            "relationship": "Realtor or friend card for buyers who decided the tiny floor scratch made the house theirs",
+            "memoryObject": "small floor scratch, house keys, painter tape, paint swatches",
+            "emotionalTruth": "A flaw can become the first sign a place belongs to you",
+            "artMove": "Sunlit oak-floor still life with the scratch and keys low, leaving a large message field",
             "forbiddenCliches": [
-              "lilies",
-              "crosses",
-              "sunset silhouettes",
-              "dramatic sorrow"
+              "sold signs",
+              "house silhouettes",
+              "key ribbons",
+              "realtor logos"
             ],
-            "textSafeComposition": "Large calm upper field with still-life objects weighted low"
+            "textSafeComposition": "Large sunlit floor area remains calm enough for copy"
           },
-          "prompt": "Restrained sympathy card background: foil-covered casserole dish, small house-key shape, quiet warm porch-light glow, gray-green and ivory palette, soft paper grain, compassionate but practical, no religious symbols."
+          "prompt": "Premium custom greeting-card background about the closing-day floor scratch: oak floorboard with one small scratch, house keys, painter tape, muted paint swatches, strip of moving-box tape, honey oak, sage, warm white, no readable text."
         },
         {
-          "id": "study-coffee-rings-apart",
-          "filename": "public/generated/theme-inventory/study-coffee-rings-apart.webp",
-          "occasion": "friendship",
+          "id": "story-nurse-extra-hair-ties",
+          "filename": "public/generated/theme-inventory/story-nurse-extra-hair-ties.webp",
+          "occasion": "thank-you",
           "artCardContract": {
-            "relationship": "Long-distance friendship card for the person who still knows the old joke",
-            "memoryObject": "two coffee rings, transit-line curve, folded note corner",
-            "emotionalTruth": "The friendship still has a shared table even across distance",
-            "artMove": "Warm paper field with a map-line gesture between two small table marks",
+            "relationship": "Thank-you card for the person who always had the tiny thing everyone needed",
+            "memoryObject": "scrub-green hair ties, blank badge reel, folded shift notes, pen cap",
+            "emotionalTruth": "Care often looks like practical preparedness, not grand sentiment",
+            "artMove": "Clean, soft clinical still life with practical objects around an open proof zone",
             "forbiddenCliches": [
-              "best-friend slogans",
-              "stars",
-              "cartoon mugs"
+              "red crosses",
+              "stethoscope cliches",
+              "hospital beds",
+              "superhero imagery"
             ],
-            "textSafeComposition": "Objects sit near opposite corners with a quiet center path"
+            "textSafeComposition": "Soft objects frame the lower edge and left side, upper center remains open"
           },
-          "prompt": "Everyday friendship card background with two subtle coffee-ring marks, a curved transit-map line with no station names, folded note-paper corner, warm ivory paper, deep teal, ochre, and ink accents, intimate and unposed."
+          "prompt": "Premium custom greeting-card background about the nurse with extra hair ties: scrub-green hair ties, blank badge reel with no photo or text, folded shift notes with no writing, plain snack packaging, pen cap, soft clinical light, no readable text."
         },
         {
-          "id": "study-client-sample-swatches",
-          "filename": "public/generated/theme-inventory/study-client-sample-swatches.webp",
-          "occasion": "business customer anniversary",
+          "id": "story-faded-receipt-night",
+          "filename": "public/generated/theme-inventory/story-faded-receipt-night.webp",
+          "occasion": "anniversary",
           "artCardContract": {
-            "relationship": "Customer anniversary card that feels like a human account memory, not a CRM blast",
-            "memoryObject": "sample swatches, package insert, date stamp, tiny product token",
-            "emotionalTruth": "The business remembers concrete work, not just an account date",
-            "artMove": "Editorial stationery composition with tactile samples and disciplined professional color",
+            "relationship": "Anniversary card built around the ordinary receipt from the night a life turned",
+            "memoryObject": "blank faded receipt, matchbook, two glass reflections, table ring",
+            "emotionalTruth": "The object is ordinary; the meaning is not",
+            "artMove": "Amber restaurant-table still life with a receipt shape treated as private evidence",
             "forbiddenCliches": [
-              "handshake icons",
-              "corporate swooshes",
-              "dashboards",
+              "hearts",
+              "rings",
+              "champagne flutes",
+              "scripted love quotes"
+            ],
+            "textSafeComposition": "Receipt and matchbook sit low and left, leaving an upper message field"
+          },
+          "prompt": "Premium custom greeting-card background about the receipt from the night everything changed: faded blank receipt shape, plain matchbook, two glass reflections, warm table ring, amber restaurant light, oxblood, smoked glass, cream paper, no readable text."
+        },
+        {
+          "id": "story-off-menu-regular-order",
+          "filename": "public/generated/theme-inventory/story-off-menu-regular-order.webp",
+          "occasion": "customer thank-you",
+          "artCardContract": {
+            "relationship": "Small-business thank-you for the regular whose impossible order became part of the place",
+            "memoryObject": "blank order ticket, dessert plate, napkin doodle, counter lamp",
+            "emotionalTruth": "Loyalty is personal when the business remembers the exact ritual",
+            "artMove": "Bright counter still life with a blank ticket and dessert framing a generous center",
+            "forbiddenCliches": [
+              "storefront stock photos",
+              "punch-card stars",
+              "generic restaurant icons",
               "logos"
             ],
-            "textSafeComposition": "Structured blank center with small objects along one edge"
+            "textSafeComposition": "Ticket and dessert stay low while the center remains open"
           },
-          "prompt": "Professional custom card background for a customer anniversary: sample swatches, blank package insert, abstract date-stamp shape with no numbers, tiny product token, deep green, terracotta, ivory, muted gold, premium editorial stationery."
+          "prompt": "Premium custom greeting-card background about the off-menu regular order: blank order ticket with checkbox shapes but no text, dessert plate, sauce cup, abstract napkin doodles, counter lamp, tomato red, butter yellow, stainless gray, no readable text."
+        },
+        {
+          "id": "story-project-war-room-wall",
+          "filename": "public/generated/theme-inventory/story-project-war-room-wall.webp",
+          "occasion": "client launch",
+          "artCardContract": {
+            "relationship": "Client-launch congratulations for the team whose messy wall got the project live",
+            "memoryObject": "blank sticky notes, colored tape, marker cap, flow-line shapes",
+            "emotionalTruth": "The launch mattered because the work was specific, collaborative, and hard",
+            "artMove": "SaaS-meets-stationery paper wall with sticky-note clusters around a clean message field",
+            "forbiddenCliches": [
+              "dashboards",
+              "stock charts",
+              "rocket icons",
+              "trophies",
+              "generic confetti"
+            ],
+            "textSafeComposition": "Sticky notes cluster around the top and left, preserving a central proof zone"
+          },
+          "prompt": "Premium custom greeting-card background about the project war-room wall: blank sticky notes, colored tape, marker cap, flow-line shapes, one small foil star sticker, blank checklist rows, deep navy, coral, mint, no readable text."
         }
       ]
     },
@@ -279,13 +361,13 @@
           "id": "new-baby-moon-blanket",
           "filename": "public/generated/theme-inventory/card-new-baby-moon-blanket.webp",
           "occasion": "new-baby",
-          "prompt": "Portrait 5:7 new baby card background. Gentle moon and tiny sock or blanket-fold motifs around the edges, soft butter yellow, powder blue, warm ivory, and sage, very tender but not childish, clear text-safe center. No faces, no baby body, no readable text, no logos."
+          "prompt": "Portrait 5:7 new baby card background built around the first quiet night at home: folded receiving blanket edge, dim hallway glow, hospital bracelet shape with no marks, warm ivory proof field, soft yellow, powder blue, sage, and one grounding ink accent. Tender but not childish. No faces, no baby body, no readable text, no logos."
         },
         {
           "id": "belated-open-note-clock",
           "filename": "public/generated/theme-inventory/card-belated-open-note-clock.webp",
           "occasion": "belated",
-          "prompt": "Portrait 5:7 belated or apology card background. Small abstract clock-hand arc, open note shape, soft terracotta and ink accents, warm ivory field, sincere and slightly witty without being cartoonish, large clean text-safe area. No readable text, no numbers on clock face, no logos."
+          "prompt": "Portrait 5:7 belated or apology card background built around the message that was almost sent: torn envelope flap, crossed-out calendar box with no numbers, saved draft paper edge, soft terracotta and ink accents, warm ivory field, sincere and slightly witty without being cartoonish, large clean text-safe area. No readable text, no numbers on clock face, no logos."
         },
         {
           "id": "congratulations-confetti-arch",

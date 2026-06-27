@@ -2,6 +2,8 @@ import { existsSync, readFileSync } from "node:fs";
 
 const files = [
   "webapp/cardTemplates.ts",
+  "webapp/storyThemes.ts",
+  "webapp/views/BusinessLandingView.tsx",
   "webapp/views/HomeView.tsx"
 ];
 
