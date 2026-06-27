@@ -9,6 +9,10 @@ import {
   normalizeAiFlowAdminConfigs,
   resolveAiFlowConfig
 } from "../src/aiFlowConfigData.mjs";
+import {
+  loadAiRouteActivationContext,
+  resolveAiRouteActivation
+} from "../src/aiRouteActivation.mjs";
 import { createAiFlowCostGate } from "./ai-flow-cost-gate.mjs";
 import {
   buildCardCopyPrompt,
@@ -60,9 +64,15 @@ export function createAiCardGenerationService({
 
   return {
     async generateCard(body, requestContext = {}) {
-      const adminConfig = await runtimeAiFlowConfig(body, env, requestContext, aiFlowAdminConfig, loadAiFlowAdminConfig);
-      const copyFlow = resolveAiFlowConfig("card-copy", env, adminConfig);
-      const imageFlow = resolveAiFlowConfig("card-image", env, adminConfig);
+      const activationContext = await loadAiRouteActivationContext({
+        env,
+        body,
+        requestContext,
+        serviceAiFlowAdminConfig: aiFlowAdminConfig,
+        loadAiFlowAdminConfig
+      });
+      const copyFlow = resolveAiRouteActivation("card-copy", activationContext).flow;
+      const imageFlow = resolveAiRouteActivation("card-image", activationContext).flow;
       const draftInput = normalizeCardInput(body);
       const providerCallEvents = [];
 
@@ -152,8 +162,14 @@ export function createAiCardGenerationService({
     },
 
     async respondChat(body, requestContext = {}) {
-      const adminConfig = await runtimeAiFlowConfig(body, env, requestContext, aiFlowAdminConfig, loadAiFlowAdminConfig);
-      const flow = resolveAiFlowConfig("customer-chat", env, adminConfig);
+      const activationContext = await loadAiRouteActivationContext({
+        env,
+        body,
+        requestContext,
+        serviceAiFlowAdminConfig: aiFlowAdminConfig,
+        loadAiFlowAdminConfig
+      });
+      const flow = resolveAiRouteActivation("customer-chat", activationContext).flow;
 
       const input = normalizeChatInput(body);
       const providerCallEvents = [];
@@ -297,58 +313,6 @@ function aiCostGateInput({ flow, requestContext, routeId, requestUnits, phase, m
       ...metadata
     }
   };
-}
-
-async function runtimeAiFlowConfig(body, env, requestContext = {}, serviceAiFlowAdminConfig = [], loadAiFlowAdminConfig) {
-  return mergeAiFlowAdminConfigs(
-    normalizeOptionalAiFlowAdminConfigs(serviceAiFlowAdminConfig, env),
-    serverScopedAiFlowConfig(env),
-    normalizeOptionalAiFlowAdminConfigs(await loadedAiFlowAdminConfig(loadAiFlowAdminConfig), env),
-    normalizeOptionalAiFlowAdminConfigs(requestContext.aiFlowAdminConfig, env),
-    requestScopedAiFlowConfig(body, env, requestContext)
-  );
-}
-
-async function loadedAiFlowAdminConfig(loadAiFlowAdminConfig) {
-  if (typeof loadAiFlowAdminConfig !== "function") return [];
-  try {
-    const loaded = await loadAiFlowAdminConfig();
-    return loaded?.configs ?? loaded?.aiFlowConfigs ?? loaded?.flows ?? loaded ?? [];
-  } catch {
-    return [];
-  }
-}
-
-function normalizeOptionalAiFlowAdminConfigs(input, env) {
-  return Array.isArray(input) && input.length > 0 ? normalizeAiFlowAdminConfigs(input, env) : [];
-}
-
-function serverScopedAiFlowConfig(env) {
-  const raw = env.CUSTOMCARD_AI_FLOW_CONFIG_JSON ?? env.CUSTOMCARD_AI_FLOW_ADMIN_CONFIG_JSON ?? "";
-  if (!raw) return [];
-  try {
-    const parsed = JSON.parse(String(raw));
-    return normalizeAiFlowAdminConfigs(Array.isArray(parsed) ? parsed : parsed.flows ?? parsed.aiFlowConfig ?? parsed.ai_flow_config ?? [], env);
-  } catch {
-    return [];
-  }
-}
-
-function mergeAiFlowAdminConfigs(...groups) {
-  const byFlowId = new Map();
-  for (const group of groups) {
-    for (const config of Array.isArray(group) ? group : []) {
-      if (!config?.flowId) continue;
-      byFlowId.set(config.flowId, config);
-    }
-  }
-  if (byFlowId.size === 0) return [];
-  return normalizeAiFlowAdminConfigs(Array.from(byFlowId.values()));
-}
-
-function requestScopedAiFlowConfig(body, env, requestContext = {}) {
-  if (requestContext.trustRequestAiFlowConfig !== true) return [];
-  return normalizeAiFlowAdminConfigs(body.aiFlowConfig ?? body.ai_flow_config ?? [], env);
 }
 
 function isAiEnvKey(key) {
