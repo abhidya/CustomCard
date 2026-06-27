@@ -6,9 +6,11 @@ import {
   generationStages,
   normalizeGenerationPanelIds,
   photoWindowTextLayoutPatch,
+  templatePanelPatch,
   toggleGenerationPanelId,
   uploadedImagePanelPatch
 } from "./studioModel";
+import { cardTemplates } from "./cardTemplates";
 
 const draftInput: CardDraftInput = {
   recipient: "Sara",
@@ -152,6 +154,20 @@ describe("studio model", () => {
         headlineZone: "lower"
       }
     });
+  });
+
+  it("shows generated proof previews while applying editable raw template artwork", () => {
+    expect(cardTemplates).toHaveLength(10);
+    for (const template of cardTemplates) {
+      expect(template.previewImageUrl).toMatch(new RegExp(`^/generated/story-proofs/${template.id}/front\\.webp$`));
+      expect(template.proofContactSheetUrl).toMatch(
+        new RegExp(`^/generated/story-proofs/${template.id}/contact-sheet\\.webp$`)
+      );
+      expect(template.imageUrl).toMatch(/^\/generated\//);
+      expect(template.imageUrl).not.toContain("/story-proofs/");
+      expect(template.imageUrl).not.toBe(template.previewImageUrl);
+      expect(templatePanelPatch(template).imageUrl).toBe(template.imageUrl);
+    }
   });
 });
 

@@ -887,7 +887,23 @@ function TemplateGallery({
           role="listitem"
           type="button"
         >
-          <img alt={`${template.label} template`} decoding="async" loading="lazy" src={template.imageUrl} />
+          <span className="templateTileProof">
+            <img
+              alt={`${template.label} finished proof preview`}
+              className="templateTileFront"
+              decoding="async"
+              loading="lazy"
+              src={template.previewImageUrl}
+            />
+            <img
+              alt=""
+              aria-hidden="true"
+              className="templateTileSheet"
+              decoding="async"
+              loading="lazy"
+              src={template.proofContactSheetUrl}
+            />
+          </span>
           <span>
             <strong>{template.label}</strong>
             <small>{template.detail}</small>

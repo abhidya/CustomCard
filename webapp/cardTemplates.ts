@@ -7,6 +7,8 @@ export interface CardTemplateChoice {
   category: string;
   detail: string;
   imageUrl: string;
+  previewImageUrl: string;
+  proofContactSheetUrl: string;
   occasion: string;
   styleId: VisualStylePreset;
   artDirection: string;
@@ -57,6 +59,8 @@ export const cardTemplates: CardTemplateChoice[] = storyThemeCards.map((story) =
   category: story.category,
   detail: story.templateDetail,
   imageUrl: story.imageUrl,
+  previewImageUrl: story.proof.assets.front,
+  proofContactSheetUrl: story.proof.assets.contactSheet,
   occasion: story.occasion,
   styleId: story.styleId,
   artDirection: [
@@ -74,5 +78,5 @@ export const cardTemplates: CardTemplateChoice[] = storyThemeCards.map((story) =
 export const exampleCards = cardTemplates.map((template) => ({
   label: template.category === "thank-you" ? "Thank you" : template.label.replace(/ .*/, ""),
   category: template.category,
-  imageUrl: template.imageUrl
+  imageUrl: template.previewImageUrl
 }));
