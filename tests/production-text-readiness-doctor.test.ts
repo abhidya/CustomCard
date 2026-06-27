@@ -38,6 +38,16 @@ function writeFailingAggregate(path: string) {
   });
 }
 
+function gpuResidencyProbe() {
+  return {
+    required: true,
+    ok: true,
+    status: "gpu-backed",
+    pids: [1234],
+    nvidiaProcessIds: [1234]
+  };
+}
+
 describe("production text readiness doctor", () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -74,7 +84,7 @@ describe("production text readiness doctor", () => {
       "model-root": modelRoot,
       "local-llm-base-url": "http://127.0.0.1:5003/v1",
       "output-dir": join(root, "readiness")
-    });
+    }, { gpuResidencyProbe });
 
     expect(report.promotionReady).toBe(false);
     expect(report.activePlannerEndpoints[0]).toMatchObject({
@@ -118,7 +128,7 @@ describe("production text readiness doctor", () => {
       "planner-context-tokens": 8192,
       "planner-max-output-tokens": 3200,
       "output-dir": join(root, "readiness")
-    });
+    }, { gpuResidencyProbe });
 
     expect(report.promotionReady).toBe(true);
     expect(report.aggregatePromotionReady).toBe(false);
@@ -128,5 +138,56 @@ describe("production text readiness doctor", () => {
       ok: false
     });
     expect(report.nextSteps.join("\n")).toContain("Promotion gate still needs");
+  });
+
+  it("blocks local production planner readiness when GPU residency is not proven", async () => {
+    const root = mkdtempSync(join(tmpdir(), "production-text-readiness-doctor-cpu-"));
+    const modelRoot = join(root, "models");
+    mkdirSync(modelRoot, { recursive: true });
+    writeFileSync(join(modelRoot, "gemma-4-31B-it-Q4_K_M.gguf"), "fake model marker");
+    const aggregatePath = join(root, "benchmark-aggregate.json");
+    writePassingAggregate(aggregatePath);
+
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
+      const target = String(url);
+      if (target.endsWith("/object_info")) {
+        return new Response(JSON.stringify({ CustomCardTextComposer: {} }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      if (target.endsWith("/models")) {
+        return new Response(JSON.stringify({ data: [{ id: "koboldcpp/gemma-4-31B-it-Q4_K_M" }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      return new Response("not found", { status: 404 });
+    });
+
+    const report = await runDoctor({
+      advisory: true,
+      aggregate: aggregatePath,
+      "model-root": modelRoot,
+      "local-llm-base-url": "http://127.0.0.1:5003/v1",
+      "planner-context-tokens": 8192,
+      "planner-max-output-tokens": 3200,
+      "output-dir": join(root, "readiness")
+    }, {
+      gpuResidencyProbe: () => ({
+        required: true,
+        ok: false,
+        status: "blocked",
+        blocker: "Local KoboldCPP planner has GPU flags but its PID is not listed by nvidia-smi."
+      })
+    });
+
+    expect(report.promotionReady).toBe(false);
+    expect(report.blockers.map((item) => item.name)).toContain("configured local planner runtime is GPU-backed");
+    expect(report.activePlannerEndpoints[0].localGpuResidency).toMatchObject({
+      required: true,
+      ok: false
+    });
+    expect(report.nextSteps.join("\n")).toContain("nvidia-smi");
   });
 });

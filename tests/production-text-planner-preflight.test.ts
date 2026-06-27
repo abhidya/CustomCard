@@ -12,6 +12,16 @@ function modelsResponse(model: string) {
   });
 }
 
+function gpuResidencyProbe() {
+  return {
+    required: true,
+    ok: true,
+    status: "gpu-backed",
+    pids: [1234],
+    nvidiaProcessIds: [1234]
+  };
+}
+
 describe("production text planner preflight", () => {
   it("classifies 4096-context Qwen as smoke-only rather than production", async () => {
     const fetchImpl = async () => modelsResponse("koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S");
@@ -24,7 +34,7 @@ describe("production text planner preflight", () => {
         "max-output-tokens": "3200",
         "output-dir": root
       },
-      { fetchImpl }
+      { fetchImpl, gpuResidencyProbe }
     );
 
     expect(report.reportDir).toContain("production-text-planner-preflight-qwen-");
@@ -47,7 +57,7 @@ describe("production text planner preflight", () => {
         "allow-small": true,
         "output-dir": root
       },
-      { fetchImpl }
+      { fetchImpl, gpuResidencyProbe }
     );
 
     expect(report.runAllowed).toBe(true);
@@ -67,7 +77,7 @@ describe("production text planner preflight", () => {
         "max-output-tokens": "3200",
         "output-dir": root
       },
-      { fetchImpl }
+      { fetchImpl, gpuResidencyProbe }
     );
 
     expect(report.runAllowed).toBe(false);
@@ -88,7 +98,7 @@ describe("production text planner preflight", () => {
         "max-output-tokens": "3200",
         "output-dir": root
       },
-      { fetchImpl }
+      { fetchImpl, gpuResidencyProbe }
     );
 
     expect(report.runAllowed).toBe(false);
@@ -109,11 +119,16 @@ describe("production text planner preflight", () => {
         "max-output-tokens": "3200",
         "output-dir": root
       },
-      { fetchImpl }
+      { fetchImpl, gpuResidencyProbe }
     );
 
     expect(report.runAllowed).toBe(true);
     expect(report.promotionReady).toBe(true);
+    expect(report.localGpuResidency).toMatchObject({
+      required: true,
+      ok: true,
+      status: "gpu-backed"
+    });
     expect(report.classification.classification).toBe("production-suitable");
     expect(report.classification.minimumOpenWeightPlannerClass).toContain("14B+");
     expect(report.classification.minOutputTokens).toBe(3200);
@@ -130,7 +145,7 @@ describe("production text planner preflight", () => {
         "max-output-tokens": "3200",
         "output-dir": root
       },
-      { fetchImpl }
+      { fetchImpl, gpuResidencyProbe }
     );
 
     expect(report.runAllowed).toBe(false);
@@ -150,5 +165,33 @@ describe("production text planner preflight", () => {
     expect(result.productionSuitable).toBe(false);
     expect(result.blockers.join("\n")).toContain("PlannerMaxTokens 2200");
     expect(result.blockers.join("\n")).toContain("production minimum 3200");
+  });
+
+  it("blocks a local production planner when GPU residency is not proven", async () => {
+    const fetchImpl = async () => modelsResponse("koboldcpp/gemma-4-31B-it-Q4_K_M");
+    const root = mkdtempSync(join(tmpdir(), "production-text-planner-preflight-cpu-"));
+
+    const report = await runProductionTextPlannerPreflight(
+      {
+        "base-url": "http://127.0.0.1:5003/v1",
+        "reported-context-tokens": "8192",
+        "max-output-tokens": "3200",
+        "output-dir": root
+      },
+      {
+        fetchImpl,
+        gpuResidencyProbe: () => ({
+          required: true,
+          ok: false,
+          status: "blocked",
+          blocker: "Local KoboldCPP planner has GPU flags but its PID is not listed by nvidia-smi."
+        })
+      }
+    );
+
+    expect(report.runAllowed).toBe(false);
+    expect(report.promotionReady).toBe(false);
+    expect(report.classification.classification).toBe("production-suitable");
+    expect(report.blockers.join("\n")).toContain("not listed by nvidia-smi");
   });
 });

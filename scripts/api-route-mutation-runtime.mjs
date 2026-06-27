@@ -173,6 +173,16 @@ export function createRouteMutationRuntime({
         if (!hasRequiredText(body.publicCaption ?? body.caption)) missingFields.push("publicCaption");
         return missingFields;
       }
+    },
+    "admin-card-gallery-regenerate": {
+      ...mutationBodyContractSpecs["admin-card-gallery-regenerate"],
+      missingFields(body) {
+        const missingFields = [];
+        if (!["card-text", "gallery-copy"].includes(String(body.action ?? "").trim())) missingFields.push("action");
+        if (!hasRequiredText(body.category ?? body.occasion)) missingFields.push("category");
+        if (!body.cardCopy || typeof body.cardCopy !== "object" || Array.isArray(body.cardCopy)) missingFields.push("cardCopy");
+        return missingFields;
+      }
     }
   };
 

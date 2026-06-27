@@ -100,7 +100,7 @@ export interface ApiRouteContract {
   requestSchema: string[];
   responseSchema: string[];
   idempotencyKeyRequired: boolean;
-  /** Only the Walgreens hosted-checkout proxy routes may set this to true. */
+  /** Only routes listed in gatedProviderNetworkRouteIds may set this to true. */
   externalNetworkCalls: boolean;
   realOrdersEnabled: false;
   piiPolicy: string;

@@ -7,7 +7,6 @@ import {
   emptyReviewChecklist,
   reviewedChecklist,
   stageForEntry,
-  suggestedCardCopy,
   textFits,
   type GalleryEntry
 } from "./adminCardGalleryWorkflow";
@@ -38,9 +37,14 @@ describe("admin card gallery workflow", () => {
       status: "ready",
       derivedCategory: "birthday",
       draftInput: {
+        sender: "Mina",
         recipient: "Sara",
         relationship: "Sisters",
         occasion: "birthday",
+        tone: "warm",
+        style: "botanical",
+        language: "English",
+        useMemory: false,
         personalNote: "Private memory should not become public gallery caption."
       }
     });
@@ -49,7 +53,7 @@ describe("admin card gallery workflow", () => {
       "gallery-draft-sara-birthday"
     );
     expect(editor.category).toBe("birthday");
-    expect(editor.publicCaption).toBe("Made with CustomCard");
+    expect(editor.publicCaption).toBe("");
     expect(editor.frontSvg).toContain("<svg");
     expect(editor.publicCaption).not.toContain("Private memory");
   });
@@ -70,8 +74,22 @@ describe("admin card gallery workflow", () => {
     );
   });
 
-  it("keeps generated copy inside front-preview text limits", () => {
-    expect(textFits(suggestedCardCopy("sympathy", "Quiet sympathy", 0))).toBe(true);
+  it("does not invent replacement copy when a candidate cannot be generated locally", () => {
+    const editor = editorFromCandidate({
+      sourceDraftId: "draft/malformed",
+      status: "ready",
+      derivedCategory: "birthday",
+      draftInput: {
+        tone: "not-a-real-tone" as never
+      }
+    });
+
+    expect(editor.cardCopy).toEqual({
+      headline: "",
+      body: "",
+      artDirection: ""
+    });
+    expect(editor.frontSvg).toBe("");
     expect(
       textFits({
         headline: "x".repeat(91),

@@ -34,7 +34,7 @@ const lowerPhotoText: CardTextLayout = {
 const fillCenter: CardImagePlacement = { frame: "fill", focus: "center" };
 
 export const cardImageByCategory: Record<string, string> = {
-  birthday: "/generated/card-birthday.jpg",
+  birthday: "/generated/theme-inventory/card-birthday-candle-table.webp",
   graduation: "/generated/card-graduation.jpg",
   wedding: "/generated/card-wedding-anniversary.jpg",
   anniversary: "/generated/card-wedding-anniversary.jpg",

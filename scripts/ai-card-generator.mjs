@@ -1169,10 +1169,11 @@ function buildCloudflareImageRequestBody({ flow, panelId, prompt, negativePrompt
 }
 
 function buildCloudflareImagePrompt({ panelId, prompt }) {
-  if (!isQuietCarePrompt(prompt)) return prompt;
+  const providerGuardrails = "no readable text, no words, no logos, no watermark, No people, No hands, not a physical paper card.";
+  if (!isQuietCarePrompt(prompt)) return `${prompt} ${providerGuardrails}`;
   const role = panelId === "front" ? "front cover" : panelId === "back" ? "back cover" : `${panelId} interior`;
   const shared =
-    "Premium flat 2D vertical 5x7 greeting-card panel artwork layer, print-ready editorial paper-cut illustration, vector-poster flatness, camera-free full-bleed composition, clean text-safe negative space, simple abstract setting, refined stationery finish.";
+    `Premium flat 2D vertical 5x7 greeting-card panel artwork layer, print-ready editorial paper-cut illustration, vector-poster flatness, camera-free full-bleed composition, clean text-safe negative space, simple abstract setting, refined stationery finish, ${providerGuardrails}`;
   if (panelId === "front") {
     return [
       shared,

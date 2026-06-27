@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, resolve } from "node:path";
+import { missingLocalGpuResidencyEvidence } from "./local-kobold-gpu-residency.mjs";
 import { isSmallPlanner } from "./production-text-planner-policy.mjs";
 
 const repoRoot = resolve(import.meta.dirname, "..");
@@ -242,11 +243,17 @@ function rerunPlanEntry(filePath) {
 function plannerPreflightEntry(filePath) {
   const payload = readJson(filePath);
   if (!payload) return undefined;
+  const localGpuResidency = payload.localGpuResidency || missingLocalGpuResidencyEvidence(payload.baseUrl);
+  const blockers = [
+    ...(payload.blockers || []),
+    ...(localGpuResidency.required && !localGpuResidency.ok ? [localGpuResidency.blocker] : [])
+  ];
+  const promotionReady = Boolean(payload.promotionReady) && (!localGpuResidency.required || localGpuResidency.ok);
   return {
     path: relativePath(filePath),
     createdAtIso: payload.createdAtIso || fileMtime(filePath),
     status: payload.status || "unknown",
-    promotionReady: Boolean(payload.promotionReady),
+    promotionReady,
     runAllowed: Boolean(payload.runAllowed),
     reachable: Boolean(payload.reachable),
     baseUrl: payload.baseUrl || "",
@@ -259,8 +266,10 @@ function plannerPreflightEntry(filePath) {
     reportedContextTokens: payload.classification?.reportedContextTokens,
     minOutputTokens: payload.classification?.minOutputTokens,
     maxOutputTokens: payload.classification?.maxOutputTokens,
-    blockerCount: Array.isArray(payload.blockers) ? payload.blockers.length : 0,
-    blockers: payload.blockers || [],
+    localGpuResidency,
+    gpuResidencyProven: !localGpuResidency.required || localGpuResidency.ok,
+    blockerCount: blockers.length,
+    blockers,
     warnings: payload.warnings || [],
     nextSteps: payload.nextSteps || []
   };
@@ -290,6 +299,8 @@ function readinessEntry(filePath) {
       .map((endpoint) => endpoint.activeModel || endpoint.baseUrl)),
     productionSuitablePlannerReachable: (payload.activePlannerEndpoints || payload.plannerEndpoints || [])
       .some((endpoint) => endpoint.reachable && endpoint.productionSuitable),
+    gpuBackedLocalPlannerReachable: (payload.activePlannerEndpoints || payload.plannerEndpoints || [])
+      .some((endpoint) => endpoint.reachable && endpoint.localGpuResidency?.required && endpoint.localGpuResidency?.ok),
     smallPlannerActive: (payload.activePlannerEndpoints || payload.plannerEndpoints || [])
       .some((endpoint) => endpoint.reachable && endpoint.smallPlanner),
     nextSteps: payload.nextSteps || []
@@ -598,6 +609,9 @@ function buildFindings({
   if (latestPlannerPreflight && !latestPlannerPreflight.promotionReady) {
     findings.push(`Latest planner preflight is blocked: ${latestPlannerPreflight.classification} model ${latestPlannerPreflight.activeModel || "n/a"}.`);
   }
+  if (latestPlannerPreflight?.localGpuResidency?.required && !latestPlannerPreflight.localGpuResidency.ok) {
+    findings.push("Latest local planner preflight does not prove GPU residency.");
+  }
   if (plannerEvidenceAlignment?.checked && !plannerEvidenceAlignment.ok) {
     findings.push(`Planner preflight and benchmark runtime evidence do not align: ${plannerEvidenceAlignment.blockers.join(" ")}`);
   }
@@ -656,7 +670,7 @@ function buildNextSteps({
     steps.push("Run production-text preflight with live Comfy and CustomCardTextComposer loaded.");
   }
   if (!latestPlannerPreflight?.promotionReady) {
-    steps.push("Run production-text planner preflight with a production-suitable model, 8192+ context, and the full output budget.");
+    steps.push("Run production-text planner preflight with a production-suitable GPU-backed model, 8192+ context, and the full output budget.");
   }
   if (plannerEvidenceAlignment?.checked && !plannerEvidenceAlignment.ok) {
     steps.push("Refresh planner preflight against the exact endpoint/model used by the latest benchmark before treating planner evidence as current.");
@@ -751,7 +765,10 @@ function rerunPlanSummary(entry) {
 }
 
 function plannerSummary(entry) {
-  return `${entry.classification}; model=${entry.activeModel || "none"}; context=${entry.reportedContextTokens ?? "n/a"}`;
+  const gpu = entry.localGpuResidency?.required
+    ? entry.localGpuResidency.ok ? "gpu=yes" : "gpu=no"
+    : "gpu=n/a";
+  return `${entry.classification}; model=${entry.activeModel || "none"}; context=${entry.reportedContextTokens ?? "n/a"}; ${gpu}`;
 }
 
 function plannerEvidenceAlignmentSummary(entry) {

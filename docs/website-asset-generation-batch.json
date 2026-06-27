@@ -1,0 +1,235 @@
+{
+  "name": "customcard-website-asset-generation-v1",
+  "status": "draft-ready",
+  "createdFor": "website refresh, theme inventory, and marketing material",
+  "globalNegativePrompt": "readable text, letters, words, numbers, fake calligraphy, signature, logo, watermark, QR code, barcode, caption plaque, text box, brand mark, product label, dense wallpaper, low contrast text-safe zone, people, faces, hands, cropped bodies, distorted anatomy",
+  "globalCardArtRules": [
+    "Card background art must be text-free. CustomCard overlays exact copy later.",
+    "Keep a clean text-safe area and generous margins.",
+    "Use portrait 5:7 composition for card backgrounds.",
+    "Avoid competitor references and brand marks.",
+    "Prefer distinct occasion signals over repeating the same botanical motif."
+  ],
+  "outputs": {
+    "cardBackgrounds": "public/generated/theme-inventory/",
+    "marketingAssets": "public/generated/marketing/",
+    "finishedProofs": "public/generated/featured-proofs/",
+    "videoSourceFrames": "public/generated/video-source/"
+  },
+  "batches": [
+    {
+      "id": "marketing-core",
+      "recommendedGenerator": "built-in-imagegen-or-comfy-photoreal",
+      "assets": [
+        {
+          "id": "hero-proof-desk",
+          "filename": "public/generated/marketing/hero-proof-desk.webp",
+          "aspectRatio": "16:10",
+          "prompt": "Photoreal editorial product shot for a landing page hero: one premium folded 5x7 greeting card standing on warm ivory paper beside a matching terracotta envelope. The visible card front has a clean app-rendered proof area with tasteful abstract botanical/ribbon artwork and blank space where CustomCard text can be composited later. Warm natural window light, visible paper grain, calm modern stationery desk, refined but not beige-only, subtle sage and terracotta accents, horizontal 16:10 composition with usable negative space on the left. No readable text, no logos, no hands, no clutter, no brand marks, no watermark.",
+          "notes": "Use for homepage hero after compositing deterministic card text or pairing with a rendered proof overlay."
+        },
+        {
+          "id": "hero-proof-desk-mobile",
+          "filename": "public/generated/marketing/hero-proof-desk-mobile.webp",
+          "aspectRatio": "9:11",
+          "prompt": "Mobile crop companion for the CustomCard landing hero: premium folded 5x7 card and terracotta envelope on warm ivory paper, calm stationery desk, soft window light, visible paper texture, card centered with enough top and bottom breathing room for mobile layout. No readable text, no logos, no hands, no watermark.",
+          "notes": "Use as art-directed mobile crop rather than relying only on object-position."
+        },
+        {
+          "id": "business-lifecycle-proof-flow",
+          "filename": "public/generated/marketing/business-lifecycle-proof-flow.webp",
+          "aspectRatio": "16:10",
+          "prompt": "Clean product-led visual for a customer lifecycle card workflow: left side shows an abstract contact/date import sheet, center shows a review queue and approval checklist, right side shows a small 5x7 print proof and envelope. Warm CustomCard paper palette with sage, deep green, terracotta, and soft gold accents. Interface blocks are abstract with short line placeholders only, no readable text, no real customer data, no CRM logos, no brand marks. Horizontal 16:10, premium SaaS-meets-stationery feel.",
+          "notes": "Replacement candidate for the B2B page visual."
+        },
+        {
+          "id": "print-packet-desk-v2",
+          "filename": "public/generated/marketing/print-packet-desk-v2.webp",
+          "aspectRatio": "4:3",
+          "prompt": "Photoreal product shot of printed 5x7 greeting-card panels, a tidy envelope, and a phone showing an abstract checkout-like screen made of unreadable placeholder blocks. Warm cream desk, visible paper texture, subtle terracotta envelope, quiet sage accent object, natural light. No Walgreens logo, no payment details, no readable text, no hands, no watermark.",
+          "notes": "Replacement candidate for print handoff page."
+        },
+        {
+          "id": "paper-grain-tile",
+          "filename": "public/generated/marketing/paper-grain-tile.webp",
+          "aspectRatio": "1:1",
+          "prompt": "Seamless subtle warm ivory paper grain texture tile for a premium greeting-card website. Very low contrast, fine fiber texture, no stains, no visible pattern repeat, no text, no objects, no shadows.",
+          "notes": "Keep under 20 KB after compression if used as CSS texture."
+        }
+      ]
+    },
+    {
+      "id": "theme-inventory-fronts",
+      "recommendedGenerator": "comfy-card-background",
+      "width": 960,
+      "height": 1344,
+      "assets": [
+        {
+          "id": "birthday-candle-table",
+          "filename": "public/generated/theme-inventory/card-birthday-candle-table.webp",
+          "occasion": "birthday",
+          "prompt": "Portrait 5:7 greeting-card background art, joyful but refined birthday design. Warm candlelight dots, one small illustrated cake-slice silhouette near a corner, sparse confetti edge, ivory center kept clean for app text, terracotta, butter yellow, deep green, and charcoal accents, subtle letterpress paper texture. No balloons crowding the text area, no readable text, no people, no logos."
+        },
+        {
+          "id": "graduation-cap-arc",
+          "filename": "public/generated/theme-inventory/card-graduation-cap-arc.webp",
+          "occasion": "graduation",
+          "prompt": "Portrait 5:7 graduation card background. Deep navy and soft gold accents, one clear graduation cap silhouette near the lower right, a clean arc of small celebratory marks near the top edge, ivory central text-safe field, premium print texture. No school logo, no readable text, no crowd, no faces, no dense icon wallpaper."
+        },
+        {
+          "id": "wedding-vellum-floral",
+          "filename": "public/generated/theme-inventory/card-wedding-vellum-floral.webp",
+          "occasion": "wedding",
+          "prompt": "Portrait 5:7 wedding card background. Elegant ivory paper with vellum-like translucent floral corners, small cream blossoms, sage leaves, faint gold line detail, generous blank center for names and date. Refined modern stationery, quiet luxury, no rings, no couple, no fake script, no readable text."
+        },
+        {
+          "id": "anniversary-interlocking-ribbons",
+          "filename": "public/generated/theme-inventory/card-anniversary-interlocking-ribbons.webp",
+          "occasion": "anniversary",
+          "prompt": "Portrait 5:7 anniversary card background. Two interlocking paper ribbons in muted terracotta and soft blue-green curve around the edges, tiny gold pinpoints, warm ivory center left clean for app text, subtle paper grain, romantic but modern. No hearts as the main motif, no rings, no couple, no readable text."
+        },
+        {
+          "id": "thank-you-neighbor-citrus",
+          "filename": "public/generated/theme-inventory/card-thank-you-neighbor-citrus.webp",
+          "occasion": "thank-you",
+          "prompt": "Portrait 5:7 thank-you card background for a neighbor or small act of help. Controlled citrus-and-leaf corner illustration, one warm orange slice, sage leaves, tiny watering-can silhouette as an abstract shape, editorial negative space through the center, subtle paper fiber. Local warmth without storefronts or people, no text box, no readable text, no logos."
+        },
+        {
+          "id": "sympathy-gray-green-branch",
+          "filename": "public/generated/theme-inventory/card-sympathy-gray-green-branch.webp",
+          "occasion": "sympathy",
+          "prompt": "Portrait 5:7 sympathy card background. Quiet ivory paper, soft gray-green botanical line art, one delicate branch along the lower edge with a small wash of cool gray-blue, large calm blank center, low-saturation premium stationery. No religious symbols, no people, no heavy ornament, no readable text."
+        },
+        {
+          "id": "friendship-coffee-notes",
+          "filename": "public/generated/theme-inventory/card-friendship-coffee-notes.webp",
+          "occasion": "friendship",
+          "prompt": "Portrait 5:7 friendship card background. Two small coffee cup silhouettes, tiny note-paper shapes, a loose long-distance map-line curve, warm ivory field, deep teal and butter yellow accents, friendly everyday texture, clean center text-safe area. No people, no fake handwritten words, no readable text, no logos."
+        },
+        {
+          "id": "get-well-window-tea",
+          "filename": "public/generated/theme-inventory/card-get-well-window-tea.webp",
+          "occasion": "get-well",
+          "prompt": "Portrait 5:7 get-well card background. Soft sunlight by a window, abstract tea cup shape, folded blanket texture, tiny sprig near one corner, warm ivory and pale blue-green palette, calm and caring, large low-contrast text-safe center. No medical symbols unless abstract, no people, no readable text."
+        },
+        {
+          "id": "new-baby-moon-blanket",
+          "filename": "public/generated/theme-inventory/card-new-baby-moon-blanket.webp",
+          "occasion": "new-baby",
+          "prompt": "Portrait 5:7 new baby card background. Gentle moon and tiny sock or blanket-fold motifs around the edges, soft butter yellow, powder blue, warm ivory, and sage, very tender but not childish, clear text-safe center. No faces, no baby body, no readable text, no logos."
+        },
+        {
+          "id": "belated-open-note-clock",
+          "filename": "public/generated/theme-inventory/card-belated-open-note-clock.webp",
+          "occasion": "belated",
+          "prompt": "Portrait 5:7 belated or apology card background. Small abstract clock-hand arc, open note shape, soft terracotta and ink accents, warm ivory field, sincere and slightly witty without being cartoonish, large clean text-safe area. No readable text, no numbers on clock face, no logos."
+        },
+        {
+          "id": "congratulations-confetti-arch",
+          "filename": "public/generated/theme-inventory/card-congratulations-confetti-arch.webp",
+          "occasion": "congratulations",
+          "prompt": "Portrait 5:7 congratulations card background. Confetti arch with deep green, blue, gold, and terracotta paper pieces, one elegant ribbon stroke, bright but disciplined, ivory center for app text, premium printed paper texture. No readable text, no people, no logos, no dense wallpaper."
+        },
+        {
+          "id": "business-customer-anniversary",
+          "filename": "public/generated/theme-inventory/card-business-customer-anniversary.webp",
+          "occasion": "business-customer-anniversary",
+          "prompt": "Portrait 5:7 business customer anniversary card background. Clean editorial stationery, abstract package insert, receipt-free appreciation note shape, small product-memory token, deep green, terracotta, ivory, and muted gold palette, professional and human, wide blank center. No storefront, no people, no CRM logos, no readable text."
+        }
+      ]
+    },
+    {
+      "id": "finished-proof-examples",
+      "recommendedGenerator": "customcard-render-pipeline-after-background-generation",
+      "notes": "Use generated backgrounds plus renderPacket/buildPanelSvg or Comfy CustomCardTextComposer for readable copy. Do not ask diffusion models to render this text.",
+      "assets": [
+        {
+          "id": "proof-birthday-teammate",
+          "filename": "public/generated/featured-proofs/proof-birthday-teammate-front.webp",
+          "backgroundAssetId": "birthday-candle-table",
+          "frontCopy": {
+            "headline": "Happy birthday, Manny",
+            "body": "You made the hard project feel possible, and somehow still made room for everyone."
+          }
+        },
+        {
+          "id": "proof-thank-you-neighbor",
+          "filename": "public/generated/featured-proofs/proof-thank-you-neighbor-front.webp",
+          "backgroundAssetId": "thank-you-neighbor-citrus",
+          "frontCopy": {
+            "headline": "Thank you, Lena",
+            "body": "The plants survived because you showed up with care and a little extra sunlight."
+          }
+        },
+        {
+          "id": "proof-graduation-sibling",
+          "filename": "public/generated/featured-proofs/proof-graduation-sibling-front.webp",
+          "backgroundAssetId": "graduation-cap-arc",
+          "frontCopy": {
+            "headline": "You did it, Maya",
+            "body": "Every late night and brave next step brought you here."
+          }
+        },
+        {
+          "id": "proof-sympathy-practical-support",
+          "filename": "public/generated/featured-proofs/proof-sympathy-practical-support-front.webp",
+          "backgroundAssetId": "sympathy-gray-green-branch",
+          "frontCopy": {
+            "headline": "Here with you",
+            "body": "No perfect words, just steady care, meals, errands, and quiet company."
+          }
+        },
+        {
+          "id": "proof-anniversary-friends",
+          "filename": "public/generated/featured-proofs/proof-anniversary-friends-front.webp",
+          "backgroundAssetId": "anniversary-interlocking-ribbons",
+          "frontCopy": {
+            "headline": "Happy anniversary",
+            "body": "The life you are building still feels full of small, beautiful yeses."
+          }
+        },
+        {
+          "id": "proof-customer-anniversary",
+          "filename": "public/generated/featured-proofs/proof-customer-anniversary-front.webp",
+          "backgroundAssetId": "business-customer-anniversary",
+          "frontCopy": {
+            "headline": "One year with us",
+            "body": "Thanks for trusting us with the details that matter."
+          }
+        }
+      ]
+    },
+    {
+      "id": "morph-reel-source",
+      "recommendedGenerator": "comfy-or-video-tool-after-keyframes",
+      "notes": "No checked-in video workflow exists yet. Generate stable keyframes first, then add an image-to-video or interpolation Comfy workflow.",
+      "assets": [
+        {
+          "id": "morph-frame-01-birthday",
+          "filename": "public/generated/video-source/morph-frame-01-birthday.webp",
+          "sourceAssetId": "proof-birthday-teammate"
+        },
+        {
+          "id": "morph-frame-02-thank-you",
+          "filename": "public/generated/video-source/morph-frame-02-thank-you.webp",
+          "sourceAssetId": "proof-thank-you-neighbor"
+        },
+        {
+          "id": "morph-frame-03-sympathy",
+          "filename": "public/generated/video-source/morph-frame-03-sympathy.webp",
+          "sourceAssetId": "proof-sympathy-practical-support"
+        },
+        {
+          "id": "morph-frame-04-graduation",
+          "filename": "public/generated/video-source/morph-frame-04-graduation.webp",
+          "sourceAssetId": "proof-graduation-sibling"
+        },
+        {
+          "id": "morph-frame-05-business",
+          "filename": "public/generated/video-source/morph-frame-05-business.webp",
+          "sourceAssetId": "proof-customer-anniversary"
+        }
+      ]
+    }
+  ]
+}

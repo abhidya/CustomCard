@@ -191,6 +191,33 @@ export function createApiRouteFamilies(deps) {
       return true;
     }
 
+    if (path === "/api/admin/card-gallery/regenerate") {
+      if (!requireIdempotencyKey({ request, response, path })) return true;
+      const body = await readJsonBody({ request, response, path });
+      if (!body.ok) return true;
+      const validation = validateAdminGalleryRegenerationBody(body.value);
+      if (validation.missingFields.length > 0) {
+        sendJson(response, 400, {
+          service: "customcard-api",
+          status: "invalid-admin-card-gallery-regenerate-payload",
+          route: "admin-card-gallery-regenerate",
+          requiredFields: validation.requiredFields,
+          missingFields: validation.missingFields,
+          detail:
+            "Card gallery regeneration requires explicit public-safe gallery metadata and current card copy before AI generation can run.",
+          rawContentStored: false
+        });
+        return true;
+      }
+      const result = await regenerateAdminCardGalleryCopy({
+        authContext,
+        body: body.value,
+        idempotencyKey: readRequestHeader(request, "x-idempotency-key")
+      });
+      sendJson(response, result.statusCode, result.payload);
+      return true;
+    }
+
     if (path === "/api/admin/readiness") {
       sendJson(response, 200, {
         ...readiness,
@@ -334,8 +361,188 @@ export function createApiRouteFamilies(deps) {
     return false;
   }
 
+  function validateAdminGalleryRegenerationBody(body) {
+    const requiredFields = ["action", "category", "cardCopy"];
+    const missingFields = [];
+    const action = String(body?.action ?? "").trim();
+    if (!["card-text", "gallery-copy"].includes(action)) missingFields.push("action");
+    if (!safeRouteText(body?.category, "", 80)) missingFields.push("category");
+    if (!body?.cardCopy || typeof body.cardCopy !== "object" || Array.isArray(body.cardCopy)) {
+      missingFields.push("cardCopy");
+    }
+    return { requiredFields, missingFields };
+  }
+
+  async function regenerateAdminCardGalleryCopy({ authContext, body, idempotencyKey }) {
+    const action = String(body?.action ?? "").trim();
+    if (!aiGenerationService || typeof aiGenerationService.generateCard !== "function") {
+      return {
+        statusCode: 503,
+        payload: {
+          service: "customcard-api",
+          status: "admin-card-gallery-regenerate-blocked",
+          action,
+          error: "AI generation service is unavailable for gallery regeneration.",
+          rawContentStored: false
+        }
+      };
+    }
+    const generationInput = buildAdminGalleryGenerationInput(body, action);
+    const result = await aiGenerationService.generateCard(generationInput, {
+      rateKey: authContext.userId,
+      idempotencyKey,
+      authContext,
+      aiFlowAdminConfig: [
+        {
+          flowId: "card-image",
+          liveProviderCallsEnabled: false,
+          queueEnabled: false,
+          fallbackQueueEnabled: false
+        }
+      ]
+    });
+    await recordAiProviderEvents({ authContext, result });
+
+    const payload = result?.payload ?? {};
+    if (result?.statusCode !== 200 || payload.status === "provider-unavailable" || payload.user_content_only) {
+      return {
+        statusCode: result?.statusCode ?? 503,
+        payload: {
+          service: "customcard-api",
+          status: "admin-card-gallery-regenerate-blocked",
+          action,
+          error: payload.error ?? payload.detail ?? "AI provider is unavailable for gallery regeneration.",
+          detail: payload.detail ?? payload.error,
+          ai_flow: payload.ai_flow,
+          ai_cost_gate: payload.ai_cost_gate,
+          provider_call_events: payload.provider_call_events,
+          fallback_queued: Boolean(payload.fallback_queued),
+          rawContentStored: false
+        }
+      };
+    }
+
+    const cardCopy = frontCardCopyFromAiPayload(payload.card_copy);
+    if (!cardCopy) {
+      return {
+        statusCode: 502,
+        payload: {
+          service: "customcard-api",
+          status: "admin-card-gallery-regenerate-invalid-provider-output",
+          action,
+          error: "AI provider response did not include usable front-panel copy.",
+          generated_by: payload.generated_by,
+          ai_flow: payload.ai_flow,
+          ai_cost_gate: payload.ai_cost_gate,
+          provider_call_events: payload.provider_call_events,
+          fallback_queued: Boolean(payload.fallback_queued),
+          rawContentStored: false
+        }
+      };
+    }
+
+    return {
+      statusCode: 200,
+      payload: {
+        service: "customcard-api",
+        status: "admin-card-gallery-regenerated",
+        action,
+        cardCopy,
+        galleryCopy: galleryCopyFromAiPayload(payload.card_copy, cardCopy, body),
+        generated_by: payload.generated_by,
+        ai_flow: payload.ai_flow,
+        ai_cost_gate: payload.ai_cost_gate,
+        provider_call_events: payload.provider_call_events,
+        fallback_queued: Boolean(payload.fallback_queued),
+        rawContentStored: false
+      }
+    };
+  }
+
+  function buildAdminGalleryGenerationInput(body, action) {
+    const category = safeRouteText(body?.category, "", 80);
+    const title = safeRouteText(body?.title, "", 120);
+    const publicCaption = safeRouteText(body?.publicCaption, "", 220);
+    const currentCopy = body?.cardCopy && typeof body.cardCopy === "object" ? body.cardCopy : {};
+    const headline = safeRouteText(currentCopy.headline, "", 120);
+    const currentBody = safeRouteText(currentCopy.body, "", 420);
+    const artDirection = safeRouteText(currentCopy.artDirection, "", 240);
+    const label = galleryCategoryLabel(category);
+
+    return {
+      sender: "CustomCard gallery curator",
+      recipient: "Public gallery audience",
+      relationship: "public gallery example",
+      occasion: label,
+      tone: action === "gallery-copy" ? "concise, public-safe, landing-page-ready" : "warm, polished, public-safe",
+      style: artDirection || `premium ${label.toLowerCase()} greeting card`,
+      language: "English",
+      personal_note: [
+        `Regenerate ${action === "gallery-copy" ? "public gallery title and caption" : "front-card text"} for an admin-curated public gallery card.`,
+        `Current public title: ${title}.`,
+        publicCaption ? `Current public caption: ${publicCaption}.` : "",
+        headline ? `Current front headline: ${headline}.` : "",
+        currentBody ? `Current front body: ${currentBody}.` : "",
+        "Return public-safe copy only. Do not use customer names, private memories, contact details, dates, locations, or claims that a real customer made this card."
+      ].filter(Boolean).join(" "),
+      memory_notes: [],
+      must_include: [label],
+      must_avoid: [
+        "private names",
+        "private memories",
+        "email addresses",
+        "phone numbers",
+        "mailing addresses",
+        "payment details",
+        "unreviewed customer details"
+      ]
+    };
+  }
+
+  function frontCardCopyFromAiPayload(cardCopy) {
+    const panels = Array.isArray(cardCopy?.panels) ? cardCopy.panels : [];
+    const front = panels.find((panel) => String(panel?.id ?? "").toLowerCase() === "front") ?? panels[0];
+    if (!front) return undefined;
+    const headline = safeRouteText(front.headline, "", 120);
+    const body = safeRouteText(front.body, "", 420);
+    const artDirection = safeRouteText(
+      front.artDirection ?? front.art_direction ?? front.image_prompt ?? front.imagePrompt,
+      "",
+      360
+    );
+    if (!headline || !body) return undefined;
+    return { headline, body, artDirection };
+  }
+
+  function galleryCopyFromAiPayload(cardCopy, cardCopyState, body) {
+    const category = safeRouteText(body?.category, "", 80);
+    const themeGuide = cardCopy?.theme_guide ?? cardCopy?.themeGuide ?? {};
+    const themeTitle = safeRouteText(themeGuide.theme_title ?? themeGuide.themeTitle, "", 90);
+    return {
+      title: safeRouteText(themeTitle || cardCopyState.headline, "", 80),
+      publicCaption: safeRouteText(cardCopyState.body, "", 120)
+    };
+  }
+
+  function galleryCategoryLabel(category) {
+    return String(category || "custom")
+      .split("-")
+      .map((part, index) => (index === 0 ? part.charAt(0).toUpperCase() + part.slice(1) : part))
+      .join(" ");
+  }
+
+  function safeRouteText(value, fallback, maxLength) {
+    const text = String(value ?? "")
+      .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "[redacted-email]")
+      .replace(/\b(?:\d[ -]*?){13,16}\b/g, "[redacted-payment]")
+      .replace(/\+?\d[\d\s().-]{7,}\d/g, "[redacted-phone]")
+      .replace(/\s+/g, " ")
+      .trim();
+    return (text || fallback).slice(0, Math.max(1, maxLength));
+  }
+
   function requireIdempotencyKey({ request, response, path }) {
-    if (request.headers?.["x-idempotency-key"]) return true;
+    if (readRequestHeader(request, "x-idempotency-key")) return true;
     sendJson(response, 400, {
       service: "customcard-api",
       status: "idempotency-key-required",
@@ -528,7 +735,7 @@ export function createApiRouteFamilies(deps) {
     }
 
     if (path !== aiCardGenerateRoute && path !== aiChatRespondRoute) return false;
-    if (!request.headers?.["x-idempotency-key"]) {
+    if (!readRequestHeader(request, "x-idempotency-key")) {
       sendJson(response, 400, {
         service: "customcard-api",
         status: "missing-idempotency-key",
@@ -640,5 +847,21 @@ export function createApiRouteFamilies(deps) {
         error: error instanceof Error ? error.message.slice(0, 180) : "provider-call-ledger-unavailable"
       };
     }
+  }
+
+  function readRequestHeader(request, name) {
+    const headers = request?.headers;
+    if (!headers) return "";
+    const direct =
+      headers[name] ??
+      headers[name.toLowerCase()] ??
+      headers[name.toUpperCase()] ??
+      headers[name.replace(/(^|-)([a-z])/g, (_match, dash, char) => `${dash}${char.toUpperCase()}`)];
+    if (direct !== undefined) return Array.isArray(direct) ? direct[0] ?? "" : String(direct);
+    if (typeof headers.get === "function") return headers.get(name) ?? headers.get(name.toLowerCase()) ?? "";
+    for (const [key, value] of Object.entries(headers)) {
+      if (key.toLowerCase() === name.toLowerCase()) return Array.isArray(value) ? value[0] ?? "" : String(value);
+    }
+    return "";
   }
 }

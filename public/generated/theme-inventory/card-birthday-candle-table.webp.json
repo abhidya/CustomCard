@@ -1,0 +1,20 @@
+{
+  "assetId": "birthday-candle-table",
+  "batchId": "theme-inventory-fronts",
+  "outputPath": "public/generated/theme-inventory/card-birthday-candle-table.webp",
+  "prompt": "Card background art must be text-free. CustomCard overlays exact copy later. Keep a clean text-safe area and generous margins. Use portrait 5:7 composition for card backgrounds. Avoid competitor references and brand marks. Prefer distinct occasion signals over repeating the same botanical motif. Portrait 5:7 greeting-card background art, joyful but refined birthday design. Warm candlelight dots, one small illustrated cake-slice silhouette near a corner, sparse confetti edge, ivory center kept clean for app text, terracotta, butter yellow, deep green, and charcoal accents, subtle letterpress paper texture. No balloons crowding the text area, no readable text, no people, no logos.",
+  "negativePrompt": "readable text, letters, words, numbers, fake calligraphy, signature, logo, watermark, QR code, barcode, caption plaque, text box, brand mark, product label, dense wallpaper, low contrast text-safe zone, people, faces, hands, cropped bodies, distorted anatomy",
+  "checkpoint": "sd_xl_turbo_1.0_fp16.safetensors",
+  "steps": 2,
+  "cfg": 1.5,
+  "sampler": "euler_ancestral",
+  "scheduler": "sgm_uniform",
+  "seed": 119790134,
+  "width": 960,
+  "height": 1344,
+  "promptId": "f2d3a855-2e6c-4652-8fa9-d23c6099393e",
+  "comfyUrl": "http://127.0.0.1:8188",
+  "workflowPath": "comfyui-workflows/customcard-sdxl-checkpoint.json",
+  "durationMs": 94903,
+  "bytes": 224406
+}

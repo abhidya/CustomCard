@@ -4301,38 +4301,162 @@ a { color: inherit; }
 .landingHeroStage {
   position: relative;
   width: min(460px, 100%);
+  min-height: 430px;
+  display: grid;
+  place-items: center;
+  padding: 30px 22px 62px;
   isolation: isolate;
 }
-.landingHeroCard {
-  width: min(250px, 100%);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-pop);
-  transform: rotate(2.5deg);
+.heroStack {
+  position: absolute;
+  inset: 8% 2% 17%;
+  z-index: 1;
+  pointer-events: none;
 }
-.landingHeroCard.landingHeroProductImage {
+.heroStackCard,
+.heroMorphImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.heroStackCard {
+  position: absolute;
+  width: 42%;
+  aspect-ratio: 5 / 7;
+  border: 5px solid var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  opacity: 0.72;
+}
+.heroStackCard-1 {
+  left: 2%;
+  top: 11%;
+  transform: rotate(-13deg);
+}
+.heroStackCard-2 {
+  right: 0;
+  top: 17%;
+  transform: rotate(12deg);
+}
+.heroStackCard-3 {
+  left: 30%;
+  bottom: 0;
+  transform: rotate(4deg);
+  opacity: 0.45;
+}
+.heroMorphCard {
   position: relative;
   z-index: 2;
-  width: 100%;
-  aspect-ratio: 3 / 2;
-  display: block;
-  object-fit: cover;
-  border-radius: var(--radius-l);
-  border: 1px solid #ffffffdd;
-  box-shadow: var(--shadow-pop);
-  transform: rotate(1deg);
-}
-.landingHeroPeek {
-  position: absolute;
-  z-index: 1;
-  left: -6%;
-  bottom: -26px;
-  width: 38%;
+  width: min(286px, 72%);
   aspect-ratio: 5 / 7;
-  object-fit: cover;
-  border-radius: var(--radius-s);
-  border: 5px solid var(--surface);
-  box-shadow: var(--shadow-card);
-  transform: rotate(-7deg);
+  overflow: hidden;
+  border: 9px solid var(--surface);
+  border-radius: calc(var(--radius) + 5px);
+  background: var(--surface);
+  box-shadow: var(--shadow-pop);
+  transform: rotate(-1.2deg);
+}
+.heroMorphCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    linear-gradient(120deg, #ffffff28, transparent 28%, transparent 62%, #ffffff18),
+    radial-gradient(circle at 18% 10%, #ffffff52, transparent 32%);
+  mix-blend-mode: screen;
+}
+.heroMorphImage {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  animation: heroMorphFace 18s var(--ease) infinite;
+}
+.heroMorphImage:nth-child(2) { animation-delay: 3.6s; }
+.heroMorphImage:nth-child(3) { animation-delay: 7.2s; }
+.heroMorphImage:nth-child(4) { animation-delay: 10.8s; }
+.heroMorphImage:nth-child(5) { animation-delay: 14.4s; }
+.heroMorphRail {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  width: min(410px, 100%);
+  transform: translateX(-50%);
+}
+.heroMorphRail span {
+  white-space: nowrap;
+  min-height: 26px;
+  padding: 5px 9px;
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  color: var(--ink-faint);
+  background: #ffffffd9;
+  box-shadow: 0 8px 24px -18px #121b1650;
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.54;
+  animation: heroMorphRail 18s var(--ease) infinite;
+}
+.heroMorphRail span:nth-child(2) { animation-delay: 3.6s; }
+.heroMorphRail span:nth-child(3) { animation-delay: 7.2s; }
+.heroMorphRail span:nth-child(4) { animation-delay: 10.8s; }
+.heroMorphRail span:nth-child(5) { animation-delay: 14.4s; }
+@keyframes heroMorphFace {
+  0%,
+  17% {
+    opacity: 1;
+    clip-path: inset(0 round 14px);
+    filter: blur(0) saturate(1);
+    transform: scale(1) rotate(0deg);
+  }
+  23%,
+  100% {
+    opacity: 0;
+    clip-path: inset(8% 8% 10% 8% round 18px);
+    filter: blur(4px) saturate(0.88);
+    transform: scale(1.025) rotate(1.2deg);
+  }
+}
+@keyframes heroMorphRail {
+  0%,
+  17% {
+    border-color: #1b5d3a33;
+    color: var(--accent);
+    background: #edf7f1f0;
+    opacity: 1;
+  }
+  23%,
+  100% {
+    border-color: var(--line-soft);
+    color: var(--ink-faint);
+    background: #ffffffd9;
+    opacity: 0.54;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .heroMorphImage,
+  .heroMorphRail span {
+    animation: none;
+  }
+  .heroMorphImage:first-child {
+    opacity: 1;
+    clip-path: inset(0 round 14px);
+    filter: none;
+    transform: none;
+  }
+  .heroMorphRail span:first-child {
+    border-color: #1b5d3a33;
+    color: var(--accent);
+    background: #edf7f1f0;
+    opacity: 1;
+  }
 }
 .landingHeroCaption { font-size: 12.5px; color: var(--ink-faint); }
 .occasionsLead { margin: 26px 0 10px; font-size: 15px; color: var(--ink-soft); }
@@ -4559,30 +4683,34 @@ a { color: inherit; }
 @media (max-width: 860px) {
   .landingHero { grid-template-columns: 1fr; gap: 30px; }
   .landingHeroVisual { order: -1; }
-  .landingHeroStage { width: min(420px, 86vw); }
-  .landingHeroCard { width: min(190px, 70vw); }
-  .landingHeroPeek { left: -4%; bottom: -18px; width: 34%; }
+  .landingHeroStage {
+    width: min(400px, 86vw);
+    min-height: 390px;
+    padding: 24px 18px 58px;
+  }
+  .heroMorphCard { width: min(250px, 68vw); }
 }
 @media (max-width: 560px) {
   .landingHero {
-    gap: 14px;
-    padding-top: 16px;
-    padding-bottom: 12px;
+    gap: 10px;
+    padding-top: 12px;
+    padding-bottom: 10px;
   }
   .landingHeroCopy {
     display: grid;
-    gap: 12px;
+    gap: 9px;
   }
   .landingHeroCopy .eyebrow {
     margin-bottom: 0;
   }
   .landingHeroCopy h1 {
-    font-size: 38px;
+    font-size: 36px;
     line-height: 1.04;
     margin-bottom: 0;
   }
   .landingHeroCopy p {
-    font-size: 16px;
+    font-size: 15.5px;
+    line-height: 1.46;
   }
   .landingHeroActions {
     display: grid;
@@ -4594,24 +4722,38 @@ a { color: inherit; }
     justify-content: center;
   }
   .landingHeroActions .textlink {
-    justify-self: center;
+    display: none;
   }
   .landingHeroTrust {
-    margin-top: 0;
+    display: none;
   }
   .landingHeroVisual {
     gap: 10px;
   }
   .landingHeroStage {
-    width: min(256px, 70vw);
+    width: min(292px, 78vw);
+    min-height: 232px;
+    padding: 8px;
   }
-  .landingHeroCard.landingHeroProductImage {
+  .heroMorphCard {
+    width: min(150px, 52vw);
+    border-width: 6px;
     border-radius: var(--radius);
   }
-  .landingHeroPeek {
-    bottom: -12px;
+  .heroStack {
+    inset: 11% 0 17%;
+  }
+  .heroStackCard {
     border-width: 3px;
-    width: 31%;
+  }
+  .heroMorphRail {
+    display: none;
+  }
+  .landingHeroCaption {
+    display: none;
+  }
+  .pathchooser {
+    margin-top: 14px;
   }
 }
 @media (max-width: 560px) and (max-height: 760px) {
@@ -4651,10 +4793,17 @@ a { color: inherit; }
     display: none;
   }
   .landingHeroStage {
-    width: min(190px, 56vw);
+    width: min(210px, 56vw);
+    min-height: 218px;
+    padding: 8px 8px 24px;
   }
-  .landingHeroPeek {
+  .heroStack,
+  .heroMorphRail {
     display: none;
+  }
+  .heroMorphCard {
+    width: min(142px, 54vw);
+    border-width: 5px;
   }
 }
 @media (max-width: 560px) {

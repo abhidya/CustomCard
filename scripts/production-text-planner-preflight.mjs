@@ -1,5 +1,6 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { inspectLocalKoboldGpuResidency } from "./local-kobold-gpu-residency.mjs";
 import { classifyProductionTextPlanner } from "./production-text-planner-policy.mjs";
 
 const repoRoot = resolve(import.meta.dirname, "..");
@@ -49,6 +50,9 @@ export async function runProductionTextPlannerPreflight(args = {}, options = {})
   const probe = endpoint
     ? await probeModels(endpoint.modelsUrl, { fetchImpl, timeoutMs, apiKey })
     : { reachable: false, models: [], error: "Planner base URL was not provided." };
+  const localGpuResidency = endpoint && probe.reachable
+    ? inspectLocalKoboldGpuResidency(endpoint.baseUrl, { probe: options.gpuResidencyProbe })
+    : { required: false, ok: true, status: "not-checked", baseUrl: endpoint?.baseUrl || "" };
   const modelMatch = matchReportedModel(probe.models, explicitModel);
   const activeModel = modelMatch || explicitModel || probe.models[0] || "";
   const classification = classifyProductionTextPlanner(activeModel, {
@@ -58,16 +62,20 @@ export async function runProductionTextPlannerPreflight(args = {}, options = {})
     maxOutputTokens: args["max-output-tokens"],
     requireRuntimeBudget: true
   });
-  const blockers = [
+  const preflightBlockers = [
     ...(!endpoint ? ["Planner base URL is missing."] : []),
     ...(endpoint?.error ? [endpoint.error] : []),
     ...(endpoint && !probe.reachable ? [`Planner /models preflight failed: ${probe.error}`] : []),
     ...(explicitModel && probe.reachable && !modelMatch
       ? [`Planner /models did not report the requested model '${explicitModel}'. Loaded models: ${probe.models.join(", ") || "none"}.`]
       : []),
+    ...(localGpuResidency.required && !localGpuResidency.ok ? [localGpuResidency.blocker] : [])
+  ];
+  const blockers = [
+    ...preflightBlockers,
     ...classification.blockers
   ];
-  const runAllowed = blockers.length === 0 && (classification.productionSuitable || Boolean(args["allow-small"]));
+  const runAllowed = preflightBlockers.length === 0 && (classification.productionSuitable || Boolean(args["allow-small"]));
   const promotionReady = blockers.length === 0 && classification.productionSuitable;
   const result = {
     createdAtIso: new Date().toISOString(),
@@ -81,6 +89,7 @@ export async function runProductionTextPlannerPreflight(args = {}, options = {})
     requestedModel: explicitModel,
     activeModel,
     models: probe.models,
+    localGpuResidency,
     classification,
     blockers,
     warnings: classification.warnings,
@@ -220,6 +229,7 @@ function buildMarkdown(result) {
     `- Reported context tokens: ${result.classification.reportedContextTokens ?? "n/a"}`,
     `- Minimum output tokens: ${result.classification.minOutputTokens}`,
     `- Max output tokens: ${result.classification.maxOutputTokens ?? "n/a"}`,
+    `- Local GPU residency: ${result.localGpuResidency.required ? (result.localGpuResidency.ok ? "proven" : "blocked") : "not required"}`,
     "",
     "## Blockers",
     ""

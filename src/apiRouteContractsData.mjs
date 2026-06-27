@@ -888,6 +888,22 @@ export const apiRouteContracts = [
     backedBy: ["card_gallery_entries", "admin-session auth", "idempotency_keys", "audit_log"]
   },
   {
+    id: "admin-card-gallery-regenerate",
+    method: "POST",
+    path: "/api/admin/card-gallery/regenerate",
+    audience: "admin",
+    auth: "admin-session",
+    runtimeMode: "durable-api",
+    requestSchema: ["X-Idempotency-Key", "action", "category", "title", "publicCaption", "cardCopy"],
+    responseSchema: ["cardCopy", "galleryCopy", "generated_by", "ai_flow", "ai_cost_gate", "provider_call_events"],
+    idempotencyKeyRequired: true,
+    externalNetworkCalls: true,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Admin-only gallery regeneration sends public-safe gallery metadata to server-selected AI providers; private customer names, memories, contact details, and provider credentials are never accepted.",
+    backedBy: ["ai-card-generator service", "admin-session auth", "idempotency key", "provider_call_events"]
+  },
+  {
     id: "public-featured-cards",
     method: "GET",
     path: "/api/public/featured-cards",
@@ -895,7 +911,7 @@ export const apiRouteContracts = [
     auth: "none",
     runtimeMode: "durable-api",
     requestSchema: [],
-    responseSchema: ["categories", "fallbackToBuiltInExamples"],
+    responseSchema: ["categories"],
     idempotencyKeyRequired: false,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
@@ -980,7 +996,8 @@ export const gatedProviderNetworkRouteIds = new Set([
   "calendar-connection-start",
   "ai-chat-respond",
   "ai-card-generate",
-  "admin-model-benchmark-run"
+  "admin-model-benchmark-run",
+  "admin-card-gallery-regenerate"
 ]);
 
 export const requiredApiRouteIds = apiRouteContracts.map((route) => route.id);
@@ -1065,6 +1082,11 @@ export const mutationBodyContractSpecs = Object.freeze({
     detail:
       "Card gallery curation requires an explicit category, public-safe title, and public-safe caption before an entry can be featured."
   },
+  "admin-card-gallery-regenerate": {
+    requiredFields: ["action", "category", "cardCopy"],
+    detail:
+      "Card gallery regeneration requires an explicit action, category, and current card copy before server-selected AI generation can run."
+  },
   "data-requests": {
     requiredFields: ["requestType", "region", "consentGranted"],
     detail: "Data request intake requires explicit request type, region, and customer confirmation before privacy records can be prepared."
@@ -1087,6 +1109,7 @@ export const persistedTablesByRouteId = Object.freeze({
   "admin-safety-controls": ["auth_sessions", "admin_runtime_configs", "audit_log"],
   "admin-safety-controls-save": ["auth_sessions", "idempotency_keys", "admin_runtime_configs", "audit_log"],
   "admin-local-ai-loop-run": ["auth_sessions", "idempotency_keys", "users", "api_jobs", "audit_log"],
+  "admin-card-gallery-regenerate": ["auth_sessions", "idempotency_keys", "provider_call_events", "audit_log"],
   "render-packets": [
     "auth_sessions",
     "idempotency_keys",

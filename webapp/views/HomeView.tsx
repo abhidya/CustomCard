@@ -95,6 +95,14 @@ const exampleCards = [
   { label: "Friendship", category: "friendship", imageUrl: cardImageByCategory.friendship }
 ];
 
+const heroMorphCards = [
+  { label: "Birthday", imageUrl: cardImageByCategory.birthday },
+  { label: "Graduation", imageUrl: cardImageByCategory.graduation },
+  { label: "Thanks", imageUrl: cardImageByCategory["thank-you"] },
+  { label: "Wedding", imageUrl: cardImageByCategory.wedding },
+  { label: "Friendship", imageUrl: cardImageByCategory.friendship }
+];
+
 export function HomeView({
   draft,
   hasProgress,
@@ -157,24 +165,42 @@ export function HomeView({
             No auto-sending. No surprise checkout. You approve every word before printing.
           </p>
         </div>
-        <div className="landingHeroVisual" aria-label="Example 5 by 7 card preview">
+        <div
+          aria-label="Greeting card designs morphing between occasion options"
+          className="landingHeroVisual"
+          role="img"
+        >
           <div className="landingHeroStage">
-            <img
-              alt=""
-              aria-hidden="true"
-              className="landingHeroPeek"
-              decoding="async"
-              loading="lazy"
-              src={cardImageByCategory.birthday}
-            />
-            <img
-              alt="Premium folded greeting card and envelope"
-              className="landingHeroCard landingHeroProductImage"
-              decoding="async"
-              src="/generated/landing-hero-product.webp"
-            />
+            <div className="heroStack" aria-hidden="true">
+              {heroMorphCards.slice(1, 4).map((card, index) => (
+                <img
+                  alt=""
+                  className={`heroStackCard heroStackCard-${index + 1}`}
+                  decoding="async"
+                  key={card.label}
+                  loading="lazy"
+                  src={card.imageUrl}
+                />
+              ))}
+            </div>
+            <div className="heroMorphCard" aria-hidden="true">
+              {heroMorphCards.map((card) => (
+                <img
+                  alt=""
+                  className="heroMorphImage"
+                  decoding="async"
+                  key={card.label}
+                  src={card.imageUrl}
+                />
+              ))}
+            </div>
+            <div className="heroMorphRail" aria-hidden="true">
+              {heroMorphCards.map((card) => (
+                <span key={card.label}>{card.label}</span>
+              ))}
+            </div>
           </div>
-          <span className="landingHeroCaption">5 × 7 folded card · print-ready at 300 DPI</span>
+          <span className="landingHeroCaption">5 × 7 fronts morph between real occasion directions</span>
         </div>
       </section>
 

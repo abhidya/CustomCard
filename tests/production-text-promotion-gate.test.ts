@@ -33,7 +33,14 @@ function writeBaseEvidence(root: string, options: { ready: boolean }) {
         reachable: true,
         activeModel: textModel,
         smallPlanner: !options.ready,
-        productionSuitable: options.ready
+        productionSuitable: options.ready,
+        localGpuResidency: {
+          required: true,
+          ok: true,
+          status: "gpu-backed",
+          pids: [1234],
+          nvidiaProcessIds: [1234]
+        }
       }
     ],
     blockers: options.ready ? [] : [{ name: "configured production planner endpoint is production-suitable" }]
@@ -45,6 +52,13 @@ function writeBaseEvidence(root: string, options: { ready: boolean }) {
     runAllowed: options.ready,
     reachable: true,
     baseUrl: options.ready ? "http://127.0.0.1:5003/v1" : "http://127.0.0.1:5001/v1",
+    localGpuResidency: {
+      required: true,
+      ok: true,
+      status: "gpu-backed",
+      pids: [1234],
+      nvidiaProcessIds: [1234]
+    },
     activeModel: textModel,
     classification: {
       classification: options.ready ? "production-suitable" : "smoke-only",

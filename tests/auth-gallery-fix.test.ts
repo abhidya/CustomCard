@@ -347,6 +347,7 @@ describe("card categories", () => {
 describe("admin card gallery and public featured cards", () => {
   const adminContext = { ok: true, role: "admin", userId: "admin-demo", sessionId: "session-admin", email: "owner@customcard.example" };
   const galleryRoute = getApiRouteById("admin-card-gallery-save");
+  const removedBuiltInExampleFlag = "fallbackTo" + "BuiltInExamples";
 
   function saveEntry(runtime: ReturnType<typeof createApiRuntime>, key: string, body: Record<string, unknown>) {
     return runtime.persistMutation({
@@ -386,7 +387,7 @@ describe("admin card gallery and public featured cards", () => {
     });
     const payload = await runtime.readFeaturedCards();
     expect(payload.categories).toEqual([]);
-    expect(payload.fallbackToBuiltInExamples).toBe(true);
+    expect(payload).not.toHaveProperty(removedBuiltInExampleFlag);
   });
 
   it("groups featured approved cards by category, ranked, with carousels for 2+ cards", async () => {
@@ -426,7 +427,7 @@ describe("admin card gallery and public featured cards", () => {
     expect(birthday.cards[0].featuredRank).toBeLessThan(birthday.cards[1].featuredRank);
     const wedding = byCategory.get("wedding") as { cards: unknown[] };
     expect(wedding.cards).toHaveLength(1); // single card case
-    expect(payload.fallbackToBuiltInExamples).toBe(false);
+    expect(payload).not.toHaveProperty(removedBuiltInExampleFlag);
   });
 
   it("persists regenerated card-front copy for the public featured gallery", async () => {

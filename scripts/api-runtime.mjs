@@ -2262,7 +2262,6 @@ function buildFeaturedCardsPayload(entries, runtimeMode) {
     service: "customcard-api",
     status: "ready",
     categories,
-    fallbackToBuiltInExamples: categories.length === 0,
     rawContentStored: false,
     repository: {
       table: "card_gallery_entries",
@@ -2315,8 +2314,8 @@ function buildCardGalleryEntryRecord({ authContext, bodyText }) {
     renderPacketId,
     sourceDraftId,
     category,
-    title: safeText(body.title, "Featured card").slice(0, 80),
-    publicCaption: safeText(body.publicCaption ?? body.caption, "Made with CustomCard").slice(0, 160),
+    title: safeText(body.title, "").slice(0, 80),
+    publicCaption: safeText(body.publicCaption ?? body.caption, "").slice(0, 160),
     featured: safeBoolean(body.featured),
     featuredRank: safeInteger(body.featuredRank, 100, 0, 10_000),
     publicApproved: safeBoolean(body.publicApproved),

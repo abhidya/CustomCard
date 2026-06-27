@@ -6,6 +6,7 @@ import {
   isSmallPlanner,
   productionTextPlannerPolicy
 } from "./production-text-planner-policy.mjs";
+import { inspectLocalKoboldGpuResidency } from "./local-kobold-gpu-residency.mjs";
 
 const repoRoot = resolve(import.meta.dirname, "..");
 const evidenceRoot = resolve(repoRoot, "docs/evidence/generated-card-comparisons");
@@ -32,7 +33,7 @@ if (isMainModule()) {
   if (!result.advisory && !result.promotionReady) process.exitCode = 1;
 }
 
-export async function runDoctor(args = {}) {
+export async function runDoctor(args = {}, options = {}) {
   const advisory = Boolean(args.advisory);
   const outputRoot = resolve(String(args["output-root"] || defaultOutputRoot));
   const reportDir = resolve(String(args["output-dir"] || `${outputRoot}/production-text-readiness-${timestamp()}`));
@@ -64,7 +65,7 @@ export async function runDoctor(args = {}) {
   const aggregate = readJson(aggregatePath);
   const aggregateSummary = summarizeAggregate(aggregate, aggregatePath);
   const modelInventory = summarizeModelInventory(modelRoot);
-  const plannerEndpoints = await Promise.all(plannerUrls.map((url) => probePlanner(url, timeoutMs, plannerRuntimeBudget)));
+  const plannerEndpoints = await Promise.all(plannerUrls.map((url) => probePlanner(url, timeoutMs, plannerRuntimeBudget, options)));
   const activePlannerEndpoints = selectActivePlannerEndpoints(plannerEndpoints, configuredPlannerUrls);
   const comfy = await probeComfy(comfyUrl, timeoutMs);
 
@@ -89,6 +90,11 @@ export async function runDoctor(args = {}) {
       activePlannerEndpoints
     }),
     check("configured production planner endpoint is production-suitable", activePlannerEndpoints.some((endpoint) => endpoint.reachable && endpoint.productionSuitable), true, {
+      configuredPlannerUrls,
+      discoveryMode: configuredPlannerUrls.length === 0,
+      activePlannerEndpoints
+    }),
+    check("configured local planner runtime is GPU-backed", localPlannerGpuOk(activePlannerEndpoints), true, {
       configuredPlannerUrls,
       discoveryMode: configuredPlannerUrls.length === 0,
       activePlannerEndpoints
@@ -203,7 +209,7 @@ function collectModelFiles(root) {
   return results.sort((a, b) => a.path.localeCompare(b.path));
 }
 
-async function probePlanner(baseUrl, timeoutMs, runtimeBudget = {}) {
+async function probePlanner(baseUrl, timeoutMs, runtimeBudget = {}, options = {}) {
   const modelsUrl = `${baseUrl.replace(/\/$/, "")}/models`;
   try {
     const response = await fetchWithTimeout(modelsUrl, timeoutMs);
@@ -216,11 +222,13 @@ async function probePlanner(baseUrl, timeoutMs, runtimeBudget = {}) {
       maxOutputTokens: runtimeBudget.maxOutputTokens,
       requireRuntimeBudget: true
     });
+    const localGpuResidency = inspectLocalKoboldGpuResidency(baseUrl, { probe: options.gpuResidencyProbe });
     return {
       baseUrl,
       reachable: true,
       activeModel,
       models,
+      localGpuResidency,
       reportedContextTokens: plannerClass.reportedContextTokens,
       maxOutputTokens: plannerClass.maxOutputTokens,
       smallPlanner: plannerClass.smallPlanner,
@@ -245,6 +253,14 @@ async function probePlanner(baseUrl, timeoutMs, runtimeBudget = {}) {
       error: errorMessage(error)
     };
   }
+}
+
+function localPlannerGpuOk(activePlannerEndpoints) {
+  const reachableLocal = activePlannerEndpoints.filter((endpoint) =>
+    endpoint.reachable && endpoint.localGpuResidency?.required
+  );
+  if (!reachableLocal.length) return true;
+  return reachableLocal.some((endpoint) => endpoint.localGpuResidency?.ok);
 }
 
 async function probeComfy(comfyUrl, timeoutMs) {
@@ -295,6 +311,9 @@ function buildNextSteps({ blockers, modelInventory, plannerEndpoints, comfy, agg
   if (blockerNames.has("configured production planner is not a small smoke model")) {
     steps.push("Switch the production planner URL away from Qwen3-4B/8B and other small smoke models; keep -AllowSmallPlanner only for exploratory failure evidence, not promotion.");
   }
+  if (blockerNames.has("configured local planner runtime is GPU-backed")) {
+    steps.push("Restart the local KoboldCPP planner through tools/start-local-card-planner.ps1 with -GpuId and -GpuLayers so the planner PID appears in nvidia-smi.");
+  }
   if (modelInventory.missingMidTierPlanner) {
     steps.push(modelInventory.recommendedNextPull);
   }
@@ -329,10 +348,13 @@ function buildMarkdown(result) {
   lines.push("");
   lines.push("## Planner Endpoints");
   lines.push("");
-  lines.push("| Endpoint | Reachable | Active model | Context | Output cap | Production suitable |");
-  lines.push("| --- | --- | --- | --- | --- | --- |");
+  lines.push("| Endpoint | Reachable | Active model | Context | Output cap | GPU | Production suitable |");
+  lines.push("| --- | --- | --- | --- | --- | --- | --- |");
   for (const endpoint of result.plannerEndpoints) {
-    lines.push(`| ${markdownCell(endpoint.baseUrl)} | ${endpoint.reachable ? "yes" : "no"} | ${markdownCell(endpoint.activeModel || endpoint.error || "n/a")} | ${endpoint.reportedContextTokens ?? "n/a"} | ${endpoint.maxOutputTokens ?? "n/a"} | ${endpoint.productionSuitable ? "yes" : "no"} |`);
+    const gpu = endpoint.localGpuResidency?.required
+      ? endpoint.localGpuResidency.ok ? "yes" : "no"
+      : "n/a";
+    lines.push(`| ${markdownCell(endpoint.baseUrl)} | ${endpoint.reachable ? "yes" : "no"} | ${markdownCell(endpoint.activeModel || endpoint.error || "n/a")} | ${endpoint.reportedContextTokens ?? "n/a"} | ${endpoint.maxOutputTokens ?? "n/a"} | ${gpu} | ${endpoint.productionSuitable ? "yes" : "no"} |`);
   }
   lines.push("");
   lines.push("## Aggregate Summary");

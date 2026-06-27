@@ -64,6 +64,10 @@ export function runProductionTextPromotionGate(args = {}) {
       maxOutputTokens: latestPlannerPreflight?.maxOutputTokens,
       blockers: latestPlannerPreflight?.blockers || []
     }),
+    requirement("local planner GPU residency is proven", !latestPlannerPreflight?.localGpuResidency?.required || latestPlannerPreflight.localGpuResidency.ok, {
+      plannerPreflight: latestPlannerPreflight?.path || "",
+      localGpuResidency: latestPlannerPreflight?.localGpuResidency || null
+    }),
     requirement("planner preflight matches benchmark runtime", !plannerEvidenceAlignment.checked || plannerEvidenceAlignment.ok, {
       preflight: plannerEvidenceAlignment.preflight || {},
       benchmark: plannerEvidenceAlignment.benchmark || {},
@@ -195,7 +199,10 @@ function buildNextSteps(requirements, indexedNextSteps) {
     steps.push("Refresh live ComfyUI preflight after the current readiness probe, with CustomCardTextComposer loaded.");
   }
   if (failed.has("planner preflight is production-ready")) {
-    steps.push("Run production-text planner preflight with a production-suitable model, 8192+ context, and the full output budget.");
+    steps.push("Run production-text planner preflight with a production-suitable GPU-backed model, 8192+ context, and the full output budget.");
+  }
+  if (failed.has("local planner GPU residency is proven")) {
+    steps.push("Restart local KoboldCPP through tools/start-local-card-planner.ps1 with -GpuId and -GpuLayers so the planner PID appears in nvidia-smi, then refresh planner preflight/readiness.");
   }
   if (failed.has("planner preflight matches benchmark runtime")) {
     steps.push("Refresh planner preflight against the exact endpoint/model used by the latest benchmark before treating planner evidence as current.");

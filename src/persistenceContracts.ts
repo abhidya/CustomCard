@@ -315,6 +315,7 @@ export const apiPersistenceRouteContracts: ApiRoutePersistenceContract[] = [
   routePersistence("data-requests", "mutation", "customer", ["auth_sessions", "idempotency_keys", "data_requests", "consent_records", "audit_log"], true, true, false),
   routePersistence("admin-card-gallery", "read-only", "admin", ["auth_sessions", "card_gallery_entries", "draft_states", "audit_log"], true, false, false),
   routePersistence("admin-card-gallery-save", "mutation", "admin", ["auth_sessions", "idempotency_keys", "card_gallery_entries", "audit_log"], true, true, false),
+  routePersistence("admin-card-gallery-regenerate", "mutation", "admin", ["auth_sessions", "idempotency_keys", "provider_call_events", "audit_log"], true, true, true),
   routePersistence("public-featured-cards", "none", "public", ["card_gallery_entries"], false, false, false),
   routePersistence("walgreens-checkout-status", "none", "customer", [], false, false, false),
   routePersistence("walgreens-checkout-upload", "none", "customer", [], false, false, false),

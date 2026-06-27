@@ -49,6 +49,7 @@ describe("api contracts", () => {
         "admin-model-benchmark-run",
         "admin-model-benchmark-grade",
         "admin-local-ai-loop-run",
+        "admin-card-gallery-regenerate",
         "admin-demo-reset",
         "import-preview",
         "calendar-connection-start",
@@ -94,6 +95,7 @@ describe("api contracts", () => {
     const adminProviderJobStatus = apiRouteContracts.find((route) => route.id === "admin-provider-job-status");
     const providerJobComplete = apiRouteContracts.find((route) => route.id === "provider-job-complete");
     const adminLocalAiLoopRun = apiRouteContracts.find((route) => route.id === "admin-local-ai-loop-run");
+    const adminCardGalleryRegenerate = apiRouteContracts.find((route) => route.id === "admin-card-gallery-regenerate");
 
     expect(mutations.length).toBeGreaterThanOrEqual(6);
     expect(nonCheckoutMutations.every((route) => route.idempotencyKeyRequired)).toBe(true);
@@ -129,6 +131,24 @@ describe("api contracts", () => {
     expect(adminLocalAiLoopRun?.requestSchema).toEqual(expect.arrayContaining(["X-Idempotency-Key", "mode", "stories"]));
     expect(adminLocalAiLoopRun?.responseSchema).toEqual(expect.arrayContaining(["jobs", "queueResult", "workerResult", "humanReview"]));
     expect(persistedTablesForRouteId("admin-local-ai-loop-run")).toEqual(expect.arrayContaining(["users", "api_jobs", "audit_log"]));
+    expect(adminCardGalleryRegenerate).toMatchObject({
+      method: "POST",
+      path: "/api/admin/card-gallery/regenerate",
+      audience: "admin",
+      auth: "admin-session",
+      idempotencyKeyRequired: true,
+      externalNetworkCalls: true,
+      realOrdersEnabled: false
+    });
+    expect(adminCardGalleryRegenerate?.requestSchema).toEqual(
+      expect.arrayContaining(["X-Idempotency-Key", "action", "category", "title", "publicCaption", "cardCopy"])
+    );
+    expect(adminCardGalleryRegenerate?.responseSchema).toEqual(
+      expect.arrayContaining(["cardCopy", "galleryCopy", "provider_call_events"])
+    );
+    expect(persistedTablesForRouteId("admin-card-gallery-regenerate")).toEqual(
+      expect.arrayContaining(["idempotency_keys", "provider_call_events", "audit_log"])
+    );
     expect(renderPackets?.responseSchema).toEqual(expect.arrayContaining(["artifactManifest", "signedArtifactUrls"]));
     expect(renderPackets?.backedBy).toContain("buildArtifactHandoffContract");
     expect(importPreview?.requestSchema).toEqual(

@@ -89,6 +89,11 @@ export const headlineLimit = 90;
 export const bodyLimit = 360;
 export const captionLimit = 120;
 export const sensitiveCategories = new Set(["sympathy", "get-well"]);
+export const emptyCardCopy: CardCopyState = {
+  headline: "",
+  body: "",
+  artDirection: ""
+};
 
 export function stageForEntry(entry: GalleryEntry): GalleryStage {
   if (entry.featured && entry.publicApproved) return "featured";
@@ -108,8 +113,8 @@ export function editorFromCandidate(candidate: GalleryCandidate | undefined): Ga
     entryId,
     sourceDraftId: candidate?.sourceDraftId,
     category,
-    title: `${labelFor(category)} card`,
-    publicCaption: "Made with CustomCard",
+    title: "",
+    publicCaption: "",
     featuredRank: "100",
     featured: false,
     publicApproved: false,
@@ -120,9 +125,9 @@ export function editorFromCandidate(candidate: GalleryCandidate | undefined): Ga
 
 export function editorFromEntry(entry: GalleryEntry): GalleryEditorState {
   const fallbackCopy = {
-    headline: entry.title || `${labelFor(entry.category)} card`,
-    body: entry.publicCaption || captionForCategory(entry.category),
-    artDirection: "Curated public gallery front preview"
+    headline: entry.title || "",
+    body: entry.publicCaption || "",
+    artDirection: ""
   };
   return {
     entryId: entry.entryId,
@@ -144,19 +149,30 @@ export function buildCandidateEntryId(candidate: GalleryCandidate | undefined): 
 }
 
 export function generateCandidateFrontCopy(candidate: GalleryCandidate | undefined): CardCopyState {
-  const draftInput = candidate?.draftInput ?? {};
+  const draftInput = candidate?.draftInput;
+  if (!draftInput) return { ...emptyCardCopy };
+  const sender = candidateDraftText(draftInput.sender);
+  const recipient = candidateDraftText(draftInput.recipient);
+  const relationship = candidateDraftText(draftInput.relationship);
+  const occasion = candidateDraftText(draftInput.occasion);
+  const tone = candidateDraftText(draftInput.tone);
+  const style = candidateDraftText(draftInput.style);
+  const language = candidateDraftText(draftInput.language);
+  if (!sender || !recipient || !relationship || !occasion || !tone || !style || !language) {
+    return { ...emptyCardCopy };
+  }
   try {
     const draft = generateCardDraft(
       {
-        recipient: "Someone special",
-        sender: "A CustomCard customer",
-        relationship: String(draftInput.relationship ?? "Friends"),
-        occasion: String(draftInput.occasion ?? "card"),
-        tone: (draftInput.tone ?? "warm") as CardDraftInput["tone"],
-        style: (draftInput.style ?? "botanical") as CardDraftInput["style"],
-        language: (draftInput.language ?? "English") as CardDraftInput["language"],
-        personalNote: "",
-        useMemory: false
+        recipient,
+        sender,
+        relationship,
+        occasion,
+        tone: tone as CardDraftInput["tone"],
+        style: style as CardDraftInput["style"],
+        language: language as CardDraftInput["language"],
+        personalNote: candidateDraftText(draftInput.personalNote),
+        useMemory: draftInput.useMemory === true
       },
       []
     );
@@ -169,17 +185,20 @@ export function generateCandidateFrontCopy(candidate: GalleryCandidate | undefin
       };
     }
   } catch {
-    // Use the public-safe fallback below when old draft inputs are malformed.
+    return { ...emptyCardCopy };
   }
-  return suggestedCardCopy(candidate?.derivedCategory ?? "custom", `${labelFor(candidate?.derivedCategory ?? "custom")} card`, 0);
+  return { ...emptyCardCopy };
 }
 
 export function buildFrontPreviewSvg(copy: CardCopyState, category: string): string {
+  const headline = copy.headline.trim();
+  const body = copy.body.trim();
+  if (!headline || !body) return "";
   const panel: CardPanel = {
     id: "front",
     label: "Front",
-    headline: copy.headline.trim() || `${labelFor(category)} card`,
-    body: copy.body.trim() || captionForCategory(category),
+    headline,
+    body,
     artDirection: copy.artDirection.trim() || "Public gallery-safe card preview",
     width: 1500,
     height: 2100,
@@ -225,47 +244,13 @@ export function buildPublishIssues(
   return issues;
 }
 
-export function suggestedCardCopy(category: string, title: string, iteration: number): CardCopyState {
-  const label = labelFor(category);
-  const variants: CardCopyState[] = [
-    {
-      headline: `${label} card, made personal`,
-      body: `A polished ${label.toLowerCase()} card with warm copy, reviewed details, and a print-ready front panel.`,
-      artDirection: "Public gallery-safe 5x7 front with calm spacing and no private notes"
-    },
-    {
-      headline: `For a real ${label.toLowerCase()} moment`,
-      body: "A CustomCard example built from reviewed occasion details and prepared for a careful print proof.",
-      artDirection: "Clean public sample card front with soft accents and generous text-safe margins"
-    },
-    {
-      headline: title.trim() || `${label} card`,
-      body: captionForCategory(category),
-      artDirection: "Curated landing gallery preview with public-safe copy and restrained ornament"
-    }
-  ];
-  return variants[iteration % variants.length];
-}
-
-export function captionForCategory(category: string): string {
-  const captions: Record<string, string> = {
-    birthday: "A personal birthday card prepared for review and print.",
-    graduation: "A graduation card with public-safe copy and a clean proof.",
-    wedding: "An elegant card example for a wedding or engagement moment.",
-    anniversary: "A relationship card shaped around a remembered date.",
-    "thank-you": "A thoughtful thank-you card ready for a final proof check.",
-    sympathy: "A quiet sympathy card reviewed for tone and privacy.",
-    "get-well": "A supportive get-well card with careful, human-reviewed copy.",
-    "new-baby": "A gentle new-baby card example for a shared family moment.",
-    holiday: "A seasonal card example with editable copy and print-safe artwork.",
-    custom: "A public-safe card example curated from a CustomCard draft."
-  };
-  return captions[category] ?? captions.custom;
-}
-
 export function labelFor(category: string): string {
   return category
     .split("-")
     .map((part, index) => (index === 0 ? part.charAt(0).toUpperCase() + part.slice(1) : part))
     .join(" ");
+}
+
+function candidateDraftText(value: unknown): string {
+  return typeof value === "string" ? value.replace(/\s+/g, " ").trim() : "";
 }
