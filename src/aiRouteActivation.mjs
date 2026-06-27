@@ -78,7 +78,7 @@ export function mergeAiFlowAdminConfigs(...groups) {
     }
   }
   if (byFlowId.size === 0) return [];
-  return normalizeAiFlowAdminConfigs(Array.from(byFlowId.values()));
+  return Array.from(byFlowId.values());
 }
 
 export function serverScopedAiFlowConfig(env = process.env) {
@@ -130,7 +130,17 @@ function normalizedAiFlowAdminConfigs(input) {
 }
 
 function normalizeOptionalAiFlowAdminConfigs(input, env) {
-  return Array.isArray(input) && input.length > 0 ? normalizeAiFlowAdminConfigs(input, env) : [];
+  if (!Array.isArray(input) || input.length === 0) return [];
+
+  const explicitFlowIds = new Set(
+    input
+      .filter((config) => config && typeof config === "object" && typeof config.flowId === "string")
+      .map((config) => config.flowId)
+  );
+
+  if (explicitFlowIds.size === 0) return [];
+
+  return normalizeAiFlowAdminConfigs(input, env).filter((config) => explicitFlowIds.has(config.flowId));
 }
 
 function trustedRequestScopedAiFlowConfig(body, env, requestContext = {}) {

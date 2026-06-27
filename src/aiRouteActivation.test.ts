@@ -129,6 +129,7 @@ describe("AI route activation", () => {
         {
           flowId: "card-image",
           primaryAdapterId: "deepai-text2img-image",
+          promptInstructions: "Keep the skyline dreamy and leave generous text-safe space.",
           liveProviderCallsEnabled: true
         }
       ],
@@ -143,7 +144,10 @@ describe("AI route activation", () => {
     });
     expect(activations.find((activation) => activation.flowId === "card-image")).toMatchObject({
       selectedAdapterId: "deepai-text2img-image",
-      readyForLiveCalls: true
+      readyForLiveCalls: true,
+      flow: {
+        promptInstructions: "Keep the skyline dreamy and leave generous text-safe space."
+      }
     });
   });
 
