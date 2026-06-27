@@ -221,6 +221,11 @@ export function pipelineQualityRuns(candidates: {
   text?: BenchmarkCandidate[];
 }): PipelineQualityRun[];
 
+export function runModelBenchmarkLoopFromArgs(
+  args?: Record<string, unknown>,
+  options?: { log?: boolean }
+): Promise<any>;
+
 export function buildPhaseReadme(summary: BenchmarkPhaseReadmeSummary): string;
 
 export function parseBenchmarkRequestBody(body: unknown): unknown;
