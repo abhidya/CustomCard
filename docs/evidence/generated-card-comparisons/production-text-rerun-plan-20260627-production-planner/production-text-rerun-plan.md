@@ -1,6 +1,6 @@
 # Production Text Rerun Plan
 
-Created: 2026-06-27T01:08:36.375Z
+Created: 2026-06-27T01:23:10.727Z
 Status: rerun-required
 Gate: docs/evidence/generated-card-comparisons/production-text-promotion-gate-20260627-production-planner/production-text-promotion-gate.json
 Evidence index: docs/evidence/generated-card-comparisons/production-text-evidence-index-20260627-production-planner/production-text-evidence-index.json
@@ -19,6 +19,7 @@ Evidence index: docs/evidence/generated-card-comparisons/production-text-evidenc
 - Minimum planner class: 14B+ dense/open-weight planner or stronger hosted model
 - Minimum context tokens: 8192
 - Recommended output tokens: 3200
+- Recommended local request timeout: 1200000ms
 - Recommended models: koboldcpp/gemma-4-31B-it-Q4_K_M, koboldcpp/Magistral-Small-2509-Q4_K_M, koboldcpp/Qwen3-14B-Q4_K_M, hosted/self-hosted GPT, Claude, Gemini, DeepSeek, Mistral, or Qwen 14B+ endpoint
 
 Do not use for promotion:
@@ -71,7 +72,7 @@ Confirms Comfy, the custom text node, aggregate state, model inventory, and the 
 ### 5. Run full production-text matrix
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5003/v1 -LocalLlmModel koboldcpp/gemma-4-31B-it-Q4_K_M -OutputDir docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 3200 -PlannerContextSize 8192
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5003/v1 -LocalLlmModel koboldcpp/gemma-4-31B-it-Q4_K_M -OutputDir docs/evidence/generated-card-comparisons/production-text-workflow-20260627-production-planner -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 3200 -PlannerContextSize 8192 -PlannerRequestTimeoutMs 1200000
 ```
 
 Runs aquarium/koi/dog customer requests through the production Comfy text workflow with LLM-owned theme/copy/layout.
