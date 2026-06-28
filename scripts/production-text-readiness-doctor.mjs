@@ -6,19 +6,21 @@ import {
   isSmallPlanner,
   productionTextPlannerPolicy
 } from "./production-text-planner-policy.mjs";
+import {
+  productionTextRequiredNodeClass,
+  relativePath as relativeSetupPath,
+  resolveProductionTextSetup
+} from "./comfy-production-text-setup.mjs";
 import { inspectLocalKoboldGpuResidency } from "./local-kobold-gpu-residency.mjs";
 
 const repoRoot = resolve(import.meta.dirname, "..");
 const evidenceRoot = resolve(repoRoot, "docs/evidence/generated-card-comparisons");
 const defaultOutputRoot = evidenceRoot;
-const defaultWorkflowPath = resolve(repoRoot, "comfyui-workflows/customcard-production-text-overlay.json");
-const defaultNodeSource = resolve(repoRoot, "comfyui-custom-nodes/CustomCardTextComposer");
 const defaultAggregatePath = resolve(
   evidenceRoot,
   "benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json"
 );
 const defaultModelRoot = process.env.CUSTOMCARD_LOCAL_MODEL_ROOT || "D:\\models";
-const defaultComfyUrl = process.env.CUSTOMCARD_COMFYUI_URL || process.env.COMFYUI_URL || "http://127.0.0.1:8188";
 const commonPlannerUrls = ["http://127.0.0.1:5001/v1", "http://127.0.0.1:5003/v1"];
 
 if (isMainModule()) {
@@ -36,13 +38,12 @@ if (isMainModule()) {
 export async function runDoctor(args = {}, options = {}) {
   const advisory = Boolean(args.advisory);
   const fetchImpl = options.fetchImpl || globalThis.fetch;
+  const setup = resolveProductionTextSetup({ args });
   const outputRoot = resolve(String(args["output-root"] || defaultOutputRoot));
   const reportDir = resolve(String(args["output-dir"] || `${outputRoot}/production-text-readiness-${timestamp()}`));
-  const workflowPath = resolve(String(args["workflow-path"] || defaultWorkflowPath));
-  const nodeSource = resolve(String(args["node-source"] || defaultNodeSource));
+  const { workflowPath, nodeSource, comfyUrl } = setup;
   const aggregatePath = resolve(String(args.aggregate || defaultAggregatePath));
   const modelRoot = resolve(String(args["model-root"] || defaultModelRoot));
-  const comfyUrl = normalizeRootUrl(String(args["comfy-url"] || defaultComfyUrl));
   const configuredPlannerUrls = unique([
     args["local-llm-base-url"],
     process.env.CUSTOMCARD_LOCAL_LLM_BASE_URL,
@@ -82,8 +83,8 @@ export async function runDoctor(args = {}, options = {}) {
   const comfy = await probeComfy(comfyUrl, timeoutMs, { fetchImpl });
 
   const checks = [
-    check("production workflow file exists", workflowExists, true, { workflowPath: relativePath(workflowPath) }),
-    check("CustomCardTextComposer source exists", nodeSourceExists, true, { nodeSource: relativePath(nodeSource) }),
+    check("production workflow file exists", workflowExists, true, { workflowPath: relativeSetupPath(workflowPath, repoRoot) }),
+    check("CustomCardTextComposer source exists", nodeSourceExists, true, { nodeSource: relativeSetupPath(nodeSource, repoRoot) }),
     check("live ComfyUI reachable", comfy.reachable, true, { comfyUrl, error: comfy.error }),
     check("live ComfyUI exposes CustomCardTextComposer", comfy.hasTextComposer, true, {
       comfyUrl,
@@ -126,8 +127,8 @@ export async function runDoctor(args = {}, options = {}) {
     advisory,
     promotionReady,
     aggregatePromotionReady: aggregateSummary.promotionReady,
-    workflowPath: relativePath(workflowPath),
-    nodeSource: relativePath(nodeSource),
+    workflowPath: relativeSetupPath(workflowPath, repoRoot),
+    nodeSource: relativeSetupPath(nodeSource, repoRoot),
     aggregatePath: relativePath(aggregatePath),
     modelRoot,
     comfy,
@@ -287,7 +288,7 @@ async function probeComfy(comfyUrl, timeoutMs, options = {}) {
     return {
       comfyUrl,
       reachable: true,
-      hasTextComposer: Boolean(objectInfo?.CustomCardTextComposer),
+      hasTextComposer: Boolean(objectInfo?.[productionTextRequiredNodeClass]),
       objectInfoKeyCount: Object.keys(objectInfo || {}).length
     };
   } catch (error) {
@@ -404,14 +405,6 @@ function normalizeOpenAiBaseUrl(value) {
   if (path.endsWith("/chat/completions")) path = path.slice(0, -"/chat/completions".length).replace(/\/+$/, "");
   if (!path.endsWith("/v1")) path = `${path}/v1`;
   parsed.pathname = path.replace(/\/{2,}/g, "/");
-  parsed.search = "";
-  parsed.hash = "";
-  return parsed.toString().replace(/\/$/, "");
-}
-
-function normalizeRootUrl(value) {
-  const parsed = new URL(String(value));
-  parsed.pathname = parsed.pathname.replace(/\/+$/, "");
   parsed.search = "";
   parsed.hash = "";
   return parsed.toString().replace(/\/$/, "");

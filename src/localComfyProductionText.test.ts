@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  productionTextNodeSourceRelativePath,
+  productionTextRequiredCompositorInputs,
+  productionTextRequiredNodeClass,
+  productionTextWorkflowId,
+  productionTextWorkflowRelativePath
+} from "../scripts/comfy-production-text-setup.mjs";
+import { describeLocalComfyWorkerReadiness } from "../scripts/local-comfy-worker.mjs";
+import {
   interpolateLocalComfyTemplate,
   localComfyTypographyVariables,
   localComfyWorkflowInputSummary,
@@ -102,6 +110,38 @@ describe("local Comfy production text contract", () => {
       text: "A Quiet Honor",
       width: 960,
       nested: ["prefix inside-left", 0.74]
+    });
+  });
+
+  it("describes resolved production text workflow setup for the local worker when configured", () => {
+    const readiness = describeLocalComfyWorkerReadiness({
+      env: {
+        CUSTOMCARD_ENV: "dev",
+        CUSTOMCARD_API_RUNTIME: "contract",
+        DATABASE_URL: "postgres://customcard.local/customcard",
+        QUEUE_URL: "redis://queue.customcard.local",
+        OBJECT_STORE_URL: "file:///tmp/customcard-objects",
+        OBJECT_STORE_SIGNING_SECRET: "test-object-store-signing-secret-32",
+        AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
+        CLERK_JWT_KEY: `-----BEGIN PUBLIC KEY-----
+test-clerk-jwt-key
+-----END PUBLIC KEY-----`,
+        CLERK_AUTHORIZED_PARTIES: "https://customcard.test",
+        CLERK_ISSUER: "https://clerk.customcard.test",
+        CLERK_AUDIENCE: "customcard-api",
+        CUSTOMCARD_COMFYUI_WORKFLOW_ID: productionTextWorkflowId,
+        CUSTOMCARD_COMFYUI_WORKFLOW_PATH: "D:/manny/Documents/CustomCard/comfyui-workflows/customcard-production-text-overlay.json"
+      }
+    });
+
+    expect(readiness.comfyUrl).toBe("http://127.0.0.1:8188");
+    expect(readiness.productionTextSetup).toMatchObject({
+      comfyUrl: "http://127.0.0.1:8188",
+      workflowId: productionTextWorkflowId,
+      workflowPathRelative: productionTextWorkflowRelativePath,
+      nodeSourceRelative: productionTextNodeSourceRelativePath,
+      requiredNodeClass: productionTextRequiredNodeClass,
+      requiredComposerInputs: productionTextRequiredCompositorInputs
     });
   });
 });

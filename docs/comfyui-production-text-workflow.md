@@ -19,6 +19,10 @@ repeatable print output.
 - `customcard-production-text-overlay.json` is the production candidate. It adds
   the repo-owned `CustomCardTextComposer` node after `VAEDecode` and before
   `SaveImage`.
+- `scripts/comfy-production-text-setup.mjs` is the shared setup facts module
+  for this workflow. Keep the workflow path, `CustomCardTextComposer` node
+  source, required class name, default Comfy URL, and setup instructions there
+  first so docs, doctors, and wrappers do not drift.
 - `local-production-text` is the benchmark phase for this candidate. With a
   configured local LLM, it runs fixed customer request fixtures through the real
   card-copy planner, then treats Comfy output as the final text-composited panel
@@ -287,7 +291,13 @@ Comfy template variables exposed by the local adapter include:
   - Comfy returns the final panel image with exact copy rendered.
 - `scripts/comfyui-production-text-preflight.mjs`
   - Offline/live preflight.
-  - Verifies workflow JSON, node source, and live `/object_info` when requested.
+  - Verifies the shared setup facts, workflow JSON, node source, and live
+    `/object_info` when requested.
+- `scripts/comfy-production-text-setup.mjs`
+  - Shared setup facts for the production-text workflow.
+  - Pins `comfyui-workflows/customcard-production-text-overlay.json`,
+    `comfyui-custom-nodes/CustomCardTextComposer`, required class
+    `CustomCardTextComposer`, default Comfy URL, and operator setup steps.
 - `scripts/production-text-readiness-doctor.mjs`
   - Advisory or blocking readiness check for promotion attempts.
   - Aggregates workflow/node availability, live Comfy status, latest aggregate

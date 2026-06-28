@@ -2,6 +2,12 @@ import { spawn } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import {
+  buildAiProviderSetupProfile,
+  hostedAiCardCopySetupKeys,
+  productionCardCopyModel,
+  productionCardCopyModelOverrideEnvKey
+} from "../src/aiProviderSetupProfile.mjs";
 
 const guardEnvName = "CUSTOMCARD_HOSTED_ENV_INVENTORY";
 const guardRequirement = "CUSTOMCARD_HOSTED_ENV_INVENTORY=enabled";
@@ -17,6 +23,7 @@ const requiredHostedEnvVars = Object.freeze([
   "CLERK_AUDIENCE",
   "IDEMPOTENCY_KEY_TTL_HOURS"
 ]);
+const aiSetupProfile = Object.freeze(buildAiProviderSetupProfile());
 
 export async function runHostedVercelEnvInventory({
   env = process.env,
@@ -62,7 +69,7 @@ export async function runHostedVercelEnvInventory({
 
   let entries;
   try {
-    entries = parseVercelEnvJson(command.stdout);
+    entries = parseVercelEnvInventoryPayload(command.stdout);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to parse vercel env ls JSON.";
     return buildReport({ target, entries: [], blockers: [message], now, command });
@@ -70,7 +77,10 @@ export async function runHostedVercelEnvInventory({
 
   const inventory = buildInventory(entries, target.vercelTarget);
   const missing = inventory.requiredKeys.filter((key) => !key.present).map((key) => key.name);
-  const inventoryBlockers = missing.map((name) => `${name} is missing from the Vercel ${target.vercelTarget} env inventory.`);
+  const inventoryBlockers = [
+    ...missing.map((name) => `${name} is missing from the Vercel ${target.vercelTarget} env inventory.`),
+    ...inventory.aiCardCopySetup.blockers
+  ];
 
   return buildReport({ target, entries, blockers: inventoryBlockers, now, command });
 }
@@ -102,6 +112,10 @@ export function resolveVercelEnvTarget(env = process.env) {
 }
 
 export function parseVercelEnvJson(stdout) {
+  return parseVercelEnvInventoryPayload(stdout).map(({ name, targets }) => ({ name, targets }));
+}
+
+function parseVercelEnvInventoryPayload(stdout) {
   const text = String(stdout ?? "").trim();
   if (!text) throw new Error("vercel env ls --format=json returned empty output.");
   let payload;
@@ -140,6 +154,15 @@ function buildReport({ target, entries, blockers, now, command }) {
           detail: inventory.customcardApiRuntimeConfigured && inventory.databaseUrlConfigured
             ? "Hosted runtime mode and DATABASE_URL env keys are present."
             : "Hosted runtime mode or DATABASE_URL env keys are missing."
+        },
+        {
+          id: "ai-card-copy-setup",
+          passed: inventory.aiCardCopySetup.ready,
+          detail: inventory.aiCardCopySetup.ready
+            ? inventory.aiCardCopySetup.productionModelOverridePresent
+              ? `Cloudflare card-copy setup is present, and ${productionCardCopyModelOverrideEnvKey} pins the production ${productionCardCopyModel} model.`
+              : `Cloudflare card-copy setup is present. ${productionCardCopyModelOverrideEnvKey} is not set, so hosted card-copy uses the shared production default ${productionCardCopyModel}.`
+            : inventory.aiCardCopySetup.blockers.join(" ")
         }
       ];
   const passed = checks.filter((check) => check.passed).length;
@@ -164,12 +187,15 @@ function buildReport({ target, entries, blockers, now, command }) {
     requiredKeys: inventory.requiredKeys,
     keyCount: inventory.keyCount,
     scopedKeyCount: inventory.scopedKeyCount,
+    aiCardCopySetup: inventory.aiCardCopySetup,
     envSync: {
       requiredKeysPresent: inventory.missingRequiredKeys.length === 0,
       customcardApiRuntimeConfigured: inventory.customcardApiRuntimeConfigured,
       databaseUrlConfigured: inventory.databaseUrlConfigured,
       clerkJwtVerifierConfigured: inventory.clerkJwtVerifierConfigured,
       idempotencyConfigured: inventory.idempotencyConfigured,
+      aiCardCopySetupConfigured: inventory.aiCardCopySetup.baseConfigured,
+      aiCardCopyProductionModelPinned: inventory.aiCardCopySetup.productionModelOverridePresent,
       environmentSynced: ready
     },
     checks,
@@ -195,10 +221,62 @@ function buildInventory(entries, vercelTarget) {
     missingRequiredKeys,
     keyCount: allNames.length,
     scopedKeyCount: scopedNames.size,
+    aiCardCopySetup: buildAiCardCopySetup(scopedNames),
     customcardApiRuntimeConfigured: scopedNames.has("CUSTOMCARD_API_RUNTIME"),
     databaseUrlConfigured: scopedNames.has("DATABASE_URL"),
     clerkJwtVerifierConfigured: ["CLERK_JWT_KEY", "CLERK_AUTHORIZED_PARTIES", "CLERK_ISSUER", "CLERK_AUDIENCE"].every((name) => scopedNames.has(name)),
     idempotencyConfigured: scopedNames.has("IDEMPOTENCY_KEY_TTL_HOURS")
+  };
+}
+
+function buildAiCardCopySetup(scopedNames) {
+  const tokenEnvKeys = aiSetupProfile.cardCopy.tokenEnvKeys.map((name) => ({
+    name,
+    present: scopedNames.has(name)
+  }));
+  const modelEnvKeys = aiSetupProfile.cardCopy.modelEnvKeys.map((name) => ({
+    name,
+    present: scopedNames.has(name)
+  }));
+  const tokenConfigured = tokenEnvKeys.some((entry) => entry.present);
+  const modelConfigured = modelEnvKeys.some((entry) => entry.present);
+  const productionModelOverridePresent = scopedNames.has(productionCardCopyModelOverrideEnvKey);
+  const blockers = [];
+
+  if (!scopedNames.has(aiSetupProfile.cardCopy.accountEnvKey)) {
+    blockers.push(`${aiSetupProfile.cardCopy.accountEnvKey} is missing from the Vercel card-copy env inventory.`);
+  }
+  if (!tokenConfigured) {
+    blockers.push(
+      `${aiSetupProfile.cardCopy.tokenEnvKeys.join(" or ")} is missing from the Vercel card-copy env inventory.`
+    );
+  }
+  return {
+    providerId: aiSetupProfile.cardCopy.providerId,
+    defaultModel: aiSetupProfile.cardCopy.defaultModel,
+    expectedSetupKeys: [...hostedAiCardCopySetupKeys],
+    expectedRequiredSetupKeys: [
+      aiSetupProfile.cardCopy.accountEnvKey,
+      ...aiSetupProfile.cardCopy.tokenEnvKeys
+    ],
+    accountEnvKey: {
+      name: aiSetupProfile.cardCopy.accountEnvKey,
+      present: scopedNames.has(aiSetupProfile.cardCopy.accountEnvKey)
+    },
+    tokenEnvKeys,
+    modelEnvKeys,
+    productionModelOverrideEnvKey: {
+      name: productionCardCopyModelOverrideEnvKey,
+      present: productionModelOverridePresent
+    },
+    productionModelOverridePresent,
+    baseConfigured:
+      scopedNames.has(aiSetupProfile.cardCopy.accountEnvKey) &&
+      tokenConfigured,
+    modelConfigured,
+    localProductionTextComfyRequiresHostedImageKeys: aiSetupProfile.localProductionTextComfy.requiresHostedImageKeys,
+    ready: blockers.length === 0,
+    blockers
   };
 }
 

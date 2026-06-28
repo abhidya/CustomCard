@@ -7,13 +7,14 @@ placeholders and model IDs.
 
 ## Environment
 
-Required shared configuration:
+Required hosted card-copy text configuration:
 
 ```bash
 CLOUDFLARE_ACCOUNT_ID=replace-me
 CLOUDFLARE_API_TOKEN=replace-me
+CUSTOMCARD_AI_CARD_COPY_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
+CUSTOMCARD_CLOUDFLARE_TEXT_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
 CLOUDFLARE_WORKERS_AI_TEXT_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
-CLOUDFLARE_WORKERS_AI_IMAGE_MODEL=@cf/bytedance/stable-diffusion-xl-lightning
 ```
 
 Optional split-token overrides:
@@ -26,6 +27,19 @@ CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN=replace-me
 The runtime uses `CLOUDFLARE_API_TOKEN` unless a lane-specific token is set. Use
 split tokens when Cloudflare issues separate Workers AI tokens for LLM and image
 generation.
+
+For the production-text local Comfy path, hosted Cloudflare image keys are not
+required. Keep the Cloudflare text/account setup for card copy, but only add
+`CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN` or
+`CLOUDFLARE_WORKERS_AI_IMAGE_MODEL` when you are explicitly validating the live
+Cloudflare image adapter instead of the local Comfy workflow.
+
+Optional live Cloudflare image lane configuration:
+
+```bash
+CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN=replace-me
+CLOUDFLARE_WORKERS_AI_IMAGE_MODEL=@cf/bytedance/stable-diffusion-xl-lightning
+```
 
 ## Recommended Models
 

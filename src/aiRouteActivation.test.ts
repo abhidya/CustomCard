@@ -30,7 +30,11 @@ describe("AI route activation", () => {
     expect(activation.model).toBe("@cf/qwen/qwen3-30b-a3b-fp8");
     expect(activation.flow.readyForLiveCalls).toBe(true);
     expect(activation.configuredEnvKeys).toEqual(
-      expect.arrayContaining(["CUSTOMCARD_AI_CARD_COPY_MODEL", "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"])
+      expect.arrayContaining([
+        "CUSTOMCARD_AI_CARD_COPY_MODEL",
+        "CLOUDFLARE_ACCOUNT_ID",
+        "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN"
+      ])
     );
   });
 
@@ -139,7 +143,7 @@ describe("AI route activation", () => {
     });
 
     expect(activations.find((activation) => activation.flowId === "card-copy")).toMatchObject({
-      selectedAdapterId: "cloudflare-workers-ai-chat",
+      selectedAdapterId: "huggingface-chat",
       readyForLiveCalls: false
     });
     expect(activations.find((activation) => activation.flowId === "card-image")).toMatchObject({
@@ -147,6 +151,42 @@ describe("AI route activation", () => {
       readyForLiveCalls: true,
       flow: {
         promptInstructions: "Keep the skyline dreamy and leave generous text-safe space."
+      }
+    });
+  });
+
+  it("preserves earlier same-flow adapter and model choices when a later source only toggles live calls", () => {
+    const activation = resolveAiRouteActivation("card-copy", {
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
+        OPENAI_API_KEY: "openai_token"
+      },
+      serviceAiFlowAdminConfig: [
+        {
+          flowId: "card-copy",
+          primaryAdapterId: "openai-responses-chat",
+          fallbackAdapterId: "huggingface-chat",
+          model: "gpt-4.1-mini",
+          promptInstructions: "Write a polished card in exactly four panels.",
+          monthlyBudgetCents: 222,
+          liveProviderCallsEnabled: true
+        }
+      ],
+      loadedAiFlowAdminConfig: {
+        configs: [{ flowId: "card-copy", liveProviderCallsEnabled: false }]
+      }
+    });
+
+    expect(activation).toMatchObject({
+      selectedAdapterId: "openai-responses-chat",
+      model: "gpt-4.1-mini",
+      readyForLiveCalls: false,
+      flow: {
+        fallbackAdapterId: "huggingface-chat",
+        promptInstructions: "Write a polished card in exactly four panels.",
+        monthlyBudgetCents: 222,
+        liveProviderCallsEnabled: false
       }
     });
   });

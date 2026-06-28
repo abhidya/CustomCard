@@ -72,9 +72,20 @@ export function resolveAiRouteActivations(input = {}) {
 export function mergeAiFlowAdminConfigs(...groups) {
   const byFlowId = new Map();
   for (const group of groups) {
-    for (const config of normalizedAiFlowAdminConfigs(group)) {
-      if (!config?.flowId) continue;
-      byFlowId.set(config.flowId, config);
+    for (const entry of normalizedMergeEntries(group)) {
+      if (!entry?.flowId || !entry?.config) continue;
+      const existing = byFlowId.get(entry.flowId);
+      if (!existing) {
+        byFlowId.set(entry.flowId, { ...entry.config });
+        continue;
+      }
+
+      const merged = { ...existing };
+      for (const key of entry.explicitKeys) {
+        if (key === "flowId") continue;
+        merged[key] = entry.config[key];
+      }
+      byFlowId.set(entry.flowId, merged);
     }
   }
   if (byFlowId.size === 0) return [];
@@ -130,22 +141,53 @@ function normalizedAiFlowAdminConfigs(input) {
 }
 
 function normalizeOptionalAiFlowAdminConfigs(input, env) {
-  if (!Array.isArray(input) || input.length === 0) return [];
+  const explicitConfigs = explicitAiFlowAdminConfigs(input);
+  if (explicitConfigs.length === 0) return [];
 
-  const explicitFlowIds = new Set(
-    input
-      .filter((config) => config && typeof config === "object" && typeof config.flowId === "string")
-      .map((config) => config.flowId)
+  const normalizedByFlowId = new Map(
+    normalizeAiFlowAdminConfigs(explicitConfigs.map(({ rawConfig }) => rawConfig), env).map((config) => [config.flowId, config])
   );
 
-  if (explicitFlowIds.size === 0) return [];
-
-  return normalizeAiFlowAdminConfigs(input, env).filter((config) => explicitFlowIds.has(config.flowId));
+  return explicitConfigs.flatMap(({ flowId, explicitKeys }) => {
+    const config = normalizedByFlowId.get(flowId);
+    return config ? [{ flowId, config, explicitKeys }] : [];
+  });
 }
 
 function trustedRequestScopedAiFlowConfig(body, env, requestContext = {}) {
   if (requestContext?.trustRequestAiFlowConfig !== true) return [];
   return normalizeOptionalAiFlowAdminConfigs(extractLoadedAiFlowAdminConfigs(body), env);
+}
+
+function normalizedMergeEntries(input) {
+  if (!Array.isArray(input)) return [];
+
+  return input.flatMap((entry) => {
+    if (!entry || typeof entry !== "object") return [];
+
+    if (entry.config && typeof entry.config === "object" && typeof entry.flowId === "string") {
+      return [{
+        flowId: entry.flowId,
+        config: entry.config,
+        explicitKeys: new Set(entry.explicitKeys ?? Object.keys(entry.config).filter((key) => key !== "flowId"))
+      }];
+    }
+
+    if (typeof entry.flowId !== "string") return [];
+    return [{
+      flowId: entry.flowId,
+      config: entry,
+      explicitKeys: new Set(Object.keys(entry).filter((key) => key !== "flowId"))
+    }];
+  });
+}
+
+function explicitAiFlowAdminConfigs(input) {
+  return normalizedAiFlowAdminConfigs(input).map((rawConfig) => ({
+    flowId: rawConfig.flowId,
+    rawConfig,
+    explicitKeys: Object.keys(rawConfig).filter((key) => key !== "flowId")
+  }));
 }
 
 function configuredEnvKeysForFlow(flow, env = {}) {

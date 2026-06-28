@@ -207,6 +207,7 @@ Real external ordering stays disabled with `REAL_ORDER_KILL_SWITCH=disabled` unt
   `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`,
   `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN`,
   `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`,
+  `CUSTOMCARD_AI_CARD_COPY_MODEL`, `CUSTOMCARD_CLOUDFLARE_TEXT_MODEL`,
   `CLOUDFLARE_WORKERS_AI_TEXT_MODEL`, `CLOUDFLARE_WORKERS_AI_IMAGE_MODEL`,
   `GOOGLE_GENERATIVE_AI_API_KEY`, `MISTRAL_API_KEY`, `COHERE_API_KEY`,
   `PERPLEXITY_API_KEY`, `XAI_API_KEY`, `TOGETHER_API_KEY`, `GROQ_API_KEY`,
@@ -219,12 +220,17 @@ Real external ordering stays disabled with `REAL_ORDER_KILL_SWITCH=disabled` unt
 Cloudflare Workers AI can use one shared `CLOUDFLARE_API_TOKEN` for both
 chat and image generation, or separate lane-specific tokens through
 `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN` and
-`CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`. The recommended low-cost defaults are
-`@cf/meta/llama-3.1-8b-instruct-fast` for JSON Mode card copy and prompt/chat
-work and `@cf/bytedance/stable-diffusion-xl-lightning` for image generation.
-Use `@cf/meta/llama-3.3-70b-instruct-fp8-fast` as the text quality fallback and
-`@cf/black-forest-labs/flux-1-schnell` as the higher-quality image fallback
-when budget allows.
+`CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`. Set
+`CUSTOMCARD_AI_CARD_COPY_MODEL=@cf/qwen/qwen3-30b-a3b-fp8` to pin the hosted
+production card-copy route, and mirror that same 30B model into
+`CUSTOMCARD_CLOUDFLARE_TEXT_MODEL` / `CLOUDFLARE_WORKERS_AI_TEXT_MODEL` when you
+want the generic Cloudflare text lane to match. Use
+`@cf/bytedance/stable-diffusion-xl-lightning` as the current Cloudflare image
+default, and keep `@cf/black-forest-labs/flux-1-schnell` as the higher-quality
+image fallback when prompt adherence matters more than the absolute lowest cost.
+The production-text local Comfy path does not require hosted Cloudflare image
+tokens or image model keys; those hosted image keys are only needed when you
+intend to validate the live Cloudflare image lane.
 - Notification providers: `RESEND_API_KEY`, `SENDGRID_API_KEY`,
   `POSTMARK_SERVER_TOKEN`, `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`,
   `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`,

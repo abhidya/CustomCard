@@ -1,6 +1,11 @@
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { loadLocalAiEnvFiles } from "./ai-card-generator.mjs";
+import {
+  describeProductionTextSetup,
+  isProductionTextWorkflowConfigured,
+  resolveProductionTextComfyUrl
+} from "./comfy-production-text-setup.mjs";
 import { createWorkerRuntime, describeWorkerReadiness } from "./worker-runtime.mjs";
 
 const localComfyRoutes = [{ id: "ai-card-generate", runtimeMode: "queue-backed" }];
@@ -12,7 +17,7 @@ export function resolveLocalComfyWorkerEnv(env = process.env) {
     resolved.CUSTOMCARD_AI_CARD_IMAGE_FALLBACK_ADAPTER_ID = "local-comfyui-api-image";
   }
   if (!resolved.CUSTOMCARD_COMFYUI_URL && !resolved.COMFYUI_URL) {
-    resolved.CUSTOMCARD_COMFYUI_URL = "http://127.0.0.1:8188";
+    resolved.CUSTOMCARD_COMFYUI_URL = resolveProductionTextComfyUrl({ env: resolved });
   }
   if (
     !resolved.CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID &&
@@ -45,13 +50,19 @@ export function createLocalComfyWorkerRuntime(options = {}) {
 
 export function describeLocalComfyWorkerReadiness({ env = process.env } = {}) {
   const resolvedEnv = resolveLocalComfyWorkerEnv(env);
+  const workflowId = resolvedEnv.CUSTOMCARD_COMFYUI_WORKFLOW_ID || resolvedEnv.COMFYUI_WORKFLOW_ID || null;
+  const workflowPath = resolvedEnv.CUSTOMCARD_COMFYUI_WORKFLOW_PATH || resolvedEnv.COMFYUI_WORKFLOW_PATH || null;
+  const productionTextSetup = isProductionTextWorkflowConfigured({ workflowId, workflowPath })
+    ? describeProductionTextSetup({ env: resolvedEnv })
+    : null;
   return {
     ...describeWorkerReadiness({ env: resolvedEnv, routes: localComfyRoutes }),
     routeScope: "ai-card-generate",
     imageAdapter: resolvedEnv.CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID,
     comfyUrl: resolvedEnv.CUSTOMCARD_COMFYUI_URL || resolvedEnv.COMFYUI_URL,
-    workflowId: resolvedEnv.CUSTOMCARD_COMFYUI_WORKFLOW_ID || resolvedEnv.COMFYUI_WORKFLOW_ID || null,
-    workflowPath: resolvedEnv.CUSTOMCARD_COMFYUI_WORKFLOW_PATH || resolvedEnv.COMFYUI_WORKFLOW_PATH || null
+    workflowId,
+    workflowPath,
+    productionTextSetup
   };
 }
 

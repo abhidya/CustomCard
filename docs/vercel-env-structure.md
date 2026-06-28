@@ -90,6 +90,10 @@ production keys are:
 
 ### AI Providers
 
+Hosted card-copy uses Cloudflare text/account keys. The local production-text
+Comfy path does not require Cloudflare image keys unless you are explicitly
+proving the live Cloudflare image lane.
+
 - `CLOUDFLARE_ACCOUNT_ID`
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`
@@ -177,7 +181,8 @@ resource.
 - Use `vercel env ls --format=json` for scoped key inventory.
 - Use `CUSTOMCARD_HOSTED_ENV_INVENTORY=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:env:inventory`
   to produce a redacted key-coverage report. The report must not include env
-  values, only key names and target scopes.
+  values, only key names and target scopes. Treat these inventory artifacts as
+  setup proof, not a place to copy or store secrets.
 - Use `CUSTOMCARD_HOSTED_ENV_REPAIR=enabled npm run hosted:env:repair` for a
   redacted repair plan. To apply missing production keys, also set
   `CUSTOMCARD_HOSTED_ENV_REPAIR_APPLY=enabled`,
