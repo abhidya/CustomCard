@@ -2,9 +2,9 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import {
-  normalizeAiFlowAdminConfigs,
-  resolveAiFlowConfig
-} from "../src/aiFlowConfigData.mjs";
+  createAiRouteActivationContext,
+  resolveAiRouteActivation
+} from "../src/aiRouteActivation.mjs";
 import { createAiCardGenerationService, loadLocalAiEnvFiles } from "./ai-card-generator.mjs";
 import { resolveLocalComfyWorkerEnv } from "./local-comfy-worker.mjs";
 import {
@@ -49,7 +49,7 @@ export function createProviderHttpWorkerRuntime({
         routeScope,
         copyAdapter: aiFlowReadiness.cardCopy.adapterId,
         copyModel: aiFlowReadiness.cardCopy.model,
-        imageAdapter: resolvedEnv.CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID,
+        imageAdapter: aiFlowReadiness.cardImage.adapterId,
         imageModel: aiFlowReadiness.cardImage.model,
         comfyUrl: resolvedEnv.CUSTOMCARD_COMFYUI_URL || resolvedEnv.COMFYUI_URL || null,
         aiFlowReadiness,
@@ -279,9 +279,9 @@ function isProviderWorkerEnvKey(key) {
 }
 
 function providerAiFlowReadiness(env) {
-  const adminConfig = providerAiFlowAdminConfig(env);
-  const cardCopy = resolveAiFlowConfig("card-copy", env, adminConfig);
-  const cardImage = resolveAiFlowConfig("card-image", env, adminConfig);
+  const activationContext = createAiRouteActivationContext({ env });
+  const cardCopy = resolveAiRouteActivation("card-copy", activationContext).flow;
+  const cardImage = resolveAiRouteActivation("card-image", activationContext).flow;
   return {
     cardCopy: flowReadinessSummary(cardCopy),
     cardImage: flowReadinessSummary(cardImage)
@@ -303,20 +303,6 @@ function providerAiFlowBlockers(readiness) {
   return [readiness.cardCopy, readiness.cardImage].flatMap((flow) =>
     flow.readyForLiveCalls ? [] : flow.blockedReasons.map((reason) => `${flow.flowId}: ${reason}`)
   );
-}
-
-function providerAiFlowAdminConfig(env) {
-  const raw = env.CUSTOMCARD_AI_FLOW_CONFIG_JSON ?? env.CUSTOMCARD_AI_FLOW_ADMIN_CONFIG_JSON ?? "";
-  if (!raw) return [];
-  try {
-    const parsed = JSON.parse(String(raw));
-    return normalizeAiFlowAdminConfigs(
-      Array.isArray(parsed) ? parsed : parsed.flows ?? parsed.aiFlowConfig ?? parsed.ai_flow_config ?? [],
-      env
-    );
-  } catch {
-    return [];
-  }
 }
 
 function providerRouteScope(routes, env) {

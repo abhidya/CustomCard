@@ -189,6 +189,61 @@ describe("AI card generator service", () => {
     });
   });
 
+  it("only honors request aiFlowConfig overrides when the request context is trusted", async () => {
+    const fetchImpl = vi.fn(async () =>
+      new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      })
+    );
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel
+      },
+      fetchImpl
+    });
+    const body = {
+      ...cardRequest,
+      aiFlowConfig: [
+        {
+          flowId: "card-copy",
+          primaryAdapterId: "huggingface-chat",
+          liveProviderCallsEnabled: false
+        }
+      ]
+    };
+
+    const untrustedResult = await service.generateCard(body, {
+      rateKey: "test-untrusted-ai-flow-config",
+      trustRequestAiFlowConfig: false
+    });
+    const trustedResult = await service.generateCard(body, {
+      rateKey: "test-trusted-ai-flow-config",
+      trustRequestAiFlowConfig: true
+    });
+
+    expect(untrustedResult.statusCode).toBe(200);
+    expect(untrustedResult.payload).toMatchObject({
+      ai_flow: {
+        card_copy: expect.objectContaining({
+          adapter_id: "cloudflare-workers-ai-chat"
+        })
+      }
+    });
+    expect(trustedResult.statusCode).toBe(503);
+    expect(trustedResult.payload).toMatchObject({
+      ai_flow: {
+        card_copy: expect.objectContaining({
+          adapter_id: "",
+          provider_failure: expect.stringContaining("disabled")
+        })
+      }
+    });
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
   it("can generate a full card through localhost-only LLM and ComfyUI adapters", async () => {
     let imageIndex = 0;
     const fetchImpl = vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
