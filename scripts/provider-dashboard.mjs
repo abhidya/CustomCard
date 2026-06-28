@@ -889,6 +889,7 @@ function normalizeProviderQueue(value = {}) {
   const queue = value && typeof value === "object" && !Array.isArray(value) ? value : {};
   const items = Array.isArray(queue.items) ? queue.items.map(normalizeProviderQueueItem).filter(Boolean) : [];
   return {
+    available: Array.isArray(queue.items),
     limit: safeNumber(queue.limit),
     returned: safeNumber(queue.returned ?? items.length),
     items
