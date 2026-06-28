@@ -1,28 +1,14 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { basename, resolve } from "node:path";
+import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import {
+  productionTextRequiredCompositorInputs,
+  relativePath as relativeSetupPath,
+  resolveProductionTextSetup
+} from "./comfy-production-text-setup.mjs";
 
 const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
-const defaultWorkflowPath = resolve(repoRoot, "comfyui-workflows/customcard-production-text-overlay.json");
-const defaultNodeSource = resolve(repoRoot, "comfyui-custom-nodes/CustomCardTextComposer");
 const defaultOutputRoot = resolve(repoRoot, "docs/evidence/generated-card-comparisons");
-const requiredNodeClass = "CustomCardTextComposer";
-const requiredComposerInputs = [
-  "artwork_guard_x",
-  "artwork_guard_y",
-  "artwork_guard_width",
-  "artwork_guard_height",
-  "artwork_guard_color",
-  "artwork_guard_opacity",
-  "artwork_guard_radius",
-  "artwork_guard_style",
-  "headline_box_background_radius",
-  "headline_box_background_opacity",
-  "headline_box_background_style",
-  "body_box_background_radius",
-  "body_box_background_opacity",
-  "body_box_background_style"
-];
 
 if (isMainModule()) {
   const result = await runPreflight(parseArgs(process.argv.slice(2)));
@@ -38,9 +24,8 @@ if (isMainModule()) {
 }
 
 export async function runPreflight(args = {}) {
-  const comfyUrl = normalizeComfyUrl(args["comfy-url"] || process.env.CUSTOMCARD_COMFYUI_URL || process.env.COMFYUI_URL || "http://127.0.0.1:8188");
-  const workflowPath = resolve(String(args["workflow-path"] || process.env.CUSTOMCARD_COMFYUI_WORKFLOW_PATH || defaultWorkflowPath));
-  const nodeSource = resolve(String(args["node-source"] || defaultNodeSource));
+  const setup = resolveProductionTextSetup({ args });
+  const { comfyUrl, workflowPath, nodeSource, requiredNodeClass } = setup;
   const outputRoot = resolve(String(args["output-root"] || defaultOutputRoot));
   const reportDir = resolve(String(args["report-dir"] || `${outputRoot}/production-text-preflight-${timestamp()}`));
   const requireLive = args["require-live"] === true || args["require-live"] === "true";
@@ -54,9 +39,9 @@ export async function runPreflight(args = {}) {
     classTypes: classTypes.filter((value, index) => classTypes.indexOf(value) === index).sort()
   }));
   const workflowNodeInputs = collectWorkflowNodeInputs(workflow, requiredNodeClass);
-  const missingWorkflowComposerInputs = requiredComposerInputs.filter((input) => !workflowNodeInputs.includes(input));
+  const missingWorkflowComposerInputs = productionTextRequiredCompositorInputs.filter((input) => !workflowNodeInputs.includes(input));
   checks.push(check("workflow maps production text compositor inputs", missingWorkflowComposerInputs.length === 0, {
-    requiredInputs: requiredComposerInputs,
+    requiredInputs: productionTextRequiredCompositorInputs,
     missingInputs: missingWorkflowComposerInputs
   }));
   checks.push(check("custom node source exists", existsSync(nodeSource), { nodeSource }));
@@ -78,9 +63,9 @@ export async function runPreflight(args = {}) {
     liveComfyReachable
   }, { required: requireLive, advisory: !requireLive }));
   const liveNodeInputs = collectLiveNodeInputs(live.objectInfo?.[requiredNodeClass]);
-  const missingLiveComposerInputs = requiredComposerInputs.filter((input) => !liveNodeInputs.includes(input));
+  const missingLiveComposerInputs = productionTextRequiredCompositorInputs.filter((input) => !liveNodeInputs.includes(input));
   checks.push(check("live ComfyUI exposes production text compositor inputs", liveComfyReachable && liveNodeAvailable && missingLiveComposerInputs.length === 0, {
-    requiredInputs: requiredComposerInputs,
+    requiredInputs: productionTextRequiredCompositorInputs,
     missingInputs: missingLiveComposerInputs,
     liveInputCount: liveNodeInputs.length
   }, { required: requireLive, advisory: !requireLive }));
@@ -97,19 +82,19 @@ export async function runPreflight(args = {}) {
     status: ok ? (promotionReady ? "promotion-ready" : "repo-ok-runtime-not-ready") : "failed",
     createdAtIso: new Date().toISOString(),
     comfyUrl,
-    workflowPath: relativePath(workflowPath),
-    nodeSource: relativePath(nodeSource),
+    workflowPath: relativeSetupPath(workflowPath, repoRoot),
+    nodeSource: relativeSetupPath(nodeSource, repoRoot),
     requiredNodeClass,
     liveComfyReachable,
     liveNodeAvailable,
-    cachedObjectInfoPath: existsSync(cachedObjectInfoPath) ? relativePath(cachedObjectInfoPath) : null,
+    cachedObjectInfoPath: existsSync(cachedObjectInfoPath) ? relativeSetupPath(cachedObjectInfoPath, repoRoot) : null,
     cachedNodeAvailable,
     checks,
     nextSteps: buildNextSteps({ requireLive, liveComfyReachable, liveNodeAvailable, cachedNodeAvailable })
   };
 
   mkdirSync(reportDir, { recursive: true });
-  result.reportDir = relativePath(reportDir);
+  result.reportDir = relativeSetupPath(reportDir, repoRoot);
   writeJson(resolve(reportDir, "production-text-preflight.json"), result);
   writeMarkdown(resolve(reportDir, "production-text-preflight.md"), buildMarkdown(result));
   return result;
@@ -120,10 +105,10 @@ function readWorkflow(workflowPath, checks) {
     checks.push(check("workflow file exists", false, { workflowPath }));
     return null;
   }
-  checks.push(check("workflow file exists", true, { workflowPath: relativePath(workflowPath) }));
+  checks.push(check("workflow file exists", true, { workflowPath: relativeSetupPath(workflowPath, repoRoot) }));
   try {
     const workflow = JSON.parse(readFileSync(workflowPath, "utf8"));
-    checks.push(check("workflow JSON parses", true, { workflowPath: relativePath(workflowPath) }));
+    checks.push(check("workflow JSON parses", true, { workflowPath: relativeSetupPath(workflowPath, repoRoot) }));
     return workflow;
   } catch (error) {
     checks.push(check("workflow JSON parses", false, { error: errorMessage(error) }));
@@ -260,14 +245,6 @@ function parseArgs(values) {
   return parsed;
 }
 
-function normalizeComfyUrl(value) {
-  const parsed = new URL(String(value || "http://127.0.0.1:8188"));
-  parsed.pathname = parsed.pathname.replace(/\/+$/, "");
-  parsed.search = "";
-  parsed.hash = "";
-  return parsed.toString().replace(/\/+$/, "");
-}
-
 function boundedInteger(value, min, max, fallback) {
   const parsed = Number.parseInt(String(value ?? ""), 10);
   if (!Number.isFinite(parsed)) return fallback;
@@ -276,10 +253,6 @@ function boundedInteger(value, min, max, fallback) {
 
 function timestamp() {
   return new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z");
-}
-
-function relativePath(filePath) {
-  return resolve(filePath).replace(repoRoot, "").replace(/^[/\\]/, "").replaceAll("\\", "/") || basename(filePath);
 }
 
 function escapeMarkdownTable(value) {
