@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import {
@@ -22,10 +23,12 @@ const requiredKeys = [
   "IDEMPOTENCY_KEY_TTL_HOURS"
 ];
 
+const repoRoot = resolve(fileURLToPath(new URL(".", import.meta.url)), "..");
+
 describe("hosted Vercel env inventory", () => {
   it("documents redacted hosted setup reports and keeps local Comfy free of Cloudflare image-key requirements", () => {
-    const vercelDoc = readFileSync(resolve("D:/manny/Documents/CustomCard/docs/vercel-env-structure.md"), "utf8");
-    const cloudflareDoc = readFileSync(resolve("D:/manny/Documents/CustomCard/docs/cloudflare-workers-ai-setup.md"), "utf8");
+    const vercelDoc = readFileSync(resolve(repoRoot, "docs/vercel-env-structure.md"), "utf8");
+    const cloudflareDoc = readFileSync(resolve(repoRoot, "docs/cloudflare-workers-ai-setup.md"), "utf8");
 
     expect(vercelDoc).toContain("The report must not include env");
     expect(vercelDoc).toContain("values, only key names and target scopes.");

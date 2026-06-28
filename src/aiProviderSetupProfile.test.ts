@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { aiRoutePolicyIdsByFlowId } from "./aiRoutePolicyIds.mjs";
@@ -10,7 +11,7 @@ import {
 } from "./aiProviderSetupProfile.mjs";
 import { aiPromptProfiles, aiProviderModelCatalog, aiRoutePolicies } from "./aiProviderControlPlane";
 
-const repoRoot = "D:/manny/Documents/CustomCard";
+const repoRoot = resolve(fileURLToPath(new URL(".", import.meta.url)), "..");
 
 describe("AI provider setup profile drift guards", () => {
   it("keeps the shared Cloudflare card-copy contract pinned across code and docs", () => {
