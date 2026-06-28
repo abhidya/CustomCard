@@ -159,7 +159,9 @@ function buildReport({ target, entries, blockers, now, command }) {
           id: "ai-card-copy-setup",
           passed: inventory.aiCardCopySetup.ready,
           detail: inventory.aiCardCopySetup.ready
-            ? `Cloudflare card-copy setup is present, and ${productionCardCopyModelOverrideEnvKey} pins the production ${productionCardCopyModel} model.`
+            ? inventory.aiCardCopySetup.productionModelOverridePresent
+              ? `Cloudflare card-copy setup is present, and ${productionCardCopyModelOverrideEnvKey} pins the production ${productionCardCopyModel} model.`
+              : `Cloudflare card-copy setup is present. ${productionCardCopyModelOverrideEnvKey} is not set, so hosted card-copy uses the shared production default ${productionCardCopyModel}.`
             : inventory.aiCardCopySetup.blockers.join(" ")
         }
       ];
@@ -252,11 +254,6 @@ function buildAiCardCopySetup(scopedNames) {
   if (!modelConfigured) {
     blockers.push(
       `${aiSetupProfile.cardCopy.modelEnvKeys.join(", ")} are missing from the Vercel card-copy env inventory.`
-    );
-  }
-  if (!productionModelOverridePresent) {
-    blockers.push(
-      `${productionCardCopyModelOverrideEnvKey} is missing, so hosted card-copy is not explicitly pinned to ${productionCardCopyModel}.`
     );
   }
 

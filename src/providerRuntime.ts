@@ -1,8 +1,7 @@
 import { buildVendorHandoff, parseFreeImport, type VendorId } from "./customerWorkflow";
 import {
   cloudflareTextModelEnvKeys,
-  productionCardCopyModel,
-  productionCardCopyModelOverrideEnvKey
+  productionCardCopyModel
 } from "./aiProviderSetupProfile.mjs";
 import {
   getProviderAdapter,
@@ -1039,7 +1038,7 @@ function configuredModelRef(
   env: ProviderRuntimeEnv,
   fallbackRef: string
 ): string {
-  if (requestedModel?.trim()) return requestedModel.trim() === productionCardCopyModel ? productionCardCopyModelOverrideEnvKey : fallbackRef;
+  if (requestedModel?.trim()) return envKeys[0] ?? fallbackRef;
   for (const envKey of envKeys) {
     if (hasUsableEnvValue(env[envKey])) return envKey;
   }
@@ -1257,7 +1256,7 @@ function buildTextChatRequest(
 
   if (adapter.id === "cloudflare-workers-ai-chat") {
     const apiTokenRef = cloudflareWorkersAiTokenRef(env, "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN");
-    const modelRef = configuredModelRef(input.model, textModelEnvKeys(adapter.id), env, productionCardCopyModelOverrideEnvKey);
+    const modelRef = configuredModelRef(input.model, textModelEnvKeys(adapter.id), env, "CUSTOMCARD_CLOUDFLARE_TEXT_MODEL");
     return request(
       adapter,
       "POST",

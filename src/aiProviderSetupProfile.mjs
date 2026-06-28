@@ -2,9 +2,12 @@ export const productionCardCopyProviderId = "cloudflare-workers-ai-chat";
 export const productionCardCopyModel = "@cf/qwen/qwen3-30b-a3b-fp8";
 export const productionCardCopyModelOverrideEnvKey = "CUSTOMCARD_AI_CARD_COPY_MODEL";
 export const cloudflareTextModelEnvKeys = Object.freeze([
-  productionCardCopyModelOverrideEnvKey,
   "CUSTOMCARD_CLOUDFLARE_TEXT_MODEL",
   "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"
+]);
+export const cloudflareCardCopyTextModelEnvKeys = Object.freeze([
+  productionCardCopyModelOverrideEnvKey,
+  ...cloudflareTextModelEnvKeys
 ]);
 export const cloudflareTextCredentialGroups = Object.freeze([
   Object.freeze(["CLOUDFLARE_ACCOUNT_ID"]),
@@ -15,7 +18,7 @@ export const hostedAiCardCopySetupKeys = Object.freeze([
   "CLOUDFLARE_ACCOUNT_ID",
   "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
   "CLOUDFLARE_API_TOKEN",
-  ...cloudflareTextModelEnvKeys
+  ...cloudflareCardCopyTextModelEnvKeys
 ]);
 export const localProductionTextComfyGuidance = Object.freeze({
   workflow: "local-production-text-comfy",
@@ -31,7 +34,7 @@ export function buildAiProviderSetupProfile() {
       defaultModel: productionCardCopyModel,
       accountEnvKey: "CLOUDFLARE_ACCOUNT_ID",
       tokenEnvKeys: ["CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", "CLOUDFLARE_API_TOKEN"],
-      modelEnvKeys: [...cloudflareTextModelEnvKeys],
+      modelEnvKeys: [...cloudflareCardCopyTextModelEnvKeys],
       modelOverrideEnvKey: productionCardCopyModelOverrideEnvKey
     },
     localProductionTextComfy: {

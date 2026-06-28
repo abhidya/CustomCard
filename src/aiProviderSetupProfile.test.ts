@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { aiRoutePolicyIdsByFlowId } from "./aiRoutePolicyIds.mjs";
 import {
   buildAiProviderSetupProfile,
+  cloudflareTextModelEnvKeys,
   productionCardCopyModel,
   productionCardCopyModelOverrideEnvKey,
   productionCardCopyProviderId
@@ -35,6 +36,14 @@ describe("AI provider setup profile drift guards", () => {
       defaultModel: productionCardCopyModel,
       modelOverrideEnvKey: productionCardCopyModelOverrideEnvKey
     });
+    expect(cloudflareTextModelEnvKeys).toEqual([
+      "CUSTOMCARD_CLOUDFLARE_TEXT_MODEL",
+      "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"
+    ]);
+    expect(cloudflareTextModelEnvKeys).not.toContain(productionCardCopyModelOverrideEnvKey);
+    expect(profile.cardCopy.modelEnvKeys).toEqual(
+      expect.arrayContaining([productionCardCopyModelOverrideEnvKey, ...cloudflareTextModelEnvKeys])
+    );
     expect(profile.localProductionTextComfy.requiresHostedImageKeys).toBe(false);
 
     expect(flowConfigSource).toMatch(/flowId: "card-copy"[\s\S]*defaultPrimaryAdapterId: "cloudflare-workers-ai-chat"/);

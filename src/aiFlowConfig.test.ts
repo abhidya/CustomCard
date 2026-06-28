@@ -86,14 +86,32 @@ describe("AI flow config", () => {
     expect(flow.readyForLiveCalls).toBe(true);
   });
 
-  it("treats the route-specific card-copy model pin as a valid hosted Cloudflare text setup key", () => {
-    const flow = resolveAiFlowConfig("card-copy", {
+  it("keeps the card-copy pin out of generic Cloudflare text model resolution", () => {
+    const customerChat = resolveAiFlowConfig("customer-chat", {
       CLOUDFLARE_ACCOUNT_ID: "acct_123",
       CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
+      CUSTOMCARD_CLOUDFLARE_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
       [productionCardCopyModelOverrideEnvKey]: productionCardCopyModel
     });
 
-    expect(cloudflareTextModelEnvKeys).toContain(productionCardCopyModelOverrideEnvKey);
+    expect(cloudflareTextModelEnvKeys).toEqual([
+      "CUSTOMCARD_CLOUDFLARE_TEXT_MODEL",
+      "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"
+    ]);
+    expect(cloudflareTextModelEnvKeys).not.toContain(productionCardCopyModelOverrideEnvKey);
+    expect(customerChat.primaryAdapterId).toBe(productionCardCopyProviderId);
+    expect(customerChat.model).toBe("@cf/meta/llama-3.1-8b-instruct-fast");
+    expect(customerChat.readyForLiveCalls).toBe(true);
+  });
+
+  it("treats the route-specific card-copy model pin as a valid card-copy-only hosted override", () => {
+    const flow = resolveAiFlowConfig("card-copy", {
+      CLOUDFLARE_ACCOUNT_ID: "acct_123",
+      CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
+      CUSTOMCARD_CLOUDFLARE_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
+      [productionCardCopyModelOverrideEnvKey]: productionCardCopyModel
+    });
+
     expect(flow.primaryAdapterId).toBe(productionCardCopyProviderId);
     expect(flow.model).toBe(productionCardCopyModel);
     expect(flow.readyForLiveCalls).toBe(true);

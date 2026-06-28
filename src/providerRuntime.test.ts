@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { productionCardCopyModel, productionCardCopyModelOverrideEnvKey } from "./aiProviderSetupProfile.mjs";
+import { productionCardCopyModel } from "./aiProviderSetupProfile.mjs";
 import { providerCatalog } from "./providerCatalog";
 import {
   buildAuthRuntime,
@@ -569,12 +569,12 @@ describe("provider runtime contracts", () => {
         { ...textInput, model: productionCardCopyModel },
         {
           ...readyEnv,
-          [productionCardCopyModelOverrideEnvKey]: productionCardCopyModel
+          CUSTOMCARD_CLOUDFLARE_TEXT_MODEL: productionCardCopyModel
         },
         openGates
       ).request
     ).toMatchObject({
-      credentialRefs: expect.arrayContaining([productionCardCopyModelOverrideEnvKey]),
+      credentialRefs: expect.arrayContaining(["CUSTOMCARD_CLOUDFLARE_TEXT_MODEL"]),
       body: expect.objectContaining({ model: productionCardCopyModel })
     });
     expect(buildTextChatRuntime("cohere-chat", textInput, readyEnv, openGates).request?.url).toBe(
@@ -598,6 +598,21 @@ describe("provider runtime contracts", () => {
     expect(buildTextChatRuntime("fireworks-chat", textInput, readyEnv, openGates).request?.url).toBe(
       "https://api.fireworks.ai/inference/v1/chat/completions"
     );
+  });
+
+  it("keeps the card-copy model pin out of generic Cloudflare chat runtime contracts", () => {
+    const request = buildTextChatRuntime("cloudflare-workers-ai-chat", textInput, {
+      ...readyEnv,
+      CUSTOMCARD_AI_CARD_COPY_MODEL: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+      CUSTOMCARD_CLOUDFLARE_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
+      CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast"
+    }, openGates).request;
+
+    expect(request).toMatchObject({
+      credentialRefs: expect.arrayContaining(["CUSTOMCARD_CLOUDFLARE_TEXT_MODEL"]),
+      body: expect.objectContaining({ model: "@cf/meta/llama-3.1-8b-instruct-fast" })
+    });
+    expect(request?.credentialRefs).not.toContain("CUSTOMCARD_AI_CARD_COPY_MODEL");
   });
 
   it("builds redacted live-network image request contracts for enabled image providers", () => {

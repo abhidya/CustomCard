@@ -30,9 +30,8 @@ const missingInventory = {
     productionModelOverridePresent: false,
     baseConfigured: true,
     localProductionTextComfyRequiresHostedImageKeys: false,
-    blockers: [
-      `${productionCardCopyModelOverrideEnvKey} is missing, so hosted card-copy is not explicitly pinned to ${productionCardCopyModel}.`
-    ]
+    blockers: [],
+    ready: true
   },
   envSync: {
     environmentSynced: false,

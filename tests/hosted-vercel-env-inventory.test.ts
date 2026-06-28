@@ -230,8 +230,7 @@ describe("hosted Vercel env inventory", () => {
     expect(report.status).toBe("blocked");
     expect(report.blockers).toEqual(
       expect.arrayContaining([
-        "CLERK_AUDIENCE is missing from the Vercel production env inventory.",
-        `${productionCardCopyModelOverrideEnvKey} is missing, so hosted card-copy is not explicitly pinned to ${productionCardCopyModel}.`
+        "CLERK_AUDIENCE is missing from the Vercel production env inventory."
       ])
     );
     expect(report.envSync).toMatchObject({
@@ -241,5 +240,49 @@ describe("hosted Vercel env inventory", () => {
       aiCardCopyProductionModelPinned: false,
       environmentSynced: false
     });
+  });
+
+  it("reports an unpinned card-copy override without blocking hosted setup by itself", async () => {
+    const commandRunner = vi.fn(async () => ({
+      exitCode: 0,
+      stdout: JSON.stringify({
+        envs: requiredKeys.map((key) => ({ key, target: ["production"], value: `secret-${key}` })).concat([
+          { key: "CLOUDFLARE_ACCOUNT_ID", target: ["production"], value: "account-secret" },
+          { key: "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", target: ["production"], value: "cloudflare-text-secret" },
+          { key: "CUSTOMCARD_CLOUDFLARE_TEXT_MODEL", target: ["production"], value: productionCardCopyModel }
+        ])
+      }),
+      stderr: ""
+    }));
+
+    const report = await runHostedVercelEnvInventory({
+      env: {
+        CUSTOMCARD_HOSTED_ENV_INVENTORY: "enabled",
+        CUSTOMCARD_HOSTED_API_ENV: "production",
+        CUSTOMCARD_HOSTED_API_BASE_URL: "https://customcard-three.vercel.app"
+      },
+      commandRunner
+    });
+
+    expect(report).toMatchObject({
+      status: "ready",
+      aiCardCopySetup: {
+        baseConfigured: true,
+        productionModelOverridePresent: false,
+        ready: true
+      },
+      envSync: {
+        aiCardCopySetupConfigured: true,
+        aiCardCopyProductionModelPinned: false,
+        environmentSynced: true
+      },
+      blockers: []
+    });
+    expect(report.checks.find((check) => check.id === "ai-card-copy-setup")).toMatchObject({
+      passed: true
+    });
+    expect(report.checks.find((check) => check.id === "ai-card-copy-setup")?.detail).toContain(
+      `${productionCardCopyModelOverrideEnvKey} is not set`
+    );
   });
 });
