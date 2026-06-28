@@ -251,16 +251,14 @@ function buildAiCardCopySetup(scopedNames) {
       `${aiSetupProfile.cardCopy.tokenEnvKeys.join(" or ")} is missing from the Vercel card-copy env inventory.`
     );
   }
-  if (!modelConfigured) {
-    blockers.push(
-      `${aiSetupProfile.cardCopy.modelEnvKeys.join(", ")} are missing from the Vercel card-copy env inventory.`
-    );
-  }
-
   return {
     providerId: aiSetupProfile.cardCopy.providerId,
     defaultModel: aiSetupProfile.cardCopy.defaultModel,
     expectedSetupKeys: [...hostedAiCardCopySetupKeys],
+    expectedRequiredSetupKeys: [
+      aiSetupProfile.cardCopy.accountEnvKey,
+      ...aiSetupProfile.cardCopy.tokenEnvKeys
+    ],
     accountEnvKey: {
       name: aiSetupProfile.cardCopy.accountEnvKey,
       present: scopedNames.has(aiSetupProfile.cardCopy.accountEnvKey)
@@ -274,8 +272,8 @@ function buildAiCardCopySetup(scopedNames) {
     productionModelOverridePresent,
     baseConfigured:
       scopedNames.has(aiSetupProfile.cardCopy.accountEnvKey) &&
-      tokenConfigured &&
-      modelConfigured,
+      tokenConfigured,
+    modelConfigured,
     localProductionTextComfyRequiresHostedImageKeys: aiSetupProfile.localProductionTextComfy.requiresHostedImageKeys,
     ready: blockers.length === 0,
     blockers

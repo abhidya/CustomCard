@@ -9,10 +9,9 @@ export const cloudflareCardCopyTextModelEnvKeys = Object.freeze([
   productionCardCopyModelOverrideEnvKey,
   ...cloudflareTextModelEnvKeys
 ]);
-export const cloudflareTextCredentialGroups = Object.freeze([
+export const cloudflareTextRequiredCredentialGroups = Object.freeze([
   Object.freeze(["CLOUDFLARE_ACCOUNT_ID"]),
-  Object.freeze(["CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", "CLOUDFLARE_API_TOKEN"]),
-  Object.freeze([...cloudflareTextModelEnvKeys])
+  Object.freeze(["CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", "CLOUDFLARE_API_TOKEN"])
 ]);
 export const hostedAiCardCopySetupKeys = Object.freeze([
   "CLOUDFLARE_ACCOUNT_ID",
@@ -34,6 +33,7 @@ export function buildAiProviderSetupProfile() {
       defaultModel: productionCardCopyModel,
       accountEnvKey: "CLOUDFLARE_ACCOUNT_ID",
       tokenEnvKeys: ["CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", "CLOUDFLARE_API_TOKEN"],
+      requiredCredentialGroups: [...cloudflareTextRequiredCredentialGroups],
       modelEnvKeys: [...cloudflareCardCopyTextModelEnvKeys],
       modelOverrideEnvKey: productionCardCopyModelOverrideEnvKey
     },

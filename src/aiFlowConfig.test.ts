@@ -40,6 +40,19 @@ describe("AI flow config", () => {
     expect(flow.blockedReasons).toEqual([]);
   });
 
+  it("treats Cloudflare card-copy as ready with account plus token only and uses the default Qwen model", () => {
+    const flow = resolveAiFlowConfig("card-copy", {
+      CLOUDFLARE_ACCOUNT_ID: "acct_123",
+      CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text"
+    });
+
+    expect(flow.primaryAdapterId).toBe(productionCardCopyProviderId);
+    expect(flow.model).toBe(productionCardCopyModel);
+    expect(flow.liveProviderCallsEnabled).toBe(true);
+    expect(flow.readyForLiveCalls).toBe(true);
+    expect(flow.blockedReasons).toEqual([]);
+  });
+
   it("defaults card generation to Cloudflare copy and RunComfy image with live calls enabled", () => {
     const configs = buildDefaultAiFlowAdminConfigs();
     const cardCopy = configs.find((config) => config.flowId === "card-copy");

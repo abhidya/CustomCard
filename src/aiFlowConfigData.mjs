@@ -1,5 +1,5 @@
 import {
-  cloudflareTextCredentialGroups,
+  cloudflareTextRequiredCredentialGroups,
   cloudflareTextModelEnvKeys,
   productionCardCopyModel
 } from "./aiProviderSetupProfile.mjs";
@@ -117,7 +117,7 @@ const placeholderValues = new Set([
 
 export const aiProviderEnvRequirements = {
   "cloudflare-workers-ai-chat": [
-    ...cloudflareTextCredentialGroups
+    ...cloudflareTextRequiredCredentialGroups
   ],
   "cloudflare-workers-ai-image": [
     ["CLOUDFLARE_ACCOUNT_ID"],

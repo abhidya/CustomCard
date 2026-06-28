@@ -236,7 +236,7 @@ describe("hosted Vercel env inventory", () => {
     expect(report.envSync).toMatchObject({
       requiredKeysPresent: false,
       clerkJwtVerifierConfigured: false,
-      aiCardCopySetupConfigured: false,
+      aiCardCopySetupConfigured: true,
       aiCardCopyProductionModelPinned: false,
       environmentSynced: false
     });
@@ -248,8 +248,7 @@ describe("hosted Vercel env inventory", () => {
       stdout: JSON.stringify({
         envs: requiredKeys.map((key) => ({ key, target: ["production"], value: `secret-${key}` })).concat([
           { key: "CLOUDFLARE_ACCOUNT_ID", target: ["production"], value: "account-secret" },
-          { key: "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", target: ["production"], value: "cloudflare-text-secret" },
-          { key: "CUSTOMCARD_CLOUDFLARE_TEXT_MODEL", target: ["production"], value: productionCardCopyModel }
+          { key: "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", target: ["production"], value: "cloudflare-text-secret" }
         ])
       }),
       stderr: ""
@@ -268,6 +267,7 @@ describe("hosted Vercel env inventory", () => {
       status: "ready",
       aiCardCopySetup: {
         baseConfigured: true,
+        modelConfigured: false,
         productionModelOverridePresent: false,
         ready: true
       },
@@ -284,5 +284,11 @@ describe("hosted Vercel env inventory", () => {
     expect(report.checks.find((check) => check.id === "ai-card-copy-setup")?.detail).toContain(
       `${productionCardCopyModelOverrideEnvKey} is not set`
     );
+    expect(report.aiCardCopySetup.blockers).toEqual([]);
+    expect(report.aiCardCopySetup.expectedRequiredSetupKeys).toEqual([
+      "CLOUDFLARE_ACCOUNT_ID",
+      "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
+      "CLOUDFLARE_API_TOKEN"
+    ]);
   });
 });
