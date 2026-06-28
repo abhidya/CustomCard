@@ -1,4 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
+import {
+  productionCardCopyModel,
+  productionCardCopyModelOverrideEnvKey
+} from "../src/aiProviderSetupProfile.mjs";
 import { runHostedVercelEnvRepair } from "../scripts/hosted-vercel-env-repair.mjs";
 
 const missingInventory = {
@@ -16,7 +20,25 @@ const missingInventory = {
     { name: "CLERK_AUDIENCE", present: false },
     { name: "IDEMPOTENCY_KEY_TTL_HOURS", present: false }
   ],
-  envSync: { environmentSynced: false }
+  aiCardCopySetup: {
+    providerId: "cloudflare-workers-ai-chat",
+    defaultModel: productionCardCopyModel,
+    productionModelOverrideEnvKey: {
+      name: productionCardCopyModelOverrideEnvKey,
+      present: false
+    },
+    productionModelOverridePresent: false,
+    baseConfigured: true,
+    localProductionTextComfyRequiresHostedImageKeys: false,
+    blockers: [
+      `${productionCardCopyModelOverrideEnvKey} is missing, so hosted card-copy is not explicitly pinned to ${productionCardCopyModel}.`
+    ]
+  },
+  envSync: {
+    environmentSynced: false,
+    aiCardCopySetupConfigured: true,
+    aiCardCopyProductionModelPinned: false
+  }
 };
 
 const repairValues = {
@@ -76,9 +98,15 @@ describe("hosted Vercel env repair", () => {
       applyEnabled: false,
       valuesRedacted: true,
       missingRepairKeys: ["CLERK_ISSUER", "CLERK_AUDIENCE", "IDEMPOTENCY_KEY_TTL_HOURS"],
+      aiCardCopySetup: {
+        productionModelOverridePresent: false,
+        localProductionTextComfyRequiresHostedImageKeys: false
+      },
       envSync: {
         repairKeysMissing: 3,
         repairApplied: false,
+        aiCardCopySetupConfigured: true,
+        aiCardCopyProductionModelPinned: false,
         environmentSynced: false
       },
       blockers: []
@@ -140,6 +168,8 @@ describe("hosted Vercel env repair", () => {
       envSync: {
         repairKeysMissing: 3,
         repairApplied: true,
+        aiCardCopySetupConfigured: true,
+        aiCardCopyProductionModelPinned: false,
         environmentSynced: false
       },
       blockers: []
@@ -179,6 +209,8 @@ describe("hosted Vercel env repair", () => {
         repairKeysMissing: 3,
         repairApplied: false,
         partialRepairApplied: true,
+        aiCardCopySetupConfigured: true,
+        aiCardCopyProductionModelPinned: false,
         environmentSynced: false
       }
     });

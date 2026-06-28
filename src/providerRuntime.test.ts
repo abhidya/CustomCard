@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { productionCardCopyModel, productionCardCopyModelOverrideEnvKey } from "./aiProviderSetupProfile.mjs";
 import { providerCatalog } from "./providerCatalog";
 import {
   buildAuthRuntime,
@@ -68,10 +69,11 @@ const readyEnv: ProviderRuntimeEnv = {
   CLERK_SECRET_KEY: "configured-clerk-secret-key",
   CLOUDFLARE_ACCOUNT_ID: "configured-cloudflare-account-id",
   CLOUDFLARE_API_TOKEN: "configured-cloudflare-api-token",
+  CUSTOMCARD_AI_CARD_COPY_MODEL: productionCardCopyModel,
   CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "configured-cloudflare-image-token",
   CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning",
   CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "configured-cloudflare-text-token",
-  CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8",
+  CLOUDFLARE_WORKERS_AI_TEXT_MODEL: productionCardCopyModel,
   COHERE_API_KEY: "configured-cohere-key",
   COGNITO_APP_CLIENT_ID: "configured-cognito-client-id",
   COGNITO_DOMAIN: "customcard-auth",
@@ -560,6 +562,20 @@ describe("provider runtime contracts", () => {
       }, openGates).request
     ).toMatchObject({
       headers: expect.objectContaining({ authorization: "Bearer {CLOUDFLARE_API_TOKEN}" })
+    });
+    expect(
+      buildTextChatRuntime(
+        "cloudflare-workers-ai-chat",
+        { ...textInput, model: productionCardCopyModel },
+        {
+          ...readyEnv,
+          [productionCardCopyModelOverrideEnvKey]: productionCardCopyModel
+        },
+        openGates
+      ).request
+    ).toMatchObject({
+      credentialRefs: expect.arrayContaining([productionCardCopyModelOverrideEnvKey]),
+      body: expect.objectContaining({ model: productionCardCopyModel })
     });
     expect(buildTextChatRuntime("cohere-chat", textInput, readyEnv, openGates).request?.url).toBe(
       "https://api.cohere.com/v2/chat"

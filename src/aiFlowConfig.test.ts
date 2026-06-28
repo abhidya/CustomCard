@@ -1,4 +1,13 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import {
+  cloudflareTextModelEnvKeys,
+  localProductionTextComfyGuidance,
+  productionCardCopyModel,
+  productionCardCopyModelOverrideEnvKey,
+  productionCardCopyProviderId
+} from "./aiProviderSetupProfile.mjs";
 import {
   buildDefaultAiFlowAdminConfigs,
   loadBrowserAiFlowAdminConfigs,
@@ -24,8 +33,8 @@ describe("AI flow config", () => {
   it("resolves configured Cloudflare text flows as live-ready from env", () => {
     const flow = resolveAiFlowConfig("card-copy", cloudflareEnv);
 
-    expect(flow.primaryAdapterId).toBe("cloudflare-workers-ai-chat");
-    expect(flow.model).toBe("@cf/qwen/qwen3-30b-a3b-fp8");
+    expect(flow.primaryAdapterId).toBe(productionCardCopyProviderId);
+    expect(flow.model).toBe(productionCardCopyModel);
     expect(flow.liveProviderCallsEnabled).toBe(true);
     expect(flow.readyForLiveCalls).toBe(true);
     expect(flow.blockedReasons).toEqual([]);
@@ -36,10 +45,10 @@ describe("AI flow config", () => {
     const cardCopy = configs.find((config) => config.flowId === "card-copy");
     const cardImage = configs.find((config) => config.flowId === "card-image");
 
-    expect(cardCopy?.primaryAdapterId).toBe("cloudflare-workers-ai-chat");
+    expect(cardCopy?.primaryAdapterId).toBe(productionCardCopyProviderId);
     expect(cardCopy?.fallbackAdapterId).toBe("huggingface-chat");
     expect(cardCopy?.fallbackQueueEnabled).toBe(true);
-    expect(cardCopy?.model).toBe("@cf/qwen/qwen3-30b-a3b-fp8");
+    expect(cardCopy?.model).toBe(productionCardCopyModel);
     expect(cardCopy?.rateLimitPerMinute).toBe(4);
     expect(cardCopy?.perRequestBudgetCents).toBe(5);
     expect(cardCopy?.liveProviderCallsEnabled).toBe(true);
@@ -59,7 +68,7 @@ describe("AI flow config", () => {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
-        CUSTOMCARD_AI_CARD_COPY_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8"
+        CUSTOMCARD_AI_CARD_COPY_MODEL: productionCardCopyModel
       },
       [
         {
@@ -72,8 +81,21 @@ describe("AI flow config", () => {
       ]
     );
 
-    expect(flow.primaryAdapterId).toBe("cloudflare-workers-ai-chat");
-    expect(flow.model).toBe("@cf/qwen/qwen3-30b-a3b-fp8");
+    expect(flow.primaryAdapterId).toBe(productionCardCopyProviderId);
+    expect(flow.model).toBe(productionCardCopyModel);
+    expect(flow.readyForLiveCalls).toBe(true);
+  });
+
+  it("treats the route-specific card-copy model pin as a valid hosted Cloudflare text setup key", () => {
+    const flow = resolveAiFlowConfig("card-copy", {
+      CLOUDFLARE_ACCOUNT_ID: "acct_123",
+      CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
+      [productionCardCopyModelOverrideEnvKey]: productionCardCopyModel
+    });
+
+    expect(cloudflareTextModelEnvKeys).toContain(productionCardCopyModelOverrideEnvKey);
+    expect(flow.primaryAdapterId).toBe(productionCardCopyProviderId);
+    expect(flow.model).toBe(productionCardCopyModel);
     expect(flow.readyForLiveCalls).toBe(true);
   });
 
@@ -226,6 +248,20 @@ describe("AI flow config", () => {
       expect.arrayContaining(["cloudflare-workers-ai-chat", "cloudflare-workers-ai-image"])
     );
     expect(JSON.stringify(summary)).not.toContain("token_text");
+  });
+
+  it("keeps docs and env examples pinned to the shared production card-copy setup profile", () => {
+    const envExample = readFileSync(resolve("D:/manny/Documents/CustomCard/infra/env/.env.example"), "utf8");
+    const infraReadme = readFileSync(resolve("D:/manny/Documents/CustomCard/infra/README.md"), "utf8");
+    const cloudflareSetupDoc = readFileSync(resolve("D:/manny/Documents/CustomCard/docs/cloudflare-workers-ai-setup.md"), "utf8");
+
+    expect(envExample).toContain(`${productionCardCopyModelOverrideEnvKey}=${productionCardCopyModel}`);
+    expect(envExample).toContain(`CUSTOMCARD_CLOUDFLARE_TEXT_MODEL=${productionCardCopyModel}`);
+    expect(envExample).toContain(`CLOUDFLARE_WORKERS_AI_TEXT_MODEL=${productionCardCopyModel}`);
+    expect(infraReadme).toContain(`CUSTOMCARD_AI_CARD_COPY_MODEL=${productionCardCopyModel}`);
+    expect(cloudflareSetupDoc).toContain(`CUSTOMCARD_AI_CARD_COPY_MODEL=${productionCardCopyModel}`);
+    expect(cloudflareSetupDoc).toContain("hosted Cloudflare image keys are not");
+    expect(localProductionTextComfyGuidance.requiresHostedImageKeys).toBe(false);
   });
 });
 

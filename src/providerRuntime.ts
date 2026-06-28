@@ -1,5 +1,10 @@
 import { buildVendorHandoff, parseFreeImport, type VendorId } from "./customerWorkflow";
 import {
+  cloudflareTextModelEnvKeys,
+  productionCardCopyModel,
+  productionCardCopyModelOverrideEnvKey
+} from "./aiProviderSetupProfile.mjs";
+import {
   getProviderAdapter,
   providerCatalog,
   type ChatMessage,
@@ -967,7 +972,7 @@ function configuredNumber(value: number | undefined, fallback: number): number {
 
 function textModelEnvKeys(adapterId: string): string[] {
   const envKeysByAdapter: Record<string, string[]> = {
-    "cloudflare-workers-ai-chat": ["CUSTOMCARD_CLOUDFLARE_TEXT_MODEL", "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"],
+    "cloudflare-workers-ai-chat": [...cloudflareTextModelEnvKeys],
     "openai-responses-chat": ["CUSTOMCARD_OPENAI_TEXT_MODEL", "OPENAI_TEXT_MODEL", "CARD_TEXT_MODEL"],
     "anthropic-messages-chat": ["CUSTOMCARD_ANTHROPIC_TEXT_MODEL", "ANTHROPIC_MODEL", "CARD_TEXT_MODEL"],
     "google-gemini-chat": ["CUSTOMCARD_GEMINI_TEXT_MODEL", "GEMINI_TEXT_MODEL", "GOOGLE_GENERATIVE_AI_MODEL"],
@@ -1009,7 +1014,7 @@ function imageModelEnvKeys(adapterId: string): string[] {
 
 function defaultTextModel(adapterId: string): string {
   const defaults: Record<string, string> = {
-    "cloudflare-workers-ai-chat": "@cf/qwen/qwen3-30b-a3b-fp8",
+    "cloudflare-workers-ai-chat": productionCardCopyModel,
     "openai-responses-chat": "gpt-4o-mini",
     "anthropic-messages-chat": "claude-3-5-haiku-latest",
     "google-gemini-chat": "gemini-1.5-flash",
@@ -1026,6 +1031,19 @@ function defaultTextModel(adapterId: string): string {
     "self-hosted-openai-compatible-chat": "local-default"
   };
   return defaults[adapterId] ?? "{CLOUDFLARE_WORKERS_AI_TEXT_MODEL}";
+}
+
+function configuredModelRef(
+  requestedModel: string | undefined,
+  envKeys: string[],
+  env: ProviderRuntimeEnv,
+  fallbackRef: string
+): string {
+  if (requestedModel?.trim()) return requestedModel.trim() === productionCardCopyModel ? productionCardCopyModelOverrideEnvKey : fallbackRef;
+  for (const envKey of envKeys) {
+    if (hasUsableEnvValue(env[envKey])) return envKey;
+  }
+  return fallbackRef;
 }
 
 function defaultImageModel(adapterId: string): string {
@@ -1239,11 +1257,12 @@ function buildTextChatRequest(
 
   if (adapter.id === "cloudflare-workers-ai-chat") {
     const apiTokenRef = cloudflareWorkersAiTokenRef(env, "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN");
+    const modelRef = configuredModelRef(input.model, textModelEnvKeys(adapter.id), env, productionCardCopyModelOverrideEnvKey);
     return request(
       adapter,
       "POST",
       "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/v1/chat/completions",
-      ["CLOUDFLARE_ACCOUNT_ID", apiTokenRef, "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"],
+      ["CLOUDFLARE_ACCOUNT_ID", apiTokenRef, modelRef],
       {
         model,
         messages: [{ role: "user", content: prompt }],

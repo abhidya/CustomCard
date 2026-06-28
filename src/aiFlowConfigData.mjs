@@ -1,3 +1,9 @@
+import {
+  cloudflareTextCredentialGroups,
+  cloudflareTextModelEnvKeys,
+  productionCardCopyModel
+} from "./aiProviderSetupProfile.mjs";
+
 export const aiFlowAdminConfigStorageKey = "customcard-ai-flow-admin-config-v1";
 
 const textProviderAdapterIds = [
@@ -111,9 +117,7 @@ const placeholderValues = new Set([
 
 export const aiProviderEnvRequirements = {
   "cloudflare-workers-ai-chat": [
-    ["CLOUDFLARE_ACCOUNT_ID"],
-    ["CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", "CLOUDFLARE_API_TOKEN"],
-    ["CLOUDFLARE_WORKERS_AI_TEXT_MODEL"]
+    ...cloudflareTextCredentialGroups
   ],
   "cloudflare-workers-ai-image": [
     ["CLOUDFLARE_ACCOUNT_ID"],
@@ -146,7 +150,7 @@ export const aiProviderEnvRequirements = {
 };
 
 const aiProviderModelEnvKeys = {
-  "cloudflare-workers-ai-chat": ["CUSTOMCARD_CLOUDFLARE_TEXT_MODEL", "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"],
+  "cloudflare-workers-ai-chat": [...cloudflareTextModelEnvKeys],
   "cloudflare-workers-ai-image": ["CUSTOMCARD_CLOUDFLARE_IMAGE_MODEL", "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL"],
   "openai-responses-chat": ["CUSTOMCARD_OPENAI_TEXT_MODEL", "OPENAI_TEXT_MODEL", "CARD_TEXT_MODEL"],
   "openai-images": ["CUSTOMCARD_OPENAI_IMAGE_MODEL", "OPENAI_IMAGE_MODEL", "CARD_IMAGE_MODEL"],
@@ -180,7 +184,7 @@ const aiProviderModelEnvKeys = {
 };
 
 const defaultModelsByAdapter = {
-  "cloudflare-workers-ai-chat": "@cf/qwen/qwen3-30b-a3b-fp8",
+  "cloudflare-workers-ai-chat": productionCardCopyModel,
   "cloudflare-workers-ai-image": "@cf/black-forest-labs/flux-1-schnell",
   "openai-responses-chat": "gpt-4o-mini",
   "openai-images": "gpt-image-2",

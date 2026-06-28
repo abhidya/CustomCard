@@ -192,6 +192,7 @@ function buildReport({ inventory, values, repairPlan, applyResults, blockers, no
     partialApplyEnabled: allowPartialApply,
     valuesRedacted: true,
     missingRepairKeys: missingKeys,
+    aiCardCopySetup: inventory?.aiCardCopySetup ?? null,
     valueInputs,
     repairPlan,
     applyResults: applyResults.map((result) => ({
@@ -206,6 +207,8 @@ function buildReport({ inventory, values, repairPlan, applyResults, blockers, no
       repairKeysMissing: missingKeys.length,
       repairApplied: applySucceeded,
       partialRepairApplied: appliedRepairKeys.length > 0 && !applySucceeded,
+      aiCardCopySetupConfigured: inventory?.envSync?.aiCardCopySetupConfigured === true,
+      aiCardCopyProductionModelPinned: inventory?.envSync?.aiCardCopyProductionModelPinned === true,
       environmentSynced: false
     },
     blockers
