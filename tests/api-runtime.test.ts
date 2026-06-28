@@ -485,6 +485,22 @@ test-clerk-jwt-key
           dead_lettered_total: 0,
           oldest_queued_age_seconds: 42
         },
+        queue: {
+          returned: 1,
+          items: [
+            expect.objectContaining({
+              job_id: "job-ai-provider-1",
+              route_id: "ai-card-generate",
+              status: "running",
+              queue_lane: "running",
+              attempt_count: 1,
+              max_attempts: 3,
+              input_summary: expect.objectContaining({
+                body_keys: expect.arrayContaining(["sender", "recipient", "occasion"])
+              })
+            })
+          ]
+        },
         artifact_upload: { r2CredentialsExposed: false }
       }
     });
@@ -610,6 +626,24 @@ function createProviderPool(queries: Array<{ sql: string; params: unknown[] }>, 
             }
           ],
           rowCount: 1
+        };
+      }
+      if (sql.includes("queue_lane") || (sql.includes("lease_expires_at") && sql.includes("last_error") && sql.includes("FROM api_jobs"))) {
+        return {
+          rows: currentRows.map((row) => ({
+            created_at: "2030-01-01T00:00:00.000Z",
+            updated_at: "2030-01-01T00:00:05.000Z",
+            run_after: "2030-01-01T00:00:00.000Z",
+            last_error: null,
+            result: {},
+            age_seconds: 5,
+            updated_age_seconds: 0,
+            lease_age_seconds: 5,
+            run_after_delay_seconds: 0,
+            lease_expires_at: "2030-01-01T00:05:00.000Z",
+            ...row
+          })),
+          rowCount: currentRows.length
         };
       }
       if (sql.includes("locked_at < NOW()")) return { rows: [], rowCount: 0 };
