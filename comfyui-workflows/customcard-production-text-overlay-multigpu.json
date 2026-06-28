@@ -1,0 +1,145 @@
+{
+  "1": {
+    "class_type": "CheckpointLoaderSimpleDisTorch2MultiGPU",
+    "inputs": {
+      "ckpt_name": "{{checkpoint}}",
+      "compute_device": "cuda:0",
+      "virtual_vram_gb": 4,
+      "donor_device": "cuda:1",
+      "expert_mode_allocations": "",
+      "eject_models": true
+    }
+  },
+  "2": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "1",
+        1
+      ],
+      "text": "{{prompt}}"
+    }
+  },
+  "3": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "1",
+        1
+      ],
+      "text": "{{negative_prompt}}"
+    }
+  },
+  "4": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "batch_size": 1,
+      "height": "{{height}}",
+      "width": "{{width}}"
+    }
+  },
+  "5": {
+    "class_type": "KSampler",
+    "inputs": {
+      "cfg": "{{cfg}}",
+      "denoise": 1,
+      "latent_image": [
+        "4",
+        0
+      ],
+      "model": [
+        "1",
+        0
+      ],
+      "negative": [
+        "3",
+        0
+      ],
+      "positive": [
+        "2",
+        0
+      ],
+      "sampler_name": "{{sampler}}",
+      "scheduler": "{{scheduler}}",
+      "seed": "{{seed}}",
+      "steps": "{{steps}}"
+    }
+  },
+  "6": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "5",
+        0
+      ],
+      "vae": [
+        "1",
+        2
+      ]
+    }
+  },
+  "7": {
+    "class_type": "CustomCardTextComposer",
+    "inputs": {
+      "alignment": "{{text_alignment}}",
+      "artwork_guard_color": "{{artwork_guard_color}}",
+      "artwork_guard_height": "{{artwork_guard_height}}",
+      "artwork_guard_opacity": "{{artwork_guard_opacity}}",
+      "artwork_guard_radius": "{{artwork_guard_radius}}",
+      "artwork_guard_style": "{{artwork_guard_style}}",
+      "artwork_guard_width": "{{artwork_guard_width}}",
+      "artwork_guard_x": "{{artwork_guard_x}}",
+      "artwork_guard_y": "{{artwork_guard_y}}",
+      "body": "{{body_text}}",
+      "body_box_height": "{{body_box_height}}",
+      "body_box_background_color": "{{body_box_background_color}}",
+      "body_box_background_padding": "{{body_box_background_padding}}",
+      "body_box_background_radius": "{{body_box_background_radius}}",
+      "body_box_background_opacity": "{{body_box_background_opacity}}",
+      "body_box_background_style": "{{body_box_background_style}}",
+      "body_box_width": "{{body_box_width}}",
+      "body_box_x": "{{body_box_x}}",
+      "body_box_y": "{{body_box_y}}",
+      "body_fill_color": "{{body_fill_color}}",
+      "body_font": "{{body_font}}",
+      "body_font_size": "{{body_font_size}}",
+      "body_line_spacing": "{{body_line_spacing}}",
+      "body_stroke_color": "{{body_stroke_color}}",
+      "body_stroke_width": "{{body_stroke_width}}",
+      "body_vertical_alignment": "{{body_vertical_alignment}}",
+      "debug_boxes": "{{text_debug_boxes}}",
+      "headline": "{{headline_text}}",
+      "headline_box_height": "{{headline_box_height}}",
+      "headline_box_background_color": "{{headline_box_background_color}}",
+      "headline_box_background_padding": "{{headline_box_background_padding}}",
+      "headline_box_background_radius": "{{headline_box_background_radius}}",
+      "headline_box_background_opacity": "{{headline_box_background_opacity}}",
+      "headline_box_background_style": "{{headline_box_background_style}}",
+      "headline_box_width": "{{headline_box_width}}",
+      "headline_box_x": "{{headline_box_x}}",
+      "headline_box_y": "{{headline_box_y}}",
+      "headline_fill_color": "{{headline_fill_color}}",
+      "headline_font": "{{headline_font}}",
+      "headline_font_size": "{{headline_font_size}}",
+      "headline_line_spacing": "{{headline_line_spacing}}",
+      "headline_stroke_color": "{{headline_stroke_color}}",
+      "headline_stroke_width": "{{headline_stroke_width}}",
+      "headline_vertical_alignment": "{{headline_vertical_alignment}}",
+      "image": [
+        "6",
+        0
+      ],
+      "min_font_size": "{{min_font_size}}"
+    }
+  },
+  "9": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "customcard/{{workflow_id}}/{{panel_id}}",
+      "images": [
+        "7",
+        0
+      ]
+    }
+  }
+}

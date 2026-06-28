@@ -1,0 +1,122 @@
+{
+  "1": {
+    "class_type": "UNETLoaderDisTorch2MultiGPU",
+    "inputs": {
+      "unet_name": "flux1-schnell.safetensors",
+      "weight_dtype": "default",
+      "compute_device": "cuda:0",
+      "virtual_vram_gb": 4,
+      "donor_device": "cuda:1",
+      "expert_mode_allocations": "",
+      "eject_models": true
+    }
+  },
+  "2": {
+    "class_type": "DualCLIPLoaderMultiGPU",
+    "inputs": {
+      "clip_name1": "clip_l.safetensors",
+      "clip_name2": "t5xxl_fp8_e4m3fn.safetensors",
+      "device": "cpu",
+      "type": "flux"
+    }
+  },
+  "3": {
+    "class_type": "VAELoaderMultiGPU",
+    "inputs": {
+      "vae_name": "ae.safetensors",
+      "device": "cuda:1"
+    }
+  },
+  "4": {
+    "class_type": "CLIPTextEncodeFlux",
+    "inputs": {
+      "clip": [
+        "2",
+        0
+      ],
+      "clip_l": "{{prompt}}",
+      "guidance": 0,
+      "t5xxl": "{{prompt}}"
+    }
+  },
+  "5": {
+    "class_type": "ConditioningZeroOut",
+    "inputs": {
+      "conditioning": [
+        "4",
+        0
+      ]
+    }
+  },
+  "6": {
+    "class_type": "ModelSamplingFlux",
+    "inputs": {
+      "base_shift": 0.5,
+      "height": "{{height}}",
+      "max_shift": 1.15,
+      "model": [
+        "1",
+        0
+      ],
+      "width": "{{width}}"
+    }
+  },
+  "7": {
+    "class_type": "EmptySD3LatentImage",
+    "inputs": {
+      "batch_size": 1,
+      "height": "{{height}}",
+      "width": "{{width}}"
+    }
+  },
+  "8": {
+    "class_type": "KSampler",
+    "inputs": {
+      "cfg": "{{cfg}}",
+      "denoise": 1,
+      "latent_image": [
+        "7",
+        0
+      ],
+      "model": [
+        "6",
+        0
+      ],
+      "negative": [
+        "5",
+        0
+      ],
+      "positive": [
+        "4",
+        0
+      ],
+      "sampler_name": "{{sampler}}",
+      "scheduler": "{{scheduler}}",
+      "seed": "{{seed}}",
+      "steps": "{{steps}}"
+    }
+  },
+  "9": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "8",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ]
+    }
+  },
+  "10": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "customcard/{{workflow_id}}/{{panel_id}}",
+      "images": [
+        "9",
+        0
+      ]
+    }
+  }
+}

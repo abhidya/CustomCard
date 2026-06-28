@@ -1,0 +1,91 @@
+{
+  "1": {
+    "class_type": "CheckpointLoaderSimpleDisTorch2MultiGPU",
+    "inputs": {
+      "ckpt_name": "{{checkpoint}}",
+      "compute_device": "cuda:0",
+      "virtual_vram_gb": 4,
+      "donor_device": "cuda:1",
+      "expert_mode_allocations": "",
+      "eject_models": true
+    }
+  },
+  "2": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "1",
+        1
+      ],
+      "text": "{{prompt}}"
+    }
+  },
+  "3": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "1",
+        1
+      ],
+      "text": "{{negative_prompt}}"
+    }
+  },
+  "4": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "batch_size": 1,
+      "height": "{{height}}",
+      "width": "{{width}}"
+    }
+  },
+  "5": {
+    "class_type": "KSampler",
+    "inputs": {
+      "cfg": "{{cfg}}",
+      "denoise": 1,
+      "latent_image": [
+        "4",
+        0
+      ],
+      "model": [
+        "1",
+        0
+      ],
+      "negative": [
+        "3",
+        0
+      ],
+      "positive": [
+        "2",
+        0
+      ],
+      "sampler_name": "{{sampler}}",
+      "scheduler": "{{scheduler}}",
+      "seed": "{{seed}}",
+      "steps": "{{steps}}"
+    }
+  },
+  "6": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "5",
+        0
+      ],
+      "vae": [
+        "1",
+        2
+      ]
+    }
+  },
+  "7": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "customcard/{{workflow_id}}/{{panel_id}}",
+      "images": [
+        "6",
+        0
+      ]
+    }
+  }
+}

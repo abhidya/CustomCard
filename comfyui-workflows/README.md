@@ -77,6 +77,65 @@ $env:HF_TOKEN = "hf_..."
 npm run comfy:models:setup -- --include-gated
 ```
 
+## MultiGPU Variants
+
+This checkout also includes opt-in workflow variants for the local 1080 Ti +
+1080 box:
+
+- `customcard-production-text-overlay-multigpu.json`
+- `customcard-hybrid-reserved-layout-multigpu.json`
+- `customcard-sdxl-checkpoint-multigpu.json`
+- `customcard-sdxl-lightning-lora-multigpu.json`
+- `customcard-flux1-schnell-multigpu.json`
+- `customcard-flux2-klein-4b-multigpu.json`
+- `customcard-z-image-turbo-multigpu.json`
+- `customcard-qwen-image-research-multigpu.json`
+
+They keep sampling on `cuda:0` and use `cuda:1` as the 4 GB DisTorch2 donor:
+
+```text
+compute_device: cuda:0
+donor_device: cuda:1
+virtual_vram_gb: 4.0
+expert_mode_allocations: blank
+eject_models: true
+```
+
+For split-file FLUX/Z/Qwen workflows, the UNet uses DisTorch2, CLIP is placed
+on CPU to avoid filling the 8 GB donor card immediately, and VAE is placed on
+`cuda:1`.
+
+Install or update the ComfyUI custom node, then restart ComfyUI:
+
+```powershell
+cd D:\ComfyUI-Easy-Install\ComfyUI-Easy-Install\ComfyUI\custom_nodes
+git clone https://github.com/pollockjj/ComfyUI-MultiGPU.git
+```
+
+Regenerate/check the workflow variants:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/comfyui-multigpu-workflows.mjs --write --check
+```
+
+After restarting ComfyUI, verify the live node classes:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/comfyui-multigpu-workflows.mjs --check --require-live
+```
+
+Run a tiny SDXL Turbo execution smoke test:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/comfyui-multigpu-smoke.mjs
+```
+
+Production-text benchmark with the MultiGPU loader:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -WorkflowPath comfyui-workflows/customcard-production-text-overlay-multigpu.json -WorkflowId customcard-production-text-overlay-multigpu
+```
+
 ## Local Typography Benchmark
 
 ```powershell
