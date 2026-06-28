@@ -338,7 +338,7 @@ describe("api contracts", () => {
       externalNetworkCalls: false
     });
     expect(providerJobStatus?.responseSchema).toEqual(
-      expect.arrayContaining(["queued_total", "running_total", "stale_running_total", "dead_lettered_total", "oldest_queued_age_seconds"])
+      expect.arrayContaining(["queued_total", "running_total", "stale_running_total", "dead_lettered_total", "oldest_queued_age_seconds", "queue.items"])
     );
     expect(adminProviderJobStatus).toMatchObject({
       method: "GET",
@@ -349,7 +349,7 @@ describe("api contracts", () => {
       externalNetworkCalls: false
     });
     expect(adminProviderJobStatus?.responseSchema).toEqual(
-      expect.arrayContaining(["queued_total", "running_total", "stale_running_total", "dead_lettered_total", "oldest_queued_age_seconds"])
+      expect.arrayContaining(["queued_total", "running_total", "stale_running_total", "dead_lettered_total", "oldest_queued_age_seconds", "queue.items"])
     );
     expect(providerJobComplete).toMatchObject({
       method: "POST",

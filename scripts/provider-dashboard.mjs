@@ -88,6 +88,7 @@ async function readProviderStatus({ env, baseUrl, routes }) {
       routeScope: Array.isArray(payload.route_scope) ? payload.route_scope.map(String) : routes,
       leaseTtlSeconds: safeNumber(payload.lease_ttl_seconds),
       metrics: normalizeMetrics(payload.metrics),
+      queue: normalizeProviderQueue(payload.queue),
       detail: safeText(payload.detail, "")
     };
   } catch (error) {
@@ -97,6 +98,7 @@ async function readProviderStatus({ env, baseUrl, routes }) {
       elapsedMs: Date.now() - startedAt,
       endpoint: baseUrl,
       routeScope: routes,
+      queue: normalizeProviderQueue(),
       detail: error instanceof Error ? error.message : "Provider status request failed."
     };
   }
@@ -403,8 +405,14 @@ function dashboardHtml({ baseUrl, comfyUrl, routes }) {
     .row { min-width:0; padding:10px; border:1px solid var(--line); border-radius:8px; background:var(--surface-2); }
     .row.failed { border-color:rgba(248, 113, 113, .65); }
     .row.running { border-color:rgba(56, 189, 248, .75); }
+    .row.queued { border-color:rgba(251, 191, 36, .6); }
     .row-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
     .row-title { display:flex; gap:8px; align-items:center; flex-wrap:wrap; min-width:0; }
+    .queue-layout { display:grid; grid-template-columns:minmax(0, 1fr); gap:10px; }
+    .queue-lanes { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:10px; }
+    .queue-lane { min-width:0; display:grid; align-content:start; gap:8px; }
+    .queue-lane h3 { display:flex; justify-content:space-between; align-items:center; gap:8px; min-height:26px; }
+    .queue-lane h3 span { color:var(--muted); font-size:12px; font-weight:850; }
     .mono { font-family:"JetBrains Mono", "SFMono-Regular", Consolas, monospace; font-variant-numeric:tabular-nums; }
     .subtle { color:var(--muted); font-size:12px; }
     .node-grid { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
@@ -417,6 +425,7 @@ function dashboardHtml({ baseUrl, comfyUrl, routes }) {
     .mini-json { max-height:230px; font-size:12px; }
     .empty { min-height:92px; display:grid; place-items:center; color:var(--muted); border:1px dashed #334155; border-radius:8px; background:rgba(15, 23, 42, .55); text-align:center; padding:12px; }
     .error { color:var(--bad); font-weight:800; }
+    @media (max-width: 1180px) { .queue-lanes { grid-template-columns:1fr; } }
     @media (max-width: 980px) { .grid, .ops-grid, .metrics, .split { grid-template-columns:1fr; } header { display:grid; } .actions { justify-content:flex-start; } }
     @media (prefers-reduced-motion: no-preference) { .node.active { animation:pulse 1.4s ease-in-out infinite; } @keyframes pulse { 0%, 100% { box-shadow:0 0 0 rgba(56, 189, 248, 0); } 50% { box-shadow:0 0 0 4px rgba(56, 189, 248, .18); } } }
   </style>
@@ -442,6 +451,9 @@ function dashboardHtml({ baseUrl, comfyUrl, routes }) {
       <article class="card wide" id="live-node-card"></article>
     </section>
     <section class="ops-grid">
+      <article class="card wide" id="provider-queue-card"></article>
+    </section>
+    <section class="ops-grid">
       <article class="card" id="execution-card"></article>
       <article class="card" id="jobs-card"></article>
       <article class="card wide" id="activity-card">
@@ -460,6 +472,7 @@ function dashboardHtml({ baseUrl, comfyUrl, routes }) {
     const comfyCard = document.querySelector("#comfy-card");
     const runtimeCard = document.querySelector("#runtime-card");
     const liveNodeCard = document.querySelector("#live-node-card");
+    const providerQueueCard = document.querySelector("#provider-queue-card");
     const executionCard = document.querySelector("#execution-card");
     const jobsCard = document.querySelector("#jobs-card");
     const activityLog = document.querySelector("#activity-log");
@@ -499,6 +512,7 @@ function dashboardHtml({ baseUrl, comfyUrl, routes }) {
     async function load({ quiet = false, forceDiagnostics = false } = {}) {
       if (!quiet) {
         providerCard.innerHTML = '<div class="head"><div><h2>Provider queue</h2><p>Routes: ' + esc(routes.join(', ')) + '</p></div>' + pill('loading', true) + '</div>';
+        providerQueueCard.innerHTML = '<div class="head"><div><h2>Provider queue details</h2><p>Loading queue rows...</p></div>' + pill('loading', true) + '</div>';
         liveNodeCard.innerHTML = renderLiveNodeCard();
       }
       try {
@@ -526,6 +540,7 @@ function dashboardHtml({ baseUrl, comfyUrl, routes }) {
         const canRepaintDiagnostics = forceDiagnostics || !quiet || (!isUserInspectingDiagnostics() && nextSignature !== diagnosticsSignature);
         if (canRepaintDiagnostics) {
           diagnosticsSignature = nextSignature;
+          providerQueueCard.innerHTML = renderProviderQueueCard(p);
           executionCard.innerHTML = renderExecutionCard(c);
           jobsCard.innerHTML = renderJobsCard(data.workerLog || {});
           activityLog.innerHTML = renderActivityLog({ provider: p, comfy: c, workerLog: data.workerLog || {} });
@@ -539,11 +554,13 @@ function dashboardHtml({ baseUrl, comfyUrl, routes }) {
         }
       } catch (error) {
         providerCard.innerHTML = '<div class="head"><div><h2>Provider queue</h2></div>' + pill('failed', false) + '</div><p class="error">' + esc(error.message || error) + '</p>';
+        providerQueueCard.innerHTML = '<div class="head"><div><h2>Provider queue details</h2></div>' + pill('failed', false) + '</div><p class="error">' + esc(error.message || error) + '</p>';
       }
     }
     function diagnosticSignature(p, c, log) {
       return JSON.stringify({
-        provider: [p.status, p.metrics?.queued_total, p.metrics?.running_total, p.metrics?.dead_lettered_total, p.metrics?.stale_running_total, p.metrics?.oldest_queued_age_seconds],
+        provider: [p.status, p.metrics?.queued_total, p.metrics?.running_total, p.metrics?.dead_lettered_total, p.metrics?.stale_running_total, p.metrics?.oldest_queued_age_seconds, p.queue?.returned],
+        providerItems: p.queue?.items?.map(item => [item.job_id, item.status, item.attempt_count, item.age_seconds, item.lease_age_seconds, item.last_error]) || [],
         comfy: [c.status, c.queueRunning, c.queuePending, c.failedPrompt?.promptId, c.failedPrompt?.failedNodeId],
         running: c.runningPrompts?.map(p => [p.promptId, p.nodeCount]) || [],
         pending: c.pendingPrompts?.map(p => p.promptId) || [],
@@ -553,7 +570,51 @@ function dashboardHtml({ baseUrl, comfyUrl, routes }) {
       });
     }
     function isUserInspectingDiagnostics() {
-      return document.querySelector("#execution-card details[open], #jobs-card details[open], #activity-card details[open]") || document.activeElement?.closest?.("#execution-card, #jobs-card, #activity-card, #log-lines");
+      return document.querySelector("#provider-queue-card details[open], #execution-card details[open], #jobs-card details[open], #activity-card details[open]") || document.activeElement?.closest?.("#provider-queue-card, #execution-card, #jobs-card, #activity-card, #log-lines");
+    }
+    function renderProviderQueueCard(provider) {
+      const metrics = provider?.metrics || {};
+      const queue = provider?.queue || {};
+      const items = queue.items || [];
+      const queued = Number(metrics.queued_total || 0);
+      const running = Number(metrics.running_total || 0);
+      const attention = Number(metrics.dead_lettered_total || 0) + Number(metrics.stale_running_total || 0);
+      const active = queued + running + attention;
+      const tone = provider?.ok === false ? 'bad' : attention ? 'warn' : active ? 'info' : '';
+      const status = provider?.ok === false ? (provider.status || 'unavailable') : active ? 'has work' : 'empty';
+      const rowsUnavailable = queue.available === false;
+      const missingRows = active > 0 && items.length === 0;
+      return '<div class="head"><div><h2>Provider queue details</h2><p>' + esc((provider?.routeScope || routes).join(', ') || 'No route scope') + '</p></div>' + pill(status, provider?.ok !== false, tone) + '</div>' +
+        '<div class="meta"><span>row source ' + esc(rowsUnavailable ? 'not returned by API' : 'queue.items') + '</span><span>rows returned ' + esc(queue.returned ?? items.length) + '/' + esc(queue.limit ?? 0) + '</span><span>lease TTL ' + esc(provider?.leaseTtlSeconds || 0) + 's</span><span>oldest queued ' + esc(formatDurationSeconds(metrics.oldest_queued_age_seconds || 0)) + '</span><span>active attempts ' + esc(metrics.max_active_attempt_count || 0) + '/' + esc(metrics.max_attempts || 0) + '</span></div>' +
+        (rowsUnavailable ? '<p class="error">This provider API is still returning counts only. Deploy the updated status API or point this dashboard at an API build that returns queue.items to inspect individual jobs.</p>' : '') +
+        (!rowsUnavailable && missingRows ? '<p class="error">The API reported active jobs but returned no queue rows for this route scope.</p>' : '') +
+        '<div class="queue-layout">' +
+          '<div class="queue-lanes">' +
+            queueLane('Running', items.filter(item => item.queue_lane === 'running'), 'running') +
+            queueLane('Queued', items.filter(item => item.queue_lane === 'queued'), 'queued') +
+            queueLane('Needs attention', items.filter(item => item.queue_lane === 'attention'), 'attention') +
+          '</div>' +
+        '</div>';
+    }
+    function queueLane(title, rows, lane) {
+      const body = rows.length
+        ? rows.map(item => queueRow(item)).join('')
+        : '<div class="empty">No ' + esc(title.toLowerCase()) + ' jobs.</div>';
+      return '<section class="queue-lane"><h3>' + esc(title) + '<span>' + esc(rows.length) + '</span></h3>' + body + '</section>';
+    }
+    function queueRow(item) {
+      const failed = item.queue_lane === 'attention';
+      const rowClass = failed ? 'failed' : item.queue_lane === 'running' ? 'running' : 'queued';
+      const delay = Number(item.run_after_delay_seconds || 0);
+      const timing = item.queue_lane === 'running'
+        ? 'lease age ' + formatDurationSeconds(item.lease_age_seconds || 0)
+        : delay > 0 ? 'retry in ' + formatDurationSeconds(delay) : 'age ' + formatDurationSeconds(item.age_seconds || 0);
+      return '<div class="row ' + rowClass + '">' +
+        '<div class="row-head"><div class="row-title"><strong class="mono">' + esc(shortId(item.job_id)) + '</strong>' + pill(item.status || 'unknown', !failed, failed ? 'bad' : item.queue_lane === 'running' ? 'info' : 'warn') + '</div><span class="subtle mono">' + esc(timing) + '</span></div>' +
+        '<div class="meta"><span>route ' + esc(item.route_id || 'n/a') + '</span><span>attempt ' + esc(item.attempt_count || 0) + '/' + esc(item.max_attempts || 0) + '</span><span>created ' + esc(formatDateTime(item.created_at)) + '</span><span>updated ' + esc(formatDateTime(item.updated_at)) + '</span>' + (item.locked_by ? '<span>worker ' + esc(item.locked_by) + '</span>' : '') + (item.lease_expires_at ? '<span>lease expires ' + esc(formatTime(item.lease_expires_at)) + '</span>' : '') + '</div>' +
+        (item.last_error ? '<p class="error">' + esc(item.last_error) + '</p>' : '') +
+        '<div class="split"><details><summary>Inputs</summary>' + jsonBlock(item.input_summary || {}) + '</details><details><summary>Result / output</summary>' + jsonBlock(item.result_summary || {}) + '</details></div>' +
+      '</div>';
     }
     function renderLiveNodeCard() {
       const node = liveNode.nodeId ? ('Node ' + liveNode.nodeId + (liveNode.nodeType ? ' / ' + liveNode.nodeType : '')) : 'No live node event yet';
@@ -640,6 +701,17 @@ function dashboardHtml({ baseUrl, comfyUrl, routes }) {
         meta: ['running ' + comfyRunning, 'pending ' + comfyPending, 'failed node ' + (failedNode || 'none')],
         detail: comfy?.failedPrompt?.error || comfy?.detail || ''
       }));
+      (provider.queue?.items || []).slice(0, 8).forEach(item => {
+        const failed = item.queue_lane === 'attention';
+        rows.push(activityRow({
+          title: 'Provider job ' + shortId(item.job_id),
+          status: item.status || 'unknown',
+          tone: failed ? 'bad' : item.queue_lane === 'running' ? 'info' : 'warn',
+          time: item.queue_lane === 'running' ? formatDurationSeconds(item.lease_age_seconds || 0) : formatDurationSeconds(item.age_seconds || 0),
+          meta: ['route ' + (item.route_id || 'n/a'), 'attempt ' + (item.attempt_count || 0) + '/' + (item.max_attempts || 0), item.locked_by ? 'worker ' + item.locked_by : 'not leased'],
+          detail: item.last_error || ''
+        }));
+      });
       (workerLog.recentJobs || []).slice(0, 6).forEach(job => {
         rows.push(activityRow({
           title: 'Worker job ' + shortId(job.job),
@@ -726,6 +798,15 @@ function dashboardHtml({ baseUrl, comfyUrl, routes }) {
     function safeJson(value) { try { return JSON.parse(value); } catch { return null; } }
     function shortId(value) { const text = String(value || ''); return text.length > 18 ? text.slice(0, 8) + '...' + text.slice(-6) : text; }
     function formatTime(value) { return value ? new Date(value).toLocaleTimeString() : 'n/a'; }
+    function formatDateTime(value) { return value ? new Date(value).toLocaleString() : 'n/a'; }
+    function formatDurationSeconds(value) {
+      const seconds = Math.max(0, Math.round(Number(value || 0)));
+      if (seconds < 60) return seconds + 's';
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return minutes + 'm ' + Math.round(seconds % 60) + 's';
+      const hours = Math.floor(minutes / 60);
+      return hours + 'h ' + Math.round(minutes % 60) + 'm';
+    }
     function formatDurationMs(value) {
       const ms = Number(value || 0);
       if (!Number.isFinite(ms) || ms <= 0) return '0ms';
@@ -801,6 +882,43 @@ function normalizeMetrics(value) {
     oldest_queued_age_seconds: safeNumber(metrics.oldest_queued_age_seconds),
     max_active_attempt_count: safeNumber(metrics.max_active_attempt_count),
     max_attempts: safeNumber(metrics.max_attempts)
+  };
+}
+
+function normalizeProviderQueue(value = {}) {
+  const queue = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  const items = Array.isArray(queue.items) ? queue.items.map(normalizeProviderQueueItem).filter(Boolean) : [];
+  return {
+    limit: safeNumber(queue.limit),
+    returned: safeNumber(queue.returned ?? items.length),
+    items
+  };
+}
+
+function normalizeProviderQueueItem(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const status = safeText(value.status, "unknown");
+  const queueLane = safeText(value.queue_lane, status === "running" ? "running" : status === "queued" ? "queued" : "attention");
+  return {
+    job_id: safeText(value.job_id, "unknown"),
+    route_id: safeText(value.route_id, "unknown"),
+    status,
+    queue_lane: ["running", "queued", "attention"].includes(queueLane) ? queueLane : "attention",
+    created_at: safeText(value.created_at, ""),
+    updated_at: safeText(value.updated_at, ""),
+    locked_at: safeText(value.locked_at, ""),
+    run_after: safeText(value.run_after, ""),
+    lease_expires_at: safeText(value.lease_expires_at, ""),
+    locked_by: safeText(value.locked_by, ""),
+    attempt_count: safeNumber(value.attempt_count),
+    max_attempts: safeNumber(value.max_attempts),
+    age_seconds: safeNumber(value.age_seconds),
+    updated_age_seconds: safeNumber(value.updated_age_seconds),
+    lease_age_seconds: safeNumber(value.lease_age_seconds),
+    run_after_delay_seconds: safeNumber(value.run_after_delay_seconds),
+    last_error: sanitizeDiagnosticText(value.last_error),
+    input_summary: summarizeDiagnosticObject(value.input_summary ?? {}),
+    result_summary: summarizeDiagnosticObject(value.result_summary ?? {})
   };
 }
 

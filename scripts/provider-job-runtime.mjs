@@ -124,6 +124,52 @@ export function createProviderJobRuntime({
          FROM scoped_jobs`,
         [selectedRouteIds, leaseSeconds]
       );
+      const queueResult = await pool.query(
+        `SELECT
+           id,
+           route_id,
+           status,
+           created_at,
+           updated_at,
+           locked_at,
+           locked_by,
+           run_after,
+           attempt_count,
+           max_attempts,
+           last_error,
+           result,
+           payload,
+           COALESCE(EXTRACT(EPOCH FROM (NOW() - created_at))::int, 0) AS age_seconds,
+           COALESCE(EXTRACT(EPOCH FROM (NOW() - updated_at))::int, 0) AS updated_age_seconds,
+           CASE
+             WHEN locked_at IS NULL THEN 0
+             ELSE COALESCE(EXTRACT(EPOCH FROM (NOW() - locked_at))::int, 0)
+           END AS lease_age_seconds,
+           CASE
+             WHEN run_after IS NULL THEN 0
+             ELSE COALESCE(EXTRACT(EPOCH FROM (run_after - NOW()))::int, 0)
+           END AS run_after_delay_seconds,
+           CASE
+             WHEN locked_at IS NULL THEN NULL
+             ELSE locked_at + ($2::int * INTERVAL '1 second')
+           END AS lease_expires_at
+         FROM api_jobs
+         WHERE route_id = ANY($1::text[])
+           AND (
+             status IN ('queued', 'running', 'dead_lettered')
+             OR (status = 'failed' AND result->>'status' = 'dead_lettered')
+           )
+         ORDER BY
+           CASE
+             WHEN status = 'running' THEN 0
+             WHEN status = 'queued' THEN 1
+             ELSE 2
+           END,
+           CASE WHEN status = 'queued' THEN created_at END ASC NULLS LAST,
+           updated_at DESC
+         LIMIT $3`,
+        [selectedRouteIds, leaseSeconds, 25]
+      );
       const metrics = normalizeProviderStatusMetrics(result.rows[0] ?? {});
       return {
         statusCode: 200,
@@ -133,6 +179,11 @@ export function createProviderJobRuntime({
           route_scope: selectedRouteIds,
           lease_ttl_seconds: leaseSeconds,
           metrics,
+          queue: {
+            limit: 25,
+            returned: queueResult.rows.length,
+            items: queueResult.rows.map((row) => normalizeProviderQueueStatusRow(row))
+          },
           artifact_upload: providerArtifactUploadContract()
         }
       };
@@ -492,6 +543,71 @@ function normalizeProviderStatusMetrics(row) {
     last_succeeded_at: row.last_succeeded_at ? safeDateIso(row.last_succeeded_at) : null,
     last_dead_lettered_at: row.last_dead_lettered_at ? safeDateIso(row.last_dead_lettered_at) : null
   };
+}
+
+function normalizeProviderQueueStatusRow(row) {
+  const status = safeId(row.status, "unknown");
+  const sanitizedPayload = sanitizeProviderJobPayload(normalizeJson(row.payload));
+  return {
+    job_id: safeId(row.id, "unknown"),
+    route_id: safeId(row.route_id, "unknown"),
+    status,
+    queue_lane: status === "running" ? "running" : status === "queued" ? "queued" : "attention",
+    created_at: row.created_at ? safeDateIso(row.created_at) : null,
+    updated_at: row.updated_at ? safeDateIso(row.updated_at) : null,
+    locked_at: row.locked_at ? safeDateIso(row.locked_at) : null,
+    run_after: row.run_after ? safeDateIso(row.run_after) : null,
+    lease_expires_at: row.lease_expires_at ? safeDateIso(row.lease_expires_at) : null,
+    locked_by: row.locked_by ? safeText(row.locked_by, "") : "",
+    attempt_count: Number(row.attempt_count ?? 0),
+    max_attempts: Number(row.max_attempts ?? 0),
+    age_seconds: Number(row.age_seconds ?? 0),
+    updated_age_seconds: Number(row.updated_age_seconds ?? 0),
+    lease_age_seconds: Number(row.lease_age_seconds ?? 0),
+    run_after_delay_seconds: Number(row.run_after_delay_seconds ?? 0),
+    last_error: safeDiagnosticText(row.last_error, 320),
+    input_summary: summarizeProviderQueuePayload(sanitizedPayload),
+    result_summary: summarizeProviderDiagnostic(normalizeJson(row.result), 0)
+  };
+}
+
+function summarizeProviderQueuePayload(payload) {
+  const body = payload?.body && typeof payload.body === "object" && !Array.isArray(payload.body) ? payload.body : {};
+  const requestContext =
+    payload?.requestContext && typeof payload.requestContext === "object" && !Array.isArray(payload.requestContext)
+      ? payload.requestContext
+      : {};
+  return {
+    payload_keys: Object.keys(payload ?? {}).slice(0, 18),
+    body_keys: Object.keys(body).slice(0, 24),
+    body: summarizeProviderDiagnostic(body, 0),
+    request_context: summarizeProviderDiagnostic(requestContext, 0)
+  };
+}
+
+function summarizeProviderDiagnostic(value, depth) {
+  if (value === null || value === undefined) return value;
+  if (typeof value === "string") return safeDiagnosticText(value, 220);
+  if (typeof value === "number" || typeof value === "boolean") return value;
+  if (Array.isArray(value)) return value.slice(0, 12).map((item) => summarizeProviderDiagnostic(item, depth + 1));
+  if (typeof value !== "object") return safeDiagnosticText(value, 220);
+  if (depth >= 3) return safeDiagnosticText(JSON.stringify(value), 220);
+  return Object.fromEntries(
+    Object.entries(value)
+      .slice(0, 24)
+      .map(([key, child]) => [key, summarizeProviderDiagnostic(child, depth + 1)])
+  );
+}
+
+function safeDiagnosticText(value, maxLength = 220) {
+  const text = String(value ?? "")
+    .replace(/\u0000/g, "")
+    .replace(/\bBearer\s+[A-Za-z0-9._~+/=-]{8,}/gi, "Bearer <redacted>")
+    .replace(/(TOKEN|SECRET|KEY|PASSWORD)=([^;\s]+)/gi, "$1=<redacted>")
+    .replace(/("?(?:token|secret|password|api[_-]?key|database_url)"?\s*[:=]\s*)("[^"]+"|[^,\s}]+)/gi, "$1<redacted>")
+    .replace(/\s+/g, " ")
+    .trim();
+  return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
 }
 
 async function failProviderJob({ postgresRuntime, job, body, workerId, retryBackoffSeconds, now }) {

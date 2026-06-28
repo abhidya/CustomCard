@@ -287,14 +287,15 @@ export const apiRouteContracts = [
       "succeeded_total",
       "dead_lettered_total",
       "oldest_queued_age_seconds",
+      "queue.items",
       "artifact_upload"
     ],
     idempotencyKeyRequired: false,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
     piiPolicy:
-      "Provider-token-protected workers can read aggregate queue health only for explicitly allowed route ids; no customer payloads, provider credentials, database credentials, or object-store credentials are returned.",
-    backedBy: ["api_jobs", "provider-token auth", "postgres aggregate status"]
+      "Provider-token-protected workers can read aggregate queue health and compact sanitized queue rows only for explicitly allowed route ids; customer session tokens, provider credentials, database credentials, object-store credentials, and inline image bytes are never returned.",
+    backedBy: ["api_jobs", "provider-token auth", "postgres aggregate status", "sanitized queue diagnostics"]
   },
   {
     id: "admin-provider-job-status",
@@ -315,14 +316,15 @@ export const apiRouteContracts = [
       "oldest_queued_age_seconds",
       "last_succeeded_at",
       "last_dead_lettered_at",
+      "queue.items",
       "artifact_upload"
     ],
     idempotencyKeyRequired: false,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
     piiPolicy:
-      "Admin-session-protected operators can read aggregate provider queue health for safe queue-backed route ids; no customer payloads, provider credentials, database credentials, object-store credentials, or worker bearer tokens are returned.",
-    backedBy: ["api_jobs", "admin-session auth", "postgres aggregate status"]
+      "Admin-session-protected operators can read aggregate provider queue health and compact sanitized queue rows for safe queue-backed route ids; provider credentials, database credentials, object-store credentials, worker bearer tokens, and inline image bytes are never returned.",
+    backedBy: ["api_jobs", "admin-session auth", "postgres aggregate status", "sanitized queue diagnostics"]
   },
   {
     id: "provider-job-complete",
