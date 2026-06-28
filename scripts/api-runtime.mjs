@@ -1795,6 +1795,7 @@ async function persistCardGalleryPostgres({ client, authContext, bodyText }) {
 
 async function readAdminRuntimeConfigPostgres({ getPool, key }) {
   const pool = await getPool();
+  await ensureAdminRuntimeConfigsPostgres(pool);
   const result = await pool.query(
     `SELECT key, payload, version, updated_by, updated_at
      FROM admin_runtime_configs
@@ -1803,6 +1804,23 @@ async function readAdminRuntimeConfigPostgres({ getPool, key }) {
     [key]
   );
   return result.rows[0];
+}
+
+async function ensureAdminRuntimeConfigsPostgres(executor) {
+  await executor.query(
+    `CREATE TABLE IF NOT EXISTS admin_runtime_configs (
+       key TEXT PRIMARY KEY,
+       payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+       version INTEGER NOT NULL DEFAULT 0 CHECK (version >= 0),
+       updated_by TEXT,
+       pii_free BOOLEAN NOT NULL DEFAULT TRUE CHECK (pii_free = TRUE),
+       raw_customer_content_stored BOOLEAN NOT NULL DEFAULT FALSE CHECK (raw_customer_content_stored = FALSE),
+       credentials_stored BOOLEAN NOT NULL DEFAULT FALSE CHECK (credentials_stored = FALSE),
+       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+     )`
+  );
+  await executor.query("CREATE INDEX IF NOT EXISTS idx_admin_runtime_configs_updated ON admin_runtime_configs(updated_at DESC)");
 }
 
 async function readAdminAiFlowConfigPostgres({ getPool, env }) {
@@ -1822,6 +1840,7 @@ async function readAdminAiFlowConfigPostgres({ getPool, env }) {
 }
 
 async function persistAdminAiFlowConfigPostgres({ client, authContext, bodyText, env }) {
+  await ensureAdminRuntimeConfigsPostgres(client);
   const existing = await client.query(
     `SELECT payload, version, updated_by, updated_at
      FROM admin_runtime_configs
@@ -1875,6 +1894,7 @@ async function readAdminSafetyControlsPostgres({ getPool }) {
 }
 
 async function persistAdminSafetyControlsPostgres({ client, authContext, bodyText }) {
+  await ensureAdminRuntimeConfigsPostgres(client);
   const existing = await client.query(
     `SELECT payload, version
      FROM admin_runtime_configs

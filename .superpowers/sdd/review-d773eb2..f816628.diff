@@ -1,0 +1,529 @@
+﻿# Review package: d773eb23..f81662863f23f07ed728abb1a7aad1cb26c6f464
+
+## Commits
+f8166286 Integrate route activation into generator and worker
+
+## Files changed
+ scripts/ai-card-generator.mjs       |  78 ++++++--------------
+ scripts/provider-http-worker.mjs    |  26 ++-----
+ src/aiCardGenerator.test.ts         |  55 ++++++++++++++
+ tests/provider-http-worker.test.mjs | 139 +++++++++++++++++++++++++++++++++++-
+ 4 files changed, 220 insertions(+), 78 deletions(-)
+
+## Diff
+diff --git a/scripts/ai-card-generator.mjs b/scripts/ai-card-generator.mjs
+index af9bd707..32257fa2 100644
+--- a/scripts/ai-card-generator.mjs
++++ b/scripts/ai-card-generator.mjs
+@@ -2,20 +2,24 @@ import { lookup as lookupDns } from "node:dns/promises";
+ import { existsSync, readFileSync } from "node:fs";
+ import { request as httpRequest } from "node:http";
+ import { isIP } from "node:net";
+ import { resolve } from "node:path";
+ import {
+   adapterMissingEnv,
+   modelForAiAdapter,
+   normalizeAiFlowAdminConfigs,
+   resolveAiFlowConfig
+ } from "../src/aiFlowConfigData.mjs";
++import {
++  loadAiRouteActivationContext,
++  resolveAiRouteActivation
++} from "../src/aiRouteActivation.mjs";
+ import { createAiFlowCostGate } from "./ai-flow-cost-gate.mjs";
+ import {
+   buildCardCopyPrompt,
+   buildCardCopyResponseFormat,
+   createAiCardDraftPolicy,
+   panelDefaults,
+   requiredPanelIds
+ } from "./ai-card-draft-policy.mjs";
+ import {
+   createAiProviderExecutionAdapter,
+@@ -53,23 +57,29 @@ export function loadLocalAiEnvFiles({ cwd = process.cwd(), target = process.env
+ export function createAiCardGenerationService({
+   env = process.env,
+   fetchImpl = globalThis.fetch,
+   costGate = createAiFlowCostGate(),
+   aiFlowAdminConfig = [],
+   loadAiFlowAdminConfig
+ } = {}) {
+
+   return {
+     async generateCard(body, requestContext = {}) {
+-      const adminConfig = await runtimeAiFlowConfig(body, env, requestContext, aiFlowAdminConfig, loadAiFlowAdminConfig);
+-      const copyFlow = resolveAiFlowConfig("card-copy", env, adminConfig);
+-      const imageFlow = resolveAiFlowConfig("card-image", env, adminConfig);
++      const activationContext = await loadAiRouteActivationContext({
++        env,
++        body,
++        requestContext,
++        serviceAiFlowAdminConfig: aiFlowAdminConfig,
++        loadAiFlowAdminConfig
++      });
++      const copyFlow = resolveAiRouteActivation("card-copy", activationContext).flow;
++      const imageFlow = resolveAiRouteActivation("card-image", activationContext).flow;
+       const draftInput = normalizeCardInput(body);
+       const providerCallEvents = [];
+
+       const copyResult = await generateValidatedCardCopy({
+         flow: copyFlow,
+         env,
+         fetchImpl,
+         costGate,
+         requestContext,
+         providerCallEvents,
+@@ -145,22 +155,28 @@ export function createAiCardGenerationService({
+         copyFlow,
+         copyProvider: copyResult.adapterId,
+         imageFlow,
+         imageProvider: imageResult.adapterId,
+         providerCallEvents,
+         fallbackQueued
+       });
+     },
+
+     async respondChat(body, requestContext = {}) {
+-      const adminConfig = await runtimeAiFlowConfig(body, env, requestContext, aiFlowAdminConfig, loadAiFlowAdminConfig);
+-      const flow = resolveAiFlowConfig("customer-chat", env, adminConfig);
++      const activationContext = await loadAiRouteActivationContext({
++        env,
++        body,
++        requestContext,
++        serviceAiFlowAdminConfig: aiFlowAdminConfig,
++        loadAiFlowAdminConfig
++      });
++      const flow = resolveAiRouteActivation("customer-chat", activationContext).flow;
+
+       const input = normalizeChatInput(body);
+       const providerCallEvents = [];
+       let assistantMessage;
+
+       if (!flow.readyForLiveCalls) {
+         const providerFailure = flow.blockedReasons[0] ?? "Live customer-chat provider is disabled.";
+         return providerUnavailableResponse({
+           statusCode: 503,
+           flowKey: "customer_chat",
+@@ -292,72 +308,20 @@ function aiCostGateInput({ flow, requestContext, routeId, requestUnits, phase, m
+     idempotencyKey: requestContext.idempotencyKey,
+     authContext: requestContext.authContext,
+     fallbackFromAdapterId: fallbackFromAdapterId ?? flow.primaryAdapterId,
+     metadata: {
+       phase,
+       ...metadata
+     }
+   };
+ }
+
+-async function runtimeAiFlowConfig(body, env, requestContext = {}, serviceAiFlowAdminConfig = [], loadAiFlowAdminConfig) {
+-  return mergeAiFlowAdminConfigs(
+-    normalizeOptionalAiFlowAdminConfigs(serviceAiFlowAdminConfig, env),
+-    serverScopedAiFlowConfig(env),
+-    normalizeOptionalAiFlowAdminConfigs(await loadedAiFlowAdminConfig(loadAiFlowAdminConfig), env),
+-    normalizeOptionalAiFlowAdminConfigs(requestContext.aiFlowAdminConfig, env),
+-    requestScopedAiFlowConfig(body, env, requestContext)
+-  );
+-}
+-
+-async function loadedAiFlowAdminConfig(loadAiFlowAdminConfig) {
+-  if (typeof loadAiFlowAdminConfig !== "function") return [];
+-  try {
+-    const loaded = await loadAiFlowAdminConfig();
+-    return loaded?.configs ?? loaded?.aiFlowConfigs ?? loaded?.flows ?? loaded ?? [];
+-  } catch {
+-    return [];
+-  }
+-}
+-
+-function normalizeOptionalAiFlowAdminConfigs(input, env) {
+-  return Array.isArray(input) && input.length > 0 ? normalizeAiFlowAdminConfigs(input, env) : [];
+-}
+-
+-function serverScopedAiFlowConfig(env) {
+-  const raw = env.CUSTOMCARD_AI_FLOW_CONFIG_JSON ?? env.CUSTOMCARD_AI_FLOW_ADMIN_CONFIG_JSON ?? "";
+-  if (!raw) return [];
+-  try {
+-    const parsed = JSON.parse(String(raw));
+-    return normalizeAiFlowAdminConfigs(Array.isArray(parsed) ? parsed : parsed.flows ?? parsed.aiFlowConfig ?? parsed.ai_flow_config ?? [], env);
+-  } catch {
+-    return [];
+-  }
+-}
+-
+-function mergeAiFlowAdminConfigs(...groups) {
+-  const byFlowId = new Map();
+-  for (const group of groups) {
+-    for (const config of Array.isArray(group) ? group : []) {
+-      if (!config?.flowId) continue;
+-      byFlowId.set(config.flowId, config);
+-    }
+-  }
+-  if (byFlowId.size === 0) return [];
+-  return normalizeAiFlowAdminConfigs(Array.from(byFlowId.values()));
+-}
+-
+-function requestScopedAiFlowConfig(body, env, requestContext = {}) {
+-  if (requestContext.trustRequestAiFlowConfig !== true) return [];
+-  return normalizeAiFlowAdminConfigs(body.aiFlowConfig ?? body.ai_flow_config ?? [], env);
+-}
+-
+ function isAiEnvKey(key) {
+   return /^(CUSTOMCARD_AI_|CUSTOMCARD_RUNCOMFY_|CUSTOMCARD_LOCAL_LLM_|CUSTOMCARD_COMFYUI_|ANTHROPIC_|OPENAI_|CLOUDFLARE_|COMFYUI_|GOOGLE_|GEMINI_|HUGGINGFACE_|GROQ_|TOGETHER_|MISTRAL_|DEEPSEEK_|DEEPAI_|FIREWORKS_|PERPLEXITY_|XAI_|REPLICATE_|STABILITY_|FAL_|BFL_|RUNCOMFY_|LMSTUDIO_|KOBOLDCPP_)/.test(key);
+ }
+
+ const textProviderExecutors = {
+   "cloudflare-workers-ai-chat": executeCloudflareWorkersAiChat,
+   "openai-responses-chat": executeOpenAiResponsesChat,
+   "anthropic-messages-chat": executeAnthropicMessagesChat,
+   "google-gemini-chat": executeGoogleGeminiChat
+ };
+diff --git a/scripts/provider-http-worker.mjs b/scripts/provider-http-worker.mjs
+index b5150168..29856eb3 100644
+--- a/scripts/provider-http-worker.mjs
++++ b/scripts/provider-http-worker.mjs
+@@ -1,17 +1,17 @@
+ import { existsSync, readFileSync } from "node:fs";
+ import { resolve } from "node:path";
+ import { pathToFileURL } from "node:url";
+ import {
+-  normalizeAiFlowAdminConfigs,
+-  resolveAiFlowConfig
+-} from "../src/aiFlowConfigData.mjs";
++  createAiRouteActivationContext,
++  resolveAiRouteActivation
++} from "../src/aiRouteActivation.mjs";
+ import { createAiCardGenerationService, loadLocalAiEnvFiles } from "./ai-card-generator.mjs";
+ import { resolveLocalComfyWorkerEnv } from "./local-comfy-worker.mjs";
+ import {
+   buildProviderWorkerResult,
+   hasLiveProviderNetworkCall
+ } from "./provider-worker-payload-contract.mjs";
+
+ export function resolveProviderHttpWorkerEnv(env = process.env) {
+   const resolved = resolveLocalComfyWorkerEnv(env);
+   resolved.CUSTOMCARD_PROVIDER_API_BASE_URL =
+@@ -272,23 +272,23 @@ function parseDotenv(text) {
+   }
+   return parsed;
+ }
+
+ function isProviderWorkerEnvKey(key) {
+   return /^(CUSTOMCARD_PROVIDER_.+|CUSTOMCARD_HOSTED_API_BASE_URL|PUBLIC_APP_ORIGIN|CUSTOMCARD_AI_|CUSTOMCARD_RUNCOMFY_|CUSTOMCARD_COMFYUI_|COMFYUI_|CLOUDFLARE_|RUNCOMFY_)/
+     .test(key);
+ }
+
+ function providerAiFlowReadiness(env) {
+-  const adminConfig = providerAiFlowAdminConfig(env);
+-  const cardCopy = resolveAiFlowConfig("card-copy", env, adminConfig);
+-  const cardImage = resolveAiFlowConfig("card-image", env, adminConfig);
++  const activationContext = createAiRouteActivationContext({ env });
++  const cardCopy = resolveAiRouteActivation("card-copy", activationContext).flow;
++  const cardImage = resolveAiRouteActivation("card-image", activationContext).flow;
+   return {
+     cardCopy: flowReadinessSummary(cardCopy),
+     cardImage: flowReadinessSummary(cardImage)
+   };
+ }
+
+ function flowReadinessSummary(flow) {
+   return {
+     flowId: flow.flowId,
+     adapterId: flow.primaryAdapterId,
+@@ -298,34 +298,20 @@ function flowReadinessSummary(flow) {
+     blockedReasons: flow.blockedReasons
+   };
+ }
+
+ function providerAiFlowBlockers(readiness) {
+   return [readiness.cardCopy, readiness.cardImage].flatMap((flow) =>
+     flow.readyForLiveCalls ? [] : flow.blockedReasons.map((reason) => `${flow.flowId}: ${reason}`)
+   );
+ }
+
+-function providerAiFlowAdminConfig(env) {
+-  const raw = env.CUSTOMCARD_AI_FLOW_CONFIG_JSON ?? env.CUSTOMCARD_AI_FLOW_ADMIN_CONFIG_JSON ?? "";
+-  if (!raw) return [];
+-  try {
+-    const parsed = JSON.parse(String(raw));
+-    return normalizeAiFlowAdminConfigs(
+-      Array.isArray(parsed) ? parsed : parsed.flows ?? parsed.aiFlowConfig ?? parsed.ai_flow_config ?? [],
+-      env
+-    );
+-  } catch {
+-    return [];
+-  }
+-}
+-
+ function providerRouteScope(routes, env) {
+   const configured = Array.isArray(routes) && routes.length > 0
+     ? routes
+     : String(env.CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS ?? "ai-card-generate").split(/[,\s]+/);
+   const normalized = configured.map((routeId) => String(routeId ?? "").trim()).filter(Boolean);
+   return Array.from(new Set(normalized.length > 0 ? normalized : ["ai-card-generate"]));
+ }
+
+ function workerBatchSize(env) {
+   return safeIntegerEnv(env.CUSTOMCARD_PROVIDER_WORKER_BATCH_SIZE ?? env.CUSTOMCARD_WORKER_BATCH_SIZE, 1, 1, 5);
+diff --git a/src/aiCardGenerator.test.ts b/src/aiCardGenerator.test.ts
+index 4b4e9db9..15cc86e6 100644
+--- a/src/aiCardGenerator.test.ts
++++ b/src/aiCardGenerator.test.ts
+@@ -182,20 +182,75 @@ describe("AI card generator service", () => {
+         "deepai-text2img-image",
+         "google-gemini-image",
+         "huggingface-image",
+         "local-comfyui-api-image",
+         "openai-images",
+         "runcomfy-model-api-image"
+       ]
+     });
+   });
+
++  it("only honors request aiFlowConfig overrides when the request context is trusted", async () => {
++    const fetchImpl = vi.fn(async () =>
++      new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
++        status: 200,
++        headers: { "content-type": "application/json" }
++      })
++    );
++    const service = createAiCardGenerationService({
++      env: {
++        CLOUDFLARE_ACCOUNT_ID: "acct_123",
++        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
++        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel
++      },
++      fetchImpl
++    });
++    const body = {
++      ...cardRequest,
++      aiFlowConfig: [
++        {
++          flowId: "card-copy",
++          primaryAdapterId: "huggingface-chat",
++          liveProviderCallsEnabled: false
++        }
++      ]
++    };
++
++    const untrustedResult = await service.generateCard(body, {
++      rateKey: "test-untrusted-ai-flow-config",
++      trustRequestAiFlowConfig: false
++    });
++    const trustedResult = await service.generateCard(body, {
++      rateKey: "test-trusted-ai-flow-config",
++      trustRequestAiFlowConfig: true
++    });
++
++    expect(untrustedResult.statusCode).toBe(200);
++    expect(untrustedResult.payload).toMatchObject({
++      ai_flow: {
++        card_copy: expect.objectContaining({
++          adapter_id: "cloudflare-workers-ai-chat"
++        })
++      }
++    });
++    expect(trustedResult.statusCode).toBe(503);
++    expect(trustedResult.payload).toMatchObject({
++      ai_flow: {
++        card_copy: expect.objectContaining({
++          adapter_id: "",
++          provider_failure: expect.stringContaining("disabled")
++        })
++      }
++    });
++    expect(fetchImpl).toHaveBeenCalledTimes(1);
++  });
++
+   it("can generate a full card through localhost-only LLM and ComfyUI adapters", async () => {
+     let imageIndex = 0;
+     const fetchImpl = vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
+       const requestUrl = String(url);
+       if (requestUrl === "http://127.0.0.1:1234/v1/chat/completions") {
+         const body = JSON.parse(String(init?.body));
+         expect(body.model).toBe("local-qwen-card-copy");
+         return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
+           status: 200,
+           headers: { "content-type": "application/json" }
+diff --git a/tests/provider-http-worker.test.mjs b/tests/provider-http-worker.test.mjs
+index efb70bfd..09f505f8 100644
+--- a/tests/provider-http-worker.test.mjs
++++ b/tests/provider-http-worker.test.mjs
+@@ -1,28 +1,39 @@
+-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
++import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+ import { tmpdir } from "node:os";
+ import { join } from "node:path";
+ import { afterEach, describe, expect, it, vi } from "vitest";
+ import {
+   createProviderHttpWorkerRuntime,
+   loadProviderWorkerEnvFiles
+ } from "../scripts/provider-http-worker.mjs";
+
+ const providerBaseEnv = {
+   CUSTOMCARD_PROVIDER_API_BASE_URL: "https://customcard.example",
+   CUSTOMCARD_PROVIDER_WORKER_TOKEN: "test-provider-worker-token-32-chars",
+   CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS: "ai-card-generate",
+   CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "local-comfyui-api-image",
+   CUSTOMCARD_AI_CARD_IMAGE_FALLBACK_ADAPTER_ID: "local-comfyui-api-image",
+   CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188"
+ };
+
++const cardCopyResponse = {
++  theme_guide: "warm botanical birthday",
++  panels: [
++    { id: "front", headline: "Happy Birthday Sara", body: "Wishing you a day full of green trails and good coffee.", image_prompt: "front botanical art", image_negative_prompt: "text", art_direction: "front art" },
++    { id: "inside-left", headline: "A little sunshine", body: "May the morning feel bright and unhurried.", image_prompt: "inside-left botanical art", image_negative_prompt: "text", art_direction: "inside-left art" },
++    { id: "inside-right", headline: "From Manny", body: "I hope this year brings more hikes, more laughs, and more tiny wonders.", image_prompt: "inside-right botanical art", image_negative_prompt: "text", art_direction: "inside-right art" },
++    { id: "back", headline: "CustomCard", body: "Made with CustomCard. Printed locally.", image_prompt: "back botanical art", image_negative_prompt: "text", art_direction: "back art" }
++  ],
++  memory_citations: ["She keeps a fern by the kitchen window."]
++};
++
+ let tempDirs = [];
+
+ afterEach(() => {
+   for (const dir of tempDirs) rmSync(dir, { recursive: true, force: true });
+   tempDirs = [];
+ });
+
+ describe("provider HTTP worker", () => {
+   it("loads provider-specific AI overrides after ambient local AI env", () => {
+     const cwd = mkdtempSync(join(tmpdir(), "customcard-provider-http-worker-"));
+@@ -75,11 +86,137 @@ describe("provider HTTP worker", () => {
+
+     expect(report).toMatchObject({
+       status: "blocked",
+       leased: 0,
+       processed: 0,
+       copyAdapter: "cloudflare-workers-ai-chat"
+     });
+     expect(report.blockers.join(" ")).toContain("cloudflare-workers-ai-chat missing");
+     expect(fetchImpl).not.toHaveBeenCalled();
+   });
++
++  it("uses the same server-scoped route config for readiness and leased generator execution", async () => {
++    const completionBodies = [];
++    const env = {
++      CUSTOMCARD_PROVIDER_API_BASE_URL: "https://customcard.example",
++      CUSTOMCARD_PROVIDER_WORKER_TOKEN: "test-provider-worker-token-32-chars",
++      CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS: "ai-card-generate",
++      OPENAI_API_KEY: "openai_token",
++      CUSTOMCARD_AI_FLOW_CONFIG_JSON: JSON.stringify({
++        flows: [
++          {
++            flowId: "card-copy",
++            primaryAdapterId: "openai-responses-chat",
++            fallbackAdapterId: "openai-responses-chat",
++            model: "gpt-4.1-mini",
++            liveProviderCallsEnabled: true
++          },
++          {
++            flowId: "card-image",
++            primaryAdapterId: "openai-images",
++            fallbackAdapterId: "openai-images",
++            model: "gpt-image-2",
++            liveProviderCallsEnabled: true
++          }
++        ]
++      })
++    };
++    const fetchImpl = vi.fn(async (url, init) => {
++      const requestUrl = String(url);
++      if (requestUrl === "https://customcard.example/api/provider/jobs/lease") {
++        return new Response(
++          JSON.stringify({
++            jobs: [
++              {
++                job_id: "job_123",
++                lease_token: "lease_123",
++                route_id: "ai-card-generate",
++                payload: {
++                  body: {
++                    sender: "Manny",
++                    recipient: "Sara",
++                    relationship: "friend",
++                    occasion: "birthday",
++                    tone: "warm",
++                    style: "botanical",
++                    language: "English",
++                    personal_note: "She loves morning hikes.",
++                    memory_notes: ["She keeps a fern by the kitchen window."]
++                  },
++                  requestContext: {
++                    rateKey: "provider-worker-route-config"
++                  }
++                }
++              }
++            ]
++          }),
++          { status: 200, headers: { "content-type": "application/json" } }
++        );
++      }
++      if (requestUrl === "https://api.openai.com/v1/responses") {
++        return new Response(
++          JSON.stringify({
++            choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }]
++          }),
++          { status: 200, headers: { "content-type": "application/json" } }
++        );
++      }
++      if (requestUrl === "https://api.openai.com/v1/images/generations") {
++        return new Response(JSON.stringify({ data: [{ b64_json: "iVBORw0KGgo=" }] }), {
++          status: 200,
++          headers: { "content-type": "application/json" }
++        });
++      }
++      if (requestUrl === "https://customcard.example/api/provider/jobs/job_123/complete") {
++        completionBodies.push(JSON.parse(String(init?.body)));
++        return new Response(JSON.stringify({ ok: true }), {
++          status: 200,
++          headers: { "content-type": "application/json" }
++        });
++      }
++      throw new Error(`Unexpected fetch ${requestUrl}`);
++    });
++    const runtime = createProviderHttpWorkerRuntime({ env, fetchImpl });
++
++    const report = await runtime.runOnce();
++    const completion = completionBodies[0];
++
++    expect(runtime.describe()).toMatchObject({
++      copyAdapter: "openai-responses-chat",
++      copyModel: "gpt-4.1-mini"
++    });
++    expect(report).toMatchObject({
++      status: "ready",
++      leased: 1,
++      processed: 1,
++      succeeded: 1,
++      failed: 0
++    });
++    expect(completion).toMatchObject({
++      status: "succeeded",
++      result: {
++        httpStatusCode: 200,
++        payload: {
++          ai_flow: {
++            card_copy: expect.objectContaining({
++              adapter_id: "openai-responses-chat",
++              model: "gpt-4.1-mini"
++            })
++          }
++        }
++      }
++    });
++  });
++
++  it("keeps raw node mjs runtime files off TypeScript-only control-plane imports", () => {
++    const runtimeFiles = [
++      readFileSync(new URL("../scripts/ai-card-generator.mjs", import.meta.url), "utf8"),
++      readFileSync(new URL("../scripts/provider-http-worker.mjs", import.meta.url), "utf8")
++    ];
++
++    for (const source of runtimeFiles) {
++      expect(source).not.toMatch(/from\s+["'][^"']+\.ts["']/);
++      expect(source).not.toContain("aiProviderControlPlane.ts");
++      expect(source).not.toContain("aiProviderReadiness.ts");
++    }
++  });
+ });

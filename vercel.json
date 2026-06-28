@@ -11,6 +11,10 @@
       "destination": "/api/oauth/callback"
     },
     {
+      "source": "/api/artifacts/:path*",
+      "destination": "/api/_route?__customcard_path=/api/artifacts/:path*"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }

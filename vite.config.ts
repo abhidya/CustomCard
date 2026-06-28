@@ -102,7 +102,7 @@ function customCardCoreApiPlugin(): Plugin {
     configureServer(server) {
       server.middlewares.use(async (request, response, next) => {
         const url = new URL(request.url ?? "/", "http://localhost");
-        if (!isApiRouteAdapterPath(url.pathname)) {
+        if (!isCustomCardApiPath(url.pathname)) {
           next();
           return;
         }
@@ -110,4 +110,13 @@ function customCardCoreApiPlugin(): Plugin {
       });
     }
   };
+}
+
+function isCustomCardApiPath(pathname: string): boolean {
+  return (
+    isApiRouteAdapterPath(pathname) ||
+    pathname === "/api/_route" ||
+    pathname === "/api/artifacts" ||
+    pathname.startsWith("/api/artifacts/")
+  );
 }

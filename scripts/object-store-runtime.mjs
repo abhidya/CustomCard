@@ -1230,12 +1230,20 @@ function safePanelId(value) {
 }
 
 function safeListPrefix(value) {
-  const text = String(value ?? "projects/").trim();
-  if (!text) return "";
-  if (text.length > 240 || text.includes("\\") || text.startsWith("/")) return "projects/";
-  const segments = text.split("/").filter(Boolean);
+  const text = String(value ?? "projects/").trim().replaceAll("\\", "/");
+  if (!text) return "projects/";
+  if (text.length > 240 || text.startsWith("/")) return "projects/";
+  const projectsIndex = text.indexOf("projects/");
+  const normalizedText =
+    !text.startsWith("projects/") && projectsIndex > 0
+      ? text.slice(projectsIndex)
+      : /^[a-zA-Z0-9._-]+$/.test(text)
+        ? `projects/${text}/`
+        : text;
+  if (normalizedText.length > 240 || normalizedText.startsWith("/")) return "projects/";
+  const segments = normalizedText.split("/").filter(Boolean);
   if (segments.some((segment) => segment === "." || segment === ".." || !/^[a-zA-Z0-9._-]+$/.test(segment))) return "projects/";
-  return text;
+  return normalizedText;
 }
 
 function safeContinuationToken(value) {

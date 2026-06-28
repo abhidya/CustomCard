@@ -1,0 +1,551 @@
+﻿# Review package: b564ddbef0ce769d8b99d049392b5d799f82e0db..ba0ac70c
+
+## Commits
+ba0ac70c Fix env-aware AI route activation merges
+799d0064 Fix AI route activation sparse merge semantics
+aaaac80b Add AI route activation module foundation
+
+## Files changed
+ src/aiProviderControlPlane.ts |   5 +-
+ src/aiRouteActivation.d.mts   |  56 ++++++++++++
+ src/aiRouteActivation.mjs     | 179 ++++++++++++++++++++++++++++++++++++++
+ src/aiRouteActivation.test.ts | 196 ++++++++++++++++++++++++++++++++++++++++++
+ src/aiRoutePolicyIds.d.mts    |   5 ++
+ src/aiRoutePolicyIds.mjs      |   4 +
+ 6 files changed, 443 insertions(+), 2 deletions(-)
+
+## Diff
+diff --git a/src/aiProviderControlPlane.ts b/src/aiProviderControlPlane.ts
+index 6abcd1b4..233f27f3 100644
+--- a/src/aiProviderControlPlane.ts
++++ b/src/aiProviderControlPlane.ts
+@@ -1,15 +1,16 @@
+ import {
+   benchmarkResultsModel,
+   type BenchmarkResultRecord,
+   type BenchmarkResultsModel
+ } from "./benchmarkResults";
++import { aiRoutePolicyIdsByFlowId } from "./aiRoutePolicyIds.mjs";
+ import { summarizeAiFlowConfigs, type AiFlowConfigSummary } from "./aiFlowConfig";
+ import type { ProviderCapability } from "./providerCatalog";
+ import type { ProviderCallEvent } from "./providerOperations";
+
+ export type AiProviderGenerationCapability = Extract<ProviderCapability, "text-chat" | "image-generation">;
+ export type AiProviderCatalogStatus = "candidate" | "active" | "blocked" | "deprecated";
+ export type AiPromptProfileStatus = "draft" | "active" | "retired";
+ export type AiRoutePolicyStatus = "draft" | "active" | "paused";
+ export type AiCustomerErrorPolicy = "generic-status-only";
+ export type AiModelAdminStatus = "promotable" | "needs-product-work" | "benchmark-required" | "blocked" | "review-required";
+@@ -492,40 +493,40 @@ export const aiPromptProfiles: AiPromptProfile[] = [
+     status: "draft",
+     promptPurpose: "Cloudflare image fallback benchmark profile for cost and gateway-control comparison.",
+     systemPromptSummary: "Generate one artwork panel with app-rendered typography and evidence capture.",
+     requestDefaults: { width: "768", height: "1024" },
+     schemaContract: "single-panel-image-url"
+   }
+ ];
+
+ export const aiRoutePolicies: AiRoutePolicy[] = [
+   {
+-    id: "card-copy-route-v1",
++    id: aiRoutePolicyIdsByFlowId["card-copy"] ?? "card-copy-route-v1",
+     flowId: "card-copy",
+     policyVersion: "2026-06-15",
+     status: "active",
+     capability: "text-chat",
+     primaryModelIds: ["cloudflare-qwen3-30b-card-copy"],
+     fallbackModelIds: ["cloudflare-llama31-card-copy-baseline", "hf-qwen3-235b-card-copy"],
+     minProductScore: customerVisibleProductGate,
+     minContractScore: pipelineContractGate,
+     minRouteReliabilityScore: routeReliabilityGate,
+     maxEstimatedCostCentsPerRequest: 5,
+     monthlyBudgetCents: 5000,
+     rateLimitPerMinute: 4,
+     queueRequired: false,
+     fallbackStrategy: "one-step-failover",
+     customerErrorPolicy: "generic-status-only",
+     adminChangeMode: "runtime-config"
+   },
+   {
+-    id: "card-image-route-v1",
++    id: aiRoutePolicyIdsByFlowId["card-image"] ?? "card-image-route-v1",
+     flowId: "card-image",
+     policyVersion: "2026-06-15",
+     status: "active",
+     capability: "image-generation",
+     primaryModelIds: ["deepai-text2img-standard"],
+     fallbackModelIds: ["cloudflare-flux-schnell-card-image", "deepai-text2img-hd"],
+     minProductScore: customerVisibleProductGate,
+     minContractScore: pipelineContractGate,
+     minRouteReliabilityScore: routeReliabilityGate,
+     maxEstimatedCostCentsPerRequest: 4,
+diff --git a/src/aiRouteActivation.d.mts b/src/aiRouteActivation.d.mts
+new file mode 100644
+index 00000000..f15e46a2
+--- /dev/null
++++ b/src/aiRouteActivation.d.mts
+@@ -0,0 +1,56 @@
++import type { AiFlowAdminConfig, AiFlowId, ResolvedAiFlowConfig } from "./aiFlowConfigData.mjs";
++import type { AiRoutePolicyId } from "./aiRoutePolicyIds.mjs";
++
++export interface AiRouteActivationRequestContext {
++  aiFlowAdminConfig?: Partial<AiFlowAdminConfig>[] | null;
++  trustRequestAiFlowConfig?: boolean;
++}
++
++export interface AiRouteActivationContextInput {
++  env?: Record<string, string | undefined>;
++  body?: {
++    aiFlowConfig?: unknown;
++    ai_flow_config?: unknown;
++  };
++  requestContext?: AiRouteActivationRequestContext;
++  serviceAiFlowAdminConfig?: Partial<AiFlowAdminConfig>[];
++  loadedAiFlowAdminConfig?: unknown;
++}
++
++export interface LoadAiRouteActivationContextInput
++  extends Omit<AiRouteActivationContextInput, "loadedAiFlowAdminConfig"> {
++  loadAiFlowAdminConfig?: (() => unknown | Promise<unknown>) | undefined;
++}
++
++export interface AiRouteActivationContext {
++  env: Record<string, string | undefined>;
++  body: {
++    aiFlowConfig?: unknown;
++    ai_flow_config?: unknown;
++  };
++  requestContext: AiRouteActivationRequestContext;
++  mergedAiFlowAdminConfig: AiFlowAdminConfig[];
++}
++
++export interface AiRouteActivation {
++  flowId: AiFlowId;
++  flow: ResolvedAiFlowConfig;
++  selectedAdapterId: string;
++  model: string;
++  readyForLiveCalls: boolean;
++  blockedReasons: string[];
++  configuredEnvKeys: string[];
++  controlPlaneRoutePolicyId: AiRoutePolicyId | "";
++}
++
++export function createAiRouteActivationContext(input?: AiRouteActivationContextInput): AiRouteActivationContext;
++export function loadAiRouteActivationContext(input?: LoadAiRouteActivationContextInput): Promise<AiRouteActivationContext>;
++export function resolveAiRouteActivation(
++  flowId: AiFlowId,
++  input?: AiRouteActivationContext | AiRouteActivationContextInput
++): AiRouteActivation;
++export function resolveAiRouteActivations(
++  input?: AiRouteActivationContext | AiRouteActivationContextInput
++): AiRouteActivation[];
++export function mergeAiFlowAdminConfigs(...groups: unknown[]): AiFlowAdminConfig[];
++export function serverScopedAiFlowConfig(env?: Record<string, string | undefined>): AiFlowAdminConfig[];
+diff --git a/src/aiRouteActivation.mjs b/src/aiRouteActivation.mjs
+new file mode 100644
+index 00000000..e4ead77f
+--- /dev/null
++++ b/src/aiRouteActivation.mjs
+@@ -0,0 +1,179 @@
++import {
++  aiFlowDefinitions,
++  aiProviderEnvRequirements,
++  flowEnvKey,
++  hasUsableAiEnvValue,
++  normalizeAiFlowAdminConfigs,
++  resolveAiFlowConfig
++} from "./aiFlowConfigData.mjs";
++import { aiRoutePolicyIdsByFlowId } from "./aiRoutePolicyIds.mjs";
++
++const serverScopedAiFlowConfigCache = new WeakMap();
++
++export function createAiRouteActivationContext({
++  env = process.env,
++  body = {},
++  requestContext = {},
++  serviceAiFlowAdminConfig = [],
++  loadedAiFlowAdminConfig = []
++} = {}) {
++  const mergedAiFlowAdminConfig = mergeAiFlowAdminConfigs(
++    normalizeOptionalAiFlowAdminConfigs(serviceAiFlowAdminConfig, env),
++    serverScopedAiFlowConfig(env),
++    normalizeOptionalAiFlowAdminConfigs(extractLoadedAiFlowAdminConfigs(loadedAiFlowAdminConfig), env),
++    normalizeOptionalAiFlowAdminConfigs(requestContext?.aiFlowAdminConfig, env),
++    trustedRequestScopedAiFlowConfig(body, env, requestContext)
++  );
++
++  return {
++    env,
++    body,
++    requestContext,
++    mergedAiFlowAdminConfig
++  };
++}
++
++export async function loadAiRouteActivationContext({
++  env = process.env,
++  body = {},
++  requestContext = {},
++  serviceAiFlowAdminConfig = [],
++  loadAiFlowAdminConfig
++} = {}) {
++  const loadedAiFlowAdminConfig = await readLoadedAiFlowAdminConfig(loadAiFlowAdminConfig);
++  return createAiRouteActivationContext({
++    env,
++    body,
++    requestContext,
++    serviceAiFlowAdminConfig,
++    loadedAiFlowAdminConfig
++  });
++}
++
++export function resolveAiRouteActivation(flowId, input = {}) {
++  const context = isAiRouteActivationContext(input) ? input : createAiRouteActivationContext(input);
++  const flow = resolveAiFlowConfig(flowId, context.env, context.mergedAiFlowAdminConfig);
++
++  return {
++    flowId,
++    flow,
++    selectedAdapterId: flow.primaryAdapterId,
++    model: flow.model,
++    readyForLiveCalls: flow.readyForLiveCalls,
++    blockedReasons: [...flow.blockedReasons],
++    configuredEnvKeys: configuredEnvKeysForFlow(flow, context.env),
++    controlPlaneRoutePolicyId: aiRoutePolicyIdsByFlowId[flowId] ?? ""
++  };
++}
++
++export function resolveAiRouteActivations(input = {}) {
++  const context = isAiRouteActivationContext(input) ? input : createAiRouteActivationContext(input);
++  return aiFlowDefinitions.map((definition) => resolveAiRouteActivation(definition.flowId, context));
++}
++
++export function mergeAiFlowAdminConfigs(...groups) {
++  const byFlowId = new Map();
++  for (const group of groups) {
++    for (const config of normalizedAiFlowAdminConfigs(group)) {
++      if (!config?.flowId) continue;
++      byFlowId.set(config.flowId, config);
++    }
++  }
++  if (byFlowId.size === 0) return [];
++  return normalizeAiFlowAdminConfigs(Array.from(byFlowId.values()));
++}
++
++export function serverScopedAiFlowConfig(env = process.env) {
++  if (!env || typeof env !== "object") return [];
++  if (serverScopedAiFlowConfigCache.has(env)) return serverScopedAiFlowConfigCache.get(env);
++
++  const raw = env.CUSTOMCARD_AI_FLOW_CONFIG_JSON ?? env.CUSTOMCARD_AI_FLOW_ADMIN_CONFIG_JSON ?? "";
++  let parsedConfigs = [];
++  if (raw) {
++    try {
++      parsedConfigs = normalizeOptionalAiFlowAdminConfigs(extractLoadedAiFlowAdminConfigs(JSON.parse(String(raw))), env);
++    } catch {
++      parsedConfigs = [];
++    }
++  }
++
++  serverScopedAiFlowConfigCache.set(env, parsedConfigs);
++  return parsedConfigs;
++}
++
++function isAiRouteActivationContext(input) {
++  return Boolean(input && typeof input === "object" && Array.isArray(input.mergedAiFlowAdminConfig) && input.env);
++}
++
++async function readLoadedAiFlowAdminConfig(loadAiFlowAdminConfig) {
++  if (typeof loadAiFlowAdminConfig !== "function") return [];
++  try {
++    return extractLoadedAiFlowAdminConfigs(await loadAiFlowAdminConfig());
++  } catch {
++    return [];
++  }
++}
++
++function extractLoadedAiFlowAdminConfigs(input) {
++  return (
++    input?.configs ??
++    input?.aiFlowConfigs ??
++    input?.ai_flow_configs ??
++    input?.aiFlowConfig ??
++    input?.ai_flow_config ??
++    input?.flows ??
++    input ??
++    []
++  );
++}
++
++function normalizedAiFlowAdminConfigs(input) {
++  return Array.isArray(input)
++    ? input.filter((config) => config && typeof config === "object" && typeof config.flowId === "string")
++    : [];
++}
++
++function normalizeOptionalAiFlowAdminConfigs(input, env) {
++  return Array.isArray(input) && input.length > 0 ? normalizeAiFlowAdminConfigs(input, env) : [];
++}
++
++function trustedRequestScopedAiFlowConfig(body, env, requestContext = {}) {
++  if (requestContext?.trustRequestAiFlowConfig !== true) return [];
++  return normalizeOptionalAiFlowAdminConfigs(extractLoadedAiFlowAdminConfigs(body), env);
++}
++
++function configuredEnvKeysForFlow(flow, env = {}) {
++  const key = flowEnvKey(flow.flowId);
++  const flowScopedKeys = [
++    `CUSTOMCARD_AI_${key}_ADAPTER_ID`,
++    `CUSTOMCARD_AI_${key}_PROVIDER`,
++    `CUSTOMCARD_AI_${key}_FALLBACK_ADAPTER_ID`,
++    `CUSTOMCARD_AI_${key}_MODEL`,
++    `CUSTOMCARD_AI_${key}_PROMPT_INSTRUCTIONS`,
++    `CUSTOMCARD_AI_${key}_RATE_LIMIT_PER_MINUTE`,
++    `CUSTOMCARD_AI_${key}_MONTHLY_BUDGET_CENTS`,
++    `CUSTOMCARD_AI_${key}_PER_REQUEST_BUDGET_CENTS`,
++    `CUSTOMCARD_AI_${key}_QUEUE_ENABLED`,
++    `CUSTOMCARD_AI_${key}_FALLBACK_QUEUE_ENABLED`,
++    `CUSTOMCARD_AI_${key}_MAX_RETRIES`,
++    `CUSTOMCARD_AI_${key}_MAX_TOKENS`,
++    `CUSTOMCARD_AI_${key}_TEMPERATURE`
++  ];
++  const adapterKeys = (aiProviderEnvRequirements[flow.primaryAdapterId] ?? []).flat();
++  const matchingModelKeys = Object.keys(env).filter(
++    (envKey) =>
++      /(?:MODEL|CHECKPOINT)$/.test(envKey) &&
++      hasConfiguredEnvValue(env[envKey]) &&
++      String(env[envKey]).trim() === flow.model
++  );
++
++  return Array.from(new Set([...flowScopedKeys, ...adapterKeys, ...matchingModelKeys])).filter((envKey) =>
++    hasConfiguredEnvValue(env[envKey])
++  );
++}
++
++function hasConfiguredEnvValue(value) {
++  if (typeof value === "boolean" || typeof value === "number") return true;
++  if (typeof value === "string" && value.trim()) return true;
++  return hasUsableAiEnvValue(value);
++}
+diff --git a/src/aiRouteActivation.test.ts b/src/aiRouteActivation.test.ts
+new file mode 100644
+index 00000000..72ed98c4
+--- /dev/null
++++ b/src/aiRouteActivation.test.ts
+@@ -0,0 +1,196 @@
++import { describe, expect, it } from "vitest";
++import {
++  createAiRouteActivationContext,
++  resolveAiRouteActivation,
++  resolveAiRouteActivations
++} from "./aiRouteActivation.mjs";
++import { normalizeAiFlowAdminConfigs } from "./aiFlowConfigData.mjs";
++
++describe("AI route activation", () => {
++  it("keeps the card-copy env model override ahead of admin config defaults", () => {
++    const activation = resolveAiRouteActivation("card-copy", {
++      env: {
++        CLOUDFLARE_ACCOUNT_ID: "acct_123",
++        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
++        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
++        CUSTOMCARD_AI_CARD_COPY_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8"
++      },
++      serviceAiFlowAdminConfig: [
++        {
++          flowId: "card-copy",
++          primaryAdapterId: "cloudflare-workers-ai-chat",
++          fallbackAdapterId: "huggingface-chat",
++          model: "@cf/meta/llama-3.1-8b-instruct-fast",
++          liveProviderCallsEnabled: true
++        }
++      ]
++    });
++
++    expect(activation.selectedAdapterId).toBe("cloudflare-workers-ai-chat");
++    expect(activation.model).toBe("@cf/qwen/qwen3-30b-a3b-fp8");
++    expect(activation.flow.readyForLiveCalls).toBe(true);
++    expect(activation.configuredEnvKeys).toEqual(
++      expect.arrayContaining(["CUSTOMCARD_AI_CARD_COPY_MODEL", "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"])
++    );
++  });
++
++  it("ignores request-scoped flow config unless request trust is enabled", () => {
++    const activation = resolveAiRouteActivation("card-copy", {
++      env: {
++        CLOUDFLARE_ACCOUNT_ID: "acct_123",
++        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
++        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8"
++      },
++      body: {
++        aiFlowConfig: [
++          {
++            flowId: "card-copy",
++            primaryAdapterId: "huggingface-chat",
++            liveProviderCallsEnabled: false
++          }
++        ]
++      },
++      requestContext: {
++        trustRequestAiFlowConfig: false
++      }
++    });
++
++    expect(activation.selectedAdapterId).toBe("cloudflare-workers-ai-chat");
++    expect(activation.flow.liveProviderCallsEnabled).toBe(true);
++  });
++
++  it("merges trusted request-scoped flow config after earlier config sources", () => {
++    const activation = resolveAiRouteActivation("card-copy", {
++      env: {
++        CLOUDFLARE_ACCOUNT_ID: "acct_123",
++        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
++        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8"
++      },
++      serviceAiFlowAdminConfig: [
++        {
++          flowId: "card-copy",
++          primaryAdapterId: "cloudflare-workers-ai-chat",
++          liveProviderCallsEnabled: true
++        }
++      ],
++      loadedAiFlowAdminConfig: {
++        configs: [{ flowId: "card-copy", liveProviderCallsEnabled: false }]
++      },
++      requestContext: {
++        aiFlowAdminConfig: [{ flowId: "card-copy", liveProviderCallsEnabled: false }],
++        trustRequestAiFlowConfig: true
++      },
++      body: {
++        aiFlowConfig: [{ flowId: "card-copy", liveProviderCallsEnabled: true }]
++      }
++    });
++
++    expect(activation.flow.liveProviderCallsEnabled).toBe(true);
++    expect(activation.readyForLiveCalls).toBe(true);
++  });
++
++  it("keeps sparse card-copy overrides aligned with generator env semantics under non-default providers", () => {
++    const env = {
++      HUGGINGFACE_API_TOKEN: "hf-token"
++    };
++    const expected = normalizeAiFlowAdminConfigs(
++      [{ flowId: "card-copy", model: "Qwen/Qwen3-32B-Instruct" }],
++      env
++    ).find((config) => config.flowId === "card-copy");
++    const activation = resolveAiRouteActivation("card-copy", {
++      env,
++      loadedAiFlowAdminConfig: {
++        configs: [{ flowId: "card-copy", model: "Qwen/Qwen3-32B-Instruct" }]
++      }
++    });
++
++    expect(expected).toMatchObject({
++      primaryAdapterId: "huggingface-chat",
++      model: "Qwen/Qwen3-32B-Instruct"
++    });
++    expect(activation.selectedAdapterId).toBe(expected?.primaryAdapterId);
++    expect(activation.model).toBe(expected?.model);
++  });
++
++  it("preserves unrelated flows when later sparse sources override only one flow", () => {
++    const activations = resolveAiRouteActivations({
++      env: {
++        CLOUDFLARE_ACCOUNT_ID: "acct_123",
++        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
++        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8",
++        DEEPAI_API_KEY: "deepai-token"
++      },
++      serviceAiFlowAdminConfig: [
++        {
++          flowId: "card-copy",
++          primaryAdapterId: "huggingface-chat",
++          liveProviderCallsEnabled: true
++        },
++        {
++          flowId: "card-image",
++          primaryAdapterId: "deepai-text2img-image",
++          liveProviderCallsEnabled: true
++        }
++      ],
++      loadedAiFlowAdminConfig: {
++        ai_flow_configs: [{ flowId: "card-copy", liveProviderCallsEnabled: false }]
++      }
++    });
++
++    expect(activations.find((activation) => activation.flowId === "card-copy")).toMatchObject({
++      selectedAdapterId: "cloudflare-workers-ai-chat",
++      readyForLiveCalls: false
++    });
++    expect(activations.find((activation) => activation.flowId === "card-image")).toMatchObject({
++      selectedAdapterId: "deepai-text2img-image",
++      readyForLiveCalls: true
++    });
++  });
++
++  it("parses server-scoped env JSON once when resolving multiple route activations", () => {
++    let flowConfigReads = 0;
++    const env = {
++      CLOUDFLARE_ACCOUNT_ID: "acct_123",
++      CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
++      CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8",
++      DEEPAI_API_KEY: "deepai-token"
++    };
++    Object.defineProperty(env, "CUSTOMCARD_AI_FLOW_CONFIG_JSON", {
++      enumerable: true,
++      get() {
++        flowConfigReads += 1;
++        return JSON.stringify([
++          { flowId: "card-copy", liveProviderCallsEnabled: true },
++          { flowId: "card-image", primaryAdapterId: "deepai-text2img-image", liveProviderCallsEnabled: true }
++        ]);
++      }
++    });
++
++    const context = createAiRouteActivationContext({ env });
++    const activations = resolveAiRouteActivations(context);
++
++    expect(flowConfigReads).toBe(1);
++    expect(activations).toHaveLength(3);
++    expect(activations.find((activation) => activation.flowId === "card-image")?.selectedAdapterId).toBe(
++      "deepai-text2img-image"
++    );
++  });
++
++  it("attaches control-plane route policy ids for card-copy and card-image", () => {
++    const activations = resolveAiRouteActivations({
++      env: {
++        CLOUDFLARE_ACCOUNT_ID: "acct_123",
++        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
++        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8",
++        DEEPAI_API_KEY: "deepai-token"
++      }
++    });
++
++    expect(activations.find((activation) => activation.flowId === "card-copy")).toMatchObject({
++      controlPlaneRoutePolicyId: "card-copy-route-v1"
++    });
++    expect(activations.find((activation) => activation.flowId === "card-image")).toMatchObject({
++      controlPlaneRoutePolicyId: "card-image-route-v1"
++    });
++  });
++});
+diff --git a/src/aiRoutePolicyIds.d.mts b/src/aiRoutePolicyIds.d.mts
+new file mode 100644
+index 00000000..8f13a094
+--- /dev/null
++++ b/src/aiRoutePolicyIds.d.mts
+@@ -0,0 +1,5 @@
++import type { AiFlowId } from "./aiFlowConfigData.mjs";
++
++export type AiRoutePolicyId = "card-copy-route-v1" | "card-image-route-v1";
++
++export const aiRoutePolicyIdsByFlowId: Partial<Record<AiFlowId, AiRoutePolicyId>>;
+diff --git a/src/aiRoutePolicyIds.mjs b/src/aiRoutePolicyIds.mjs
+new file mode 100644
+index 00000000..2c9741a4
+--- /dev/null
++++ b/src/aiRoutePolicyIds.mjs
+@@ -0,0 +1,4 @@
++export const aiRoutePolicyIdsByFlowId = Object.freeze({
++  "card-copy": "card-copy-route-v1",
++  "card-image": "card-image-route-v1"
++});

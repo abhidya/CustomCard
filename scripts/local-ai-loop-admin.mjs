@@ -41,13 +41,13 @@ export async function runAdminLocalAiLoop({ body = {}, env = process.env, postgr
   try {
     queueResult = await queueLocalAiJobs({ plan, env, postgresPoolFactory });
     workerResult = await runQueuedLocalAiJobs({ plan, env });
-    report = writeReport ? writeLocalAiQueueReport({ plan, queueResult, workerResult }) : plannedReportPaths(plan);
+    report = writeReport ? safeWriteLocalAiQueueReport({ plan, queueResult, workerResult }) : plannedReportPaths(plan);
   } catch (error) {
     queueResult = {
       status: "blocked",
       error: error instanceof Error ? error.message : String(error)
     };
-    report = writeReport ? writeLocalAiQueueReport({ plan, queueResult, workerResult }) : plannedReportPaths(plan);
+    report = writeReport ? safeWriteLocalAiQueueReport({ plan, queueResult, workerResult }) : plannedReportPaths(plan);
   }
 
   const blocked = plan.blockers.length > 0 || queueResult?.status === "blocked";
@@ -89,6 +89,18 @@ export async function runAdminLocalAiLoop({ body = {}, env = process.env, postgr
       }
     }
   };
+}
+
+function safeWriteLocalAiQueueReport({ plan, queueResult, workerResult }) {
+  try {
+    return writeLocalAiQueueReport({ plan, queueResult, workerResult });
+  } catch (error) {
+    return {
+      ...plannedReportPaths(plan),
+      status: "report-write-blocked",
+      error: error instanceof Error ? error.message : String(error)
+    };
+  }
 }
 
 function plannedReportPaths(plan) {

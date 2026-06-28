@@ -284,6 +284,27 @@ test-clerk-jwt-key
     expect(runtime.validate()).toEqual([]);
   });
 
+  it("self-initializes the admin runtime config table before Postgres admin reads", async () => {
+    const queries: Array<{ sql: string; params: unknown[] }> = [];
+    const runtime = createApiRuntime({
+      env: {
+        CUSTOMCARD_API_RUNTIME: "postgres",
+        DATABASE_URL: "postgres://customcard-db.internal/customcard",
+        AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars"
+      },
+      routes: apiRouteContracts,
+      postgresPoolFactory: () => createAdminRuntimeConfigPool(queries)
+    });
+
+    await expect(runtime.readAdminSafetyControls()).resolves.toMatchObject({
+      service: "customcard-admin-safety-controls",
+      status: "fail-closed"
+    });
+    expect(queries.some((query) => query.sql.includes("CREATE TABLE IF NOT EXISTS admin_runtime_configs"))).toBe(true);
+    expect(queries.some((query) => query.sql.includes("CREATE INDEX IF NOT EXISTS idx_admin_runtime_configs_updated"))).toBe(true);
+    expect(queries.some((query) => query.sql.includes("FROM admin_runtime_configs"))).toBe(true);
+  });
+
   it("bounds Postgres pool settings for serverless-safe defaults", () => {
     expect(postgresPoolConfig({ DATABASE_URL: "postgres://customcard-db.internal/customcard" })).toMatchObject({
       connectionString: "postgres://customcard-db.internal/customcard",
@@ -542,6 +563,29 @@ test-clerk-jwt-key
     await runtime.close();
   });
 });
+
+function createAdminRuntimeConfigPool(queries: Array<{ sql: string; params: unknown[] }>) {
+  const client = {
+    async query(sql: string, params: unknown[] = []) {
+      queries.push({ sql: compactSql(sql), params });
+      return { rows: [], rowCount: 0 };
+    },
+    release() {
+      return undefined;
+    }
+  };
+  return {
+    async query(sql: string, params: unknown[] = []) {
+      return client.query(sql, params);
+    },
+    async connect() {
+      return client;
+    },
+    async end() {
+      return undefined;
+    }
+  };
+}
 
 function createProviderPool(queries: Array<{ sql: string; params: unknown[] }>, leasedRows: unknown[] = []) {
   let leaseUsed = false;

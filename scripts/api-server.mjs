@@ -387,7 +387,17 @@ if (process.argv.includes("--doctor")) {
 
 export async function handleApiRequest(request, response) {
   const requestUrl = new URL(request.url ?? "/", `http://${request.headers?.host ?? "localhost"}`);
+  applyDelegatedApiPath(request, requestUrl);
   await serveApi(request, response, requestUrl);
+}
+
+function applyDelegatedApiPath(request, requestUrl) {
+  if (requestUrl.pathname !== "/api/_route") return;
+  const delegatedPath = String(requestUrl.searchParams.get("__customcard_path") ?? "").trim();
+  if (!delegatedPath.startsWith("/api/")) return;
+  requestUrl.pathname = delegatedPath;
+  requestUrl.searchParams.delete("__customcard_path");
+  request.url = `${requestUrl.pathname}${requestUrl.search}`;
 }
 
 async function serveApi(request, response, requestUrl) {

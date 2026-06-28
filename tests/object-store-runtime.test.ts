@@ -606,6 +606,60 @@ describe("object store runtime", () => {
     });
   });
 
+  it("normalizes copied bucket prefixes before listing objects", async () => {
+    const runtime = createObjectStoreRuntime({
+      env: objectStoreEnv,
+      now: () => new Date("2026-06-11T12:00:00.000Z")
+    });
+    await runtime.persistRenderPacketArtifacts({
+      record: {
+        id: "render-packet-copied-prefix",
+        projectId: "project-copied-prefix",
+        kind: "validated_print_packet",
+        locale: "en-US",
+        direction: "ltr",
+        safeZonePassed: true,
+        textOverflow: false,
+        checksum: "cc_44444444",
+        artifactManifest: { persistenceStatus: "pending", blockers: [] }
+      },
+      bodyText: JSON.stringify({
+        artifacts: [
+          {
+            kind: "panel-svg",
+            fileName: "front.svg",
+            mimeType: "image/svg+xml",
+            text: "<svg>front</svg>",
+            panelId: "front"
+          }
+        ]
+      })
+    });
+
+    const bareProject = await runtime.listBucketArtifacts({
+      query: new URLSearchParams({ prefix: "project-copied-prefix", limit: "10", sort: "key", order: "asc" })
+    });
+    const joinedBucketAndPrefix = await runtime.listBucketArtifacts({
+      query: new URLSearchParams({
+        prefix: "customcard-prodprojects/project-copied-prefix/render-packets/render-packet-copied-prefix/",
+        limit: "10",
+        sort: "key",
+        order: "asc"
+      })
+    });
+
+    expect(bareProject.payload).toMatchObject({
+      prefix: "projects/project-copied-prefix/",
+      objectCount: 2,
+      renderPackets: [expect.objectContaining({ renderPacketId: "render-packet-copied-prefix" })]
+    });
+    expect(joinedBucketAndPrefix.payload).toMatchObject({
+      prefix: "projects/project-copied-prefix/render-packets/render-packet-copied-prefix/",
+      objectCount: 2,
+      renderPackets: [expect.objectContaining({ renderPacketId: "render-packet-copied-prefix" })]
+    });
+  });
+
   it("defaults bucket listings to the five newest objects", async () => {
     let tick = Date.parse("2026-06-11T12:00:00.000Z");
     const runtime = createObjectStoreRuntime({

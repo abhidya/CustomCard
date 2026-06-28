@@ -411,7 +411,7 @@ describe("production infrastructure contract", () => {
     const viteConfig = read("vite.config.ts");
 
     expect(packageJson).toContain("npm run test:coverage");
-    expect(packageJson).toContain("tests/mobile-contract.test.ts");
+    expect(packageJson).toContain("\"test:coverage\": \"vitest run --no-file-parallelism --coverage\"");
     expect(packageJson).toContain("\"mobile:web:preview\": \"vite --host 127.0.0.1 --open /?view=mobile\"");
     expect(packageJson).not.toContain("mobile:web:demo");
     expect(packageJson).toContain("\"demo:doctor\": \"node scripts/demo-reset.mjs\"");
@@ -653,6 +653,7 @@ describe("production infrastructure contract", () => {
     expect(vercel.rewrites).toEqual([
       { source: "/robots.txt", destination: "/api/robots" },
       { source: "/oauth/callback", destination: "/api/oauth/callback" },
+      { source: "/api/artifacts/:path*", destination: "/api/_route?__customcard_path=/api/artifacts/:path*" },
       { source: "/((?!api/).*)", destination: "/index.html" }
     ]);
     expect(vercelApiFiles).toEqual(expect.arrayContaining(["api/[...path].js", "api/robots.js", "api/provider/jobs/status.js", "api/admin/local-ai-loop/run.js"]));
