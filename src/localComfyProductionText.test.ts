@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  defaultProductionTextWorkflowPath,
   productionTextNodeSourceRelativePath,
   productionTextRequiredCompositorInputs,
   productionTextRequiredNodeClass,
@@ -130,7 +131,7 @@ test-clerk-jwt-key
         CLERK_ISSUER: "https://clerk.customcard.test",
         CLERK_AUDIENCE: "customcard-api",
         CUSTOMCARD_COMFYUI_WORKFLOW_ID: productionTextWorkflowId,
-        CUSTOMCARD_COMFYUI_WORKFLOW_PATH: "D:/manny/Documents/CustomCard/comfyui-workflows/customcard-production-text-overlay.json"
+        CUSTOMCARD_COMFYUI_WORKFLOW_PATH: defaultProductionTextWorkflowPath()
       }
     });
 
