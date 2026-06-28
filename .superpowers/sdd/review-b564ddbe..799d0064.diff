@@ -28,7 +28,7 @@ index 6abcd1b4..233f27f3 100644
  import { summarizeAiFlowConfigs, type AiFlowConfigSummary } from "./aiFlowConfig";
  import type { ProviderCapability } from "./providerCatalog";
  import type { ProviderCallEvent } from "./providerOperations";
-
+ 
  export type AiProviderGenerationCapability = Extract<ProviderCapability, "text-chat" | "image-generation">;
  export type AiProviderCatalogStatus = "candidate" | "active" | "blocked" | "deprecated";
  export type AiPromptProfileStatus = "draft" | "active" | "retired";
@@ -43,7 +43,7 @@ index 6abcd1b4..233f27f3 100644
      schemaContract: "single-panel-image-url"
    }
  ];
-
+ 
  export const aiRoutePolicies: AiRoutePolicy[] = [
    {
 -    id: "card-copy-route-v1",

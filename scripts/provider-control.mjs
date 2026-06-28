@@ -199,6 +199,9 @@ async function startProvider({ env, flags }) {
     shouldContinue: () => !stopping,
     onReport(iteration) {
       console.log(formatIterationLine(iteration));
+      for (const result of iteration.results ?? []) {
+        console.log(formatJobResultLine(result));
+      }
     }
   });
   emitReport({ service: serviceName, command: "start", ...report }, flags);
@@ -457,6 +460,26 @@ function formatIterationLine(iteration) {
     `failed=${iteration.failed ?? 0}`,
     `status=${iteration.status}`
   ].join(" ");
+}
+
+function formatJobResultLine(result) {
+  return [
+    new Date().toISOString(),
+    `job=${result.job_id ?? result.id ?? "unknown"}`,
+    `route=${result.route_id ?? result.routeId ?? "unknown"}`,
+    `result=${result.status ?? "unknown"}`,
+    `duration_ms=${safeLogNumber(result.duration_ms ?? result.durationMs)}`,
+    result.reason ? `reason=${quoteLogValue(result.reason)}` : ""
+  ].filter(Boolean).join(" ");
+}
+
+function safeLogNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.max(0, Math.round(number)) : 0;
+}
+
+function quoteLogValue(value) {
+  return JSON.stringify(String(value ?? "").replace(/\s+/g, " ").trim()).slice(0, 600);
 }
 
 function redactReport(value) {

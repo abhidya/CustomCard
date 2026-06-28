@@ -1,0 +1,3597 @@
+﻿# Review package: b564ddbef0ce769d8b99d049392b5d799f82e0db..c381442c6a243dd919aae6b6620f3a4021e813c4
+
+## Commits
+c381442c Fix Task 4 portable drift guard paths
+490b95cd Fix Task 4 card-copy route drift guard
+d3e4c868 Add Task 4 drift guards and setup docs contract
+1ec1df6b Add shared Comfy production text setup module
+59e10f2c Add hosted AI setup profile reporting
+24a61b27 Fix Task 1b worker image flow reporting
+f8166286 Integrate route activation into generator and worker
+d773eb23 Fix sparse AI flow override merge semantics
+0498d361 Fix stale AI route env config caching
+ba0ac70c Fix env-aware AI route activation merges
+799d0064 Fix AI route activation sparse merge semantics
+aaaac80b Add AI route activation module foundation
+
+## Files changed
+ .superpowers/sdd/task-1a-report.md             | 142 ++++++++++++++++
+ docs/cloudflare-workers-ai-setup.md            |  18 +-
+ docs/comfyui-production-text-workflow.md       |  12 +-
+ docs/vercel-env-structure.md                   |   7 +-
+ infra/README.md                                |  18 +-
+ infra/env/.env.example                         |   7 +-
+ scripts/ai-card-generator.mjs                  |  82 +++------
+ scripts/comfy-production-text-setup.mjs        | 112 +++++++++++++
+ scripts/comfyui-production-text-preflight.mjs  |  63 ++-----
+ scripts/hosted-vercel-env-inventory.mjs        |  87 +++++++++-
+ scripts/hosted-vercel-env-repair.mjs           |   3 +
+ scripts/local-comfy-worker.mjs                 |  17 +-
+ scripts/production-text-readiness-doctor.mjs   |  31 ++--
+ scripts/provider-http-worker.mjs               |  28 +---
+ src/aiCardGenerator.test.ts                    |  55 ++++++
+ src/aiFlowConfig.test.ts                       |  50 +++++-
+ src/aiFlowConfigData.mjs                       |  14 +-
+ src/aiProviderControlPlane.ts                  |   5 +-
+ src/aiProviderSetupProfile.mjs                 |  45 +++++
+ src/aiProviderSetupProfile.test.ts             |  72 ++++++++
+ src/aiRouteActivation.d.mts                    |  56 +++++++
+ src/aiRouteActivation.mjs                      | 185 +++++++++++++++++++++
+ src/aiRouteActivation.test.ts                  | 221 +++++++++++++++++++++++++
+ src/aiRoutePolicyIds.d.mts                     |   5 +
+ src/aiRoutePolicyIds.mjs                       |   4 +
+ src/localComfyProductionText.test.ts           |  40 +++++
+ src/providerRuntime.test.ts                    |  18 +-
+ src/providerRuntime.ts                         |  25 ++-
+ tests/hosted-vercel-env-inventory.test.ts      |  51 +++++-
+ tests/hosted-vercel-env-repair.test.ts         |  34 +++-
+ tests/production-text-readiness-doctor.test.ts | 141 +++++++++++++++-
+ tests/provider-http-worker.test.mjs            | 157 +++++++++++++++++-
+ 32 files changed, 1620 insertions(+), 185 deletions(-)
+
+## Diff
+diff --git a/.superpowers/sdd/task-1a-report.md b/.superpowers/sdd/task-1a-report.md
+new file mode 100644
+index 00000000..91ddc156
+--- /dev/null
++++ b/.superpowers/sdd/task-1a-report.md
+@@ -0,0 +1,142 @@
++# Task 1a Report: Route Activation Module And Unit Tests
++
++## Scope completed
++
++Implemented only the Task 1a module and test foundation. I did not integrate `scripts/ai-card-generator.mjs` or `scripts/provider-http-worker.mjs` in this slice.
++
++## Files added
++
++- `src/aiRouteActivation.mjs`
++- `src/aiRouteActivation.d.mts`
++- `src/aiRouteActivation.test.ts`
++
++## What the new module does
++
++`src/aiRouteActivation.mjs` now centralizes runtime AI flow activation inputs and merge behavior for:
++
++- `card-copy`
++- `card-image`
++- `customer-chat`
++
++It owns:
++
++- parsing `CUSTOMCARD_AI_FLOW_CONFIG_JSON`
++- parsing `CUSTOMCARD_AI_FLOW_ADMIN_CONFIG_JSON`
++- request-body trust gating through `trustRequestAiFlowConfig`
++- request-context admin config input
++- loaded admin config input normalization
++- service-level config input normalization
++- merge order matching current generator behavior:
++  1. service config
++  2. server-scoped env config
++  3. loaded admin config
++  4. request-context config
++  5. trusted request-body config
++
++It resolves route activation metadata with:
++
++- selected flow config
++- selected adapter id
++- selected model
++- readiness
++- blocked reasons
++- configured env keys
++- associated control-plane route policy id when present
++
++The module reuses existing `src/aiFlowConfigData.mjs` normalization and resolution behavior, including current defaults:
++
++- `card-copy` primary adapter remains `cloudflare-workers-ai-chat`
++- production `card-copy` default model remains `@cf/qwen/qwen3-30b-a3b-fp8`
++- `card-copy` fallback remains `huggingface-chat`
++
++For route policy ids, the module reads existing `aiRoutePolicies` from `src/aiProviderControlPlane.ts` instead of duplicating policy ids.
++
++## Tests added
++
++`src/aiRouteActivation.test.ts` proves:
++
++- `CUSTOMCARD_AI_CARD_COPY_MODEL` still overrides stale admin/provider defaults for `card-copy`
++- request-scoped config is ignored unless `trustRequestAiFlowConfig === true`
++- trusted request-scoped config merges and wins at the end of the merge chain
++- server-scoped env JSON is parsed once through the shared route-activation context
++- route activation metadata includes:
++  - `card-copy-route-v1`
++  - `card-image-route-v1`
++
++## Focused verification
++
++Command run:
++
++`rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/npm.ps1 run test -- --run src/aiRouteActivation.test.ts src/aiFlowConfig.test.ts`
++
++Result:
++
++- 2 test files passed
++- 17 tests passed
++- 0 failures
++
++## Commit
++
++- `aaaac80b` `Add AI route activation module foundation`
++
++## Notes / concerns
++
++- The new module currently imports `src/aiProviderControlPlane.ts` to source route policy ids. That keeps ids canonical for now, but when Task 1 later wires this into Node-executed `.mjs` runtime code, we may want a tiny shared policy-id module if direct `.ts` imports become awkward in that execution path.
++- I intentionally did not modify generator or worker integration points in this slice.
++
++## Post-review fix notes
++
++- Fixed the critical cross-flow merge bug in `mergeAiFlowAdminConfigs`. The merge now preserves sparse per-source semantics by merging only the explicitly provided flow ids and fields from each source before one final normalization pass. This keeps the required precedence order intact across service config, server env config, loaded admin config, request-context config, and trusted request-body config.
++- Preserved accepted loaded/admin-like config shapes by continuing to read `configs`, `aiFlowConfigs`, `aiFlowConfig`, `flows`, and now also `ai_flow_configs` and `ai_flow_config`.
++- Removed the unsafe runtime `.mjs` import of `./aiProviderControlPlane.ts`. Route policy ids now come from a tiny shared runtime-safe module, and `src/aiProviderControlPlane.ts` reads the same ids so they stay canonical instead of drifting.
++- Added a cross-flow merge regression test proving a later sparse override for `card-copy` does not reset the earlier `card-image` configuration.
++- Tightened the `controlPlaneRoutePolicyId` declaration to `AiRoutePolicyId | ""`.
++
++## Post-review test results
++
++Command run:
++
++`rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/npm.ps1 run test -- --run src/aiRouteActivation.test.ts src/aiFlowConfig.test.ts`
++
++Result:
++
++- 2 test files passed
++- 18 tests passed
++- 0 failures
++
++## Re-review fix notes
++
++- Fixed the remaining env-aware sparse override regression in `src/aiRouteActivation.mjs`. Route activation now normalizes each config source with the active `env` before merge, matching the current generator behavior for service config, server-scoped env JSON, loaded admin config, request-context config, and trusted request-body config.
++- Preserved the accepted cross-flow merge behavior by continuing to merge per-flow configs without dropping unrelated flows.
++- Added a regression test proving a sparse `card-copy` override under a non-default configured env (`HUGGINGFACE_API_TOKEN` only) resolves the same adapter/model semantics as generator-style source normalization.
++- Updated the cross-flow sparse override assertion to reflect the intended generator semantics under a Cloudflare-configured env.
++
++## Re-review test results
++
++Command run:
++
++`rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/npm.ps1 run test -- --run src/aiRouteActivation.test.ts src/aiFlowConfig.test.ts`
++
++Result:
++
++- 2 test files passed
++- 19 tests passed
++- 0 failures
++
++## Final re-review fix notes
++
++- Removed the module-level `WeakMap` cache from `src/aiRouteActivation.mjs` so server-scoped AI flow config is reparsed from the current env JSON on each fresh activation/context build.
++- Preserved the existing per-context behavior where one created activation context still shares a single parsed server-scoped config across multiple flow resolutions in that context.
++- Added a regression test proving that mutating `CUSTOMCARD_AI_FLOW_CONFIG_JSON` on the same env object changes the later resolved `card-copy` model on a subsequent activation/context call.
++
++## Final re-review test results
++
++Command run:
++
++`rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/npm.ps1 run test -- --run src/aiRouteActivation.test.ts src/aiFlowConfig.test.ts`
++
++Result:
++
++- 2 test files passed
++- 20 tests passed
++- 0 failures
+diff --git a/docs/cloudflare-workers-ai-setup.md b/docs/cloudflare-workers-ai-setup.md
+index d09b5968..7ddead8e 100644
+--- a/docs/cloudflare-workers-ai-setup.md
++++ b/docs/cloudflare-workers-ai-setup.md
+@@ -1,39 +1,53 @@
+ # Cloudflare Workers AI Setup
+ 
+ Cloudflare Workers AI is the preferred low-cost AI provider for this app's
+ first live hosted model path. Keep real values in ignored local env files and in
+ Vercel's encrypted environment store; tracked files should only contain
+ placeholders and model IDs.
+ 
+ ## Environment
+ 
+-Required shared configuration:
++Required hosted card-copy text configuration:
+ 
+ ```bash
+ CLOUDFLARE_ACCOUNT_ID=replace-me
+ CLOUDFLARE_API_TOKEN=replace-me
++CUSTOMCARD_AI_CARD_COPY_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
++CUSTOMCARD_CLOUDFLARE_TEXT_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
+ CLOUDFLARE_WORKERS_AI_TEXT_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
+-CLOUDFLARE_WORKERS_AI_IMAGE_MODEL=@cf/bytedance/stable-diffusion-xl-lightning
+ ```
+ 
+ Optional split-token overrides:
+ 
+ ```bash
+ CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN=replace-me
+ CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN=replace-me
+ ```
+ 
+ The runtime uses `CLOUDFLARE_API_TOKEN` unless a lane-specific token is set. Use
+ split tokens when Cloudflare issues separate Workers AI tokens for LLM and image
+ generation.
+ 
++For the production-text local Comfy path, hosted Cloudflare image keys are not
++required. Keep the Cloudflare text/account setup for card copy, but only add
++`CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN` or
++`CLOUDFLARE_WORKERS_AI_IMAGE_MODEL` when you are explicitly validating the live
++Cloudflare image adapter instead of the local Comfy workflow.
++
++Optional live Cloudflare image lane configuration:
++
++```bash
++CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN=replace-me
++CLOUDFLARE_WORKERS_AI_IMAGE_MODEL=@cf/bytedance/stable-diffusion-xl-lightning
++```
++
+ ## Recommended Models
+ 
+ Use `@cf/qwen/qwen3-30b-a3b-fp8` as the default LLM for production card copy.
+ It is the current Cloudflare text model for the full card-copy JSON contract,
+ and card-copy requests send a JSON Schema through `response_format` so panel
+ copy is not prompt-only JSON.
+ 
+ Use `cloudflare-workers-ai-image` as the preferred live card-image adapter right
+ now. The app still keeps `browser-svg-renderer` as the deterministic fallback and
+ debug path for flat 1500 x 2100 artwork layers, but Cloudflare remains visible in
+diff --git a/docs/comfyui-production-text-workflow.md b/docs/comfyui-production-text-workflow.md
+index 8c66f5c5..c158c236 100644
+--- a/docs/comfyui-production-text-workflow.md
++++ b/docs/comfyui-production-text-workflow.md
+@@ -12,20 +12,24 @@ experiments, but production greeting cards need exact copy, stable wrapping, and
+ repeatable print output.
+ 
+ ## Current Repo State
+ 
+ - `customcard-hybrid-reserved-layout.json` is a benchmark workflow. It renders
+   text-safe artwork in Comfy, then the benchmark script flattens text with
+   Sharp/SVG outside Comfy.
+ - `customcard-production-text-overlay.json` is the production candidate. It adds
+   the repo-owned `CustomCardTextComposer` node after `VAEDecode` and before
+   `SaveImage`.
++- `scripts/comfy-production-text-setup.mjs` is the shared setup facts module
++  for this workflow. Keep the workflow path, `CustomCardTextComposer` node
++  source, required class name, default Comfy URL, and setup instructions there
++  first so docs, doctors, and wrappers do not drift.
+ - `local-production-text` is the benchmark phase for this candidate. With a
+   configured local LLM, it runs fixed customer request fixtures through the real
+   card-copy planner, then treats Comfy output as the final text-composited panel
+   and bypasses the benchmark preview overlay. The lower-level phase still has a
+   one-run sunburst compositor calibration fixture, but the tracked wrapper only
+   allows that path when `-AllowCompositorFixtureFallback` is passed explicitly.
+ - `buildImagePromptPlan` now carries `headline`, `body`, and normalized
+   `text_layout` into image-provider execution as `panel_copy`.
+ - `scripts/local-comfy-production-text.mjs` is the shared production text
+   contract used by both the app generator and benchmark loop. Put template
+@@ -280,21 +284,27 @@ Comfy template variables exposed by the local adapter include:
+ - `comfyui-workflows/customcard-hybrid-reserved-layout.json`
+   - Benchmark fallback.
+   - Comfy creates artwork only.
+   - Benchmark compositor creates final previews outside Comfy.
+ - `comfyui-workflows/customcard-production-text-overlay.json`
+   - Production candidate.
+   - Requires checked-in `CustomCardTextComposer`.
+   - Comfy returns the final panel image with exact copy rendered.
+ - `scripts/comfyui-production-text-preflight.mjs`
+   - Offline/live preflight.
+-  - Verifies workflow JSON, node source, and live `/object_info` when requested.
++  - Verifies the shared setup facts, workflow JSON, node source, and live
++    `/object_info` when requested.
++- `scripts/comfy-production-text-setup.mjs`
++  - Shared setup facts for the production-text workflow.
++  - Pins `comfyui-workflows/customcard-production-text-overlay.json`,
++    `comfyui-custom-nodes/CustomCardTextComposer`, required class
++    `CustomCardTextComposer`, default Comfy URL, and operator setup steps.
+ - `scripts/production-text-readiness-doctor.mjs`
+   - Advisory or blocking readiness check for promotion attempts.
+   - Aggregates workflow/node availability, live Comfy status, latest aggregate
+     quality, local model inventory, and active planner endpoint suitability.
+   - Accepts hosted/self-hosted planner auth through
+     `CUSTOMCARD_LOCAL_LLM_API_KEY` or `--local-llm-api-key`, so protected
+     OpenAI-compatible endpoints can be checked without falling back to local
+     KoboldCPP.
+   - Treats known-small planners such as Qwen3-4B/8B as smoke/failure evidence,
+     not production evidence.
+diff --git a/docs/vercel-env-structure.md b/docs/vercel-env-structure.md
+index b11fee66..19584431 100644
+--- a/docs/vercel-env-structure.md
++++ b/docs/vercel-env-structure.md
+@@ -83,20 +83,24 @@ production keys are:
+ ### Google Calendar OAuth
+ 
+ - `GOOGLE_OAUTH_CLIENT_ID`
+ - `GOOGLE_OAUTH_CLIENT_SECRET`
+ - `GOOGLE_OAUTH_REDIRECT_URI`
+ - `GOOGLE_OAUTH_STATE_SECRET`
+ - `GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY`
+ 
+ ### AI Providers
+ 
++Hosted card-copy uses Cloudflare text/account keys. The local production-text
++Comfy path does not require Cloudflare image keys unless you are explicitly
++proving the live Cloudflare image lane.
++
+ - `CLOUDFLARE_ACCOUNT_ID`
+ - `CLOUDFLARE_API_TOKEN`
+ - `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`
+ - `CLOUDFLARE_WORKERS_AI_IMAGE_MODEL`
+ - `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN`
+ - `CLOUDFLARE_WORKERS_AI_TEXT_MODEL`
+ 
+ ### Object Store
+ 
+ - `ARTIFACT_SIGNED_URL_TTL_MINUTES`
+@@ -170,21 +174,22 @@ resource.
+ - `WALGREENS_API_KEY`
+ - `WALGREENS_VENDOR_MODE`
+ 
+ ## Operational Rules
+ 
+ - Vercel env changes apply to new deployments. Redeploy after changing runtime
+   or provider env.
+ - Use `vercel env ls --format=json` for scoped key inventory.
+ - Use `CUSTOMCARD_HOSTED_ENV_INVENTORY=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:env:inventory`
+   to produce a redacted key-coverage report. The report must not include env
+-  values, only key names and target scopes.
++  values, only key names and target scopes. Treat these inventory artifacts as
++  setup proof, not a place to copy or store secrets.
+ - Use `CUSTOMCARD_HOSTED_ENV_REPAIR=enabled npm run hosted:env:repair` for a
+   redacted repair plan. To apply missing production keys, also set
+   `CUSTOMCARD_HOSTED_ENV_REPAIR_APPLY=enabled`,
+   `CUSTOMCARD_HOSTED_ENV_REPAIR_ACKNOWLEDGE_PRODUCTION=enabled`, and provide the
+   remaining missing keys in the process env. Use
+   `CUSTOMCARD_HOSTED_ENV_REPAIR_ALLOW_PARTIAL=enabled` only when intentionally
+   applying a valid subset while keeping the report blocked on remaining keys.
+   The repair report must not include the values.
+ - Use `CUSTOMCARD_HOSTED_CLERK_PUBLIC_CONFIG_PROBE=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:clerk:public-config`
+   to fetch the deployed public app shell and JavaScript assets, redact Clerk
+diff --git a/infra/README.md b/infra/README.md
+index f1400875..0b85e76b 100644
+--- a/infra/README.md
++++ b/infra/README.md
+@@ -200,38 +200,44 @@ Real external ordering stays disabled with `REAL_ORDER_KILL_SWITCH=disabled` unt
+   WooCommerce, Square, Intercom, Monday.com, Amazon Selling Partner API, and
+   Etsy keys listed in `env/.env.example`.
+ - Text and image AI providers: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
+   `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_KEY`,
+   `AZURE_OPENAI_CHAT_DEPLOYMENT`, `AZURE_OPENAI_IMAGE_DEPLOYMENT`,
+   `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`,
+   `BEDROCK_TEXT_MODEL_ID`, `BEDROCK_IMAGE_MODEL_ID`,
+   `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`,
+   `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN`,
+   `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`,
++  `CUSTOMCARD_AI_CARD_COPY_MODEL`, `CUSTOMCARD_CLOUDFLARE_TEXT_MODEL`,
+   `CLOUDFLARE_WORKERS_AI_TEXT_MODEL`, `CLOUDFLARE_WORKERS_AI_IMAGE_MODEL`,
+   `GOOGLE_GENERATIVE_AI_API_KEY`, `MISTRAL_API_KEY`, `COHERE_API_KEY`,
+   `PERPLEXITY_API_KEY`, `XAI_API_KEY`, `TOGETHER_API_KEY`, `GROQ_API_KEY`,
+   `DEEPSEEK_API_KEY`, `FIREWORKS_API_KEY`, `STABILITY_API_KEY`,
+   `HUGGINGFACE_API_TOKEN`, `DEEPAI_API_KEY`, `REPLICATE_API_TOKEN`, `IDEOGRAM_API_KEY`,
+   `LEONARDO_API_KEY`, `FAL_KEY`, `BFL_API_KEY`.
+ - Self-hosted model fallback: `SELF_HOSTED_LLM_BASE_URL`,
+   `SELF_HOSTED_LLM_API_KEY`.
+ 
+ Cloudflare Workers AI can use one shared `CLOUDFLARE_API_TOKEN` for both
+ chat and image generation, or separate lane-specific tokens through
+ `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN` and
+-`CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`. The recommended low-cost defaults are
+-`@cf/meta/llama-3.1-8b-instruct-fast` for JSON Mode card copy and prompt/chat
+-work and `@cf/bytedance/stable-diffusion-xl-lightning` for image generation.
+-Use `@cf/meta/llama-3.3-70b-instruct-fp8-fast` as the text quality fallback and
+-`@cf/black-forest-labs/flux-1-schnell` as the higher-quality image fallback
+-when budget allows.
++`CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`. Set
++`CUSTOMCARD_AI_CARD_COPY_MODEL=@cf/qwen/qwen3-30b-a3b-fp8` to pin the hosted
++production card-copy route, and mirror that same 30B model into
++`CUSTOMCARD_CLOUDFLARE_TEXT_MODEL` / `CLOUDFLARE_WORKERS_AI_TEXT_MODEL` when you
++want the generic Cloudflare text lane to match. Use
++`@cf/bytedance/stable-diffusion-xl-lightning` as the current Cloudflare image
++default, and keep `@cf/black-forest-labs/flux-1-schnell` as the higher-quality
++image fallback when prompt adherence matters more than the absolute lowest cost.
++The production-text local Comfy path does not require hosted Cloudflare image
++tokens or image model keys; those hosted image keys are only needed when you
++intend to validate the live Cloudflare image lane.
+ - Notification providers: `RESEND_API_KEY`, `SENDGRID_API_KEY`,
+   `POSTMARK_SERVER_TOKEN`, `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`,
+   `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`,
+   `TWILIO_MESSAGING_SERVICE_SID`, `WHATSAPP_ACCESS_TOKEN`,
+   `WHATSAPP_PHONE_NUMBER_ID`, `EXPO_ACCESS_TOKEN`, `FIREBASE_PROJECT_ID`,
+   `FIREBASE_SERVICE_ACCOUNT_JSON`, `CUSTOMERIO_APP_API_KEY`,
+   `CUSTOMERIO_TRANSACTIONAL_MESSAGE_ID`, `BRAZE_REST_ENDPOINT`,
+   `BRAZE_REST_API_KEY`, `BRAZE_CANVAS_ID`, `ONESIGNAL_APP_ID`,
+   `ONESIGNAL_REST_API_KEY`, `COURIER_AUTH_TOKEN`, `COURIER_TEMPLATE_ID`,
+   `KNOCK_API_KEY`, `KNOCK_WORKFLOW_KEY`, `NOVU_API_KEY`, `NOVU_WORKFLOW_ID`,
+diff --git a/infra/env/.env.example b/infra/env/.env.example
+index 6062ebc6..8c3744cc 100644
+--- a/infra/env/.env.example
++++ b/infra/env/.env.example
+@@ -171,22 +171,27 @@ AZURE_OPENAI_IMAGE_DEPLOYMENT=replace-me
+ AWS_ACCESS_KEY_ID=replace-me
+ AWS_SECRET_ACCESS_KEY=replace-me
+ AWS_REGION=replace-me
+ BEDROCK_TEXT_MODEL_ID=replace-me
+ BEDROCK_IMAGE_MODEL_ID=replace-me
+ ANTHROPIC_API_KEY=replace-me
+ GOOGLE_GENERATIVE_AI_API_KEY=replace-me
+ CLOUDFLARE_ACCOUNT_ID=replace-me
+ CLOUDFLARE_API_TOKEN=replace-me
+ CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN=replace-me
++# Hosted card-copy uses the Cloudflare text/account keys above. The local
++# production-text Comfy workflow does not require the image keys below unless
++# you are explicitly validating the live Cloudflare image lane.
+ CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN=replace-me
+-CLOUDFLARE_WORKERS_AI_TEXT_MODEL=@cf/meta/llama-3.1-8b-instruct-fast
++CUSTOMCARD_AI_CARD_COPY_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
++CUSTOMCARD_CLOUDFLARE_TEXT_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
++CLOUDFLARE_WORKERS_AI_TEXT_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
+ CLOUDFLARE_WORKERS_AI_IMAGE_MODEL=@cf/bytedance/stable-diffusion-xl-lightning
+ CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=browser-svg-renderer
+ CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG=false
+ CUSTOMCARD_TRUST_PROXY_HEADERS=false
+ MISTRAL_API_KEY=replace-me
+ COHERE_API_KEY=replace-me
+ PERPLEXITY_API_KEY=replace-me
+ XAI_API_KEY=replace-me
+ TOGETHER_API_KEY=replace-me
+ GROQ_API_KEY=replace-me
+diff --git a/scripts/ai-card-generator.mjs b/scripts/ai-card-generator.mjs
+index af9bd707..d5d72620 100644
+--- a/scripts/ai-card-generator.mjs
++++ b/scripts/ai-card-generator.mjs
+@@ -1,21 +1,23 @@
+ import { lookup as lookupDns } from "node:dns/promises";
+ import { existsSync, readFileSync } from "node:fs";
+ import { request as httpRequest } from "node:http";
+ import { isIP } from "node:net";
+ import { resolve } from "node:path";
+ import {
+   adapterMissingEnv,
+-  modelForAiAdapter,
+-  normalizeAiFlowAdminConfigs,
+-  resolveAiFlowConfig
++  modelForAiAdapter
+ } from "../src/aiFlowConfigData.mjs";
++import {
++  loadAiRouteActivationContext,
++  resolveAiRouteActivation
++} from "../src/aiRouteActivation.mjs";
+ import { createAiFlowCostGate } from "./ai-flow-cost-gate.mjs";
+ import {
+   buildCardCopyPrompt,
+   buildCardCopyResponseFormat,
+   createAiCardDraftPolicy,
+   panelDefaults,
+   requiredPanelIds
+ } from "./ai-card-draft-policy.mjs";
+ import {
+   createAiProviderExecutionAdapter,
+@@ -53,23 +55,29 @@ export function loadLocalAiEnvFiles({ cwd = process.cwd(), target = process.env
+ export function createAiCardGenerationService({
+   env = process.env,
+   fetchImpl = globalThis.fetch,
+   costGate = createAiFlowCostGate(),
+   aiFlowAdminConfig = [],
+   loadAiFlowAdminConfig
+ } = {}) {
+ 
+   return {
+     async generateCard(body, requestContext = {}) {
+-      const adminConfig = await runtimeAiFlowConfig(body, env, requestContext, aiFlowAdminConfig, loadAiFlowAdminConfig);
+-      const copyFlow = resolveAiFlowConfig("card-copy", env, adminConfig);
+-      const imageFlow = resolveAiFlowConfig("card-image", env, adminConfig);
++      const activationContext = await loadAiRouteActivationContext({
++        env,
++        body,
++        requestContext,
++        serviceAiFlowAdminConfig: aiFlowAdminConfig,
++        loadAiFlowAdminConfig
++      });
++      const copyFlow = resolveAiRouteActivation("card-copy", activationContext).flow;
++      const imageFlow = resolveAiRouteActivation("card-image", activationContext).flow;
+       const draftInput = normalizeCardInput(body);
+       const providerCallEvents = [];
+ 
+       const copyResult = await generateValidatedCardCopy({
+         flow: copyFlow,
+         env,
+         fetchImpl,
+         costGate,
+         requestContext,
+         providerCallEvents,
+@@ -145,22 +153,28 @@ export function createAiCardGenerationService({
+         copyFlow,
+         copyProvider: copyResult.adapterId,
+         imageFlow,
+         imageProvider: imageResult.adapterId,
+         providerCallEvents,
+         fallbackQueued
+       });
+     },
+ 
+     async respondChat(body, requestContext = {}) {
+-      const adminConfig = await runtimeAiFlowConfig(body, env, requestContext, aiFlowAdminConfig, loadAiFlowAdminConfig);
+-      const flow = resolveAiFlowConfig("customer-chat", env, adminConfig);
++      const activationContext = await loadAiRouteActivationContext({
++        env,
++        body,
++        requestContext,
++        serviceAiFlowAdminConfig: aiFlowAdminConfig,
++        loadAiFlowAdminConfig
++      });
++      const flow = resolveAiRouteActivation("customer-chat", activationContext).flow;
+ 
+       const input = normalizeChatInput(body);
+       const providerCallEvents = [];
+       let assistantMessage;
+ 
+       if (!flow.readyForLiveCalls) {
+         const providerFailure = flow.blockedReasons[0] ?? "Live customer-chat provider is disabled.";
+         return providerUnavailableResponse({
+           statusCode: 503,
+           flowKey: "customer_chat",
+@@ -292,72 +306,20 @@ function aiCostGateInput({ flow, requestContext, routeId, requestUnits, phase, m
+     idempotencyKey: requestContext.idempotencyKey,
+     authContext: requestContext.authContext,
+     fallbackFromAdapterId: fallbackFromAdapterId ?? flow.primaryAdapterId,
+     metadata: {
+       phase,
+       ...metadata
+     }
+   };
+ }
+ 
+-async function runtimeAiFlowConfig(body, env, requestContext = {}, serviceAiFlowAdminConfig = [], loadAiFlowAdminConfig) {
+-  return mergeAiFlowAdminConfigs(
+-    normalizeOptionalAiFlowAdminConfigs(serviceAiFlowAdminConfig, env),
+-    serverScopedAiFlowConfig(env),
+-    normalizeOptionalAiFlowAdminConfigs(await loadedAiFlowAdminConfig(loadAiFlowAdminConfig), env),
+-    normalizeOptionalAiFlowAdminConfigs(requestContext.aiFlowAdminConfig, env),
+-    requestScopedAiFlowConfig(body, env, requestContext)
+-  );
+-}
+-
+-async function loadedAiFlowAdminConfig(loadAiFlowAdminConfig) {
+-  if (typeof loadAiFlowAdminConfig !== "function") return [];
+-  try {
+-    const loaded = await loadAiFlowAdminConfig();
+-    return loaded?.configs ?? loaded?.aiFlowConfigs ?? loaded?.flows ?? loaded ?? [];
+-  } catch {
+-    return [];
+-  }
+-}
+-
+-function normalizeOptionalAiFlowAdminConfigs(input, env) {
+-  return Array.isArray(input) && input.length > 0 ? normalizeAiFlowAdminConfigs(input, env) : [];
+-}
+-
+-function serverScopedAiFlowConfig(env) {
+-  const raw = env.CUSTOMCARD_AI_FLOW_CONFIG_JSON ?? env.CUSTOMCARD_AI_FLOW_ADMIN_CONFIG_JSON ?? "";
+-  if (!raw) return [];
+-  try {
+-    const parsed = JSON.parse(String(raw));
+-    return normalizeAiFlowAdminConfigs(Array.isArray(parsed) ? parsed : parsed.flows ?? parsed.aiFlowConfig ?? parsed.ai_flow_config ?? [], env);
+-  } catch {
+-    return [];
+-  }
+-}
+-
+-function mergeAiFlowAdminConfigs(...groups) {
+-  const byFlowId = new Map();
+-  for (const group of groups) {
+-    for (const config of Array.isArray(group) ? group : []) {
+-      if (!config?.flowId) continue;
+-      byFlowId.set(config.flowId, config);
+-    }
+-  }
+-  if (byFlowId.size === 0) return [];
+-  return normalizeAiFlowAdminConfigs(Array.from(byFlowId.values()));
+-}
+-
+-function requestScopedAiFlowConfig(body, env, requestContext = {}) {
+-  if (requestContext.trustRequestAiFlowConfig !== true) return [];
+-  return normalizeAiFlowAdminConfigs(body.aiFlowConfig ?? body.ai_flow_config ?? [], env);
+-}
+-
+ function isAiEnvKey(key) {
+   return /^(CUSTOMCARD_AI_|CUSTOMCARD_RUNCOMFY_|CUSTOMCARD_LOCAL_LLM_|CUSTOMCARD_COMFYUI_|ANTHROPIC_|OPENAI_|CLOUDFLARE_|COMFYUI_|GOOGLE_|GEMINI_|HUGGINGFACE_|GROQ_|TOGETHER_|MISTRAL_|DEEPSEEK_|DEEPAI_|FIREWORKS_|PERPLEXITY_|XAI_|REPLICATE_|STABILITY_|FAL_|BFL_|RUNCOMFY_|LMSTUDIO_|KOBOLDCPP_)/.test(key);
+ }
+ 
+ const textProviderExecutors = {
+   "cloudflare-workers-ai-chat": executeCloudflareWorkersAiChat,
+   "openai-responses-chat": executeOpenAiResponsesChat,
+   "anthropic-messages-chat": executeAnthropicMessagesChat,
+   "google-gemini-chat": executeGoogleGeminiChat
+ };
+diff --git a/scripts/comfy-production-text-setup.mjs b/scripts/comfy-production-text-setup.mjs
+new file mode 100644
+index 00000000..f851ef2b
+--- /dev/null
++++ b/scripts/comfy-production-text-setup.mjs
+@@ -0,0 +1,112 @@
++import { basename, resolve } from "node:path";
++
++const repoRoot = resolve(import.meta.dirname, "..");
++
++export const productionTextWorkflowId = "customcard-production-text-overlay";
++export const productionTextWorkflowRelativePath = "comfyui-workflows/customcard-production-text-overlay.json";
++export const productionTextNodeSourceRelativePath = "comfyui-custom-nodes/CustomCardTextComposer";
++export const productionTextRequiredNodeClass = "CustomCardTextComposer";
++export const productionTextRequiredCompositorInputs = [
++  "artwork_guard_x",
++  "artwork_guard_y",
++  "artwork_guard_width",
++  "artwork_guard_height",
++  "artwork_guard_color",
++  "artwork_guard_opacity",
++  "artwork_guard_radius",
++  "artwork_guard_style",
++  "headline_box_background_radius",
++  "headline_box_background_opacity",
++  "headline_box_background_style",
++  "body_box_background_radius",
++  "body_box_background_opacity",
++  "body_box_background_style"
++];
++export const productionTextSetupInstructions = [
++  "Link comfyui-custom-nodes/CustomCardTextComposer into ComfyUI/custom_nodes.",
++  "Restart ComfyUI so /object_info exposes CustomCardTextComposer."
++];
++
++export function defaultProductionTextWorkflowPath(root = repoRoot) {
++  return resolve(root, productionTextWorkflowRelativePath);
++}
++
++export function defaultProductionTextNodeSource(root = repoRoot) {
++  return resolve(root, productionTextNodeSourceRelativePath);
++}
++
++export function resolveProductionTextComfyUrl({
++  explicitValue,
++  env = process.env
++} = {}) {
++  return normalizeComfyUrl(
++    explicitValue ||
++    env.CUSTOMCARD_COMFYUI_URL ||
++    env.COMFYUI_URL ||
++    "http://127.0.0.1:8188"
++  );
++}
++
++export function resolveProductionTextSetup({
++  args = {},
++  env = process.env,
++  root = repoRoot
++} = {}) {
++  const workflowPath = resolve(String(
++    args["workflow-path"] ||
++    env.CUSTOMCARD_COMFYUI_WORKFLOW_PATH ||
++    env.COMFYUI_WORKFLOW_PATH ||
++    defaultProductionTextWorkflowPath(root)
++  ));
++  const nodeSource = resolve(String(args["node-source"] || defaultProductionTextNodeSource(root)));
++  const comfyUrl = resolveProductionTextComfyUrl({
++    explicitValue: args["comfy-url"],
++    env
++  });
++  return {
++    comfyUrl,
++    workflowPath,
++    nodeSource,
++    workflowId: productionTextWorkflowId,
++    requiredNodeClass: productionTextRequiredNodeClass,
++    requiredComposerInputs: [...productionTextRequiredCompositorInputs],
++    setupInstructions: [...productionTextSetupInstructions]
++  };
++}
++
++export function describeProductionTextSetup({
++  args = {},
++  env = process.env,
++  root = repoRoot
++} = {}) {
++  const setup = resolveProductionTextSetup({ args, env, root });
++  return {
++    ...setup,
++    workflowPathRelative: relativePath(setup.workflowPath, root),
++    nodeSourceRelative: relativePath(setup.nodeSource, root)
++  };
++}
++
++export function isProductionTextWorkflowConfigured({
++  workflowId,
++  workflowPath,
++  root = repoRoot
++} = {}) {
++  const normalizedId = String(workflowId || "").trim().toLowerCase();
++  if (normalizedId === productionTextWorkflowId) return true;
++  const normalizedPath = String(workflowPath || "").trim();
++  if (!normalizedPath) return false;
++  return resolve(normalizedPath) === defaultProductionTextWorkflowPath(root);
++}
++
++export function relativePath(filePath, root = repoRoot) {
++  return resolve(filePath).replace(root, "").replace(/^[/\\]/, "").replaceAll("\\", "/") || basename(filePath);
++}
++
++export function normalizeComfyUrl(value) {
++  const parsed = new URL(String(value || "http://127.0.0.1:8188"));
++  parsed.pathname = parsed.pathname.replace(/\/+$/, "");
++  parsed.search = "";
++  parsed.hash = "";
++  return parsed.toString().replace(/\/+$/, "");
++}
+diff --git a/scripts/comfyui-production-text-preflight.mjs b/scripts/comfyui-production-text-preflight.mjs
+index d4821933..658d30ae 100644
+--- a/scripts/comfyui-production-text-preflight.mjs
++++ b/scripts/comfyui-production-text-preflight.mjs
+@@ -1,69 +1,54 @@
+ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+-import { basename, resolve } from "node:path";
++import { resolve } from "node:path";
+ import { fileURLToPath, pathToFileURL } from "node:url";
++import {
++  productionTextRequiredCompositorInputs,
++  relativePath as relativeSetupPath,
++  resolveProductionTextSetup
++} from "./comfy-production-text-setup.mjs";
+ 
+ const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
+-const defaultWorkflowPath = resolve(repoRoot, "comfyui-workflows/customcard-production-text-overlay.json");
+-const defaultNodeSource = resolve(repoRoot, "comfyui-custom-nodes/CustomCardTextComposer");
+ const defaultOutputRoot = resolve(repoRoot, "docs/evidence/generated-card-comparisons");
+-const requiredNodeClass = "CustomCardTextComposer";
+-const requiredComposerInputs = [
+-  "artwork_guard_x",
+-  "artwork_guard_y",
+-  "artwork_guard_width",
+-  "artwork_guard_height",
+-  "artwork_guard_color",
+-  "artwork_guard_opacity",
+-  "artwork_guard_radius",
+-  "artwork_guard_style",
+-  "headline_box_background_radius",
+-  "headline_box_background_opacity",
+-  "headline_box_background_style",
+-  "body_box_background_radius",
+-  "body_box_background_opacity",
+-  "body_box_background_style"
+-];
+ 
+ if (isMainModule()) {
+   const result = await runPreflight(parseArgs(process.argv.slice(2)));
+   console.log(JSON.stringify({
+     ok: result.ok,
+     status: result.status,
+     promotionReady: result.promotionReady,
+     reportDir: result.reportDir,
+     liveComfyReachable: result.liveComfyReachable,
+     liveNodeAvailable: result.liveNodeAvailable
+   }, null, 2));
+   if (!result.ok) process.exitCode = 1;
+ }
+ 
+ export async function runPreflight(args = {}) {
+-  const comfyUrl = normalizeComfyUrl(args["comfy-url"] || process.env.CUSTOMCARD_COMFYUI_URL || process.env.COMFYUI_URL || "http://127.0.0.1:8188");
+-  const workflowPath = resolve(String(args["workflow-path"] || process.env.CUSTOMCARD_COMFYUI_WORKFLOW_PATH || defaultWorkflowPath));
+-  const nodeSource = resolve(String(args["node-source"] || defaultNodeSource));
++  const setup = resolveProductionTextSetup({ args });
++  const { comfyUrl, workflowPath, nodeSource, requiredNodeClass } = setup;
+   const outputRoot = resolve(String(args["output-root"] || defaultOutputRoot));
+   const reportDir = resolve(String(args["report-dir"] || `${outputRoot}/production-text-preflight-${timestamp()}`));
+   const requireLive = args["require-live"] === true || args["require-live"] === "true";
+   const timeoutMs = boundedInteger(args["timeout-ms"] || process.env.CUSTOMCARD_COMFYUI_PREFLIGHT_TIMEOUT_MS, 500, 60_000, 5_000);
+ 
+   const checks = [];
+   const workflow = readWorkflow(workflowPath, checks);
+   const classTypes = workflow ? collectClassTypes(workflow) : [];
+   checks.push(check("workflow contains CustomCardTextComposer", classTypes.includes(requiredNodeClass), {
+     requiredNodeClass,
+     classTypes: classTypes.filter((value, index) => classTypes.indexOf(value) === index).sort()
+   }));
+   const workflowNodeInputs = collectWorkflowNodeInputs(workflow, requiredNodeClass);
+-  const missingWorkflowComposerInputs = requiredComposerInputs.filter((input) => !workflowNodeInputs.includes(input));
++  const missingWorkflowComposerInputs = productionTextRequiredCompositorInputs.filter((input) => !workflowNodeInputs.includes(input));
+   checks.push(check("workflow maps production text compositor inputs", missingWorkflowComposerInputs.length === 0, {
+-    requiredInputs: requiredComposerInputs,
++    requiredInputs: productionTextRequiredCompositorInputs,
+     missingInputs: missingWorkflowComposerInputs
+   }));
+   checks.push(check("custom node source exists", existsSync(nodeSource), { nodeSource }));
+   checks.push(check("custom node module files exist", existsSync(resolve(nodeSource, "__init__.py")) && existsSync(resolve(nodeSource, "nodes.py")), {
+     files: ["__init__.py", "nodes.py"]
+   }));
+ 
+   const live = await readLiveObjectInfo(comfyUrl, timeoutMs);
+   const liveComfyReachable = Boolean(live.objectInfo);
+   const liveNodeAvailable = Boolean(live.objectInfo?.[requiredNodeClass]);
+@@ -71,66 +56,66 @@ export async function runPreflight(args = {}) {
+     comfyUrl,
+     requireLive,
+     error: live.error
+   }, { required: requireLive }));
+   checks.push(check("live ComfyUI has CustomCardTextComposer", liveNodeAvailable, {
+     comfyUrl,
+     requiredNodeClass,
+     liveComfyReachable
+   }, { required: requireLive, advisory: !requireLive }));
+   const liveNodeInputs = collectLiveNodeInputs(live.objectInfo?.[requiredNodeClass]);
+-  const missingLiveComposerInputs = requiredComposerInputs.filter((input) => !liveNodeInputs.includes(input));
++  const missingLiveComposerInputs = productionTextRequiredCompositorInputs.filter((input) => !liveNodeInputs.includes(input));
+   checks.push(check("live ComfyUI exposes production text compositor inputs", liveComfyReachable && liveNodeAvailable && missingLiveComposerInputs.length === 0, {
+-    requiredInputs: requiredComposerInputs,
++    requiredInputs: productionTextRequiredCompositorInputs,
+     missingInputs: missingLiveComposerInputs,
+     liveInputCount: liveNodeInputs.length
+   }, { required: requireLive, advisory: !requireLive }));
+ 
+   const cachedObjectInfoPath = resolve(repoRoot, ".codex/comfyui/object_info.json");
+   const cachedObjectInfo = readCachedObjectInfo(cachedObjectInfoPath);
+   const cachedNodeAvailable = Boolean(cachedObjectInfo?.[requiredNodeClass]);
+ 
+   const ok = checks.filter((item) => item.required).every((item) => item.ok);
+   const promotionReady = liveComfyReachable && liveNodeAvailable && checks.filter((item) => item.required).every((item) => item.ok);
+   const result = {
+     ok,
+     promotionReady,
+     status: ok ? (promotionReady ? "promotion-ready" : "repo-ok-runtime-not-ready") : "failed",
+     createdAtIso: new Date().toISOString(),
+     comfyUrl,
+-    workflowPath: relativePath(workflowPath),
+-    nodeSource: relativePath(nodeSource),
++    workflowPath: relativeSetupPath(workflowPath, repoRoot),
++    nodeSource: relativeSetupPath(nodeSource, repoRoot),
+     requiredNodeClass,
+     liveComfyReachable,
+     liveNodeAvailable,
+-    cachedObjectInfoPath: existsSync(cachedObjectInfoPath) ? relativePath(cachedObjectInfoPath) : null,
++    cachedObjectInfoPath: existsSync(cachedObjectInfoPath) ? relativeSetupPath(cachedObjectInfoPath, repoRoot) : null,
+     cachedNodeAvailable,
+     checks,
+     nextSteps: buildNextSteps({ requireLive, liveComfyReachable, liveNodeAvailable, cachedNodeAvailable })
+   };
+ 
+   mkdirSync(reportDir, { recursive: true });
+-  result.reportDir = relativePath(reportDir);
++  result.reportDir = relativeSetupPath(reportDir, repoRoot);
+   writeJson(resolve(reportDir, "production-text-preflight.json"), result);
+   writeMarkdown(resolve(reportDir, "production-text-preflight.md"), buildMarkdown(result));
+   return result;
+ }
+ 
+ function readWorkflow(workflowPath, checks) {
+   if (!existsSync(workflowPath)) {
+     checks.push(check("workflow file exists", false, { workflowPath }));
+     return null;
+   }
+-  checks.push(check("workflow file exists", true, { workflowPath: relativePath(workflowPath) }));
++  checks.push(check("workflow file exists", true, { workflowPath: relativeSetupPath(workflowPath, repoRoot) }));
+   try {
+     const workflow = JSON.parse(readFileSync(workflowPath, "utf8"));
+-    checks.push(check("workflow JSON parses", true, { workflowPath: relativePath(workflowPath) }));
++    checks.push(check("workflow JSON parses", true, { workflowPath: relativeSetupPath(workflowPath, repoRoot) }));
+     return workflow;
+   } catch (error) {
+     checks.push(check("workflow JSON parses", false, { error: errorMessage(error) }));
+     return null;
+   }
+ }
+ 
+ async function readLiveObjectInfo(comfyUrl, timeoutMs) {
+   try {
+     const controller = new AbortController();
+@@ -253,42 +238,30 @@ function parseArgs(values) {
+     if (!next || next.startsWith("--")) {
+       parsed[key] = true;
+     } else {
+       parsed[key] = next;
+       index += 1;
+     }
+   }
+   return parsed;
+ }
+ 
+-function normalizeComfyUrl(value) {
+-  const parsed = new URL(String(value || "http://127.0.0.1:8188"));
+-  parsed.pathname = parsed.pathname.replace(/\/+$/, "");
+-  parsed.search = "";
+-  parsed.hash = "";
+-  return parsed.toString().replace(/\/+$/, "");
+-}
+-
+ function boundedInteger(value, min, max, fallback) {
+   const parsed = Number.parseInt(String(value ?? ""), 10);
+   if (!Number.isFinite(parsed)) return fallback;
+   return Math.min(max, Math.max(min, parsed));
+ }
+ 
+ function timestamp() {
+   return new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z");
+ }
+ 
+-function relativePath(filePath) {
+-  return resolve(filePath).replace(repoRoot, "").replace(/^[/\\]/, "").replaceAll("\\", "/") || basename(filePath);
+-}
+-
+ function escapeMarkdownTable(value) {
+   return String(value || "").replaceAll("|", "\\|");
+ }
+ 
+ function errorMessage(error) {
+   return error instanceof Error ? error.message : String(error);
+ }
+ 
+ function isMainModule() {
+   return process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
+diff --git a/scripts/hosted-vercel-env-inventory.mjs b/scripts/hosted-vercel-env-inventory.mjs
+index 7c9fd69a..e40c249e 100644
+--- a/scripts/hosted-vercel-env-inventory.mjs
++++ b/scripts/hosted-vercel-env-inventory.mjs
+@@ -1,29 +1,36 @@
+ import { spawn } from "node:child_process";
+ import { mkdirSync, writeFileSync } from "node:fs";
+ import { dirname, resolve } from "node:path";
+ import { pathToFileURL } from "node:url";
++import {
++  buildAiProviderSetupProfile,
++  hostedAiCardCopySetupKeys,
++  productionCardCopyModel,
++  productionCardCopyModelOverrideEnvKey
++} from "../src/aiProviderSetupProfile.mjs";
+ 
+ const guardEnvName = "CUSTOMCARD_HOSTED_ENV_INVENTORY";
+ const guardRequirement = "CUSTOMCARD_HOSTED_ENV_INVENTORY=enabled";
+ const defaultProductionBaseUrl = "https://customcard-three.vercel.app";
+ 
+ const requiredHostedEnvVars = Object.freeze([
+   "CUSTOMCARD_API_RUNTIME",
+   "DATABASE_URL",
+   "AUTH_SESSION_SECRET",
+   "CLERK_JWT_KEY",
+   "CLERK_AUTHORIZED_PARTIES",
+   "CLERK_ISSUER",
+   "CLERK_AUDIENCE",
+   "IDEMPOTENCY_KEY_TTL_HOURS"
+ ]);
++const aiSetupProfile = Object.freeze(buildAiProviderSetupProfile());
+ 
+ export async function runHostedVercelEnvInventory({
+   env = process.env,
+   commandRunner = runVercelEnvLs,
+   now = new Date()
+ } = {}) {
+   const target = resolveVercelEnvTarget(env);
+   const blockers = [...target.blockers];
+   if (env[guardEnvName] !== "enabled") {
+     blockers.unshift(`${guardRequirement} is required before hosted Vercel env inventory runs.`);
+@@ -55,29 +62,32 @@ export async function runHostedVercelEnvInventory({
+       target,
+       entries: [],
+       blockers: [`vercel env ls --format=json exited with code ${command?.exitCode ?? "unknown"}.`],
+       now,
+       command
+     });
+   }
+ 
+   let entries;
+   try {
+-    entries = parseVercelEnvJson(command.stdout);
++    entries = parseVercelEnvInventoryPayload(command.stdout);
+   } catch (error) {
+     const message = error instanceof Error ? error.message : "Unable to parse vercel env ls JSON.";
+     return buildReport({ target, entries: [], blockers: [message], now, command });
+   }
+ 
+   const inventory = buildInventory(entries, target.vercelTarget);
+   const missing = inventory.requiredKeys.filter((key) => !key.present).map((key) => key.name);
+-  const inventoryBlockers = missing.map((name) => `${name} is missing from the Vercel ${target.vercelTarget} env inventory.`);
++  const inventoryBlockers = [
++    ...missing.map((name) => `${name} is missing from the Vercel ${target.vercelTarget} env inventory.`),
++    ...inventory.aiCardCopySetup.blockers
++  ];
+ 
+   return buildReport({ target, entries, blockers: inventoryBlockers, now, command });
+ }
+ 
+ export function resolveVercelEnvTarget(env = process.env) {
+   const targetEnvironment = normalizeTargetEnvironment(env.CUSTOMCARD_HOSTED_API_ENV ?? env.CUSTOMCARD_APP_ENV);
+   const explicitVercelTarget = normalizeVercelTarget(env.CUSTOMCARD_VERCEL_ENV_TARGET);
+   const vercelTarget = explicitVercelTarget || (targetEnvironment === "qa" ? "preview" : "production");
+   const baseUrl = normalizeBaseUrl(env.CUSTOMCARD_HOSTED_API_BASE_URL || env.CUSTOMCARD_API_BASE_URL) ||
+     normalizeBaseUrl(targetEnvironment === "qa" ? env.CUSTOMCARD_QA_API_BASE_URL : env.CUSTOMCARD_PRODUCTION_API_BASE_URL) ||
+@@ -95,20 +105,24 @@ export function resolveVercelEnvTarget(env = process.env) {
+   }
+   if (!vercelTarget) {
+     blockers.push("CUSTOMCARD_VERCEL_ENV_TARGET must be production, preview, or development.");
+   }
+   blockers.push(...validateBaseUrl(baseUrl, targetEnvironment));
+ 
+   return { targetEnvironment, vercelTarget, baseUrl, blockers };
+ }
+ 
+ export function parseVercelEnvJson(stdout) {
++  return parseVercelEnvInventoryPayload(stdout).map(({ name, targets }) => ({ name, targets }));
++}
++
++function parseVercelEnvInventoryPayload(stdout) {
+   const text = String(stdout ?? "").trim();
+   if (!text) throw new Error("vercel env ls --format=json returned empty output.");
+   let payload;
+   try {
+     payload = JSON.parse(text);
+   } catch {
+     throw new Error("vercel env ls --format=json returned invalid JSON.");
+   }
+ 
+   return collectEnvRecords(payload).map(normalizeEnvRecord).filter(Boolean);
+@@ -133,20 +147,27 @@ function buildReport({ target, entries, blockers, now, command }) {
+           detail: inventory.clerkJwtVerifierConfigured
+             ? "Clerk JWT verifier key, issuer, audience, and authorized parties are present."
+             : "Clerk JWT verifier env keys are incomplete."
+         },
+         {
+           id: "postgres-runtime-env",
+           passed: inventory.customcardApiRuntimeConfigured && inventory.databaseUrlConfigured,
+           detail: inventory.customcardApiRuntimeConfigured && inventory.databaseUrlConfigured
+             ? "Hosted runtime mode and DATABASE_URL env keys are present."
+             : "Hosted runtime mode or DATABASE_URL env keys are missing."
++        },
++        {
++          id: "ai-card-copy-setup",
++          passed: inventory.aiCardCopySetup.ready,
++          detail: inventory.aiCardCopySetup.ready
++            ? `Cloudflare card-copy setup is present, and ${productionCardCopyModelOverrideEnvKey} pins the production ${productionCardCopyModel} model.`
++            : inventory.aiCardCopySetup.blockers.join(" ")
+         }
+       ];
+   const passed = checks.filter((check) => check.passed).length;
+   const failed = checks.length - passed;
+   const ready = blockers.length === 0 && failed === 0;
+ 
+   return {
+     service: "customcard-hosted-vercel-env-inventory",
+     status: ready ? "ready" : "blocked",
+     scope: "live-hosted-env-sync",
+@@ -157,26 +178,29 @@ function buildReport({ target, entries, blockers, now, command }) {
+     command: {
+       name: "vercel env ls --format=json",
+       exitCode: command?.exitCode ?? null,
+       stdoutParsed: Boolean(command && command.exitCode === 0)
+     },
+     mutationsEnabled: false,
+     valuesRedacted: true,
+     requiredKeys: inventory.requiredKeys,
+     keyCount: inventory.keyCount,
+     scopedKeyCount: inventory.scopedKeyCount,
++    aiCardCopySetup: inventory.aiCardCopySetup,
+     envSync: {
+       requiredKeysPresent: inventory.missingRequiredKeys.length === 0,
+       customcardApiRuntimeConfigured: inventory.customcardApiRuntimeConfigured,
+       databaseUrlConfigured: inventory.databaseUrlConfigured,
+       clerkJwtVerifierConfigured: inventory.clerkJwtVerifierConfigured,
+       idempotencyConfigured: inventory.idempotencyConfigured,
++      aiCardCopySetupConfigured: inventory.aiCardCopySetup.baseConfigured,
++      aiCardCopyProductionModelPinned: inventory.aiCardCopySetup.productionModelOverridePresent,
+       environmentSynced: ready
+     },
+     checks,
+     passed,
+     failed,
+     blockers
+   };
+ }
+ 
+ function buildInventory(entries, vercelTarget) {
+@@ -188,27 +212,86 @@ function buildInventory(entries, vercelTarget) {
+     present: scopedNames.has(name),
+     targets: Array.from(new Set(scopedEntries.filter((entry) => entry.name === name).flatMap((entry) => entry.targets))).sort()
+   }));
+   const missingRequiredKeys = requiredKeys.filter((key) => !key.present).map((key) => key.name);
+ 
+   return {
+     requiredKeys,
+     missingRequiredKeys,
+     keyCount: allNames.length,
+     scopedKeyCount: scopedNames.size,
++    aiCardCopySetup: buildAiCardCopySetup(scopedNames),
+     customcardApiRuntimeConfigured: scopedNames.has("CUSTOMCARD_API_RUNTIME"),
+     databaseUrlConfigured: scopedNames.has("DATABASE_URL"),
+     clerkJwtVerifierConfigured: ["CLERK_JWT_KEY", "CLERK_AUTHORIZED_PARTIES", "CLERK_ISSUER", "CLERK_AUDIENCE"].every((name) => scopedNames.has(name)),
+     idempotencyConfigured: scopedNames.has("IDEMPOTENCY_KEY_TTL_HOURS")
+   };
+ }
+ 
++function buildAiCardCopySetup(scopedNames) {
++  const tokenEnvKeys = aiSetupProfile.cardCopy.tokenEnvKeys.map((name) => ({
++    name,
++    present: scopedNames.has(name)
++  }));
++  const modelEnvKeys = aiSetupProfile.cardCopy.modelEnvKeys.map((name) => ({
++    name,
++    present: scopedNames.has(name)
++  }));
++  const tokenConfigured = tokenEnvKeys.some((entry) => entry.present);
++  const modelConfigured = modelEnvKeys.some((entry) => entry.present);
++  const productionModelOverridePresent = scopedNames.has(productionCardCopyModelOverrideEnvKey);
++  const blockers = [];
++
++  if (!scopedNames.has(aiSetupProfile.cardCopy.accountEnvKey)) {
++    blockers.push(`${aiSetupProfile.cardCopy.accountEnvKey} is missing from the Vercel card-copy env inventory.`);
++  }
++  if (!tokenConfigured) {
++    blockers.push(
++      `${aiSetupProfile.cardCopy.tokenEnvKeys.join(" or ")} is missing from the Vercel card-copy env inventory.`
++    );
++  }
++  if (!modelConfigured) {
++    blockers.push(
++      `${aiSetupProfile.cardCopy.modelEnvKeys.join(", ")} are missing from the Vercel card-copy env inventory.`
++    );
++  }
++  if (!productionModelOverridePresent) {
++    blockers.push(
++      `${productionCardCopyModelOverrideEnvKey} is missing, so hosted card-copy is not explicitly pinned to ${productionCardCopyModel}.`
++    );
++  }
++
++  return {
++    providerId: aiSetupProfile.cardCopy.providerId,
++    defaultModel: aiSetupProfile.cardCopy.defaultModel,
++    expectedSetupKeys: [...hostedAiCardCopySetupKeys],
++    accountEnvKey: {
++      name: aiSetupProfile.cardCopy.accountEnvKey,
++      present: scopedNames.has(aiSetupProfile.cardCopy.accountEnvKey)
++    },
++    tokenEnvKeys,
++    modelEnvKeys,
++    productionModelOverrideEnvKey: {
++      name: productionCardCopyModelOverrideEnvKey,
++      present: productionModelOverridePresent
++    },
++    productionModelOverridePresent,
++    baseConfigured:
++      scopedNames.has(aiSetupProfile.cardCopy.accountEnvKey) &&
++      tokenConfigured &&
++      modelConfigured,
++    localProductionTextComfyRequiresHostedImageKeys: aiSetupProfile.localProductionTextComfy.requiresHostedImageKeys,
++    ready: blockers.length === 0,
++    blockers
++  };
++}
++
+ function collectEnvRecords(payload) {
+   if (Array.isArray(payload)) return payload;
+   if (!payload || typeof payload !== "object") return [];
+ 
+   for (const key of ["envs", "env", "items", "data", "records", "variables"]) {
+     if (Array.isArray(payload[key])) return payload[key];
+   }
+ 
+   return Object.entries(payload).map(([name, value]) => {
+     if (value && typeof value === "object" && !Array.isArray(value)) return { name, ...value };
+diff --git a/scripts/hosted-vercel-env-repair.mjs b/scripts/hosted-vercel-env-repair.mjs
+index 5347a301..aac2e81d 100644
+--- a/scripts/hosted-vercel-env-repair.mjs
++++ b/scripts/hosted-vercel-env-repair.mjs
+@@ -185,34 +185,37 @@ function buildReport({ inventory, values, repairPlan, applyResults, blockers, no
+     status: blockers.length === 0 && (missingKeys.length === 0 || applySucceeded || !apply) ? "ready" : "blocked",
+     scope: "live-hosted-env-repair",
+     checkedAt: now instanceof Date ? now.toISOString() : new Date(now).toISOString(),
+     targetEnvironment: inventory?.targetEnvironment ?? null,
+     vercelTarget: inventory?.vercelTarget ?? null,
+     baseUrl: inventory?.baseUrl ?? null,
+     applyEnabled: apply,
+     partialApplyEnabled: allowPartialApply,
+     valuesRedacted: true,
+     missingRepairKeys: missingKeys,
++    aiCardCopySetup: inventory?.aiCardCopySetup ?? null,
+     valueInputs,
+     repairPlan,
+     applyResults: applyResults.map((result) => ({
+       key: result.key,
+       target: result.target,
+       exitCode: result.exitCode
+     })),
+     appliedRepairKeys,
+     remainingUnappliedRepairKeys,
+     envSync: {
+       beforeRepairEnvironmentSynced: inventory?.envSync?.environmentSynced === true,
+       repairKeysMissing: missingKeys.length,
+       repairApplied: applySucceeded,
+       partialRepairApplied: appliedRepairKeys.length > 0 && !applySucceeded,
++      aiCardCopySetupConfigured: inventory?.envSync?.aiCardCopySetupConfigured === true,
++      aiCardCopyProductionModelPinned: inventory?.envSync?.aiCardCopyProductionModelPinned === true,
+       environmentSynced: false
+     },
+     blockers
+   };
+ }
+ 
+ function runVercelEnvAdd({ key, value, target, env }) {
+   return new Promise((resolveReport) => {
+     const child = spawn("vercel", ["env", "add", key, target], {
+       cwd: process.cwd(),
+diff --git a/scripts/local-comfy-worker.mjs b/scripts/local-comfy-worker.mjs
+index a0bb875c..4ce563bc 100644
+--- a/scripts/local-comfy-worker.mjs
++++ b/scripts/local-comfy-worker.mjs
+@@ -1,25 +1,30 @@
+ import { resolve } from "node:path";
+ import { pathToFileURL } from "node:url";
+ import { loadLocalAiEnvFiles } from "./ai-card-generator.mjs";
++import {
++  describeProductionTextSetup,
++  isProductionTextWorkflowConfigured,
++  resolveProductionTextComfyUrl
++} from "./comfy-production-text-setup.mjs";
+ import { createWorkerRuntime, describeWorkerReadiness } from "./worker-runtime.mjs";
+ 
+ const localComfyRoutes = [{ id: "ai-card-generate", runtimeMode: "queue-backed" }];
+ 
+ export function resolveLocalComfyWorkerEnv(env = process.env) {
+   const resolved = { ...env };
+   resolved.CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID = "local-comfyui-api-image";
+   if (resolved.CUSTOMCARD_LOCAL_COMFY_WORKER_ALLOW_IMAGE_FALLBACK !== "true") {
+     resolved.CUSTOMCARD_AI_CARD_IMAGE_FALLBACK_ADAPTER_ID = "local-comfyui-api-image";
+   }
+   if (!resolved.CUSTOMCARD_COMFYUI_URL && !resolved.COMFYUI_URL) {
+-    resolved.CUSTOMCARD_COMFYUI_URL = "http://127.0.0.1:8188";
++    resolved.CUSTOMCARD_COMFYUI_URL = resolveProductionTextComfyUrl({ env: resolved });
+   }
+   if (
+     !resolved.CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID &&
+     (resolved.CUSTOMCARD_LOCAL_LLM_BASE_URL || resolved.LMSTUDIO_BASE_URL || resolved.KOBOLDCPP_BASE_URL)
+   ) {
+     resolved.CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID = "local-openai-compatible-chat";
+   }
+   if (
+     resolved.CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID === "local-openai-compatible-chat" &&
+     resolved.CUSTOMCARD_LOCAL_COMFY_WORKER_ALLOW_TEXT_FALLBACK !== "true" &&
+@@ -38,27 +43,33 @@ export function createLocalComfyWorkerRuntime(options = {}) {
+   return createWorkerRuntime({
+     ...options,
+     env,
+     routes: options.routes ?? localComfyRoutes,
+     workerId: options.workerId ?? env.CUSTOMCARD_WORKER_ID
+   });
+ }
+ 
+ export function describeLocalComfyWorkerReadiness({ env = process.env } = {}) {
+   const resolvedEnv = resolveLocalComfyWorkerEnv(env);
++  const workflowId = resolvedEnv.CUSTOMCARD_COMFYUI_WORKFLOW_ID || resolvedEnv.COMFYUI_WORKFLOW_ID || null;
++  const workflowPath = resolvedEnv.CUSTOMCARD_COMFYUI_WORKFLOW_PATH || resolvedEnv.COMFYUI_WORKFLOW_PATH || null;
++  const productionTextSetup = isProductionTextWorkflowConfigured({ workflowId, workflowPath })
++    ? describeProductionTextSetup({ env: resolvedEnv })
++    : null;
+   return {
+     ...describeWorkerReadiness({ env: resolvedEnv, routes: localComfyRoutes }),
+     routeScope: "ai-card-generate",
+     imageAdapter: resolvedEnv.CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID,
+     comfyUrl: resolvedEnv.CUSTOMCARD_COMFYUI_URL || resolvedEnv.COMFYUI_URL,
+-    workflowId: resolvedEnv.CUSTOMCARD_COMFYUI_WORKFLOW_ID || resolvedEnv.COMFYUI_WORKFLOW_ID || null,
+-    workflowPath: resolvedEnv.CUSTOMCARD_COMFYUI_WORKFLOW_PATH || resolvedEnv.COMFYUI_WORKFLOW_PATH || null
++    workflowId,
++    workflowPath,
++    productionTextSetup
+   };
+ }
+ 
+ if (isCliEntrypoint()) {
+   loadLocalAiEnvFiles();
+   await runCli();
+ }
+ 
+ async function runCli() {
+   const args = new Set(process.argv.slice(2));
+diff --git a/scripts/production-text-readiness-doctor.mjs b/scripts/production-text-readiness-doctor.mjs
+index a78e90d3..eee7ff79 100644
+--- a/scripts/production-text-readiness-doctor.mjs
++++ b/scripts/production-text-readiness-doctor.mjs
+@@ -1,55 +1,56 @@
+ import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+ import { basename, dirname, extname, resolve } from "node:path";
+ import {
+   classifyProductionTextPlanner,
+   isQualityPlanner,
+   isSmallPlanner,
+   productionTextPlannerPolicy
+ } from "./production-text-planner-policy.mjs";
++import {
++  productionTextRequiredNodeClass,
++  relativePath as relativeSetupPath,
++  resolveProductionTextSetup
++} from "./comfy-production-text-setup.mjs";
+ import { inspectLocalKoboldGpuResidency } from "./local-kobold-gpu-residency.mjs";
+ 
+ const repoRoot = resolve(import.meta.dirname, "..");
+ const evidenceRoot = resolve(repoRoot, "docs/evidence/generated-card-comparisons");
+ const defaultOutputRoot = evidenceRoot;
+-const defaultWorkflowPath = resolve(repoRoot, "comfyui-workflows/customcard-production-text-overlay.json");
+-const defaultNodeSource = resolve(repoRoot, "comfyui-custom-nodes/CustomCardTextComposer");
+ const defaultAggregatePath = resolve(
+   evidenceRoot,
+   "benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json"
+ );
+ const defaultModelRoot = process.env.CUSTOMCARD_LOCAL_MODEL_ROOT || "D:\\models";
+-const defaultComfyUrl = process.env.CUSTOMCARD_COMFYUI_URL || process.env.COMFYUI_URL || "http://127.0.0.1:8188";
+ const commonPlannerUrls = ["http://127.0.0.1:5001/v1", "http://127.0.0.1:5003/v1"];
+ 
+ if (isMainModule()) {
+   const result = await runDoctor(parseArgs(process.argv.slice(2)));
+   console.log(JSON.stringify({
+     status: result.status,
+     promotionReady: result.promotionReady,
+     reportDir: result.reportDir,
+     blockers: result.blockers.length,
+     advisory: result.advisory
+   }, null, 2));
+   if (!result.advisory && !result.promotionReady) process.exitCode = 1;
+ }
+ 
+ export async function runDoctor(args = {}, options = {}) {
+   const advisory = Boolean(args.advisory);
+   const fetchImpl = options.fetchImpl || globalThis.fetch;
++  const setup = resolveProductionTextSetup({ args });
+   const outputRoot = resolve(String(args["output-root"] || defaultOutputRoot));
+   const reportDir = resolve(String(args["output-dir"] || `${outputRoot}/production-text-readiness-${timestamp()}`));
+-  const workflowPath = resolve(String(args["workflow-path"] || defaultWorkflowPath));
+-  const nodeSource = resolve(String(args["node-source"] || defaultNodeSource));
++  const { workflowPath, nodeSource, comfyUrl } = setup;
+   const aggregatePath = resolve(String(args.aggregate || defaultAggregatePath));
+   const modelRoot = resolve(String(args["model-root"] || defaultModelRoot));
+-  const comfyUrl = normalizeRootUrl(String(args["comfy-url"] || defaultComfyUrl));
+   const configuredPlannerUrls = unique([
+     args["local-llm-base-url"],
+     process.env.CUSTOMCARD_LOCAL_LLM_BASE_URL,
+     process.env.LMSTUDIO_BASE_URL,
+     process.env.KOBOLDCPP_BASE_URL
+   ].filter(Boolean).map(normalizeOpenAiBaseUrl));
+   const plannerApiKey = firstUsableValue(
+     args["local-llm-api-key"],
+     args["api-key"],
+     process.env.CUSTOMCARD_LOCAL_LLM_API_KEY,
+@@ -75,22 +76,22 @@ export async function runDoctor(args = {}, options = {}) {
+   const modelInventory = summarizeModelInventory(modelRoot);
+   const plannerEndpoints = await Promise.all(plannerUrls.map((url) => probePlanner(url, timeoutMs, plannerRuntimeBudget, {
+     ...options,
+     apiKey: plannerApiKey,
+     fetchImpl
+   })));
+   const activePlannerEndpoints = selectActivePlannerEndpoints(plannerEndpoints, configuredPlannerUrls);
+   const comfy = await probeComfy(comfyUrl, timeoutMs, { fetchImpl });
+ 
+   const checks = [
+-    check("production workflow file exists", workflowExists, true, { workflowPath: relativePath(workflowPath) }),
+-    check("CustomCardTextComposer source exists", nodeSourceExists, true, { nodeSource: relativePath(nodeSource) }),
++    check("production workflow file exists", workflowExists, true, { workflowPath: relativeSetupPath(workflowPath, repoRoot) }),
++    check("CustomCardTextComposer source exists", nodeSourceExists, true, { nodeSource: relativeSetupPath(nodeSource, repoRoot) }),
+     check("live ComfyUI reachable", comfy.reachable, true, { comfyUrl, error: comfy.error }),
+     check("live ComfyUI exposes CustomCardTextComposer", comfy.hasTextComposer, true, {
+       comfyUrl,
+       objectInfoKeys: comfy.objectInfoKeyCount
+     }),
+     check("latest LLM-planned aggregate exists", Boolean(aggregate), false, { aggregatePath: relativePath(aggregatePath) }),
+     check("latest LLM-planned aggregate covers three customer requests", aggregateSummary.totalRuns >= 3, false, aggregateSummary),
+     check("latest LLM-planned aggregate is passing", aggregateSummary.promotionReady, false, aggregateSummary),
+     check("higher-quality local planner model is installed", modelInventory.qualityPlannerInstalled, true, {
+       modelRoot,
+@@ -119,22 +120,22 @@ export async function runDoctor(args = {}, options = {}) {
+   ];
+ 
+   const blockers = checks.filter((item) => item.required && !item.ok);
+   const promotionReady = blockers.length === 0;
+   const result = {
+     createdAtIso: new Date().toISOString(),
+     status: promotionReady ? "promotion-ready" : "blocked",
+     advisory,
+     promotionReady,
+     aggregatePromotionReady: aggregateSummary.promotionReady,
+-    workflowPath: relativePath(workflowPath),
+-    nodeSource: relativePath(nodeSource),
++    workflowPath: relativeSetupPath(workflowPath, repoRoot),
++    nodeSource: relativeSetupPath(nodeSource, repoRoot),
+     aggregatePath: relativePath(aggregatePath),
+     modelRoot,
+     comfy,
+     configuredPlannerUrls,
+     plannerApiKeyProvided: Boolean(plannerApiKey),
+     activePlannerEndpoints,
+     plannerEndpoints,
+     aggregateSummary,
+     modelInventory,
+     plannerRuntimeBudget,
+@@ -280,21 +281,21 @@ function localPlannerGpuOk(activePlannerEndpoints) {
+ 
+ async function probeComfy(comfyUrl, timeoutMs, options = {}) {
+   const fetchImpl = options.fetchImpl || globalThis.fetch;
+   try {
+     const response = await fetchWithTimeout(fetchImpl, `${comfyUrl.replace(/\/$/, "")}/object_info`, {}, timeoutMs);
+     if (!response.ok) throw new Error(`HTTP ${response.status}`);
+     const objectInfo = await response.json();
+     return {
+       comfyUrl,
+       reachable: true,
+-      hasTextComposer: Boolean(objectInfo?.CustomCardTextComposer),
++      hasTextComposer: Boolean(objectInfo?.[productionTextRequiredNodeClass]),
+       objectInfoKeyCount: Object.keys(objectInfo || {}).length
+     };
+   } catch (error) {
+     return {
+       comfyUrl,
+       reachable: false,
+       hasTextComposer: false,
+       objectInfoKeyCount: 0,
+       error: errorMessage(error)
+     };
+@@ -402,28 +403,20 @@ function normalizeOpenAiBaseUrl(value) {
+   const parsed = new URL(String(value));
+   let path = parsed.pathname.replace(/\/+$/, "");
+   if (path.endsWith("/chat/completions")) path = path.slice(0, -"/chat/completions".length).replace(/\/+$/, "");
+   if (!path.endsWith("/v1")) path = `${path}/v1`;
+   parsed.pathname = path.replace(/\/{2,}/g, "/");
+   parsed.search = "";
+   parsed.hash = "";
+   return parsed.toString().replace(/\/$/, "");
+ }
+ 
+-function normalizeRootUrl(value) {
+-  const parsed = new URL(String(value));
+-  parsed.pathname = parsed.pathname.replace(/\/+$/, "");
+-  parsed.search = "";
+-  parsed.hash = "";
+-  return parsed.toString().replace(/\/$/, "");
+-}
+-
+ function firstUsableValue(...values) {
+   for (const value of values) {
+     const text = String(value ?? "").trim();
+     if (text && !["__UNSET__", "placeholder", "changeme"].includes(text)) return text;
+   }
+   return "";
+ }
+ 
+ async function fetchWithTimeout(fetchImpl, url, init, timeoutMs) {
+   const controller = new AbortController();
+diff --git a/scripts/provider-http-worker.mjs b/scripts/provider-http-worker.mjs
+index b5150168..6646e96e 100644
+--- a/scripts/provider-http-worker.mjs
++++ b/scripts/provider-http-worker.mjs
+@@ -1,17 +1,17 @@
+ import { existsSync, readFileSync } from "node:fs";
+ import { resolve } from "node:path";
+ import { pathToFileURL } from "node:url";
+ import {
+-  normalizeAiFlowAdminConfigs,
+-  resolveAiFlowConfig
+-} from "../src/aiFlowConfigData.mjs";
++  createAiRouteActivationContext,
++  resolveAiRouteActivation
++} from "../src/aiRouteActivation.mjs";
+ import { createAiCardGenerationService, loadLocalAiEnvFiles } from "./ai-card-generator.mjs";
+ import { resolveLocalComfyWorkerEnv } from "./local-comfy-worker.mjs";
+ import {
+   buildProviderWorkerResult,
+   hasLiveProviderNetworkCall
+ } from "./provider-worker-payload-contract.mjs";
+ 
+ export function resolveProviderHttpWorkerEnv(env = process.env) {
+   const resolved = resolveLocalComfyWorkerEnv(env);
+   resolved.CUSTOMCARD_PROVIDER_API_BASE_URL =
+@@ -42,21 +42,21 @@ export function createProviderHttpWorkerRuntime({
+   return {
+     describe() {
+       return {
+         service: "customcard-provider-http-worker",
+         executionMode: "provider-token-http",
+         workerId,
+         apiBaseUrl: baseUrl || null,
+         routeScope,
+         copyAdapter: aiFlowReadiness.cardCopy.adapterId,
+         copyModel: aiFlowReadiness.cardCopy.model,
+-        imageAdapter: resolvedEnv.CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID,
++        imageAdapter: aiFlowReadiness.cardImage.adapterId,
+         imageModel: aiFlowReadiness.cardImage.model,
+         comfyUrl: resolvedEnv.CUSTOMCARD_COMFYUI_URL || resolvedEnv.COMFYUI_URL || null,
+         aiFlowReadiness,
+         hasProviderToken: token.length >= 32,
+         pollIntervalMs: workerPollIntervalMs(resolvedEnv)
+       };
+     },
+     validate() {
+       const blockers = [];
+       if (!baseUrl) blockers.push("CUSTOMCARD_PROVIDER_API_BASE_URL is required.");
+@@ -272,23 +272,23 @@ function parseDotenv(text) {
+   }
+   return parsed;
+ }
+ 
+ function isProviderWorkerEnvKey(key) {
+   return /^(CUSTOMCARD_PROVIDER_.+|CUSTOMCARD_HOSTED_API_BASE_URL|PUBLIC_APP_ORIGIN|CUSTOMCARD_AI_|CUSTOMCARD_RUNCOMFY_|CUSTOMCARD_COMFYUI_|COMFYUI_|CLOUDFLARE_|RUNCOMFY_)/
+     .test(key);
+ }
+ 
+ function providerAiFlowReadiness(env) {
+-  const adminConfig = providerAiFlowAdminConfig(env);
+-  const cardCopy = resolveAiFlowConfig("card-copy", env, adminConfig);
+-  const cardImage = resolveAiFlowConfig("card-image", env, adminConfig);
++  const activationContext = createAiRouteActivationContext({ env });
++  const cardCopy = resolveAiRouteActivation("card-copy", activationContext).flow;
++  const cardImage = resolveAiRouteActivation("card-image", activationContext).flow;
+   return {
+     cardCopy: flowReadinessSummary(cardCopy),
+     cardImage: flowReadinessSummary(cardImage)
+   };
+ }
+ 
+ function flowReadinessSummary(flow) {
+   return {
+     flowId: flow.flowId,
+     adapterId: flow.primaryAdapterId,
+@@ -298,34 +298,20 @@ function flowReadinessSummary(flow) {
+     blockedReasons: flow.blockedReasons
+   };
+ }
+ 
+ function providerAiFlowBlockers(readiness) {
+   return [readiness.cardCopy, readiness.cardImage].flatMap((flow) =>
+     flow.readyForLiveCalls ? [] : flow.blockedReasons.map((reason) => `${flow.flowId}: ${reason}`)
+   );
+ }
+ 
+-function providerAiFlowAdminConfig(env) {
+-  const raw = env.CUSTOMCARD_AI_FLOW_CONFIG_JSON ?? env.CUSTOMCARD_AI_FLOW_ADMIN_CONFIG_JSON ?? "";
+-  if (!raw) return [];
+-  try {
+-    const parsed = JSON.parse(String(raw));
+-    return normalizeAiFlowAdminConfigs(
+-      Array.isArray(parsed) ? parsed : parsed.flows ?? parsed.aiFlowConfig ?? parsed.ai_flow_config ?? [],
+-      env
+-    );
+-  } catch {
+-    return [];
+-  }
+-}
+-
+ function providerRouteScope(routes, env) {
+   const configured = Array.isArray(routes) && routes.length > 0
+     ? routes
+     : String(env.CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS ?? "ai-card-generate").split(/[,\s]+/);
+   const normalized = configured.map((routeId) => String(routeId ?? "").trim()).filter(Boolean);
+   return Array.from(new Set(normalized.length > 0 ? normalized : ["ai-card-generate"]));
+ }
+ 
+ function workerBatchSize(env) {
+   return safeIntegerEnv(env.CUSTOMCARD_PROVIDER_WORKER_BATCH_SIZE ?? env.CUSTOMCARD_WORKER_BATCH_SIZE, 1, 1, 5);
+diff --git a/src/aiCardGenerator.test.ts b/src/aiCardGenerator.test.ts
+index 4b4e9db9..15cc86e6 100644
+--- a/src/aiCardGenerator.test.ts
++++ b/src/aiCardGenerator.test.ts
+@@ -182,20 +182,75 @@ describe("AI card generator service", () => {
+         "deepai-text2img-image",
+         "google-gemini-image",
+         "huggingface-image",
+         "local-comfyui-api-image",
+         "openai-images",
+         "runcomfy-model-api-image"
+       ]
+     });
+   });
+ 
++  it("only honors request aiFlowConfig overrides when the request context is trusted", async () => {
++    const fetchImpl = vi.fn(async () =>
++      new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
++        status: 200,
++        headers: { "content-type": "application/json" }
++      })
++    );
++    const service = createAiCardGenerationService({
++      env: {
++        CLOUDFLARE_ACCOUNT_ID: "acct_123",
++        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
++        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel
++      },
++      fetchImpl
++    });
++    const body = {
++      ...cardRequest,
++      aiFlowConfig: [
++        {
++          flowId: "card-copy",
++          primaryAdapterId: "huggingface-chat",
++          liveProviderCallsEnabled: false
++        }
++      ]
++    };
++
++    const untrustedResult = await service.generateCard(body, {
++      rateKey: "test-untrusted-ai-flow-config",
++      trustRequestAiFlowConfig: false
++    });
++    const trustedResult = await service.generateCard(body, {
++      rateKey: "test-trusted-ai-flow-config",
++      trustRequestAiFlowConfig: true
++    });
++
++    expect(untrustedResult.statusCode).toBe(200);
++    expect(untrustedResult.payload).toMatchObject({
++      ai_flow: {
++        card_copy: expect.objectContaining({
++          adapter_id: "cloudflare-workers-ai-chat"
++        })
++      }
++    });
++    expect(trustedResult.statusCode).toBe(503);
++    expect(trustedResult.payload).toMatchObject({
++      ai_flow: {
++        card_copy: expect.objectContaining({
++          adapter_id: "",
++          provider_failure: expect.stringContaining("disabled")
++        })
++      }
++    });
++    expect(fetchImpl).toHaveBeenCalledTimes(1);
++  });
++
+   it("can generate a full card through localhost-only LLM and ComfyUI adapters", async () => {
+     let imageIndex = 0;
+     const fetchImpl = vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
+       const requestUrl = String(url);
+       if (requestUrl === "http://127.0.0.1:1234/v1/chat/completions") {
+         const body = JSON.parse(String(init?.body));
+         expect(body.model).toBe("local-qwen-card-copy");
+         return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
+           status: 200,
+           headers: { "content-type": "application/json" }
+diff --git a/src/aiFlowConfig.test.ts b/src/aiFlowConfig.test.ts
+index b994400b..19bdffb4 100644
+--- a/src/aiFlowConfig.test.ts
++++ b/src/aiFlowConfig.test.ts
+@@ -1,11 +1,20 @@
++import { readFileSync } from "node:fs";
++import { resolve } from "node:path";
+ import { describe, expect, it } from "vitest";
++import {
++  cloudflareTextModelEnvKeys,
++  localProductionTextComfyGuidance,
++  productionCardCopyModel,
++  productionCardCopyModelOverrideEnvKey,
++  productionCardCopyProviderId
++} from "./aiProviderSetupProfile.mjs";
+ import {
+   buildDefaultAiFlowAdminConfigs,
+   loadBrowserAiFlowAdminConfigs,
+   resolveAiFlowConfig,
+   saveBrowserAiFlowAdminConfigs,
+   summarizeAiFlowConfigs
+ } from "./aiFlowConfig";
+ 
+ const cloudflareEnv = {
+   CLOUDFLARE_ACCOUNT_ID: "acct_123",
+@@ -17,70 +26,83 @@ const cloudflareEnv = {
+ 
+ const recommendedCardGenerationEnv = {
+   HUGGINGFACE_API_TOKEN: "hf-token",
+   DEEPAI_API_KEY: "deepai-token"
+ };
+ 
+ describe("AI flow config", () => {
+   it("resolves configured Cloudflare text flows as live-ready from env", () => {
+     const flow = resolveAiFlowConfig("card-copy", cloudflareEnv);
+ 
+-    expect(flow.primaryAdapterId).toBe("cloudflare-workers-ai-chat");
+-    expect(flow.model).toBe("@cf/qwen/qwen3-30b-a3b-fp8");
++    expect(flow.primaryAdapterId).toBe(productionCardCopyProviderId);
++    expect(flow.model).toBe(productionCardCopyModel);
+     expect(flow.liveProviderCallsEnabled).toBe(true);
+     expect(flow.readyForLiveCalls).toBe(true);
+     expect(flow.blockedReasons).toEqual([]);
+   });
+ 
+   it("defaults card generation to Cloudflare copy and RunComfy image with live calls enabled", () => {
+     const configs = buildDefaultAiFlowAdminConfigs();
+     const cardCopy = configs.find((config) => config.flowId === "card-copy");
+     const cardImage = configs.find((config) => config.flowId === "card-image");
+ 
+-    expect(cardCopy?.primaryAdapterId).toBe("cloudflare-workers-ai-chat");
++    expect(cardCopy?.primaryAdapterId).toBe(productionCardCopyProviderId);
+     expect(cardCopy?.fallbackAdapterId).toBe("huggingface-chat");
+     expect(cardCopy?.fallbackQueueEnabled).toBe(true);
+-    expect(cardCopy?.model).toBe("@cf/qwen/qwen3-30b-a3b-fp8");
++    expect(cardCopy?.model).toBe(productionCardCopyModel);
+     expect(cardCopy?.rateLimitPerMinute).toBe(4);
+     expect(cardCopy?.perRequestBudgetCents).toBe(5);
+     expect(cardCopy?.liveProviderCallsEnabled).toBe(true);
+     expect(cardImage?.primaryAdapterId).toBe("runcomfy-model-api-image");
+     expect(cardImage?.model).toBe("blackforestlabs/flux-2/dev/text-to-image");
+     expect(cardImage?.fallbackAdapterId).toBe("cloudflare-workers-ai-image");
+     expect(cardImage?.fallbackQueueEnabled).toBe(true);
+     expect(cardImage?.rateLimitPerMinute).toBe(8);
+     expect(cardImage?.perRequestBudgetCents).toBe(1);
+     expect(cardImage?.liveProviderCallsEnabled).toBe(true);
+   });
+ 
+   it("lets the production card-copy model env override stale admin and provider defaults", () => {
+     const flow = resolveAiFlowConfig(
+       "card-copy",
+       {
+         CLOUDFLARE_ACCOUNT_ID: "acct_123",
+         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
+         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
+-        CUSTOMCARD_AI_CARD_COPY_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8"
++        CUSTOMCARD_AI_CARD_COPY_MODEL: productionCardCopyModel
+       },
+       [
+         {
+           flowId: "card-copy",
+           primaryAdapterId: "cloudflare-workers-ai-chat",
+           fallbackAdapterId: "huggingface-chat",
+           model: "@cf/meta/llama-3.1-8b-instruct-fast",
+           liveProviderCallsEnabled: true
+         }
+       ]
+     );
+ 
+-    expect(flow.primaryAdapterId).toBe("cloudflare-workers-ai-chat");
+-    expect(flow.model).toBe("@cf/qwen/qwen3-30b-a3b-fp8");
++    expect(flow.primaryAdapterId).toBe(productionCardCopyProviderId);
++    expect(flow.model).toBe(productionCardCopyModel);
++    expect(flow.readyForLiveCalls).toBe(true);
++  });
++
++  it("treats the route-specific card-copy model pin as a valid hosted Cloudflare text setup key", () => {
++    const flow = resolveAiFlowConfig("card-copy", {
++      CLOUDFLARE_ACCOUNT_ID: "acct_123",
++      CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
++      [productionCardCopyModelOverrideEnvKey]: productionCardCopyModel
++    });
++
++    expect(cloudflareTextModelEnvKeys).toContain(productionCardCopyModelOverrideEnvKey);
++    expect(flow.primaryAdapterId).toBe(productionCardCopyProviderId);
++    expect(flow.model).toBe(productionCardCopyModel);
+     expect(flow.readyForLiveCalls).toBe(true);
+   });
+ 
+   it("uses the fallback Qwen plus DeepAI text2img combo when only those credentials exist", () => {
+     const cardCopy = resolveAiFlowConfig("card-copy", recommendedCardGenerationEnv);
+     const cardImage = resolveAiFlowConfig("card-image", {
+       ...recommendedCardGenerationEnv,
+     });
+ 
+     expect(cardCopy.primaryAdapterId).toBe("huggingface-chat");
+@@ -220,20 +242,34 @@ describe("AI flow config", () => {
+ 
+   it("summarizes configured providers without exposing secret values", () => {
+     const summary = summarizeAiFlowConfigs(cloudflareEnv);
+ 
+     expect(summary.total).toBe(3);
+     expect(summary.configuredProviders).toEqual(
+       expect.arrayContaining(["cloudflare-workers-ai-chat", "cloudflare-workers-ai-image"])
+     );
+     expect(JSON.stringify(summary)).not.toContain("token_text");
+   });
++
++  it("keeps docs and env examples pinned to the shared production card-copy setup profile", () => {
++    const envExample = readFileSync(resolve("D:/manny/Documents/CustomCard/infra/env/.env.example"), "utf8");
++    const infraReadme = readFileSync(resolve("D:/manny/Documents/CustomCard/infra/README.md"), "utf8");
++    const cloudflareSetupDoc = readFileSync(resolve("D:/manny/Documents/CustomCard/docs/cloudflare-workers-ai-setup.md"), "utf8");
++
++    expect(envExample).toContain(`${productionCardCopyModelOverrideEnvKey}=${productionCardCopyModel}`);
++    expect(envExample).toContain(`CUSTOMCARD_CLOUDFLARE_TEXT_MODEL=${productionCardCopyModel}`);
++    expect(envExample).toContain(`CLOUDFLARE_WORKERS_AI_TEXT_MODEL=${productionCardCopyModel}`);
++    expect(infraReadme).toContain(`CUSTOMCARD_AI_CARD_COPY_MODEL=${productionCardCopyModel}`);
++    expect(cloudflareSetupDoc).toContain(`CUSTOMCARD_AI_CARD_COPY_MODEL=${productionCardCopyModel}`);
++    expect(cloudflareSetupDoc).toContain("hosted Cloudflare image keys are not");
++    expect(localProductionTextComfyGuidance.requiresHostedImageKeys).toBe(false);
++  });
+ });
+ 
+ function installSessionStorageStub() {
+   const original = Object.getOwnPropertyDescriptor(globalThis, "sessionStorage");
+   const store = new Map<string, string>();
+   const storage = {
+     getItem: (key: string) => store.get(key) ?? null,
+     setItem: (key: string, value: string) => {
+       store.set(key, value);
+     },
+diff --git a/src/aiFlowConfigData.mjs b/src/aiFlowConfigData.mjs
+index 32d461bc..a2c0617a 100644
+--- a/src/aiFlowConfigData.mjs
++++ b/src/aiFlowConfigData.mjs
+@@ -1,10 +1,16 @@
++import {
++  cloudflareTextCredentialGroups,
++  cloudflareTextModelEnvKeys,
++  productionCardCopyModel
++} from "./aiProviderSetupProfile.mjs";
++
+ export const aiFlowAdminConfigStorageKey = "customcard-ai-flow-admin-config-v1";
+ 
+ const textProviderAdapterIds = [
+   "local-openai-compatible-chat",
+   "huggingface-chat",
+   "cloudflare-workers-ai-chat",
+   "openai-responses-chat",
+   "anthropic-messages-chat",
+   "google-gemini-chat",
+   "groq-chat",
+@@ -104,23 +110,21 @@ const placeholderValues = new Set([
+   "not-set",
+   "replace-me",
+   "replace-me-do-not-commit-real-secret",
+   "sample",
+   "todo",
+   "unset"
+ ]);
+ 
+ export const aiProviderEnvRequirements = {
+   "cloudflare-workers-ai-chat": [
+-    ["CLOUDFLARE_ACCOUNT_ID"],
+-    ["CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", "CLOUDFLARE_API_TOKEN"],
+-    ["CLOUDFLARE_WORKERS_AI_TEXT_MODEL"]
++    ...cloudflareTextCredentialGroups
+   ],
+   "cloudflare-workers-ai-image": [
+     ["CLOUDFLARE_ACCOUNT_ID"],
+     ["CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN", "CLOUDFLARE_API_TOKEN"]
+   ],
+   "openai-responses-chat": [["OPENAI_API_KEY"]],
+   "openai-images": [["OPENAI_API_KEY"]],
+   "anthropic-messages-chat": [["ANTHROPIC_API_KEY"]],
+   "google-gemini-chat": [["GOOGLE_GENERATIVE_AI_API_KEY"]],
+   "google-gemini-image": [["GOOGLE_GENERATIVE_AI_API_KEY"]],
+@@ -139,21 +143,21 @@ export const aiProviderEnvRequirements = {
+   "local-openai-compatible-chat": [["CUSTOMCARD_LOCAL_LLM_BASE_URL", "LMSTUDIO_BASE_URL", "KOBOLDCPP_BASE_URL"]],
+   "local-comfyui-api-image": [["CUSTOMCARD_COMFYUI_URL", "COMFYUI_URL"]],
+   "stability-stable-image": [["STABILITY_API_KEY"]],
+   "replicate-image": [["REPLICATE_API_TOKEN"]],
+   "fal-image": [["FAL_KEY"]],
+   "bfl-flux-image": [["BFL_API_KEY"]],
+   "runcomfy-model-api-image": [["RUNCOMFY_API_TOKEN"]]
+ };
+ 
+ const aiProviderModelEnvKeys = {
+-  "cloudflare-workers-ai-chat": ["CUSTOMCARD_CLOUDFLARE_TEXT_MODEL", "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"],
++  "cloudflare-workers-ai-chat": [...cloudflareTextModelEnvKeys],
+   "cloudflare-workers-ai-image": ["CUSTOMCARD_CLOUDFLARE_IMAGE_MODEL", "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL"],
+   "openai-responses-chat": ["CUSTOMCARD_OPENAI_TEXT_MODEL", "OPENAI_TEXT_MODEL", "CARD_TEXT_MODEL"],
+   "openai-images": ["CUSTOMCARD_OPENAI_IMAGE_MODEL", "OPENAI_IMAGE_MODEL", "CARD_IMAGE_MODEL"],
+   "anthropic-messages-chat": ["CUSTOMCARD_ANTHROPIC_TEXT_MODEL", "ANTHROPIC_MODEL", "CARD_TEXT_MODEL"],
+   "google-gemini-chat": ["CUSTOMCARD_GEMINI_TEXT_MODEL", "GEMINI_TEXT_MODEL", "GOOGLE_GENERATIVE_AI_MODEL"],
+   "google-gemini-image": ["CUSTOMCARD_GEMINI_IMAGE_MODEL", "GEMINI_IMAGE_MODEL", "CARD_IMAGE_MODEL"],
+   "deepai-text2img-image": ["CUSTOMCARD_DEEPAI_IMAGE_MODEL", "DEEPAI_IMAGE_MODEL"],
+   "huggingface-chat": ["CUSTOMCARD_HUGGINGFACE_TEXT_MODEL", "HUGGINGFACE_TEXT_MODEL"],
+   "huggingface-image": ["CUSTOMCARD_HUGGINGFACE_IMAGE_MODEL", "HUGGINGFACE_IMAGE_MODEL"],
+   "mistral-chat": ["CUSTOMCARD_MISTRAL_TEXT_MODEL", "MISTRAL_MODEL"],
+@@ -173,21 +177,21 @@ const aiProviderModelEnvKeys = {
+   ],
+   "local-comfyui-api-image": ["CUSTOMCARD_COMFYUI_CHECKPOINT", "CUSTOMCARD_LOCAL_COMFYUI_CHECKPOINT", "COMFYUI_CHECKPOINT"],
+   "stability-stable-image": ["CUSTOMCARD_STABILITY_IMAGE_MODEL", "STABILITY_IMAGE_MODEL"],
+   "replicate-image": ["CUSTOMCARD_REPLICATE_IMAGE_MODEL", "REPLICATE_IMAGE_MODEL"],
+   "fal-image": ["CUSTOMCARD_FAL_IMAGE_MODEL", "FAL_IMAGE_MODEL"],
+   "bfl-flux-image": ["CUSTOMCARD_BFL_IMAGE_MODEL", "BFL_IMAGE_MODEL"],
+   "runcomfy-model-api-image": []
+ };
+ 
+ const defaultModelsByAdapter = {
+-  "cloudflare-workers-ai-chat": "@cf/qwen/qwen3-30b-a3b-fp8",
++  "cloudflare-workers-ai-chat": productionCardCopyModel,
+   "cloudflare-workers-ai-image": "@cf/black-forest-labs/flux-1-schnell",
+   "openai-responses-chat": "gpt-4o-mini",
+   "openai-images": "gpt-image-2",
+   "anthropic-messages-chat": "claude-3-5-haiku-latest",
+   "google-gemini-chat": "gemini-1.5-flash",
+   "google-gemini-image": "gemini-3.1-flash-image",
+   "deepai-text2img-image": "text2img",
+   "huggingface-chat": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+   "huggingface-image": "black-forest-labs/FLUX.1-schnell",
+   "mistral-chat": "mistral-small-latest",
+diff --git a/src/aiProviderControlPlane.ts b/src/aiProviderControlPlane.ts
+index 6abcd1b4..233f27f3 100644
+--- a/src/aiProviderControlPlane.ts
++++ b/src/aiProviderControlPlane.ts
+@@ -1,15 +1,16 @@
+ import {
+   benchmarkResultsModel,
+   type BenchmarkResultRecord,
+   type BenchmarkResultsModel
+ } from "./benchmarkResults";
++import { aiRoutePolicyIdsByFlowId } from "./aiRoutePolicyIds.mjs";
+ import { summarizeAiFlowConfigs, type AiFlowConfigSummary } from "./aiFlowConfig";
+ import type { ProviderCapability } from "./providerCatalog";
+ import type { ProviderCallEvent } from "./providerOperations";
+ 
+ export type AiProviderGenerationCapability = Extract<ProviderCapability, "text-chat" | "image-generation">;
+ export type AiProviderCatalogStatus = "candidate" | "active" | "blocked" | "deprecated";
+ export type AiPromptProfileStatus = "draft" | "active" | "retired";
+ export type AiRoutePolicyStatus = "draft" | "active" | "paused";
+ export type AiCustomerErrorPolicy = "generic-status-only";
+ export type AiModelAdminStatus = "promotable" | "needs-product-work" | "benchmark-required" | "blocked" | "review-required";
+@@ -492,40 +493,40 @@ export const aiPromptProfiles: AiPromptProfile[] = [
+     status: "draft",
+     promptPurpose: "Cloudflare image fallback benchmark profile for cost and gateway-control comparison.",
+     systemPromptSummary: "Generate one artwork panel with app-rendered typography and evidence capture.",
+     requestDefaults: { width: "768", height: "1024" },
+     schemaContract: "single-panel-image-url"
+   }
+ ];
+ 
+ export const aiRoutePolicies: AiRoutePolicy[] = [
+   {
+-    id: "card-copy-route-v1",
++    id: aiRoutePolicyIdsByFlowId["card-copy"] ?? "card-copy-route-v1",
+     flowId: "card-copy",
+     policyVersion: "2026-06-15",
+     status: "active",
+     capability: "text-chat",
+     primaryModelIds: ["cloudflare-qwen3-30b-card-copy"],
+     fallbackModelIds: ["cloudflare-llama31-card-copy-baseline", "hf-qwen3-235b-card-copy"],
+     minProductScore: customerVisibleProductGate,
+     minContractScore: pipelineContractGate,
+     minRouteReliabilityScore: routeReliabilityGate,
+     maxEstimatedCostCentsPerRequest: 5,
+     monthlyBudgetCents: 5000,
+     rateLimitPerMinute: 4,
+     queueRequired: false,
+     fallbackStrategy: "one-step-failover",
+     customerErrorPolicy: "generic-status-only",
+     adminChangeMode: "runtime-config"
+   },
+   {
+-    id: "card-image-route-v1",
++    id: aiRoutePolicyIdsByFlowId["card-image"] ?? "card-image-route-v1",
+     flowId: "card-image",
+     policyVersion: "2026-06-15",
+     status: "active",
+     capability: "image-generation",
+     primaryModelIds: ["deepai-text2img-standard"],
+     fallbackModelIds: ["cloudflare-flux-schnell-card-image", "deepai-text2img-hd"],
+     minProductScore: customerVisibleProductGate,
+     minContractScore: pipelineContractGate,
+     minRouteReliabilityScore: routeReliabilityGate,
+     maxEstimatedCostCentsPerRequest: 4,
+diff --git a/src/aiProviderSetupProfile.mjs b/src/aiProviderSetupProfile.mjs
+new file mode 100644
+index 00000000..f6dfd84b
+--- /dev/null
++++ b/src/aiProviderSetupProfile.mjs
+@@ -0,0 +1,45 @@
++export const productionCardCopyProviderId = "cloudflare-workers-ai-chat";
++export const productionCardCopyModel = "@cf/qwen/qwen3-30b-a3b-fp8";
++export const productionCardCopyModelOverrideEnvKey = "CUSTOMCARD_AI_CARD_COPY_MODEL";
++export const cloudflareTextModelEnvKeys = Object.freeze([
++  productionCardCopyModelOverrideEnvKey,
++  "CUSTOMCARD_CLOUDFLARE_TEXT_MODEL",
++  "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"
++]);
++export const cloudflareTextCredentialGroups = Object.freeze([
++  Object.freeze(["CLOUDFLARE_ACCOUNT_ID"]),
++  Object.freeze(["CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", "CLOUDFLARE_API_TOKEN"]),
++  Object.freeze([...cloudflareTextModelEnvKeys])
++]);
++export const hostedAiCardCopySetupKeys = Object.freeze([
++  "CLOUDFLARE_ACCOUNT_ID",
++  "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
++  "CLOUDFLARE_API_TOKEN",
++  ...cloudflareTextModelEnvKeys
++]);
++export const localProductionTextComfyGuidance = Object.freeze({
++  workflow: "local-production-text-comfy",
++  requiresHostedImageKeys: false,
++  detail:
++    "The production-text local Comfy path only needs hosted Cloudflare text setup for card copy. Do not require Cloudflare image tokens or image model keys unless you are validating the live Cloudflare image lane."
++});
++
++export function buildAiProviderSetupProfile() {
++  return {
++    cardCopy: {
++      providerId: productionCardCopyProviderId,
++      defaultModel: productionCardCopyModel,
++      accountEnvKey: "CLOUDFLARE_ACCOUNT_ID",
++      tokenEnvKeys: ["CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", "CLOUDFLARE_API_TOKEN"],
++      modelEnvKeys: [...cloudflareTextModelEnvKeys],
++      modelOverrideEnvKey: productionCardCopyModelOverrideEnvKey
++    },
++    localProductionTextComfy: {
++      ...localProductionTextComfyGuidance
++    }
++  };
++}
++
++export function isProductionCardCopyModelOverrideKey(envKey) {
++  return String(envKey ?? "").trim() === productionCardCopyModelOverrideEnvKey;
++}
+diff --git a/src/aiProviderSetupProfile.test.ts b/src/aiProviderSetupProfile.test.ts
+new file mode 100644
+index 00000000..deed6071
+--- /dev/null
++++ b/src/aiProviderSetupProfile.test.ts
+@@ -0,0 +1,72 @@
++import { readFileSync } from "node:fs";
++import { fileURLToPath } from "node:url";
++import { resolve } from "node:path";
++import { describe, expect, it } from "vitest";
++import { aiRoutePolicyIdsByFlowId } from "./aiRoutePolicyIds.mjs";
++import {
++  buildAiProviderSetupProfile,
++  productionCardCopyModel,
++  productionCardCopyModelOverrideEnvKey,
++  productionCardCopyProviderId
++} from "./aiProviderSetupProfile.mjs";
++import { aiPromptProfiles, aiProviderModelCatalog, aiRoutePolicies } from "./aiProviderControlPlane";
++
++const repoRoot = resolve(fileURLToPath(new URL(".", import.meta.url)), "..");
++
++describe("AI provider setup profile drift guards", () => {
++  it("keeps the shared Cloudflare card-copy contract pinned across code and docs", () => {
++    const profile = buildAiProviderSetupProfile();
++    const flowConfigSource = readFileSync(resolve(repoRoot, "src/aiFlowConfigData.mjs"), "utf8");
++    const providerRuntimeSource = readFileSync(resolve(repoRoot, "src/providerRuntime.ts"), "utf8");
++    const cloudflareSetupDoc = readFileSync(resolve(repoRoot, "docs/cloudflare-workers-ai-setup.md"), "utf8");
++    const envExample = readFileSync(resolve(repoRoot, "infra/env/.env.example"), "utf8");
++    const cardCopyRoutePolicyId = aiRoutePolicyIdsByFlowId["card-copy"];
++    const cardCopyRoutePolicy = aiRoutePolicies.find((policy) => policy.id === cardCopyRoutePolicyId);
++    const cardCopyPrimaryModels = aiProviderModelCatalog.filter((entry) =>
++      cardCopyRoutePolicy?.primaryModelIds.includes(entry.id)
++    );
++    const qwenCardCopyCatalogEntry = aiProviderModelCatalog.find(
++      (entry) => entry.adapterId === productionCardCopyProviderId && entry.modelId === productionCardCopyModel
++    );
++    const cardCopyPromptProfile = aiPromptProfiles.find((profile) => profile.flowId === "card-copy");
++
++    expect(profile.cardCopy).toMatchObject({
++      providerId: productionCardCopyProviderId,
++      defaultModel: productionCardCopyModel,
++      modelOverrideEnvKey: productionCardCopyModelOverrideEnvKey
++    });
++    expect(profile.localProductionTextComfy.requiresHostedImageKeys).toBe(false);
++
++    expect(flowConfigSource).toMatch(/flowId: "card-copy"[\s\S]*defaultPrimaryAdapterId: "cloudflare-workers-ai-chat"/);
++    expect(flowConfigSource).toContain('"cloudflare-workers-ai-chat": productionCardCopyModel');
++    expect(providerRuntimeSource).toContain('"cloudflare-workers-ai-chat": productionCardCopyModel');
++    expect(qwenCardCopyCatalogEntry).toMatchObject({
++      id: "cloudflare-qwen3-30b-card-copy",
++      adapterId: productionCardCopyProviderId,
++      modelId: productionCardCopyModel
++    });
++    expect(cardCopyRoutePolicy).toMatchObject({
++      id: cardCopyRoutePolicyId,
++      flowId: "card-copy",
++      primaryModelIds: [qwenCardCopyCatalogEntry?.id]
++    });
++    expect(cardCopyPrimaryModels).toHaveLength(1);
++    expect(cardCopyPrimaryModels[0]).toMatchObject({
++      id: qwenCardCopyCatalogEntry?.id,
++      adapterId: productionCardCopyProviderId,
++      modelId: productionCardCopyModel
++    });
++    expect(cardCopyPromptProfile).toMatchObject({
++      flowId: "card-copy",
++      adapterId: productionCardCopyProviderId,
++      modelId: productionCardCopyModel
++    });
++
++    expect(cloudflareSetupDoc).toContain(`${productionCardCopyModelOverrideEnvKey}=${productionCardCopyModel}`);
++    expect(cloudflareSetupDoc).toContain(`CUSTOMCARD_CLOUDFLARE_TEXT_MODEL=${productionCardCopyModel}`);
++    expect(cloudflareSetupDoc).toContain(`CLOUDFLARE_WORKERS_AI_TEXT_MODEL=${productionCardCopyModel}`);
++    expect(envExample).toContain(`${productionCardCopyModelOverrideEnvKey}=${productionCardCopyModel}`);
++    expect(envExample).toContain(`CUSTOMCARD_CLOUDFLARE_TEXT_MODEL=${productionCardCopyModel}`);
++    expect(envExample).toContain(`CLOUDFLARE_WORKERS_AI_TEXT_MODEL=${productionCardCopyModel}`);
++  });
++});
+diff --git a/src/aiRouteActivation.d.mts b/src/aiRouteActivation.d.mts
+new file mode 100644
+index 00000000..f15e46a2
+--- /dev/null
++++ b/src/aiRouteActivation.d.mts
+@@ -0,0 +1,56 @@
++import type { AiFlowAdminConfig, AiFlowId, ResolvedAiFlowConfig } from "./aiFlowConfigData.mjs";
++import type { AiRoutePolicyId } from "./aiRoutePolicyIds.mjs";
++
++export interface AiRouteActivationRequestContext {
++  aiFlowAdminConfig?: Partial<AiFlowAdminConfig>[] | null;
++  trustRequestAiFlowConfig?: boolean;
++}
++
++export interface AiRouteActivationContextInput {
++  env?: Record<string, string | undefined>;
++  body?: {
++    aiFlowConfig?: unknown;
++    ai_flow_config?: unknown;
++  };
++  requestContext?: AiRouteActivationRequestContext;
++  serviceAiFlowAdminConfig?: Partial<AiFlowAdminConfig>[];
++  loadedAiFlowAdminConfig?: unknown;
++}
++
++export interface LoadAiRouteActivationContextInput
++  extends Omit<AiRouteActivationContextInput, "loadedAiFlowAdminConfig"> {
++  loadAiFlowAdminConfig?: (() => unknown | Promise<unknown>) | undefined;
++}
++
++export interface AiRouteActivationContext {
++  env: Record<string, string | undefined>;
++  body: {
++    aiFlowConfig?: unknown;
++    ai_flow_config?: unknown;
++  };
++  requestContext: AiRouteActivationRequestContext;
++  mergedAiFlowAdminConfig: AiFlowAdminConfig[];
++}
++
++export interface AiRouteActivation {
++  flowId: AiFlowId;
++  flow: ResolvedAiFlowConfig;
++  selectedAdapterId: string;
++  model: string;
++  readyForLiveCalls: boolean;
++  blockedReasons: string[];
++  configuredEnvKeys: string[];
++  controlPlaneRoutePolicyId: AiRoutePolicyId | "";
++}
++
++export function createAiRouteActivationContext(input?: AiRouteActivationContextInput): AiRouteActivationContext;
++export function loadAiRouteActivationContext(input?: LoadAiRouteActivationContextInput): Promise<AiRouteActivationContext>;
++export function resolveAiRouteActivation(
++  flowId: AiFlowId,
++  input?: AiRouteActivationContext | AiRouteActivationContextInput
++): AiRouteActivation;
++export function resolveAiRouteActivations(
++  input?: AiRouteActivationContext | AiRouteActivationContextInput
++): AiRouteActivation[];
++export function mergeAiFlowAdminConfigs(...groups: unknown[]): AiFlowAdminConfig[];
++export function serverScopedAiFlowConfig(env?: Record<string, string | undefined>): AiFlowAdminConfig[];
+diff --git a/src/aiRouteActivation.mjs b/src/aiRouteActivation.mjs
+new file mode 100644
+index 00000000..606a60b4
+--- /dev/null
++++ b/src/aiRouteActivation.mjs
+@@ -0,0 +1,185 @@
++import {
++  aiFlowDefinitions,
++  aiProviderEnvRequirements,
++  flowEnvKey,
++  hasUsableAiEnvValue,
++  normalizeAiFlowAdminConfigs,
++  resolveAiFlowConfig
++} from "./aiFlowConfigData.mjs";
++import { aiRoutePolicyIdsByFlowId } from "./aiRoutePolicyIds.mjs";
++
++export function createAiRouteActivationContext({
++  env = process.env,
++  body = {},
++  requestContext = {},
++  serviceAiFlowAdminConfig = [],
++  loadedAiFlowAdminConfig = []
++} = {}) {
++  const mergedAiFlowAdminConfig = mergeAiFlowAdminConfigs(
++    normalizeOptionalAiFlowAdminConfigs(serviceAiFlowAdminConfig, env),
++    serverScopedAiFlowConfig(env),
++    normalizeOptionalAiFlowAdminConfigs(extractLoadedAiFlowAdminConfigs(loadedAiFlowAdminConfig), env),
++    normalizeOptionalAiFlowAdminConfigs(requestContext?.aiFlowAdminConfig, env),
++    trustedRequestScopedAiFlowConfig(body, env, requestContext)
++  );
++
++  return {
++    env,
++    body,
++    requestContext,
++    mergedAiFlowAdminConfig
++  };
++}
++
++export async function loadAiRouteActivationContext({
++  env = process.env,
++  body = {},
++  requestContext = {},
++  serviceAiFlowAdminConfig = [],
++  loadAiFlowAdminConfig
++} = {}) {
++  const loadedAiFlowAdminConfig = await readLoadedAiFlowAdminConfig(loadAiFlowAdminConfig);
++  return createAiRouteActivationContext({
++    env,
++    body,
++    requestContext,
++    serviceAiFlowAdminConfig,
++    loadedAiFlowAdminConfig
++  });
++}
++
++export function resolveAiRouteActivation(flowId, input = {}) {
++  const context = isAiRouteActivationContext(input) ? input : createAiRouteActivationContext(input);
++  const flow = resolveAiFlowConfig(flowId, context.env, context.mergedAiFlowAdminConfig);
++
++  return {
++    flowId,
++    flow,
++    selectedAdapterId: flow.primaryAdapterId,
++    model: flow.model,
++    readyForLiveCalls: flow.readyForLiveCalls,
++    blockedReasons: [...flow.blockedReasons],
++    configuredEnvKeys: configuredEnvKeysForFlow(flow, context.env),
++    controlPlaneRoutePolicyId: aiRoutePolicyIdsByFlowId[flowId] ?? ""
++  };
++}
++
++export function resolveAiRouteActivations(input = {}) {
++  const context = isAiRouteActivationContext(input) ? input : createAiRouteActivationContext(input);
++  return aiFlowDefinitions.map((definition) => resolveAiRouteActivation(definition.flowId, context));
++}
++
++export function mergeAiFlowAdminConfigs(...groups) {
++  const byFlowId = new Map();
++  for (const group of groups) {
++    for (const config of normalizedAiFlowAdminConfigs(group)) {
++      if (!config?.flowId) continue;
++      byFlowId.set(config.flowId, config);
++    }
++  }
++  if (byFlowId.size === 0) return [];
++  return Array.from(byFlowId.values());
++}
++
++export function serverScopedAiFlowConfig(env = process.env) {
++  if (!env || typeof env !== "object") return [];
++
++  const raw = env.CUSTOMCARD_AI_FLOW_CONFIG_JSON ?? env.CUSTOMCARD_AI_FLOW_ADMIN_CONFIG_JSON ?? "";
++  let parsedConfigs = [];
++  if (raw) {
++    try {
++      parsedConfigs = normalizeOptionalAiFlowAdminConfigs(extractLoadedAiFlowAdminConfigs(JSON.parse(String(raw))), env);
++    } catch {
++      parsedConfigs = [];
++    }
++  }
++
++  return parsedConfigs;
++}
++
++function isAiRouteActivationContext(input) {
++  return Boolean(input && typeof input === "object" && Array.isArray(input.mergedAiFlowAdminConfig) && input.env);
++}
++
++async function readLoadedAiFlowAdminConfig(loadAiFlowAdminConfig) {
++  if (typeof loadAiFlowAdminConfig !== "function") return [];
++  try {
++    return extractLoadedAiFlowAdminConfigs(await loadAiFlowAdminConfig());
++  } catch {
++    return [];
++  }
++}
++
++function extractLoadedAiFlowAdminConfigs(input) {
++  return (
++    input?.configs ??
++    input?.aiFlowConfigs ??
++    input?.ai_flow_configs ??
++    input?.aiFlowConfig ??
++    input?.ai_flow_config ??
++    input?.flows ??
++    input ??
++    []
++  );
++}
++
++function normalizedAiFlowAdminConfigs(input) {
++  return Array.isArray(input)
++    ? input.filter((config) => config && typeof config === "object" && typeof config.flowId === "string")
++    : [];
++}
++
++function normalizeOptionalAiFlowAdminConfigs(input, env) {
++  if (!Array.isArray(input) || input.length === 0) return [];
++
++  const explicitFlowIds = new Set(
++    input
++      .filter((config) => config && typeof config === "object" && typeof config.flowId === "string")
++      .map((config) => config.flowId)
++  );
++
++  if (explicitFlowIds.size === 0) return [];
++
++  return normalizeAiFlowAdminConfigs(input, env).filter((config) => explicitFlowIds.has(config.flowId));
++}
++
++function trustedRequestScopedAiFlowConfig(body, env, requestContext = {}) {
++  if (requestContext?.trustRequestAiFlowConfig !== true) return [];
++  return normalizeOptionalAiFlowAdminConfigs(extractLoadedAiFlowAdminConfigs(body), env);
++}
++
++function configuredEnvKeysForFlow(flow, env = {}) {
++  const key = flowEnvKey(flow.flowId);
++  const flowScopedKeys = [
++    `CUSTOMCARD_AI_${key}_ADAPTER_ID`,
++    `CUSTOMCARD_AI_${key}_PROVIDER`,
++    `CUSTOMCARD_AI_${key}_FALLBACK_ADAPTER_ID`,
++    `CUSTOMCARD_AI_${key}_MODEL`,
++    `CUSTOMCARD_AI_${key}_PROMPT_INSTRUCTIONS`,
++    `CUSTOMCARD_AI_${key}_RATE_LIMIT_PER_MINUTE`,
++    `CUSTOMCARD_AI_${key}_MONTHLY_BUDGET_CENTS`,
++    `CUSTOMCARD_AI_${key}_PER_REQUEST_BUDGET_CENTS`,
++    `CUSTOMCARD_AI_${key}_QUEUE_ENABLED`,
++    `CUSTOMCARD_AI_${key}_FALLBACK_QUEUE_ENABLED`,
++    `CUSTOMCARD_AI_${key}_MAX_RETRIES`,
++    `CUSTOMCARD_AI_${key}_MAX_TOKENS`,
++    `CUSTOMCARD_AI_${key}_TEMPERATURE`
++  ];
++  const adapterKeys = (aiProviderEnvRequirements[flow.primaryAdapterId] ?? []).flat();
++  const matchingModelKeys = Object.keys(env).filter(
++    (envKey) =>
++      /(?:MODEL|CHECKPOINT)$/.test(envKey) &&
++      hasConfiguredEnvValue(env[envKey]) &&
++      String(env[envKey]).trim() === flow.model
++  );
++
++  return Array.from(new Set([...flowScopedKeys, ...adapterKeys, ...matchingModelKeys])).filter((envKey) =>
++    hasConfiguredEnvValue(env[envKey])
++  );
++}
++
++function hasConfiguredEnvValue(value) {
++  if (typeof value === "boolean" || typeof value === "number") return true;
++  if (typeof value === "string" && value.trim()) return true;
++  return hasUsableAiEnvValue(value);
++}
+diff --git a/src/aiRouteActivation.test.ts b/src/aiRouteActivation.test.ts
+new file mode 100644
+index 00000000..d30064fa
+--- /dev/null
++++ b/src/aiRouteActivation.test.ts
+@@ -0,0 +1,221 @@
++import { describe, expect, it } from "vitest";
++import {
++  createAiRouteActivationContext,
++  resolveAiRouteActivation,
++  resolveAiRouteActivations
++} from "./aiRouteActivation.mjs";
++import { normalizeAiFlowAdminConfigs } from "./aiFlowConfigData.mjs";
++
++describe("AI route activation", () => {
++  it("keeps the card-copy env model override ahead of admin config defaults", () => {
++    const activation = resolveAiRouteActivation("card-copy", {
++      env: {
++        CLOUDFLARE_ACCOUNT_ID: "acct_123",
++        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
++        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
++        CUSTOMCARD_AI_CARD_COPY_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8"
++      },
++      serviceAiFlowAdminConfig: [
++        {
++          flowId: "card-copy",
++          primaryAdapterId: "cloudflare-workers-ai-chat",
++          fallbackAdapterId: "huggingface-chat",
++          model: "@cf/meta/llama-3.1-8b-instruct-fast",
++          liveProviderCallsEnabled: true
++        }
++      ]
++    });
++
++    expect(activation.selectedAdapterId).toBe("cloudflare-workers-ai-chat");
++    expect(activation.model).toBe("@cf/qwen/qwen3-30b-a3b-fp8");
++    expect(activation.flow.readyForLiveCalls).toBe(true);
++    expect(activation.configuredEnvKeys).toEqual(
++      expect.arrayContaining(["CUSTOMCARD_AI_CARD_COPY_MODEL", "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"])
++    );
++  });
++
++  it("ignores request-scoped flow config unless request trust is enabled", () => {
++    const activation = resolveAiRouteActivation("card-copy", {
++      env: {
++        CLOUDFLARE_ACCOUNT_ID: "acct_123",
++        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
++        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8"
++      },
++      body: {
++        aiFlowConfig: [
++          {
++            flowId: "card-copy",
++            primaryAdapterId: "huggingface-chat",
++            liveProviderCallsEnabled: false
++          }
++        ]
++      },
++      requestContext: {
++        trustRequestAiFlowConfig: false
++      }
++    });
++
++    expect(activation.selectedAdapterId).toBe("cloudflare-workers-ai-chat");
++    expect(activation.flow.liveProviderCallsEnabled).toBe(true);
++  });
++
++  it("merges trusted request-scoped flow config after earlier config sources", () => {
++    const activation = resolveAiRouteActivation("card-copy", {
++      env: {
++        CLOUDFLARE_ACCOUNT_ID: "acct_123",
++        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
++        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8"
++      },
++      serviceAiFlowAdminConfig: [
++        {
++          flowId: "card-copy",
++          primaryAdapterId: "cloudflare-workers-ai-chat",
++          liveProviderCallsEnabled: true
++        }
++      ],
++      loadedAiFlowAdminConfig: {
++        configs: [{ flowId: "card-copy", liveProviderCallsEnabled: false }]
++      },
++      requestContext: {
++        aiFlowAdminConfig: [{ flowId: "card-copy", liveProviderCallsEnabled: false }],
++        trustRequestAiFlowConfig: true
++      },
++      body: {
++        aiFlowConfig: [{ flowId: "card-copy", liveProviderCallsEnabled: true }]
++      }
++    });
++
++    expect(activation.flow.liveProviderCallsEnabled).toBe(true);
++    expect(activation.readyForLiveCalls).toBe(true);
++  });
++
++  it("keeps sparse card-copy overrides aligned with generator env semantics under non-default providers", () => {
++    const env = {
++      HUGGINGFACE_API_TOKEN: "hf-token"
++    };
++    const expected = normalizeAiFlowAdminConfigs(
++      [{ flowId: "card-copy", model: "Qwen/Qwen3-32B-Instruct" }],
++      env
++    ).find((config) => config.flowId === "card-copy");
++    const activation = resolveAiRouteActivation("card-copy", {
++      env,
++      loadedAiFlowAdminConfig: {
++        configs: [{ flowId: "card-copy", model: "Qwen/Qwen3-32B-Instruct" }]
++      }
++    });
++
++    expect(expected).toMatchObject({
++      primaryAdapterId: "huggingface-chat",
++      model: "Qwen/Qwen3-32B-Instruct"
++    });
++    expect(activation.selectedAdapterId).toBe(expected?.primaryAdapterId);
++    expect(activation.model).toBe(expected?.model);
++  });
++
++  it("preserves unrelated flows when later sparse sources override only one flow", () => {
++    const activations = resolveAiRouteActivations({
++      env: {
++        CLOUDFLARE_ACCOUNT_ID: "acct_123",
++        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
++        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8",
++        DEEPAI_API_KEY: "deepai-token"
++      },
++      serviceAiFlowAdminConfig: [
++        {
++          flowId: "card-copy",
++          primaryAdapterId: "huggingface-chat",
++          liveProviderCallsEnabled: true
++        },
++        {
++          flowId: "card-image",
++          primaryAdapterId: "deepai-text2img-image",
++          promptInstructions: "Keep the skyline dreamy and leave generous text-safe space.",
++          liveProviderCallsEnabled: true
++        }
++      ],
++      loadedAiFlowAdminConfig: {
++        ai_flow_configs: [{ flowId: "card-copy", liveProviderCallsEnabled: false }]
++      }
++    });
++
++    expect(activations.find((activation) => activation.flowId === "card-copy")).toMatchObject({
++      selectedAdapterId: "cloudflare-workers-ai-chat",
++      readyForLiveCalls: false
++    });
++    expect(activations.find((activation) => activation.flowId === "card-image")).toMatchObject({
++      selectedAdapterId: "deepai-text2img-image",
++      readyForLiveCalls: true,
++      flow: {
++        promptInstructions: "Keep the skyline dreamy and leave generous text-safe space."
++      }
++    });
++  });
++
++  it("parses server-scoped env JSON once when resolving multiple route activations", () => {
++    let flowConfigReads = 0;
++    const env = {
++      CLOUDFLARE_ACCOUNT_ID: "acct_123",
++      CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
++      CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8",
++      DEEPAI_API_KEY: "deepai-token"
++    };
++    Object.defineProperty(env, "CUSTOMCARD_AI_FLOW_CONFIG_JSON", {
++      enumerable: true,
++      get() {
++        flowConfigReads += 1;
++        return JSON.stringify([
++          { flowId: "card-copy", liveProviderCallsEnabled: true },
++          { flowId: "card-image", primaryAdapterId: "deepai-text2img-image", liveProviderCallsEnabled: true }
++        ]);
++      }
++    });
++
++    const context = createAiRouteActivationContext({ env });
++    const activations = resolveAiRouteActivations(context);
++
++    expect(flowConfigReads).toBe(1);
++    expect(activations).toHaveLength(3);
++    expect(activations.find((activation) => activation.flowId === "card-image")?.selectedAdapterId).toBe(
++      "deepai-text2img-image"
++    );
++  });
++
++  it("re-reads server-scoped env JSON after the same env object changes", () => {
++    const env = {
++      HUGGINGFACE_API_TOKEN: "hf-token",
++      CUSTOMCARD_AI_FLOW_CONFIG_JSON: JSON.stringify([
++        { flowId: "card-copy", model: "Qwen/Qwen3-32B-Instruct" }
++      ])
++    };
++
++    const firstActivation = resolveAiRouteActivation("card-copy", { env });
++
++    env.CUSTOMCARD_AI_FLOW_CONFIG_JSON = JSON.stringify([
++      { flowId: "card-copy", model: "Qwen/Qwen3-235B-A22B-Instruct-2507" }
++    ]);
++
++    const secondContext = createAiRouteActivationContext({ env });
++    const secondActivation = resolveAiRouteActivation("card-copy", secondContext);
++
++    expect(firstActivation.model).toBe("Qwen/Qwen3-32B-Instruct");
++    expect(secondActivation.model).toBe("Qwen/Qwen3-235B-A22B-Instruct-2507");
++  });
++
++  it("attaches control-plane route policy ids for card-copy and card-image", () => {
++    const activations = resolveAiRouteActivations({
++      env: {
++        CLOUDFLARE_ACCOUNT_ID: "acct_123",
++        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
++        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8",
++        DEEPAI_API_KEY: "deepai-token"
++      }
++    });
++
++    expect(activations.find((activation) => activation.flowId === "card-copy")).toMatchObject({
++      controlPlaneRoutePolicyId: "card-copy-route-v1"
++    });
++    expect(activations.find((activation) => activation.flowId === "card-image")).toMatchObject({
++      controlPlaneRoutePolicyId: "card-image-route-v1"
++    });
++  });
++});
+diff --git a/src/aiRoutePolicyIds.d.mts b/src/aiRoutePolicyIds.d.mts
+new file mode 100644
+index 00000000..8f13a094
+--- /dev/null
++++ b/src/aiRoutePolicyIds.d.mts
+@@ -0,0 +1,5 @@
++import type { AiFlowId } from "./aiFlowConfigData.mjs";
++
++export type AiRoutePolicyId = "card-copy-route-v1" | "card-image-route-v1";
++
++export const aiRoutePolicyIdsByFlowId: Partial<Record<AiFlowId, AiRoutePolicyId>>;
+diff --git a/src/aiRoutePolicyIds.mjs b/src/aiRoutePolicyIds.mjs
+new file mode 100644
+index 00000000..2c9741a4
+--- /dev/null
++++ b/src/aiRoutePolicyIds.mjs
+@@ -0,0 +1,4 @@
++export const aiRoutePolicyIdsByFlowId = Object.freeze({
++  "card-copy": "card-copy-route-v1",
++  "card-image": "card-image-route-v1"
++});
+diff --git a/src/localComfyProductionText.test.ts b/src/localComfyProductionText.test.ts
+index 13b62d11..c3284918 100644
+--- a/src/localComfyProductionText.test.ts
++++ b/src/localComfyProductionText.test.ts
+@@ -1,11 +1,19 @@
+ import { describe, expect, it } from "vitest";
++import {
++  productionTextNodeSourceRelativePath,
++  productionTextRequiredCompositorInputs,
++  productionTextRequiredNodeClass,
++  productionTextWorkflowId,
++  productionTextWorkflowRelativePath
++} from "../scripts/comfy-production-text-setup.mjs";
++import { describeLocalComfyWorkerReadiness } from "../scripts/local-comfy-worker.mjs";
+ import {
+   interpolateLocalComfyTemplate,
+   localComfyTypographyVariables,
+   localComfyWorkflowInputSummary,
+   localComfyWorkflowInputsForMetadata
+ } from "../scripts/local-comfy-production-text.mjs";
+ 
+ describe("local Comfy production text contract", () => {
+   it("builds deterministic typography and artwork guard variables", () => {
+     const variables = localComfyTypographyVariables({
+@@ -97,11 +105,43 @@ describe("local Comfy production text contract", () => {
+         artworkGuardOpacity: 0.74
+       }
+     );
+ 
+     expect(rendered).toEqual({
+       text: "A Quiet Honor",
+       width: 960,
+       nested: ["prefix inside-left", 0.74]
+     });
+   });
++
++  it("describes resolved production text workflow setup for the local worker when configured", () => {
++    const readiness = describeLocalComfyWorkerReadiness({
++      env: {
++        CUSTOMCARD_ENV: "dev",
++        CUSTOMCARD_API_RUNTIME: "contract",
++        DATABASE_URL: "postgres://customcard.local/customcard",
++        QUEUE_URL: "redis://queue.customcard.local",
++        OBJECT_STORE_URL: "file:///tmp/customcard-objects",
++        OBJECT_STORE_SIGNING_SECRET: "test-object-store-signing-secret-32",
++        AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
++        CLERK_JWT_KEY: `-----BEGIN PUBLIC KEY-----
++test-clerk-jwt-key
++-----END PUBLIC KEY-----`,
++        CLERK_AUTHORIZED_PARTIES: "https://customcard.test",
++        CLERK_ISSUER: "https://clerk.customcard.test",
++        CLERK_AUDIENCE: "customcard-api",
++        CUSTOMCARD_COMFYUI_WORKFLOW_ID: productionTextWorkflowId,
++        CUSTOMCARD_COMFYUI_WORKFLOW_PATH: "D:/manny/Documents/CustomCard/comfyui-workflows/customcard-production-text-overlay.json"
++      }
++    });
++
++    expect(readiness.comfyUrl).toBe("http://127.0.0.1:8188");
++    expect(readiness.productionTextSetup).toMatchObject({
++      comfyUrl: "http://127.0.0.1:8188",
++      workflowId: productionTextWorkflowId,
++      workflowPathRelative: productionTextWorkflowRelativePath,
++      nodeSourceRelative: productionTextNodeSourceRelativePath,
++      requiredNodeClass: productionTextRequiredNodeClass,
++      requiredComposerInputs: productionTextRequiredCompositorInputs
++    });
++  });
+ });
+diff --git a/src/providerRuntime.test.ts b/src/providerRuntime.test.ts
+index 8d2e041a..781e160f 100644
+--- a/src/providerRuntime.test.ts
++++ b/src/providerRuntime.test.ts
+@@ -1,11 +1,12 @@
+ import { describe, expect, it } from "vitest";
++import { productionCardCopyModel, productionCardCopyModelOverrideEnvKey } from "./aiProviderSetupProfile.mjs";
+ import { providerCatalog } from "./providerCatalog";
+ import {
+   buildAuthRuntime,
+   buildContactImportRuntime,
+   buildCrmRuntime,
+   buildEventImportRuntime,
+   buildImageGenerationRuntime,
+   buildNotificationRuntime,
+   buildObservabilityRuntime,
+   buildPaymentRuntime,
+@@ -61,24 +62,25 @@ const readyEnv: ProviderRuntimeEnv = {
+   CARDDAV_APP_PASSWORD: "configured-carddav-app-password",
+   CARDDAV_BASE_URL: "https://contacts.customcard.test",
+   CARDDAV_USERNAME: "configured-carddav-user",
+   CLERK_AUTHORIZED_PARTIES: "https://customcard.test",
+   CLERK_AUDIENCE: "customcard-api",
+   CLERK_ISSUER: "https://clerk.customcard.test",
+   CLERK_JWT_KEY: "configured-clerk-jwt-key",
+   CLERK_SECRET_KEY: "configured-clerk-secret-key",
+   CLOUDFLARE_ACCOUNT_ID: "configured-cloudflare-account-id",
+   CLOUDFLARE_API_TOKEN: "configured-cloudflare-api-token",
++  CUSTOMCARD_AI_CARD_COPY_MODEL: productionCardCopyModel,
+   CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "configured-cloudflare-image-token",
+   CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning",
+   CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "configured-cloudflare-text-token",
+-  CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8",
++  CLOUDFLARE_WORKERS_AI_TEXT_MODEL: productionCardCopyModel,
+   COHERE_API_KEY: "configured-cohere-key",
+   COGNITO_APP_CLIENT_ID: "configured-cognito-client-id",
+   COGNITO_DOMAIN: "customcard-auth",
+   COGNITO_USER_POOL_ID: "us-east-1_customcard",
+   COURIER_AUTH_TOKEN: "configured-courier-token",
+   COURIER_TEMPLATE_ID: "configured-courier-template",
+   CUSTOMCARD_AUTH_CALLBACK_URL: "https://customcard.test/auth/callback",
+   CUSTOMERIO_APP_API_KEY: "configured-customerio-app-api-key",
+   CUSTOMERIO_TRANSACTIONAL_MESSAGE_ID: "configured-customerio-transactional-message-id",
+   CUSTOMCARD_PAYMENT_CANCEL_URL: "https://customcard.test/payment/cancel",
+@@ -554,20 +556,34 @@ describe("provider runtime contracts", () => {
+       headers: expect.objectContaining({ authorization: "Bearer {CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN}" })
+     });
+     expect(
+       buildTextChatRuntime("cloudflare-workers-ai-chat", textInput, {
+         ...readyEnv,
+         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: undefined
+       }, openGates).request
+     ).toMatchObject({
+       headers: expect.objectContaining({ authorization: "Bearer {CLOUDFLARE_API_TOKEN}" })
+     });
++    expect(
++      buildTextChatRuntime(
++        "cloudflare-workers-ai-chat",
++        { ...textInput, model: productionCardCopyModel },
++        {
++          ...readyEnv,
++          [productionCardCopyModelOverrideEnvKey]: productionCardCopyModel
++        },
++        openGates
++      ).request
++    ).toMatchObject({
++      credentialRefs: expect.arrayContaining([productionCardCopyModelOverrideEnvKey]),
++      body: expect.objectContaining({ model: productionCardCopyModel })
++    });
+     expect(buildTextChatRuntime("cohere-chat", textInput, readyEnv, openGates).request?.url).toBe(
+       "https://api.cohere.com/v2/chat"
+     );
+     expect(buildTextChatRuntime("perplexity-sonar-chat", textInput, readyEnv, openGates).request?.url).toBe(
+       "https://api.perplexity.ai/chat/completions"
+     );
+     expect(buildTextChatRuntime("xai-chat", textInput, readyEnv, openGates).request?.url).toBe(
+       "https://api.x.ai/v1/chat/completions"
+     );
+     expect(buildTextChatRuntime("together-chat", textInput, readyEnv, openGates).request?.url).toBe(
+diff --git a/src/providerRuntime.ts b/src/providerRuntime.ts
+index 2668ac2f..51f691c1 100644
+--- a/src/providerRuntime.ts
++++ b/src/providerRuntime.ts
+@@ -1,11 +1,16 @@
+ import { buildVendorHandoff, parseFreeImport, type VendorId } from "./customerWorkflow";
++import {
++  cloudflareTextModelEnvKeys,
++  productionCardCopyModel,
++  productionCardCopyModelOverrideEnvKey
++} from "./aiProviderSetupProfile.mjs";
+ import {
+   getProviderAdapter,
+   providerCatalog,
+   type ChatMessage,
+   type ProviderAdapter,
+   type ProviderCapability,
+   type ProviderStatus
+ } from "./providerCatalog";
+ import { buildPrinterPricingComparison } from "./printerPricing";
+ import { buildSamplePrintExportPackage, summarizePrintExportPackage } from "./printExport";
+@@ -960,21 +965,21 @@ function configuredModel(
+   }
+   return fallbackModel;
+ }
+ 
+ function configuredNumber(value: number | undefined, fallback: number): number {
+   return Number.isFinite(value) ? Number(value) : fallback;
+ }
+ 
+ function textModelEnvKeys(adapterId: string): string[] {
+   const envKeysByAdapter: Record<string, string[]> = {
+-    "cloudflare-workers-ai-chat": ["CUSTOMCARD_CLOUDFLARE_TEXT_MODEL", "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"],
++    "cloudflare-workers-ai-chat": [...cloudflareTextModelEnvKeys],
+     "openai-responses-chat": ["CUSTOMCARD_OPENAI_TEXT_MODEL", "OPENAI_TEXT_MODEL", "CARD_TEXT_MODEL"],
+     "anthropic-messages-chat": ["CUSTOMCARD_ANTHROPIC_TEXT_MODEL", "ANTHROPIC_MODEL", "CARD_TEXT_MODEL"],
+     "google-gemini-chat": ["CUSTOMCARD_GEMINI_TEXT_MODEL", "GEMINI_TEXT_MODEL", "GOOGLE_GENERATIVE_AI_MODEL"],
+     "huggingface-chat": ["CUSTOMCARD_HUGGINGFACE_TEXT_MODEL", "HUGGINGFACE_TEXT_MODEL"],
+     "mistral-chat": ["CUSTOMCARD_MISTRAL_TEXT_MODEL", "MISTRAL_MODEL"],
+     "cohere-chat": ["CUSTOMCARD_COHERE_TEXT_MODEL", "COHERE_MODEL"],
+     "perplexity-sonar-chat": ["CUSTOMCARD_PERPLEXITY_TEXT_MODEL", "PERPLEXITY_MODEL"],
+     "xai-chat": ["CUSTOMCARD_XAI_TEXT_MODEL", "XAI_MODEL"],
+     "together-chat": ["CUSTOMCARD_TOGETHER_TEXT_MODEL", "TOGETHER_TEXT_MODEL"],
+     "groq-chat": ["CUSTOMCARD_GROQ_TEXT_MODEL", "GROQ_MODEL"],
+@@ -1002,39 +1007,52 @@ function imageModelEnvKeys(adapterId: string): string[] {
+     "local-comfyui-api-image": ["CUSTOMCARD_COMFYUI_CHECKPOINT", "CUSTOMCARD_LOCAL_COMFYUI_CHECKPOINT", "COMFYUI_CHECKPOINT"],
+     "runcomfy-model-api-image": [],
+     "luma-image": ["CUSTOMCARD_LUMA_IMAGE_MODEL", "LUMA_IMAGE_MODEL"],
+     "replicate-image": ["CUSTOMCARD_REPLICATE_IMAGE_MODEL", "REPLICATE_IMAGE_MODEL"]
+   };
+   return envKeysByAdapter[adapterId] ?? [];
+ }
+ 
+ function defaultTextModel(adapterId: string): string {
+   const defaults: Record<string, string> = {
+-    "cloudflare-workers-ai-chat": "@cf/qwen/qwen3-30b-a3b-fp8",
++    "cloudflare-workers-ai-chat": productionCardCopyModel,
+     "openai-responses-chat": "gpt-4o-mini",
+     "anthropic-messages-chat": "claude-3-5-haiku-latest",
+     "google-gemini-chat": "gemini-1.5-flash",
+     "huggingface-chat": "meta-llama/Llama-3.2-3B-Instruct",
+     "mistral-chat": "mistral-small-latest",
+     "cohere-chat": "command-r7b-12-2024",
+     "perplexity-sonar-chat": "sonar",
+     "xai-chat": "grok-3-mini",
+     "together-chat": "meta-llama/Llama-3.2-3B-Instruct-Turbo",
+     "groq-chat": "llama-3.1-8b-instant",
+     "deepseek-chat": "deepseek-chat",
+     "fireworks-chat": "accounts/fireworks/models/llama-v3p1-8b-instruct",
+     "local-openai-compatible-chat": "local-default",
+     "self-hosted-openai-compatible-chat": "local-default"
+   };
+   return defaults[adapterId] ?? "{CLOUDFLARE_WORKERS_AI_TEXT_MODEL}";
+ }
+ 
++function configuredModelRef(
++  requestedModel: string | undefined,
++  envKeys: string[],
++  env: ProviderRuntimeEnv,
++  fallbackRef: string
++): string {
++  if (requestedModel?.trim()) return requestedModel.trim() === productionCardCopyModel ? productionCardCopyModelOverrideEnvKey : fallbackRef;
++  for (const envKey of envKeys) {
++    if (hasUsableEnvValue(env[envKey])) return envKey;
++  }
++  return fallbackRef;
++}
++
+ function defaultImageModel(adapterId: string): string {
+   const defaults: Record<string, string> = {
+     "cloudflare-workers-ai-image": "@cf/black-forest-labs/flux-1-schnell",
+     "openai-images": "gpt-image-2",
+     "google-gemini-image": "gemini-3.1-flash-image",
+     "deepai-text2img-image": "text2img",
+     "huggingface-image": "black-forest-labs/FLUX.1-schnell",
+     "stability-stable-image": "stable-image-core",
+     "together-image": "black-forest-labs/FLUX.1-schnell-Free",
+     "fal-image": "fal-ai/flux/schnell",
+@@ -1232,25 +1250,26 @@ function buildTextChatRequest(
+       contents: [{ role: "user", parts: [{ text: prompt }] }],
+       generationConfig: { maxOutputTokens: maxTokens, temperature },
+       metadata: { redactions: sanitized.redactions }
+     }, [], {
+       "x-goog-api-key": "{GOOGLE_GENERATIVE_AI_API_KEY}"
+     });
+   }
+ 
+   if (adapter.id === "cloudflare-workers-ai-chat") {
+     const apiTokenRef = cloudflareWorkersAiTokenRef(env, "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN");
++    const modelRef = configuredModelRef(input.model, textModelEnvKeys(adapter.id), env, productionCardCopyModelOverrideEnvKey);
+     return request(
+       adapter,
+       "POST",
+       "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/v1/chat/completions",
+-      ["CLOUDFLARE_ACCOUNT_ID", apiTokenRef, "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"],
++      ["CLOUDFLARE_ACCOUNT_ID", apiTokenRef, modelRef],
+       {
+         model,
+         messages: [{ role: "user", content: prompt }],
+         max_tokens: maxTokens,
+         temperature,
+         metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
+       },
+       [],
+       { authorization: `Bearer {${apiTokenRef}}` }
+     );
+diff --git a/tests/hosted-vercel-env-inventory.test.ts b/tests/hosted-vercel-env-inventory.test.ts
+index ef31b897..39995182 100644
+--- a/tests/hosted-vercel-env-inventory.test.ts
++++ b/tests/hosted-vercel-env-inventory.test.ts
+@@ -1,29 +1,50 @@
++import { readFileSync } from "node:fs";
++import { fileURLToPath } from "node:url";
++import { resolve } from "node:path";
+ import { describe, expect, it, vi } from "vitest";
++import {
++  productionCardCopyModel,
++  productionCardCopyModelOverrideEnvKey
++} from "../src/aiProviderSetupProfile.mjs";
+ import {
+   parseVercelEnvJson,
+   resolveVercelEnvTarget,
+   runHostedVercelEnvInventory
+ } from "../scripts/hosted-vercel-env-inventory.mjs";
+ 
+ const requiredKeys = [
+   "CUSTOMCARD_API_RUNTIME",
+   "DATABASE_URL",
+   "AUTH_SESSION_SECRET",
+   "CLERK_JWT_KEY",
+   "CLERK_AUTHORIZED_PARTIES",
+   "CLERK_ISSUER",
+   "CLERK_AUDIENCE",
+   "IDEMPOTENCY_KEY_TTL_HOURS"
+ ];
+ 
++const repoRoot = resolve(fileURLToPath(new URL(".", import.meta.url)), "..");
++
+ describe("hosted Vercel env inventory", () => {
++  it("documents redacted hosted setup reports and keeps local Comfy free of Cloudflare image-key requirements", () => {
++    const vercelDoc = readFileSync(resolve(repoRoot, "docs/vercel-env-structure.md"), "utf8");
++    const cloudflareDoc = readFileSync(resolve(repoRoot, "docs/cloudflare-workers-ai-setup.md"), "utf8");
++
++    expect(vercelDoc).toContain("The report must not include env");
++    expect(vercelDoc).toContain("values, only key names and target scopes.");
++    expect(vercelDoc).toContain("Treat these inventory artifacts as");
++    expect(vercelDoc).toContain("setup proof, not a place to copy or store secrets.");
++    expect(vercelDoc).toContain("does not require Cloudflare image keys");
++    expect(cloudflareDoc).toContain("hosted Cloudflare image keys are not");
++  });
++
+   it("fails closed until the guarded env inventory is explicitly enabled", async () => {
+     const commandRunner = vi.fn();
+ 
+     const report = await runHostedVercelEnvInventory({
+       env: {
+         CUSTOMCARD_HOSTED_API_ENV: "qa",
+         CUSTOMCARD_QA_API_BASE_URL: "https://qa.customcard.test"
+       },
+       commandRunner,
+       now: new Date("2026-06-15T15:00:00.000Z")
+@@ -107,20 +128,24 @@ describe("hosted Vercel env inventory", () => {
+     const secretJwtKey = "-----BEGIN PUBLIC KEY-----super-secret-----END PUBLIC KEY-----";
+     const commandRunner = vi.fn(async () => ({
+       exitCode: 0,
+       stdout: JSON.stringify({
+         envs: [
+           ...requiredKeys.map((key) => ({
+             key,
+             target: ["production"],
+             value: key === "DATABASE_URL" ? secretDatabaseUrl : key === "CLERK_JWT_KEY" ? secretJwtKey : `secret-${key}`
+           })),
++          { key: "CLOUDFLARE_ACCOUNT_ID", target: ["production"], value: "account-secret" },
++          { key: "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", target: ["production"], value: "cloudflare-text-secret" },
++          { key: productionCardCopyModelOverrideEnvKey, target: ["production"], value: productionCardCopyModel },
++          { key: "CUSTOMCARD_CLOUDFLARE_TEXT_MODEL", target: ["production"], value: productionCardCopyModel },
+           { key: "CUSTOMCARD_API_RUNTIME", target: ["preview"], value: "postgres" }
+         ]
+       }),
+       stderr: "unused stderr super-secret"
+     }));
+ 
+     const report = await runHostedVercelEnvInventory({
+       env: {
+         CUSTOMCARD_HOSTED_ENV_INVENTORY: "enabled",
+         CUSTOMCARD_HOSTED_API_ENV: "production",
+@@ -134,65 +159,87 @@ describe("hosted Vercel env inventory", () => {
+       status: "ready",
+       targetEnvironment: "production",
+       vercelTarget: "production",
+       valuesRedacted: true,
+       envSync: {
+         requiredKeysPresent: true,
+         customcardApiRuntimeConfigured: true,
+         databaseUrlConfigured: true,
+         clerkJwtVerifierConfigured: true,
+         idempotencyConfigured: true,
++        aiCardCopySetupConfigured: true,
++        aiCardCopyProductionModelPinned: true,
+         environmentSynced: true
+       },
+-      passed: 3,
++      passed: 4,
+       failed: 0,
+       blockers: []
+     });
+     expect(commandRunner).toHaveBeenCalledWith(
+       expect.objectContaining({
+         vercelTarget: "production"
+       })
+     );
+     expect(report.requiredKeys).toEqual(
+       expect.arrayContaining([
+         { name: "DATABASE_URL", present: true, targets: ["production"] },
+         { name: "CLERK_JWT_KEY", present: true, targets: ["production"] }
+       ])
+     );
++    expect(report.aiCardCopySetup).toMatchObject({
++      providerId: "cloudflare-workers-ai-chat",
++      defaultModel: productionCardCopyModel,
++      productionModelOverridePresent: true,
++      localProductionTextComfyRequiresHostedImageKeys: false,
++      productionModelOverrideEnvKey: {
++        name: productionCardCopyModelOverrideEnvKey,
++        present: true
++      }
++    });
+     const serialized = JSON.stringify(report);
+     expect(serialized).not.toContain(secretDatabaseUrl);
+     expect(serialized).not.toContain(secretJwtKey);
+     expect(serialized).not.toContain("super-secret");
+     expect(serialized).not.toContain("secret-CUSTOMCARD_API_RUNTIME");
++    expect(serialized).not.toContain("cloudflare-text-secret");
+   });
+ 
+   it("blocks env sync proof when required scoped keys are missing", async () => {
+     const commandRunner = vi.fn(async () => ({
+       exitCode: 0,
+       stdout: JSON.stringify({
+         envs: requiredKeys
+           .filter((key) => key !== "CLERK_AUDIENCE")
+           .map((key) => ({ key, target: ["production"], value: "redacted-by-script" }))
++          .concat([
++            { key: "CLOUDFLARE_ACCOUNT_ID", target: ["production"], value: "account-secret" },
++            { key: "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", target: ["production"], value: "cloudflare-text-secret" }
++          ])
+       }),
+       stderr: ""
+     }));
+ 
+     const report = await runHostedVercelEnvInventory({
+       env: {
+         CUSTOMCARD_HOSTED_ENV_INVENTORY: "enabled",
+         CUSTOMCARD_HOSTED_API_ENV: "production",
+         CUSTOMCARD_HOSTED_API_BASE_URL: "https://customcard-three.vercel.app"
+       },
+       commandRunner
+     });
+ 
+     expect(report.status).toBe("blocked");
+     expect(report.blockers).toEqual(
+-      expect.arrayContaining(["CLERK_AUDIENCE is missing from the Vercel production env inventory."])
++      expect.arrayContaining([
++        "CLERK_AUDIENCE is missing from the Vercel production env inventory.",
++        `${productionCardCopyModelOverrideEnvKey} is missing, so hosted card-copy is not explicitly pinned to ${productionCardCopyModel}.`
++      ])
+     );
+     expect(report.envSync).toMatchObject({
+       requiredKeysPresent: false,
+       clerkJwtVerifierConfigured: false,
++      aiCardCopySetupConfigured: false,
++      aiCardCopyProductionModelPinned: false,
+       environmentSynced: false
+     });
+   });
+ });
+diff --git a/tests/hosted-vercel-env-repair.test.ts b/tests/hosted-vercel-env-repair.test.ts
+index a92fedb7..a44539ae 100644
+--- a/tests/hosted-vercel-env-repair.test.ts
++++ b/tests/hosted-vercel-env-repair.test.ts
+@@ -1,29 +1,51 @@
+ import { describe, expect, it, vi } from "vitest";
++import {
++  productionCardCopyModel,
++  productionCardCopyModelOverrideEnvKey
++} from "../src/aiProviderSetupProfile.mjs";
+ import { runHostedVercelEnvRepair } from "../scripts/hosted-vercel-env-repair.mjs";
+ 
+ const missingInventory = {
+   targetEnvironment: "production",
+   vercelTarget: "production",
+   baseUrl: "https://customcard-three.vercel.app",
+   command: { stdoutParsed: true },
+   requiredKeys: [
+     { name: "CUSTOMCARD_API_RUNTIME", present: true },
+     { name: "DATABASE_URL", present: true },
+     { name: "AUTH_SESSION_SECRET", present: true },
+     { name: "CLERK_JWT_KEY", present: true },
+     { name: "CLERK_AUTHORIZED_PARTIES", present: true },
+     { name: "CLERK_ISSUER", present: false },
+     { name: "CLERK_AUDIENCE", present: false },
+     { name: "IDEMPOTENCY_KEY_TTL_HOURS", present: false }
+   ],
+-  envSync: { environmentSynced: false }
++  aiCardCopySetup: {
++    providerId: "cloudflare-workers-ai-chat",
++    defaultModel: productionCardCopyModel,
++    productionModelOverrideEnvKey: {
++      name: productionCardCopyModelOverrideEnvKey,
++      present: false
++    },
++    productionModelOverridePresent: false,
++    baseConfigured: true,
++    localProductionTextComfyRequiresHostedImageKeys: false,
++    blockers: [
++      `${productionCardCopyModelOverrideEnvKey} is missing, so hosted card-copy is not explicitly pinned to ${productionCardCopyModel}.`
++    ]
++  },
++  envSync: {
++    environmentSynced: false,
++    aiCardCopySetupConfigured: true,
++    aiCardCopyProductionModelPinned: false
++  }
+ };
+ 
+ const repairValues = {
+   CLERK_ISSUER: "https://clerk.customcard.app",
+   CLERK_AUDIENCE: "customcard-api",
+   IDEMPOTENCY_KEY_TTL_HOURS: "24"
+ };
+ 
+ describe("hosted Vercel env repair", () => {
+   it("fails closed before inspecting or applying without the explicit guard", async () => {
+@@ -69,23 +91,29 @@ describe("hosted Vercel env repair", () => {
+     });
+ 
+     expect(report).toMatchObject({
+       status: "ready",
+       targetEnvironment: "production",
+       vercelTarget: "production",
+       checkedAt: "2026-06-15T16:00:00.000Z",
+       applyEnabled: false,
+       valuesRedacted: true,
+       missingRepairKeys: ["CLERK_ISSUER", "CLERK_AUDIENCE", "IDEMPOTENCY_KEY_TTL_HOURS"],
++      aiCardCopySetup: {
++        productionModelOverridePresent: false,
++        localProductionTextComfyRequiresHostedImageKeys: false
++      },
+       envSync: {
+         repairKeysMissing: 3,
+         repairApplied: false,
++        aiCardCopySetupConfigured: true,
++        aiCardCopyProductionModelPinned: false,
+         environmentSynced: false
+       },
+       blockers: []
+     });
+     expect(report.repairPlan).toEqual([
+       { key: "CLERK_ISSUER", target: "production", valueSupplied: true, action: "plan-only" },
+       { key: "CLERK_AUDIENCE", target: "production", valueSupplied: true, action: "plan-only" },
+       { key: "IDEMPOTENCY_KEY_TTL_HOURS", target: "production", valueSupplied: true, action: "plan-only" }
+     ]);
+     expect(commandRunner).not.toHaveBeenCalled();
+@@ -133,20 +161,22 @@ describe("hosted Vercel env repair", () => {
+       commandRunner
+     });
+ 
+     expect(report).toMatchObject({
+       status: "ready",
+       applyEnabled: true,
+       valuesRedacted: true,
+       envSync: {
+         repairKeysMissing: 3,
+         repairApplied: true,
++        aiCardCopySetupConfigured: true,
++        aiCardCopyProductionModelPinned: false,
+         environmentSynced: false
+       },
+       blockers: []
+     });
+     expect(commandRunner).toHaveBeenCalledTimes(3);
+     expect(report.applyResults).toEqual([
+       { key: "CLERK_ISSUER", target: "production", exitCode: 0 },
+       { key: "CLERK_AUDIENCE", target: "production", exitCode: 0 },
+       { key: "IDEMPOTENCY_KEY_TTL_HOURS", target: "production", exitCode: 0 }
+     ]);
+@@ -172,20 +202,22 @@ describe("hosted Vercel env repair", () => {
+       status: "blocked",
+       applyEnabled: true,
+       partialApplyEnabled: true,
+       valuesRedacted: true,
+       appliedRepairKeys: ["IDEMPOTENCY_KEY_TTL_HOURS"],
+       remainingUnappliedRepairKeys: ["CLERK_ISSUER", "CLERK_AUDIENCE"],
+       envSync: {
+         repairKeysMissing: 3,
+         repairApplied: false,
+         partialRepairApplied: true,
++        aiCardCopySetupConfigured: true,
++        aiCardCopyProductionModelPinned: false,
+         environmentSynced: false
+       }
+     });
+     expect(report.repairPlan).toEqual([
+       { key: "CLERK_ISSUER", target: "production", valueSupplied: false, action: "blocked-missing-value" },
+       { key: "CLERK_AUDIENCE", target: "production", valueSupplied: false, action: "blocked-missing-value" },
+       { key: "IDEMPOTENCY_KEY_TTL_HOURS", target: "production", valueSupplied: true, action: "vercel-env-add" }
+     ]);
+     expect(report.blockers).toEqual(
+       expect.arrayContaining([
+diff --git a/tests/production-text-readiness-doctor.test.ts b/tests/production-text-readiness-doctor.test.ts
+index ca8361fa..6a0fe6ef 100644
+--- a/tests/production-text-readiness-doctor.test.ts
++++ b/tests/production-text-readiness-doctor.test.ts
+@@ -1,14 +1,23 @@
+-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
++import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+ import { tmpdir } from "node:os";
+-import { join } from "node:path";
++import { join, resolve } from "node:path";
++import { fileURLToPath } from "node:url";
+ import { afterEach, describe, expect, it, vi } from "vitest";
++import {
++  productionTextNodeSourceRelativePath,
++  productionTextRequiredCompositorInputs,
++  productionTextRequiredNodeClass,
++  productionTextWorkflowRelativePath,
++  resolveProductionTextComfyUrl
++} from "../scripts/comfy-production-text-setup.mjs";
++import { runPreflight } from "../scripts/comfyui-production-text-preflight.mjs";
+ import { runDoctor } from "../scripts/production-text-readiness-doctor.mjs";
+ 
+ function writeJson(path: string, value: unknown) {
+   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
+ }
+ 
+ function writePassingAggregate(path: string) {
+   writeJson(path, {
+     totalRuns: 3,
+     ranked: ["aquarium-lover-birthday", "koi-fish-lover-encouragement", "dog-lover-thank-you"].map((fixtureId, index) => ({
+@@ -41,25 +50,37 @@ function writeFailingAggregate(path: string) {
+ function gpuResidencyProbe() {
+   return {
+     required: true,
+     ok: true,
+     status: "gpu-backed",
+     pids: [1234],
+     nvidiaProcessIds: [1234]
+   };
+ }
+ 
++const repoRoot = resolve(fileURLToPath(new URL(".", import.meta.url)), "..");
++
+ describe("production text readiness doctor", () => {
+   afterEach(() => {
+     vi.restoreAllMocks();
+   });
+ 
++  it("keeps the production-text doc pinned to the shared setup facts and required live node", () => {
++    const workflowDoc = readFileSync(resolve(repoRoot, "docs/comfyui-production-text-workflow.md"), "utf8");
++
++    expect(workflowDoc).toContain("scripts/comfy-production-text-setup.mjs");
++    expect(workflowDoc).toContain(productionTextWorkflowRelativePath);
++    expect(workflowDoc).toContain(productionTextNodeSourceRelativePath);
++    expect(workflowDoc).toContain(productionTextRequiredNodeClass);
++    expect(workflowDoc).toContain("shared setup facts");
++  });
++
+   it("does not treat a model name as production-ready without reported runtime budget", async () => {
+     const root = mkdtempSync(join(tmpdir(), "production-text-readiness-doctor-"));
+     const modelRoot = join(root, "models");
+     mkdirSync(modelRoot, { recursive: true });
+     writeFileSync(join(modelRoot, "gemma-4-31B-it-Q4_K_M.gguf"), "fake model marker");
+     const aggregatePath = join(root, "benchmark-aggregate.json");
+     writePassingAggregate(aggregatePath);
+ 
+     vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
+       const target = String(url);
+@@ -88,20 +109,96 @@ describe("production text readiness doctor", () => {
+ 
+     expect(report.promotionReady).toBe(false);
+     expect(report.activePlannerEndpoints[0]).toMatchObject({
+       activeModel: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+       productionSuitable: false
+     });
+     expect(report.activePlannerEndpoints[0].plannerPolicy.blockers.join("\n")).toContain("context was not reported");
+     expect(report.blockers.map((item) => item.name)).toContain("configured production planner endpoint is production-suitable");
+   });
+ 
++  it("uses the shared workflow path, node source, and default Comfy URL facts", async () => {
++    const root = mkdtempSync(join(tmpdir(), "production-text-readiness-doctor-defaults-"));
++    const modelRoot = join(root, "models");
++    mkdirSync(modelRoot, { recursive: true });
++    writeFileSync(join(modelRoot, "gemma-4-31B-it-Q4_K_M.gguf"), "fake model marker");
++    const aggregatePath = join(root, "benchmark-aggregate.json");
++    writePassingAggregate(aggregatePath);
++    const defaultComfyUrl = resolveProductionTextComfyUrl({ env: {} });
++
++    vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
++      const target = String(url);
++      if (target === `${defaultComfyUrl}/object_info`) {
++        return new Response(JSON.stringify({ [productionTextRequiredNodeClass]: {} }), {
++          status: 200,
++          headers: { "content-type": "application/json" }
++        });
++      }
++      if (target.endsWith("/models")) {
++        return new Response(JSON.stringify({ data: [{ id: "koboldcpp/gemma-4-31B-it-Q4_K_M" }] }), {
++          status: 200,
++          headers: { "content-type": "application/json" }
++        });
++      }
++      return new Response("not found", { status: 404 });
++    });
++
++    const report = await runDoctor({
++      advisory: true,
++      aggregate: aggregatePath,
++      "model-root": modelRoot,
++      "local-llm-base-url": "http://127.0.0.1:5003/v1",
++      "planner-context-tokens": 8192,
++      "planner-max-output-tokens": 3200,
++      "output-dir": join(root, "readiness")
++    }, { gpuResidencyProbe });
++
++    expect(report.workflowPath).toBe(productionTextWorkflowRelativePath);
++    expect(report.nodeSource).toBe(productionTextNodeSourceRelativePath);
++    expect(report.comfy.comfyUrl).toBe(defaultComfyUrl);
++  });
++
++  it("uses the shared production text node contract in preflight and keeps missing live node blocking", async () => {
++    const root = mkdtempSync(join(tmpdir(), "production-text-preflight-"));
++    const defaultComfyUrl = resolveProductionTextComfyUrl({ env: {} });
++
++    vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
++      const target = String(url);
++      if (target === `${defaultComfyUrl}/object_info`) {
++        return new Response(JSON.stringify({}), {
++          status: 200,
++          headers: { "content-type": "application/json" }
++        });
++      }
++      return new Response("not found", { status: 404 });
++    });
++
++    const report = await runPreflight({
++      "require-live": true,
++      "output-root": root,
++      "report-dir": join(root, "preflight")
++    });
++
++    expect(report.requiredNodeClass).toBe(productionTextRequiredNodeClass);
++    expect(report.checks.find((item) => item.name === "workflow maps production text compositor inputs")?.details).toMatchObject({
++      requiredInputs: productionTextRequiredCompositorInputs,
++      missingInputs: []
++    });
++    expect(report.liveNodeAvailable).toBe(false);
++    expect(report.promotionReady).toBe(false);
++    expect(report.blockers?.map?.((item) => item.name)).toBeUndefined();
++    expect(report.checks.find((item) => item.name === "live ComfyUI has CustomCardTextComposer")).toMatchObject({
++      ok: false,
++      required: true
++    });
++  });
++
+   it("keeps aggregate failures informational instead of blocking runtime readiness", async () => {
+     const root = mkdtempSync(join(tmpdir(), "production-text-readiness-doctor-runtime-ready-"));
+     const modelRoot = join(root, "models");
+     mkdirSync(modelRoot, { recursive: true });
+     writeFileSync(join(modelRoot, "gemma-4-31B-it-Q4_K_M.gguf"), "fake model marker");
+     const aggregatePath = join(root, "benchmark-aggregate.json");
+     writeFailingAggregate(aggregatePath);
+ 
+     vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
+       const target = String(url);
+@@ -236,11 +333,51 @@ describe("production text readiness doctor", () => {
+     expect(report.activePlannerEndpoints[0]).toMatchObject({
+       baseUrl: "https://planner.example/v1",
+       activeModel: "gpt-production-planner",
+       productionSuitable: true
+     });
+     expect(report.activePlannerEndpoints[0].localGpuResidency).toMatchObject({
+       required: false,
+       ok: true
+     });
+   });
++
++  it("keeps missing CustomCardTextComposer promotion-failing in readiness", async () => {
++    const root = mkdtempSync(join(tmpdir(), "production-text-readiness-doctor-missing-node-"));
++    const modelRoot = join(root, "models");
++    mkdirSync(modelRoot, { recursive: true });
++    writeFileSync(join(modelRoot, "gemma-4-31B-it-Q4_K_M.gguf"), "fake model marker");
++    const aggregatePath = join(root, "benchmark-aggregate.json");
++    writePassingAggregate(aggregatePath);
++
++    vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
++      const target = String(url);
++      if (target.endsWith("/object_info")) {
++        return new Response(JSON.stringify({}), {
++          status: 200,
++          headers: { "content-type": "application/json" }
++        });
++      }
++      if (target.endsWith("/models")) {
++        return new Response(JSON.stringify({ data: [{ id: "koboldcpp/gemma-4-31B-it-Q4_K_M" }] }), {
++          status: 200,
++          headers: { "content-type": "application/json" }
++        });
++      }
++      return new Response("not found", { status: 404 });
++    });
++
++    const report = await runDoctor({
++      advisory: true,
++      aggregate: aggregatePath,
++      "model-root": modelRoot,
++      "local-llm-base-url": "http://127.0.0.1:5003/v1",
++      "planner-context-tokens": 8192,
++      "planner-max-output-tokens": 3200,
++      "output-dir": join(root, "readiness")
++    }, { gpuResidencyProbe });
++
++    expect(report.promotionReady).toBe(false);
++    expect(report.blockers.map((item) => item.name)).toContain("live ComfyUI exposes CustomCardTextComposer");
++    expect(report.comfy.hasTextComposer).toBe(false);
++  });
+ });
+diff --git a/tests/provider-http-worker.test.mjs b/tests/provider-http-worker.test.mjs
+index efb70bfd..f03126e9 100644
+--- a/tests/provider-http-worker.test.mjs
++++ b/tests/provider-http-worker.test.mjs
+@@ -1,28 +1,39 @@
+-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
++import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+ import { tmpdir } from "node:os";
+ import { join } from "node:path";
+ import { afterEach, describe, expect, it, vi } from "vitest";
+ import {
+   createProviderHttpWorkerRuntime,
+   loadProviderWorkerEnvFiles
+ } from "../scripts/provider-http-worker.mjs";
+ 
+ const providerBaseEnv = {
+   CUSTOMCARD_PROVIDER_API_BASE_URL: "https://customcard.example",
+   CUSTOMCARD_PROVIDER_WORKER_TOKEN: "test-provider-worker-token-32-chars",
+   CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS: "ai-card-generate",
+   CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "local-comfyui-api-image",
+   CUSTOMCARD_AI_CARD_IMAGE_FALLBACK_ADAPTER_ID: "local-comfyui-api-image",
+   CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188"
+ };
+ 
++const cardCopyResponse = {
++  theme_guide: "warm botanical birthday",
++  panels: [
++    { id: "front", headline: "Happy Birthday Sara", body: "Wishing you a day full of green trails and good coffee.", image_prompt: "front botanical art", image_negative_prompt: "text", art_direction: "front art" },
++    { id: "inside-left", headline: "A little sunshine", body: "May the morning feel bright and unhurried.", image_prompt: "inside-left botanical art", image_negative_prompt: "text", art_direction: "inside-left art" },
++    { id: "inside-right", headline: "From Manny", body: "I hope this year brings more hikes, more laughs, and more tiny wonders.", image_prompt: "inside-right botanical art", image_negative_prompt: "text", art_direction: "inside-right art" },
++    { id: "back", headline: "CustomCard", body: "Made with CustomCard. Printed locally.", image_prompt: "back botanical art", image_negative_prompt: "text", art_direction: "back art" }
++  ],
++  memory_citations: ["She keeps a fern by the kitchen window."]
++};
++
+ let tempDirs = [];
+ 
+ afterEach(() => {
+   for (const dir of tempDirs) rmSync(dir, { recursive: true, force: true });
+   tempDirs = [];
+ });
+ 
+ describe("provider HTTP worker", () => {
+   it("loads provider-specific AI overrides after ambient local AI env", () => {
+     const cwd = mkdtempSync(join(tmpdir(), "customcard-provider-http-worker-"));
+@@ -75,11 +86,155 @@ describe("provider HTTP worker", () => {
+ 
+     expect(report).toMatchObject({
+       status: "blocked",
+       leased: 0,
+       processed: 0,
+       copyAdapter: "cloudflare-workers-ai-chat"
+     });
+     expect(report.blockers.join(" ")).toContain("cloudflare-workers-ai-chat missing");
+     expect(fetchImpl).not.toHaveBeenCalled();
+   });
++
++  it("uses the same server-scoped route config for readiness and leased generator execution", async () => {
++    const completionBodies = [];
++    const env = {
++      CUSTOMCARD_PROVIDER_API_BASE_URL: "https://customcard.example",
++      CUSTOMCARD_PROVIDER_WORKER_TOKEN: "test-provider-worker-token-32-chars",
++      CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS: "ai-card-generate",
++      OPENAI_API_KEY: "openai_token",
++      CUSTOMCARD_AI_FLOW_CONFIG_JSON: JSON.stringify({
++        flows: [
++          {
++            flowId: "card-copy",
++            primaryAdapterId: "openai-responses-chat",
++            fallbackAdapterId: "openai-responses-chat",
++            model: "gpt-4.1-mini",
++            liveProviderCallsEnabled: true
++          },
++          {
++            flowId: "card-image",
++            primaryAdapterId: "openai-images",
++            fallbackAdapterId: "openai-images",
++            model: "gpt-image-2",
++            liveProviderCallsEnabled: true
++          }
++        ]
++      })
++    };
++    const fetchImpl = vi.fn(async (url, init) => {
++      const requestUrl = String(url);
++      if (requestUrl === "https://customcard.example/api/provider/jobs/lease") {
++        return new Response(
++          JSON.stringify({
++            jobs: [
++              {
++                job_id: "job_123",
++                lease_token: "lease_123",
++                route_id: "ai-card-generate",
++                payload: {
++                  body: {
++                    sender: "Manny",
++                    recipient: "Sara",
++                    relationship: "friend",
++                    occasion: "birthday",
++                    tone: "warm",
++                    style: "botanical",
++                    language: "English",
++                    personal_note: "She loves morning hikes.",
++                    memory_notes: ["She keeps a fern by the kitchen window."]
++                  },
++                  requestContext: {
++                    rateKey: "provider-worker-route-config"
++                  }
++                }
++              }
++            ]
++          }),
++          { status: 200, headers: { "content-type": "application/json" } }
++        );
++      }
++      if (requestUrl === "https://api.openai.com/v1/responses") {
++        return new Response(
++          JSON.stringify({
++            choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }]
++          }),
++          { status: 200, headers: { "content-type": "application/json" } }
++        );
++      }
++      if (requestUrl === "https://api.openai.com/v1/images/generations") {
++        return new Response(JSON.stringify({ data: [{ b64_json: "iVBORw0KGgo=" }] }), {
++          status: 200,
++          headers: { "content-type": "application/json" }
++        });
++      }
++      if (requestUrl === "https://customcard.example/api/provider/jobs/job_123/complete") {
++        completionBodies.push(JSON.parse(String(init?.body)));
++        return new Response(JSON.stringify({ ok: true }), {
++          status: 200,
++          headers: { "content-type": "application/json" }
++        });
++      }
++      throw new Error(`Unexpected fetch ${requestUrl}`);
++    });
++    const runtime = createProviderHttpWorkerRuntime({ env, fetchImpl });
++
++    const report = await runtime.runOnce();
++    const completion = completionBodies[0];
++
++    expect(runtime.describe()).toMatchObject({
++      copyAdapter: "openai-responses-chat",
++      copyModel: "gpt-4.1-mini",
++      imageAdapter: "openai-images",
++      imageModel: "gpt-image-2",
++      aiFlowReadiness: {
++        cardCopy: expect.objectContaining({
++          adapterId: "openai-responses-chat",
++          model: "gpt-4.1-mini",
++          readyForLiveCalls: true
++        }),
++        cardImage: expect.objectContaining({
++          adapterId: "openai-images",
++          model: "gpt-image-2",
++          readyForLiveCalls: true
++        })
++      }
++    });
++    expect(report).toMatchObject({
++      status: "ready",
++      leased: 1,
++      processed: 1,
++      succeeded: 1,
++      failed: 0
++    });
++    expect(completion).toMatchObject({
++      status: "succeeded",
++      result: {
++        httpStatusCode: 200,
++        payload: {
++          ai_flow: {
++            card_copy: expect.objectContaining({
++              adapter_id: "openai-responses-chat",
++              model: "gpt-4.1-mini"
++            }),
++            card_image: expect.objectContaining({
++              adapter_id: "openai-images",
++              model: "gpt-image-2"
++            })
++          }
++        }
++      }
++    });
++  });
++
++  it("keeps raw node mjs runtime files off TypeScript-only control-plane imports", () => {
++    const runtimeFiles = [
++      readFileSync(new URL("../scripts/ai-card-generator.mjs", import.meta.url), "utf8"),
++      readFileSync(new URL("../scripts/provider-http-worker.mjs", import.meta.url), "utf8")
++    ];
++
++    for (const source of runtimeFiles) {
++      expect(source).not.toMatch(/from\s+["'][^"']+\.ts["']/);
++      expect(source).not.toContain("aiProviderControlPlane.ts");
++      expect(source).not.toContain("aiProviderReadiness.ts");
++    }
++  });
+ });

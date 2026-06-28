@@ -1,0 +1,820 @@
+﻿# Review package: 59e10f2c..1ec1df6b
+
+## Commits
+1ec1df6b Add shared Comfy production text setup module
+
+## Files changed
+ scripts/comfy-production-text-setup.mjs        | 112 ++++++++++++++++++++++
+ scripts/comfyui-production-text-preflight.mjs  |  63 ++++---------
+ scripts/local-comfy-worker.mjs                 |  17 +++-
+ scripts/production-text-readiness-doctor.mjs   |  31 +++----
+ src/localComfyProductionText.test.ts           |  40 ++++++++
+ tests/production-text-readiness-doctor.test.ts | 124 +++++++++++++++++++++++++
+ 6 files changed, 320 insertions(+), 67 deletions(-)
+
+## Diff
+diff --git a/scripts/comfy-production-text-setup.mjs b/scripts/comfy-production-text-setup.mjs
+new file mode 100644
+index 00000000..f851ef2b
+--- /dev/null
++++ b/scripts/comfy-production-text-setup.mjs
+@@ -0,0 +1,112 @@
++import { basename, resolve } from "node:path";
++
++const repoRoot = resolve(import.meta.dirname, "..");
++
++export const productionTextWorkflowId = "customcard-production-text-overlay";
++export const productionTextWorkflowRelativePath = "comfyui-workflows/customcard-production-text-overlay.json";
++export const productionTextNodeSourceRelativePath = "comfyui-custom-nodes/CustomCardTextComposer";
++export const productionTextRequiredNodeClass = "CustomCardTextComposer";
++export const productionTextRequiredCompositorInputs = [
++  "artwork_guard_x",
++  "artwork_guard_y",
++  "artwork_guard_width",
++  "artwork_guard_height",
++  "artwork_guard_color",
++  "artwork_guard_opacity",
++  "artwork_guard_radius",
++  "artwork_guard_style",
++  "headline_box_background_radius",
++  "headline_box_background_opacity",
++  "headline_box_background_style",
++  "body_box_background_radius",
++  "body_box_background_opacity",
++  "body_box_background_style"
++];
++export const productionTextSetupInstructions = [
++  "Link comfyui-custom-nodes/CustomCardTextComposer into ComfyUI/custom_nodes.",
++  "Restart ComfyUI so /object_info exposes CustomCardTextComposer."
++];
++
++export function defaultProductionTextWorkflowPath(root = repoRoot) {
++  return resolve(root, productionTextWorkflowRelativePath);
++}
++
++export function defaultProductionTextNodeSource(root = repoRoot) {
++  return resolve(root, productionTextNodeSourceRelativePath);
++}
++
++export function resolveProductionTextComfyUrl({
++  explicitValue,
++  env = process.env
++} = {}) {
++  return normalizeComfyUrl(
++    explicitValue ||
++    env.CUSTOMCARD_COMFYUI_URL ||
++    env.COMFYUI_URL ||
++    "http://127.0.0.1:8188"
++  );
++}
++
++export function resolveProductionTextSetup({
++  args = {},
++  env = process.env,
++  root = repoRoot
++} = {}) {
++  const workflowPath = resolve(String(
++    args["workflow-path"] ||
++    env.CUSTOMCARD_COMFYUI_WORKFLOW_PATH ||
++    env.COMFYUI_WORKFLOW_PATH ||
++    defaultProductionTextWorkflowPath(root)
++  ));
++  const nodeSource = resolve(String(args["node-source"] || defaultProductionTextNodeSource(root)));
++  const comfyUrl = resolveProductionTextComfyUrl({
++    explicitValue: args["comfy-url"],
++    env
++  });
++  return {
++    comfyUrl,
++    workflowPath,
++    nodeSource,
++    workflowId: productionTextWorkflowId,
++    requiredNodeClass: productionTextRequiredNodeClass,
++    requiredComposerInputs: [...productionTextRequiredCompositorInputs],
++    setupInstructions: [...productionTextSetupInstructions]
++  };
++}
++
++export function describeProductionTextSetup({
++  args = {},
++  env = process.env,
++  root = repoRoot
++} = {}) {
++  const setup = resolveProductionTextSetup({ args, env, root });
++  return {
++    ...setup,
++    workflowPathRelative: relativePath(setup.workflowPath, root),
++    nodeSourceRelative: relativePath(setup.nodeSource, root)
++  };
++}
++
++export function isProductionTextWorkflowConfigured({
++  workflowId,
++  workflowPath,
++  root = repoRoot
++} = {}) {
++  const normalizedId = String(workflowId || "").trim().toLowerCase();
++  if (normalizedId === productionTextWorkflowId) return true;
++  const normalizedPath = String(workflowPath || "").trim();
++  if (!normalizedPath) return false;
++  return resolve(normalizedPath) === defaultProductionTextWorkflowPath(root);
++}
++
++export function relativePath(filePath, root = repoRoot) {
++  return resolve(filePath).replace(root, "").replace(/^[/\\]/, "").replaceAll("\\", "/") || basename(filePath);
++}
++
++export function normalizeComfyUrl(value) {
++  const parsed = new URL(String(value || "http://127.0.0.1:8188"));
++  parsed.pathname = parsed.pathname.replace(/\/+$/, "");
++  parsed.search = "";
++  parsed.hash = "";
++  return parsed.toString().replace(/\/+$/, "");
++}
+diff --git a/scripts/comfyui-production-text-preflight.mjs b/scripts/comfyui-production-text-preflight.mjs
+index d4821933..658d30ae 100644
+--- a/scripts/comfyui-production-text-preflight.mjs
++++ b/scripts/comfyui-production-text-preflight.mjs
+@@ -1,69 +1,54 @@
+ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+-import { basename, resolve } from "node:path";
++import { resolve } from "node:path";
+ import { fileURLToPath, pathToFileURL } from "node:url";
++import {
++  productionTextRequiredCompositorInputs,
++  relativePath as relativeSetupPath,
++  resolveProductionTextSetup
++} from "./comfy-production-text-setup.mjs";
+ 
+ const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
+-const defaultWorkflowPath = resolve(repoRoot, "comfyui-workflows/customcard-production-text-overlay.json");
+-const defaultNodeSource = resolve(repoRoot, "comfyui-custom-nodes/CustomCardTextComposer");
+ const defaultOutputRoot = resolve(repoRoot, "docs/evidence/generated-card-comparisons");
+-const requiredNodeClass = "CustomCardTextComposer";
+-const requiredComposerInputs = [
+-  "artwork_guard_x",
+-  "artwork_guard_y",
+-  "artwork_guard_width",
+-  "artwork_guard_height",
+-  "artwork_guard_color",
+-  "artwork_guard_opacity",
+-  "artwork_guard_radius",
+-  "artwork_guard_style",
+-  "headline_box_background_radius",
+-  "headline_box_background_opacity",
+-  "headline_box_background_style",
+-  "body_box_background_radius",
+-  "body_box_background_opacity",
+-  "body_box_background_style"
+-];
+ 
+ if (isMainModule()) {
+   const result = await runPreflight(parseArgs(process.argv.slice(2)));
+   console.log(JSON.stringify({
+     ok: result.ok,
+     status: result.status,
+     promotionReady: result.promotionReady,
+     reportDir: result.reportDir,
+     liveComfyReachable: result.liveComfyReachable,
+     liveNodeAvailable: result.liveNodeAvailable
+   }, null, 2));
+   if (!result.ok) process.exitCode = 1;
+ }
+ 
+ export async function runPreflight(args = {}) {
+-  const comfyUrl = normalizeComfyUrl(args["comfy-url"] || process.env.CUSTOMCARD_COMFYUI_URL || process.env.COMFYUI_URL || "http://127.0.0.1:8188");
+-  const workflowPath = resolve(String(args["workflow-path"] || process.env.CUSTOMCARD_COMFYUI_WORKFLOW_PATH || defaultWorkflowPath));
+-  const nodeSource = resolve(String(args["node-source"] || defaultNodeSource));
++  const setup = resolveProductionTextSetup({ args });
++  const { comfyUrl, workflowPath, nodeSource, requiredNodeClass } = setup;
+   const outputRoot = resolve(String(args["output-root"] || defaultOutputRoot));
+   const reportDir = resolve(String(args["report-dir"] || `${outputRoot}/production-text-preflight-${timestamp()}`));
+   const requireLive = args["require-live"] === true || args["require-live"] === "true";
+   const timeoutMs = boundedInteger(args["timeout-ms"] || process.env.CUSTOMCARD_COMFYUI_PREFLIGHT_TIMEOUT_MS, 500, 60_000, 5_000);
+ 
+   const checks = [];
+   const workflow = readWorkflow(workflowPath, checks);
+   const classTypes = workflow ? collectClassTypes(workflow) : [];
+   checks.push(check("workflow contains CustomCardTextComposer", classTypes.includes(requiredNodeClass), {
+     requiredNodeClass,
+     classTypes: classTypes.filter((value, index) => classTypes.indexOf(value) === index).sort()
+   }));
+   const workflowNodeInputs = collectWorkflowNodeInputs(workflow, requiredNodeClass);
+-  const missingWorkflowComposerInputs = requiredComposerInputs.filter((input) => !workflowNodeInputs.includes(input));
++  const missingWorkflowComposerInputs = productionTextRequiredCompositorInputs.filter((input) => !workflowNodeInputs.includes(input));
+   checks.push(check("workflow maps production text compositor inputs", missingWorkflowComposerInputs.length === 0, {
+-    requiredInputs: requiredComposerInputs,
++    requiredInputs: productionTextRequiredCompositorInputs,
+     missingInputs: missingWorkflowComposerInputs
+   }));
+   checks.push(check("custom node source exists", existsSync(nodeSource), { nodeSource }));
+   checks.push(check("custom node module files exist", existsSync(resolve(nodeSource, "__init__.py")) && existsSync(resolve(nodeSource, "nodes.py")), {
+     files: ["__init__.py", "nodes.py"]
+   }));
+ 
+   const live = await readLiveObjectInfo(comfyUrl, timeoutMs);
+   const liveComfyReachable = Boolean(live.objectInfo);
+   const liveNodeAvailable = Boolean(live.objectInfo?.[requiredNodeClass]);
+@@ -71,66 +56,66 @@ export async function runPreflight(args = {}) {
+     comfyUrl,
+     requireLive,
+     error: live.error
+   }, { required: requireLive }));
+   checks.push(check("live ComfyUI has CustomCardTextComposer", liveNodeAvailable, {
+     comfyUrl,
+     requiredNodeClass,
+     liveComfyReachable
+   }, { required: requireLive, advisory: !requireLive }));
+   const liveNodeInputs = collectLiveNodeInputs(live.objectInfo?.[requiredNodeClass]);
+-  const missingLiveComposerInputs = requiredComposerInputs.filter((input) => !liveNodeInputs.includes(input));
++  const missingLiveComposerInputs = productionTextRequiredCompositorInputs.filter((input) => !liveNodeInputs.includes(input));
+   checks.push(check("live ComfyUI exposes production text compositor inputs", liveComfyReachable && liveNodeAvailable && missingLiveComposerInputs.length === 0, {
+-    requiredInputs: requiredComposerInputs,
++    requiredInputs: productionTextRequiredCompositorInputs,
+     missingInputs: missingLiveComposerInputs,
+     liveInputCount: liveNodeInputs.length
+   }, { required: requireLive, advisory: !requireLive }));
+ 
+   const cachedObjectInfoPath = resolve(repoRoot, ".codex/comfyui/object_info.json");
+   const cachedObjectInfo = readCachedObjectInfo(cachedObjectInfoPath);
+   const cachedNodeAvailable = Boolean(cachedObjectInfo?.[requiredNodeClass]);
+ 
+   const ok = checks.filter((item) => item.required).every((item) => item.ok);
+   const promotionReady = liveComfyReachable && liveNodeAvailable && checks.filter((item) => item.required).every((item) => item.ok);
+   const result = {
+     ok,
+     promotionReady,
+     status: ok ? (promotionReady ? "promotion-ready" : "repo-ok-runtime-not-ready") : "failed",
+     createdAtIso: new Date().toISOString(),
+     comfyUrl,
+-    workflowPath: relativePath(workflowPath),
+-    nodeSource: relativePath(nodeSource),
++    workflowPath: relativeSetupPath(workflowPath, repoRoot),
++    nodeSource: relativeSetupPath(nodeSource, repoRoot),
+     requiredNodeClass,
+     liveComfyReachable,
+     liveNodeAvailable,
+-    cachedObjectInfoPath: existsSync(cachedObjectInfoPath) ? relativePath(cachedObjectInfoPath) : null,
++    cachedObjectInfoPath: existsSync(cachedObjectInfoPath) ? relativeSetupPath(cachedObjectInfoPath, repoRoot) : null,
+     cachedNodeAvailable,
+     checks,
+     nextSteps: buildNextSteps({ requireLive, liveComfyReachable, liveNodeAvailable, cachedNodeAvailable })
+   };
+ 
+   mkdirSync(reportDir, { recursive: true });
+-  result.reportDir = relativePath(reportDir);
++  result.reportDir = relativeSetupPath(reportDir, repoRoot);
+   writeJson(resolve(reportDir, "production-text-preflight.json"), result);
+   writeMarkdown(resolve(reportDir, "production-text-preflight.md"), buildMarkdown(result));
+   return result;
+ }
+ 
+ function readWorkflow(workflowPath, checks) {
+   if (!existsSync(workflowPath)) {
+     checks.push(check("workflow file exists", false, { workflowPath }));
+     return null;
+   }
+-  checks.push(check("workflow file exists", true, { workflowPath: relativePath(workflowPath) }));
++  checks.push(check("workflow file exists", true, { workflowPath: relativeSetupPath(workflowPath, repoRoot) }));
+   try {
+     const workflow = JSON.parse(readFileSync(workflowPath, "utf8"));
+-    checks.push(check("workflow JSON parses", true, { workflowPath: relativePath(workflowPath) }));
++    checks.push(check("workflow JSON parses", true, { workflowPath: relativeSetupPath(workflowPath, repoRoot) }));
+     return workflow;
+   } catch (error) {
+     checks.push(check("workflow JSON parses", false, { error: errorMessage(error) }));
+     return null;
+   }
+ }
+ 
+ async function readLiveObjectInfo(comfyUrl, timeoutMs) {
+   try {
+     const controller = new AbortController();
+@@ -253,42 +238,30 @@ function parseArgs(values) {
+     if (!next || next.startsWith("--")) {
+       parsed[key] = true;
+     } else {
+       parsed[key] = next;
+       index += 1;
+     }
+   }
+   return parsed;
+ }
+ 
+-function normalizeComfyUrl(value) {
+-  const parsed = new URL(String(value || "http://127.0.0.1:8188"));
+-  parsed.pathname = parsed.pathname.replace(/\/+$/, "");
+-  parsed.search = "";
+-  parsed.hash = "";
+-  return parsed.toString().replace(/\/+$/, "");
+-}
+-
+ function boundedInteger(value, min, max, fallback) {
+   const parsed = Number.parseInt(String(value ?? ""), 10);
+   if (!Number.isFinite(parsed)) return fallback;
+   return Math.min(max, Math.max(min, parsed));
+ }
+ 
+ function timestamp() {
+   return new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z");
+ }
+ 
+-function relativePath(filePath) {
+-  return resolve(filePath).replace(repoRoot, "").replace(/^[/\\]/, "").replaceAll("\\", "/") || basename(filePath);
+-}
+-
+ function escapeMarkdownTable(value) {
+   return String(value || "").replaceAll("|", "\\|");
+ }
+ 
+ function errorMessage(error) {
+   return error instanceof Error ? error.message : String(error);
+ }
+ 
+ function isMainModule() {
+   return process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
+diff --git a/scripts/local-comfy-worker.mjs b/scripts/local-comfy-worker.mjs
+index a0bb875c..4ce563bc 100644
+--- a/scripts/local-comfy-worker.mjs
++++ b/scripts/local-comfy-worker.mjs
+@@ -1,25 +1,30 @@
+ import { resolve } from "node:path";
+ import { pathToFileURL } from "node:url";
+ import { loadLocalAiEnvFiles } from "./ai-card-generator.mjs";
++import {
++  describeProductionTextSetup,
++  isProductionTextWorkflowConfigured,
++  resolveProductionTextComfyUrl
++} from "./comfy-production-text-setup.mjs";
+ import { createWorkerRuntime, describeWorkerReadiness } from "./worker-runtime.mjs";
+ 
+ const localComfyRoutes = [{ id: "ai-card-generate", runtimeMode: "queue-backed" }];
+ 
+ export function resolveLocalComfyWorkerEnv(env = process.env) {
+   const resolved = { ...env };
+   resolved.CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID = "local-comfyui-api-image";
+   if (resolved.CUSTOMCARD_LOCAL_COMFY_WORKER_ALLOW_IMAGE_FALLBACK !== "true") {
+     resolved.CUSTOMCARD_AI_CARD_IMAGE_FALLBACK_ADAPTER_ID = "local-comfyui-api-image";
+   }
+   if (!resolved.CUSTOMCARD_COMFYUI_URL && !resolved.COMFYUI_URL) {
+-    resolved.CUSTOMCARD_COMFYUI_URL = "http://127.0.0.1:8188";
++    resolved.CUSTOMCARD_COMFYUI_URL = resolveProductionTextComfyUrl({ env: resolved });
+   }
+   if (
+     !resolved.CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID &&
+     (resolved.CUSTOMCARD_LOCAL_LLM_BASE_URL || resolved.LMSTUDIO_BASE_URL || resolved.KOBOLDCPP_BASE_URL)
+   ) {
+     resolved.CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID = "local-openai-compatible-chat";
+   }
+   if (
+     resolved.CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID === "local-openai-compatible-chat" &&
+     resolved.CUSTOMCARD_LOCAL_COMFY_WORKER_ALLOW_TEXT_FALLBACK !== "true" &&
+@@ -38,27 +43,33 @@ export function createLocalComfyWorkerRuntime(options = {}) {
+   return createWorkerRuntime({
+     ...options,
+     env,
+     routes: options.routes ?? localComfyRoutes,
+     workerId: options.workerId ?? env.CUSTOMCARD_WORKER_ID
+   });
+ }
+ 
+ export function describeLocalComfyWorkerReadiness({ env = process.env } = {}) {
+   const resolvedEnv = resolveLocalComfyWorkerEnv(env);
++  const workflowId = resolvedEnv.CUSTOMCARD_COMFYUI_WORKFLOW_ID || resolvedEnv.COMFYUI_WORKFLOW_ID || null;
++  const workflowPath = resolvedEnv.CUSTOMCARD_COMFYUI_WORKFLOW_PATH || resolvedEnv.COMFYUI_WORKFLOW_PATH || null;
++  const productionTextSetup = isProductionTextWorkflowConfigured({ workflowId, workflowPath })
++    ? describeProductionTextSetup({ env: resolvedEnv })
++    : null;
+   return {
+     ...describeWorkerReadiness({ env: resolvedEnv, routes: localComfyRoutes }),
+     routeScope: "ai-card-generate",
+     imageAdapter: resolvedEnv.CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID,
+     comfyUrl: resolvedEnv.CUSTOMCARD_COMFYUI_URL || resolvedEnv.COMFYUI_URL,
+-    workflowId: resolvedEnv.CUSTOMCARD_COMFYUI_WORKFLOW_ID || resolvedEnv.COMFYUI_WORKFLOW_ID || null,
+-    workflowPath: resolvedEnv.CUSTOMCARD_COMFYUI_WORKFLOW_PATH || resolvedEnv.COMFYUI_WORKFLOW_PATH || null
++    workflowId,
++    workflowPath,
++    productionTextSetup
+   };
+ }
+ 
+ if (isCliEntrypoint()) {
+   loadLocalAiEnvFiles();
+   await runCli();
+ }
+ 
+ async function runCli() {
+   const args = new Set(process.argv.slice(2));
+diff --git a/scripts/production-text-readiness-doctor.mjs b/scripts/production-text-readiness-doctor.mjs
+index a78e90d3..eee7ff79 100644
+--- a/scripts/production-text-readiness-doctor.mjs
++++ b/scripts/production-text-readiness-doctor.mjs
+@@ -1,55 +1,56 @@
+ import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+ import { basename, dirname, extname, resolve } from "node:path";
+ import {
+   classifyProductionTextPlanner,
+   isQualityPlanner,
+   isSmallPlanner,
+   productionTextPlannerPolicy
+ } from "./production-text-planner-policy.mjs";
++import {
++  productionTextRequiredNodeClass,
++  relativePath as relativeSetupPath,
++  resolveProductionTextSetup
++} from "./comfy-production-text-setup.mjs";
+ import { inspectLocalKoboldGpuResidency } from "./local-kobold-gpu-residency.mjs";
+ 
+ const repoRoot = resolve(import.meta.dirname, "..");
+ const evidenceRoot = resolve(repoRoot, "docs/evidence/generated-card-comparisons");
+ const defaultOutputRoot = evidenceRoot;
+-const defaultWorkflowPath = resolve(repoRoot, "comfyui-workflows/customcard-production-text-overlay.json");
+-const defaultNodeSource = resolve(repoRoot, "comfyui-custom-nodes/CustomCardTextComposer");
+ const defaultAggregatePath = resolve(
+   evidenceRoot,
+   "benchmark-aggregate-2026-06-26-production-text-llm-planner-live/benchmark-aggregate.json"
+ );
+ const defaultModelRoot = process.env.CUSTOMCARD_LOCAL_MODEL_ROOT || "D:\\models";
+-const defaultComfyUrl = process.env.CUSTOMCARD_COMFYUI_URL || process.env.COMFYUI_URL || "http://127.0.0.1:8188";
+ const commonPlannerUrls = ["http://127.0.0.1:5001/v1", "http://127.0.0.1:5003/v1"];
+ 
+ if (isMainModule()) {
+   const result = await runDoctor(parseArgs(process.argv.slice(2)));
+   console.log(JSON.stringify({
+     status: result.status,
+     promotionReady: result.promotionReady,
+     reportDir: result.reportDir,
+     blockers: result.blockers.length,
+     advisory: result.advisory
+   }, null, 2));
+   if (!result.advisory && !result.promotionReady) process.exitCode = 1;
+ }
+ 
+ export async function runDoctor(args = {}, options = {}) {
+   const advisory = Boolean(args.advisory);
+   const fetchImpl = options.fetchImpl || globalThis.fetch;
++  const setup = resolveProductionTextSetup({ args });
+   const outputRoot = resolve(String(args["output-root"] || defaultOutputRoot));
+   const reportDir = resolve(String(args["output-dir"] || `${outputRoot}/production-text-readiness-${timestamp()}`));
+-  const workflowPath = resolve(String(args["workflow-path"] || defaultWorkflowPath));
+-  const nodeSource = resolve(String(args["node-source"] || defaultNodeSource));
++  const { workflowPath, nodeSource, comfyUrl } = setup;
+   const aggregatePath = resolve(String(args.aggregate || defaultAggregatePath));
+   const modelRoot = resolve(String(args["model-root"] || defaultModelRoot));
+-  const comfyUrl = normalizeRootUrl(String(args["comfy-url"] || defaultComfyUrl));
+   const configuredPlannerUrls = unique([
+     args["local-llm-base-url"],
+     process.env.CUSTOMCARD_LOCAL_LLM_BASE_URL,
+     process.env.LMSTUDIO_BASE_URL,
+     process.env.KOBOLDCPP_BASE_URL
+   ].filter(Boolean).map(normalizeOpenAiBaseUrl));
+   const plannerApiKey = firstUsableValue(
+     args["local-llm-api-key"],
+     args["api-key"],
+     process.env.CUSTOMCARD_LOCAL_LLM_API_KEY,
+@@ -75,22 +76,22 @@ export async function runDoctor(args = {}, options = {}) {
+   const modelInventory = summarizeModelInventory(modelRoot);
+   const plannerEndpoints = await Promise.all(plannerUrls.map((url) => probePlanner(url, timeoutMs, plannerRuntimeBudget, {
+     ...options,
+     apiKey: plannerApiKey,
+     fetchImpl
+   })));
+   const activePlannerEndpoints = selectActivePlannerEndpoints(plannerEndpoints, configuredPlannerUrls);
+   const comfy = await probeComfy(comfyUrl, timeoutMs, { fetchImpl });
+ 
+   const checks = [
+-    check("production workflow file exists", workflowExists, true, { workflowPath: relativePath(workflowPath) }),
+-    check("CustomCardTextComposer source exists", nodeSourceExists, true, { nodeSource: relativePath(nodeSource) }),
++    check("production workflow file exists", workflowExists, true, { workflowPath: relativeSetupPath(workflowPath, repoRoot) }),
++    check("CustomCardTextComposer source exists", nodeSourceExists, true, { nodeSource: relativeSetupPath(nodeSource, repoRoot) }),
+     check("live ComfyUI reachable", comfy.reachable, true, { comfyUrl, error: comfy.error }),
+     check("live ComfyUI exposes CustomCardTextComposer", comfy.hasTextComposer, true, {
+       comfyUrl,
+       objectInfoKeys: comfy.objectInfoKeyCount
+     }),
+     check("latest LLM-planned aggregate exists", Boolean(aggregate), false, { aggregatePath: relativePath(aggregatePath) }),
+     check("latest LLM-planned aggregate covers three customer requests", aggregateSummary.totalRuns >= 3, false, aggregateSummary),
+     check("latest LLM-planned aggregate is passing", aggregateSummary.promotionReady, false, aggregateSummary),
+     check("higher-quality local planner model is installed", modelInventory.qualityPlannerInstalled, true, {
+       modelRoot,
+@@ -119,22 +120,22 @@ export async function runDoctor(args = {}, options = {}) {
+   ];
+ 
+   const blockers = checks.filter((item) => item.required && !item.ok);
+   const promotionReady = blockers.length === 0;
+   const result = {
+     createdAtIso: new Date().toISOString(),
+     status: promotionReady ? "promotion-ready" : "blocked",
+     advisory,
+     promotionReady,
+     aggregatePromotionReady: aggregateSummary.promotionReady,
+-    workflowPath: relativePath(workflowPath),
+-    nodeSource: relativePath(nodeSource),
++    workflowPath: relativeSetupPath(workflowPath, repoRoot),
++    nodeSource: relativeSetupPath(nodeSource, repoRoot),
+     aggregatePath: relativePath(aggregatePath),
+     modelRoot,
+     comfy,
+     configuredPlannerUrls,
+     plannerApiKeyProvided: Boolean(plannerApiKey),
+     activePlannerEndpoints,
+     plannerEndpoints,
+     aggregateSummary,
+     modelInventory,
+     plannerRuntimeBudget,
+@@ -280,21 +281,21 @@ function localPlannerGpuOk(activePlannerEndpoints) {
+ 
+ async function probeComfy(comfyUrl, timeoutMs, options = {}) {
+   const fetchImpl = options.fetchImpl || globalThis.fetch;
+   try {
+     const response = await fetchWithTimeout(fetchImpl, `${comfyUrl.replace(/\/$/, "")}/object_info`, {}, timeoutMs);
+     if (!response.ok) throw new Error(`HTTP ${response.status}`);
+     const objectInfo = await response.json();
+     return {
+       comfyUrl,
+       reachable: true,
+-      hasTextComposer: Boolean(objectInfo?.CustomCardTextComposer),
++      hasTextComposer: Boolean(objectInfo?.[productionTextRequiredNodeClass]),
+       objectInfoKeyCount: Object.keys(objectInfo || {}).length
+     };
+   } catch (error) {
+     return {
+       comfyUrl,
+       reachable: false,
+       hasTextComposer: false,
+       objectInfoKeyCount: 0,
+       error: errorMessage(error)
+     };
+@@ -402,28 +403,20 @@ function normalizeOpenAiBaseUrl(value) {
+   const parsed = new URL(String(value));
+   let path = parsed.pathname.replace(/\/+$/, "");
+   if (path.endsWith("/chat/completions")) path = path.slice(0, -"/chat/completions".length).replace(/\/+$/, "");
+   if (!path.endsWith("/v1")) path = `${path}/v1`;
+   parsed.pathname = path.replace(/\/{2,}/g, "/");
+   parsed.search = "";
+   parsed.hash = "";
+   return parsed.toString().replace(/\/$/, "");
+ }
+ 
+-function normalizeRootUrl(value) {
+-  const parsed = new URL(String(value));
+-  parsed.pathname = parsed.pathname.replace(/\/+$/, "");
+-  parsed.search = "";
+-  parsed.hash = "";
+-  return parsed.toString().replace(/\/$/, "");
+-}
+-
+ function firstUsableValue(...values) {
+   for (const value of values) {
+     const text = String(value ?? "").trim();
+     if (text && !["__UNSET__", "placeholder", "changeme"].includes(text)) return text;
+   }
+   return "";
+ }
+ 
+ async function fetchWithTimeout(fetchImpl, url, init, timeoutMs) {
+   const controller = new AbortController();
+diff --git a/src/localComfyProductionText.test.ts b/src/localComfyProductionText.test.ts
+index 13b62d11..c3284918 100644
+--- a/src/localComfyProductionText.test.ts
++++ b/src/localComfyProductionText.test.ts
+@@ -1,11 +1,19 @@
+ import { describe, expect, it } from "vitest";
++import {
++  productionTextNodeSourceRelativePath,
++  productionTextRequiredCompositorInputs,
++  productionTextRequiredNodeClass,
++  productionTextWorkflowId,
++  productionTextWorkflowRelativePath
++} from "../scripts/comfy-production-text-setup.mjs";
++import { describeLocalComfyWorkerReadiness } from "../scripts/local-comfy-worker.mjs";
+ import {
+   interpolateLocalComfyTemplate,
+   localComfyTypographyVariables,
+   localComfyWorkflowInputSummary,
+   localComfyWorkflowInputsForMetadata
+ } from "../scripts/local-comfy-production-text.mjs";
+ 
+ describe("local Comfy production text contract", () => {
+   it("builds deterministic typography and artwork guard variables", () => {
+     const variables = localComfyTypographyVariables({
+@@ -97,11 +105,43 @@ describe("local Comfy production text contract", () => {
+         artworkGuardOpacity: 0.74
+       }
+     );
+ 
+     expect(rendered).toEqual({
+       text: "A Quiet Honor",
+       width: 960,
+       nested: ["prefix inside-left", 0.74]
+     });
+   });
++
++  it("describes resolved production text workflow setup for the local worker when configured", () => {
++    const readiness = describeLocalComfyWorkerReadiness({
++      env: {
++        CUSTOMCARD_ENV: "dev",
++        CUSTOMCARD_API_RUNTIME: "contract",
++        DATABASE_URL: "postgres://customcard.local/customcard",
++        QUEUE_URL: "redis://queue.customcard.local",
++        OBJECT_STORE_URL: "file:///tmp/customcard-objects",
++        OBJECT_STORE_SIGNING_SECRET: "test-object-store-signing-secret-32",
++        AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
++        CLERK_JWT_KEY: `-----BEGIN PUBLIC KEY-----
++test-clerk-jwt-key
++-----END PUBLIC KEY-----`,
++        CLERK_AUTHORIZED_PARTIES: "https://customcard.test",
++        CLERK_ISSUER: "https://clerk.customcard.test",
++        CLERK_AUDIENCE: "customcard-api",
++        CUSTOMCARD_COMFYUI_WORKFLOW_ID: productionTextWorkflowId,
++        CUSTOMCARD_COMFYUI_WORKFLOW_PATH: "D:/manny/Documents/CustomCard/comfyui-workflows/customcard-production-text-overlay.json"
++      }
++    });
++
++    expect(readiness.comfyUrl).toBe("http://127.0.0.1:8188");
++    expect(readiness.productionTextSetup).toMatchObject({
++      comfyUrl: "http://127.0.0.1:8188",
++      workflowId: productionTextWorkflowId,
++      workflowPathRelative: productionTextWorkflowRelativePath,
++      nodeSourceRelative: productionTextNodeSourceRelativePath,
++      requiredNodeClass: productionTextRequiredNodeClass,
++      requiredComposerInputs: productionTextRequiredCompositorInputs
++    });
++  });
+ });
+diff --git a/tests/production-text-readiness-doctor.test.ts b/tests/production-text-readiness-doctor.test.ts
+index ca8361fa..0f8cb033 100644
+--- a/tests/production-text-readiness-doctor.test.ts
++++ b/tests/production-text-readiness-doctor.test.ts
+@@ -1,14 +1,22 @@
+ import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+ import { tmpdir } from "node:os";
+ import { join } from "node:path";
+ import { afterEach, describe, expect, it, vi } from "vitest";
++import {
++  productionTextNodeSourceRelativePath,
++  productionTextRequiredCompositorInputs,
++  productionTextRequiredNodeClass,
++  productionTextWorkflowRelativePath,
++  resolveProductionTextComfyUrl
++} from "../scripts/comfy-production-text-setup.mjs";
++import { runPreflight } from "../scripts/comfyui-production-text-preflight.mjs";
+ import { runDoctor } from "../scripts/production-text-readiness-doctor.mjs";
+ 
+ function writeJson(path: string, value: unknown) {
+   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
+ }
+ 
+ function writePassingAggregate(path: string) {
+   writeJson(path, {
+     totalRuns: 3,
+     ranked: ["aquarium-lover-birthday", "koi-fish-lover-encouragement", "dog-lover-thank-you"].map((fixtureId, index) => ({
+@@ -88,20 +96,96 @@ describe("production text readiness doctor", () => {
+ 
+     expect(report.promotionReady).toBe(false);
+     expect(report.activePlannerEndpoints[0]).toMatchObject({
+       activeModel: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+       productionSuitable: false
+     });
+     expect(report.activePlannerEndpoints[0].plannerPolicy.blockers.join("\n")).toContain("context was not reported");
+     expect(report.blockers.map((item) => item.name)).toContain("configured production planner endpoint is production-suitable");
+   });
+ 
++  it("uses the shared workflow path, node source, and default Comfy URL facts", async () => {
++    const root = mkdtempSync(join(tmpdir(), "production-text-readiness-doctor-defaults-"));
++    const modelRoot = join(root, "models");
++    mkdirSync(modelRoot, { recursive: true });
++    writeFileSync(join(modelRoot, "gemma-4-31B-it-Q4_K_M.gguf"), "fake model marker");
++    const aggregatePath = join(root, "benchmark-aggregate.json");
++    writePassingAggregate(aggregatePath);
++    const defaultComfyUrl = resolveProductionTextComfyUrl({ env: {} });
++
++    vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
++      const target = String(url);
++      if (target === `${defaultComfyUrl}/object_info`) {
++        return new Response(JSON.stringify({ [productionTextRequiredNodeClass]: {} }), {
++          status: 200,
++          headers: { "content-type": "application/json" }
++        });
++      }
++      if (target.endsWith("/models")) {
++        return new Response(JSON.stringify({ data: [{ id: "koboldcpp/gemma-4-31B-it-Q4_K_M" }] }), {
++          status: 200,
++          headers: { "content-type": "application/json" }
++        });
++      }
++      return new Response("not found", { status: 404 });
++    });
++
++    const report = await runDoctor({
++      advisory: true,
++      aggregate: aggregatePath,
++      "model-root": modelRoot,
++      "local-llm-base-url": "http://127.0.0.1:5003/v1",
++      "planner-context-tokens": 8192,
++      "planner-max-output-tokens": 3200,
++      "output-dir": join(root, "readiness")
++    }, { gpuResidencyProbe });
++
++    expect(report.workflowPath).toBe(productionTextWorkflowRelativePath);
++    expect(report.nodeSource).toBe(productionTextNodeSourceRelativePath);
++    expect(report.comfy.comfyUrl).toBe(defaultComfyUrl);
++  });
++
++  it("uses the shared production text node contract in preflight and keeps missing live node blocking", async () => {
++    const root = mkdtempSync(join(tmpdir(), "production-text-preflight-"));
++    const defaultComfyUrl = resolveProductionTextComfyUrl({ env: {} });
++
++    vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
++      const target = String(url);
++      if (target === `${defaultComfyUrl}/object_info`) {
++        return new Response(JSON.stringify({}), {
++          status: 200,
++          headers: { "content-type": "application/json" }
++        });
++      }
++      return new Response("not found", { status: 404 });
++    });
++
++    const report = await runPreflight({
++      "require-live": true,
++      "output-root": root,
++      "report-dir": join(root, "preflight")
++    });
++
++    expect(report.requiredNodeClass).toBe(productionTextRequiredNodeClass);
++    expect(report.checks.find((item) => item.name === "workflow maps production text compositor inputs")?.details).toMatchObject({
++      requiredInputs: productionTextRequiredCompositorInputs,
++      missingInputs: []
++    });
++    expect(report.liveNodeAvailable).toBe(false);
++    expect(report.promotionReady).toBe(false);
++    expect(report.blockers?.map?.((item) => item.name)).toBeUndefined();
++    expect(report.checks.find((item) => item.name === "live ComfyUI has CustomCardTextComposer")).toMatchObject({
++      ok: false,
++      required: true
++    });
++  });
++
+   it("keeps aggregate failures informational instead of blocking runtime readiness", async () => {
+     const root = mkdtempSync(join(tmpdir(), "production-text-readiness-doctor-runtime-ready-"));
+     const modelRoot = join(root, "models");
+     mkdirSync(modelRoot, { recursive: true });
+     writeFileSync(join(modelRoot, "gemma-4-31B-it-Q4_K_M.gguf"), "fake model marker");
+     const aggregatePath = join(root, "benchmark-aggregate.json");
+     writeFailingAggregate(aggregatePath);
+ 
+     vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
+       const target = String(url);
+@@ -236,11 +320,51 @@ describe("production text readiness doctor", () => {
+     expect(report.activePlannerEndpoints[0]).toMatchObject({
+       baseUrl: "https://planner.example/v1",
+       activeModel: "gpt-production-planner",
+       productionSuitable: true
+     });
+     expect(report.activePlannerEndpoints[0].localGpuResidency).toMatchObject({
+       required: false,
+       ok: true
+     });
+   });
++
++  it("keeps missing CustomCardTextComposer promotion-failing in readiness", async () => {
++    const root = mkdtempSync(join(tmpdir(), "production-text-readiness-doctor-missing-node-"));
++    const modelRoot = join(root, "models");
++    mkdirSync(modelRoot, { recursive: true });
++    writeFileSync(join(modelRoot, "gemma-4-31B-it-Q4_K_M.gguf"), "fake model marker");
++    const aggregatePath = join(root, "benchmark-aggregate.json");
++    writePassingAggregate(aggregatePath);
++
++    vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
++      const target = String(url);
++      if (target.endsWith("/object_info")) {
++        return new Response(JSON.stringify({}), {
++          status: 200,
++          headers: { "content-type": "application/json" }
++        });
++      }
++      if (target.endsWith("/models")) {
++        return new Response(JSON.stringify({ data: [{ id: "koboldcpp/gemma-4-31B-it-Q4_K_M" }] }), {
++          status: 200,
++          headers: { "content-type": "application/json" }
++        });
++      }
++      return new Response("not found", { status: 404 });
++    });
++
++    const report = await runDoctor({
++      advisory: true,
++      aggregate: aggregatePath,
++      "model-root": modelRoot,
++      "local-llm-base-url": "http://127.0.0.1:5003/v1",
++      "planner-context-tokens": 8192,
++      "planner-max-output-tokens": 3200,
++      "output-dir": join(root, "readiness")
++    }, { gpuResidencyProbe });
++
++    expect(report.promotionReady).toBe(false);
++    expect(report.blockers.map((item) => item.name)).toContain("live ComfyUI exposes CustomCardTextComposer");
++    expect(report.comfy.hasTextComposer).toBe(false);
++  });
+ });

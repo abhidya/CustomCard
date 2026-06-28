@@ -51,7 +51,7 @@ index af9bd707..d5d72620 100644
    aiFlowAdminConfig = [],
    loadAiFlowAdminConfig
  } = {}) {
-
+ 
    return {
      async generateCard(body, requestContext = {}) {
 -      const adminConfig = await runtimeAiFlowConfig(body, env, requestContext, aiFlowAdminConfig, loadAiFlowAdminConfig);
@@ -68,7 +68,7 @@ index af9bd707..d5d72620 100644
 +      const imageFlow = resolveAiRouteActivation("card-image", activationContext).flow;
        const draftInput = normalizeCardInput(body);
        const providerCallEvents = [];
-
+ 
        const copyResult = await generateValidatedCardCopy({
          flow: copyFlow,
          env,
@@ -85,7 +85,7 @@ index af9bd707..d5d72620 100644
          fallbackQueued
        });
      },
-
+ 
      async respondChat(body, requestContext = {}) {
 -      const adminConfig = await runtimeAiFlowConfig(body, env, requestContext, aiFlowAdminConfig, loadAiFlowAdminConfig);
 -      const flow = resolveAiFlowConfig("customer-chat", env, adminConfig);
@@ -97,11 +97,11 @@ index af9bd707..d5d72620 100644
 +        loadAiFlowAdminConfig
 +      });
 +      const flow = resolveAiRouteActivation("customer-chat", activationContext).flow;
-
+ 
        const input = normalizeChatInput(body);
        const providerCallEvents = [];
        let assistantMessage;
-
+ 
        if (!flow.readyForLiveCalls) {
          const providerFailure = flow.blockedReasons[0] ?? "Live customer-chat provider is disabled.";
          return providerUnavailableResponse({
@@ -117,7 +117,7 @@ index af9bd707..d5d72620 100644
      }
    };
  }
-
+ 
 -async function runtimeAiFlowConfig(body, env, requestContext = {}, serviceAiFlowAdminConfig = [], loadAiFlowAdminConfig) {
 -  return mergeAiFlowAdminConfigs(
 -    normalizeOptionalAiFlowAdminConfigs(serviceAiFlowAdminConfig, env),
@@ -173,7 +173,7 @@ index af9bd707..d5d72620 100644
  function isAiEnvKey(key) {
    return /^(CUSTOMCARD_AI_|CUSTOMCARD_RUNCOMFY_|CUSTOMCARD_LOCAL_LLM_|CUSTOMCARD_COMFYUI_|ANTHROPIC_|OPENAI_|CLOUDFLARE_|COMFYUI_|GOOGLE_|GEMINI_|HUGGINGFACE_|GROQ_|TOGETHER_|MISTRAL_|DEEPSEEK_|DEEPAI_|FIREWORKS_|PERPLEXITY_|XAI_|REPLICATE_|STABILITY_|FAL_|BFL_|RUNCOMFY_|LMSTUDIO_|KOBOLDCPP_)/.test(key);
  }
-
+ 
  const textProviderExecutors = {
    "cloudflare-workers-ai-chat": executeCloudflareWorkersAiChat,
    "openai-responses-chat": executeOpenAiResponsesChat,
@@ -201,7 +201,7 @@ index b5150168..6646e96e 100644
    buildProviderWorkerResult,
    hasLiveProviderNetworkCall
  } from "./provider-worker-payload-contract.mjs";
-
+ 
  export function resolveProviderHttpWorkerEnv(env = process.env) {
    const resolved = resolveLocalComfyWorkerEnv(env);
    resolved.CUSTOMCARD_PROVIDER_API_BASE_URL =
@@ -232,12 +232,12 @@ index b5150168..6646e96e 100644
    }
    return parsed;
  }
-
+ 
  function isProviderWorkerEnvKey(key) {
    return /^(CUSTOMCARD_PROVIDER_.+|CUSTOMCARD_HOSTED_API_BASE_URL|PUBLIC_APP_ORIGIN|CUSTOMCARD_AI_|CUSTOMCARD_RUNCOMFY_|CUSTOMCARD_COMFYUI_|COMFYUI_|CLOUDFLARE_|RUNCOMFY_)/
      .test(key);
  }
-
+ 
  function providerAiFlowReadiness(env) {
 -  const adminConfig = providerAiFlowAdminConfig(env);
 -  const cardCopy = resolveAiFlowConfig("card-copy", env, adminConfig);
@@ -250,7 +250,7 @@ index b5150168..6646e96e 100644
      cardImage: flowReadinessSummary(cardImage)
    };
  }
-
+ 
  function flowReadinessSummary(flow) {
    return {
      flowId: flow.flowId,
@@ -259,13 +259,13 @@ index b5150168..6646e96e 100644
      blockedReasons: flow.blockedReasons
    };
  }
-
+ 
  function providerAiFlowBlockers(readiness) {
    return [readiness.cardCopy, readiness.cardImage].flatMap((flow) =>
      flow.readyForLiveCalls ? [] : flow.blockedReasons.map((reason) => `${flow.flowId}: ${reason}`)
    );
  }
-
+ 
 -function providerAiFlowAdminConfig(env) {
 -  const raw = env.CUSTOMCARD_AI_FLOW_CONFIG_JSON ?? env.CUSTOMCARD_AI_FLOW_ADMIN_CONFIG_JSON ?? "";
 -  if (!raw) return [];
@@ -287,7 +287,7 @@ index b5150168..6646e96e 100644
    const normalized = configured.map((routeId) => String(routeId ?? "").trim()).filter(Boolean);
    return Array.from(new Set(normalized.length > 0 ? normalized : ["ai-card-generate"]));
  }
-
+ 
  function workerBatchSize(env) {
    return safeIntegerEnv(env.CUSTOMCARD_PROVIDER_WORKER_BATCH_SIZE ?? env.CUSTOMCARD_WORKER_BATCH_SIZE, 1, 1, 5);
 diff --git a/src/aiCardGenerator.test.ts b/src/aiCardGenerator.test.ts
@@ -304,7 +304,7 @@ index 4b4e9db9..15cc86e6 100644
        ]
      });
    });
-
+ 
 +  it("only honors request aiFlowConfig overrides when the request context is trusted", async () => {
 +    const fetchImpl = vi.fn(async () =>
 +      new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
@@ -384,7 +384,7 @@ index efb70bfd..f03126e9 100644
    createProviderHttpWorkerRuntime,
    loadProviderWorkerEnvFiles
  } from "../scripts/provider-http-worker.mjs";
-
+ 
  const providerBaseEnv = {
    CUSTOMCARD_PROVIDER_API_BASE_URL: "https://customcard.example",
    CUSTOMCARD_PROVIDER_WORKER_TOKEN: "test-provider-worker-token-32-chars",
@@ -393,7 +393,7 @@ index efb70bfd..f03126e9 100644
    CUSTOMCARD_AI_CARD_IMAGE_FALLBACK_ADAPTER_ID: "local-comfyui-api-image",
    CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188"
  };
-
+ 
 +const cardCopyResponse = {
 +  theme_guide: "warm botanical birthday",
 +  panels: [
@@ -406,17 +406,17 @@ index efb70bfd..f03126e9 100644
 +};
 +
  let tempDirs = [];
-
+ 
  afterEach(() => {
    for (const dir of tempDirs) rmSync(dir, { recursive: true, force: true });
    tempDirs = [];
  });
-
+ 
  describe("provider HTTP worker", () => {
    it("loads provider-specific AI overrides after ambient local AI env", () => {
      const cwd = mkdtempSync(join(tmpdir(), "customcard-provider-http-worker-"));
 @@ -75,11 +86,155 @@ describe("provider HTTP worker", () => {
-
+ 
      expect(report).toMatchObject({
        status: "blocked",
        leased: 0,
