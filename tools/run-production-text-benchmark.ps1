@@ -341,7 +341,6 @@ if ($HasLocalLlm -and -not $DryRun) {
 $BenchmarkArgs = @(
   $BenchmarkScript,
   "--phase", "local-production-text",
-  "--local-only", "true",
   "--phase-dir", $PhaseDir,
   "--output-dir", $OutputDir
 )

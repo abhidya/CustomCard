@@ -28,6 +28,10 @@ import {
   localComfyTypographyVariables,
   localComfyWorkflowInputsForMetadata
 } from "./local-comfy-production-text.mjs";
+import {
+  classifyProductionTextPlanner,
+  productionTextPlannerPolicy
+} from "./production-text-planner-policy.mjs";
 import { normalizePanelTextLayout, sourceTextFromCardInput } from "../src/panelTextLayoutPlanData.mjs";
 
 export const aiCardGenerateRoute = "/api/ai/card/generate";
@@ -73,6 +77,21 @@ export function createAiCardGenerationService({
       const imageFlow = resolveAiRouteActivation("card-image", activationContext).flow;
       const draftInput = normalizeCardInput(body);
       const providerCallEvents = [];
+      const productionTextGate = validateProductionTextPlannerForService({ copyFlow, imageFlow, env });
+      if (!productionTextGate.ok) {
+        return providerUnavailableResponse({
+          statusCode: 503,
+          flowKey: "card_copy",
+          flow: copyFlow,
+          adapterId: "",
+          providerFailure: productionTextGate.providerFailure,
+          providerCallEvents,
+          extraPayload: {
+            production_text_service: productionTextGate.runtime,
+            production_text_policy: productionTextGate.policy
+          }
+        });
+      }
 
       const copyResult = await generateValidatedCardCopy({
         flow: copyFlow,
@@ -101,6 +120,15 @@ export function createAiCardGenerationService({
       const cardCopy = copyResult.cardCopy;
 
       const imagePromptPlan = buildImagePromptPlan(draftInput, cardCopy);
+      const serviceEvidence = buildServiceGenerationEvidence({
+        draftInput,
+        cardCopy,
+        imagePromptPlan,
+        copyFlow,
+        imageFlow,
+        env,
+        productionTextGate
+      });
       const imageResult = await executeImageProviderBatchWithFallback({
         flow: imageFlow,
         env,
@@ -113,7 +141,7 @@ export function createAiCardGenerationService({
       const fallbackQueued = copyResult.fallbackQueued || imageResult.fallbackQueued;
       if (!imageResult.ok) {
         if (!imageResult.madeLiveAttempt && !imageResult.madeReservationAttempt) {
-          return buildCardGenerationPayload({
+          return withServiceEvidence(buildCardGenerationPayload({
             draftInput,
             cardCopy,
             images: [],
@@ -124,7 +152,7 @@ export function createAiCardGenerationService({
             imageProviderFailure: imageResult.providerFailure,
             providerCallEvents,
             fallbackQueued
-          });
+          }), serviceEvidence);
         }
         return providerUnavailableResponse({
           statusCode: imageResult.statusCode,
@@ -139,6 +167,7 @@ export function createAiCardGenerationService({
             draft_id: buildDraftId(draftInput),
             card_copy: cardCopy,
             images: [],
+            service_evidence: serviceEvidence,
             ai_flow: {
               card_copy: publicFlowState(copyFlow, copyResult.adapterId, "")
             }
@@ -146,7 +175,7 @@ export function createAiCardGenerationService({
         });
       }
 
-      return buildCardGenerationPayload({
+      return withServiceEvidence(buildCardGenerationPayload({
         draftInput,
         cardCopy,
         images: imageResult.images,
@@ -156,7 +185,7 @@ export function createAiCardGenerationService({
         imageProvider: imageResult.adapterId,
         providerCallEvents,
         fallbackQueued
-      });
+      }), serviceEvidence);
     },
 
     async respondChat(body, requestContext = {}) {
@@ -295,6 +324,197 @@ function providerUnavailableResponse({
     fallbackQueued,
     extraPayload
   });
+}
+
+function withServiceEvidence(result, serviceEvidence) {
+  if (!result?.payload || typeof result.payload !== "object" || !serviceEvidence) return result;
+  return {
+    ...result,
+    payload: {
+      ...result.payload,
+      service_evidence: serviceEvidence
+    }
+  };
+}
+
+function validateProductionTextPlannerForService({ copyFlow, imageFlow, env }) {
+  const active = isProductionTextServiceMode({ imageFlow, env });
+  const runtime = productionTextPlannerRuntimeForService(copyFlow, env, {
+    requireRuntimeBudget: active && copyFlow.primaryAdapterId === "local-openai-compatible-chat"
+  });
+  const policy = {
+    minContextTokens: productionTextPlannerPolicy.minContextTokens,
+    minOutputTokens: productionTextPlannerPolicy.minOutputTokens,
+    minimumOpenWeightPlannerClass: productionTextPlannerPolicy.minimumOpenWeightPlannerClass,
+    recommendedModels: productionTextPlannerPolicy.recommendedModels
+  };
+  if (!active || copyFlow.primaryAdapterId !== "local-openai-compatible-chat") {
+    return { ok: true, active, runtime, policy };
+  }
+  if (runtime.productionSuitable || (runtime.allowSmallPlanner && runtime.runAllowed)) {
+    return { ok: true, active, runtime, policy };
+  }
+  const detail = runtime.blockers.length
+    ? runtime.blockers.join(" ")
+    : `Planner classification '${runtime.classification}' is not production-suitable.`;
+  return {
+    ok: false,
+    active,
+    runtime,
+    policy,
+    providerFailure:
+      `Production text generation requires a production-suitable planner before sending the full card-copy contract: ${productionTextPlannerPolicy.minContextTokens}+ context tokens, ${productionTextPlannerPolicy.minOutputTokens}+ output tokens, and ${productionTextPlannerPolicy.minimumOpenWeightPlannerClass}. ${detail}`
+  };
+}
+
+function productionTextPlannerRuntimeForService(flow, env, { requireRuntimeBudget = false } = {}) {
+  const allowSmallPlanner = truthyEnv(env.CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER);
+  const allowUnknownProductionModel = truthyEnv(env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER);
+  const model = productionTextPlannerModelForService(flow, env);
+  const contextTokens = boundedIntegerEnv(env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS, 0, 1_000_000, 0);
+  const maxOutputTokens = boundedIntegerEnv(
+    flow.maxTokens || env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS,
+    0,
+    4000,
+    0
+  );
+  const classification = classifyProductionTextPlanner(model, {
+    allowSmall: allowSmallPlanner,
+    allowUnknownProductionModel,
+    reportedContextTokens: contextTokens,
+    maxOutputTokens,
+    requireRuntimeBudget
+  });
+  const runAllowed = classification.blockers.length === 0 && (classification.productionSuitable || allowSmallPlanner);
+  return {
+    adapterId: flow.primaryAdapterId,
+    model,
+    contextTokens: contextTokens || null,
+    maxOutputTokens: maxOutputTokens || null,
+    classification: classification.classification,
+    productionSuitable: classification.productionSuitable,
+    runAllowed,
+    allowSmallPlanner,
+    allowUnknownProductionModel,
+    blockers: classification.blockers,
+    warnings: classification.warnings,
+    creativeContract: "full-production-card-copy-json"
+  };
+}
+
+function productionTextPlannerModelForService(flow, env) {
+  const configuredModel = String(flow.model || "").trim();
+  if (configuredModel && configuredModel !== "local-default") return configuredModel;
+  return firstUsableEnv(env, ["CUSTOMCARD_LOCAL_LLM_MODEL", "LMSTUDIO_MODEL", "KOBOLDCPP_MODEL"]) || configuredModel;
+}
+
+function isProductionTextServiceMode({ imageFlow, env }) {
+  return (
+    imageRenderingModeForFlow(imageFlow, env) === "final-text-composited" ||
+    truthyEnv(env.CUSTOMCARD_PRODUCTION_TEXT_MODE) ||
+    truthyEnv(env.CUSTOMCARD_REQUIRE_PRODUCTION_TEXT_PLANNER)
+  );
+}
+
+function buildServiceGenerationEvidence({ draftInput, cardCopy, imagePromptPlan, copyFlow, imageFlow, env, productionTextGate }) {
+  const contentContract = serviceContentContractEvidence(draftInput, cardCopy, imagePromptPlan);
+  const imagePromptQuality = serviceImagePromptQuality(imagePromptPlan);
+  return {
+    service_contract: "customcard-ai-card-generation-v2",
+    production_text: {
+      active: Boolean(productionTextGate.active),
+      rendering_mode: imageRenderingModeForFlow(imageFlow, env) || imageFlow.renderingMode || "",
+      deterministic_text_compositor: imageFlow.primaryAdapterId === "local-comfyui-api-image" && Boolean(productionTextGate.active),
+      planner: productionTextGate.runtime,
+      manual_visual_grade_required_before_promotion: Boolean(productionTextGate.active),
+      promotion_gate: productionTextGate.active ? "manual-grade-and-production-visual-qa-required" : "standard-ai-card-generation"
+    },
+    routing: {
+      text_adapter_id: copyFlow.primaryAdapterId,
+      text_model: copyFlow.model,
+      image_adapter_id: imageFlow.primaryAdapterId,
+      image_model: imageFlow.model
+    },
+    content_contract: contentContract,
+    image_prompt_quality: imagePromptQuality,
+    production_recommendation:
+      productionTextGate.active || !imagePromptQuality.passed || !contentContract.must_include_covered || !contentContract.must_avoid_clean
+        ? "requires-review-before-promotion"
+        : "standard-review"
+  };
+}
+
+function serviceContentContractEvidence(input, cardCopy, imagePromptPlan) {
+  const panels = Array.isArray(cardCopy?.panels) ? cardCopy.panels : [];
+  const copyText = panels.map((panel) => `${panel.headline || ""} ${panel.body || ""}`).join("\n");
+  const promptText = imagePromptPlan.map((panel) => panel.prompt || "").join("\n");
+  const missingMustInclude = (input.must_include || []).filter((term) => !textContains(copyText, term) && !textContains(promptText, term));
+  const avoidedFailures = (input.must_avoid || []).filter((term) => textContains(copyText, term) || promptContainsUnnegatedServiceTerm(promptText, term));
+  return {
+    panel_count: panels.length,
+    image_prompt_count: imagePromptPlan.length,
+    must_include_covered: missingMustInclude.length === 0,
+    must_avoid_clean: avoidedFailures.length === 0,
+    missing_must_include: missingMustInclude,
+    avoided_failures: avoidedFailures
+  };
+}
+
+function serviceImagePromptQuality(imagePromptPlan) {
+  const panels = imagePromptPlan.map((panel) => serviceImagePromptPanelQuality(panel));
+  const warnings = panels.flatMap((panel) => panel.warnings.map((warning) => `${panel.panel_id}: ${warning}`));
+  return {
+    passed: warnings.length === 0,
+    warnings,
+    panels
+  };
+}
+
+function serviceImagePromptPanelQuality(panel) {
+  const prompt = String(panel.prompt || "");
+  const warnings = [];
+  if (!/\b(?:text-safe|negative space|quiet center|open field|blank center)\b/i.test(prompt)) {
+    warnings.push("missing explicit text-safe negative space");
+  }
+  if (!/\b(?:visible|hero|motif|illustration|object|cluster|edge|corner|mark|plant|fish|dog|pond|aquarium|water|leaf|ripple)\b/i.test(prompt)) {
+    warnings.push("missing concrete visible non-text artwork");
+  }
+  if (servicePromptContainsUnnegatedRiskyTextField(prompt)) {
+    warnings.push("uses a risky framed text-field motif");
+  }
+  if (!/\b(?:no readable text|no words|no letters|no handwriting|no fake text)\b/i.test(prompt)) {
+    warnings.push("missing text-rendering suppression");
+  }
+  return {
+    panel_id: panel.panel_id,
+    warnings
+  };
+}
+
+function servicePromptContainsUnnegatedRiskyTextField(prompt) {
+  return [
+    "caption plaque",
+    "text box",
+    "inner card rectangle",
+    "blank tag",
+    "central medallion",
+    "halo",
+    "ornate frame"
+  ].some((term) => promptContainsUnnegatedServiceTerm(prompt, term));
+}
+
+function promptContainsUnnegatedServiceTerm(prompt, term) {
+  const needle = String(term || "").trim();
+  if (!needle) return false;
+  const regex = new RegExp(escapeRegExp(needle), "gi");
+  let match;
+  while ((match = regex.exec(String(prompt || "")))) {
+    const prefix = String(prompt || "").slice(Math.max(0, match.index - 64), match.index);
+    if (!/\b(?:no|avoid|avoids|without|exclude|excludes|never|not|negative prompt(?:s)?(?: includes?)?)\b[\w\s,;:-]{0,64}$/i.test(prefix)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function aiCostGateInput({ flow, requestContext, routeId, requestUnits, phase, metadata = {}, fallbackFromAdapterId }) {
@@ -1897,6 +2117,9 @@ function normalizeImagePrompt(prompt, panelId, input, panel) {
   if (!/\b(?:no all-over|avoid all-over|not an all-over|mostly negative space|sparse|restrained)\b/i.test(base)) {
     guardrails.push("Avoid all-over repeating wallpaper patterns; use restrained hierarchy and negative space.");
   }
+  if (!/\b(?:not a plain blank|not plain blank|visible non-text artwork|visible artwork|visible coordinating mark)\b/i.test(base)) {
+    guardrails.push(visibleArtworkGuardrail(panelId));
+  }
   if (!/\bno (?:caption plaque|text box|inner card rectangle|blank tag|label)\b/i.test(base)) {
     guardrails.push("No caption plaque, no text box, no inner card rectangle, no blank tag, no label.");
   }
@@ -1917,6 +2140,16 @@ function normalizeImagePrompt(prompt, panelId, input, panel) {
     guardrails.push("Camera-free flat artwork layer, not a physical paper card, not a tabletop scene, not a product photograph.");
   }
   return truncate([base, ...guardrails].join(" "), 1800);
+}
+
+function visibleArtworkGuardrail(panelId) {
+  if (panelId === "back") {
+    return "Include one small visible coordinating non-text mark near an edge or lower corner while keeping most of the back panel as negative space; not a plain blank field.";
+  }
+  if (panelId.startsWith("inside")) {
+    return "Include sparse but visible edge/corner non-text artwork outside the quiet center; not a plain blank stationery field.";
+  }
+  return "Include visible non-text artwork outside the text-safe field: one clear hero motif or object system, not a plain blank stationery field.";
 }
 
 function imagePromptNeedsRepair(prompt, panelId, input, panel) {

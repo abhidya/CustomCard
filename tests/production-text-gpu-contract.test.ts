@@ -17,6 +17,7 @@ describe("production text GPU runtime contract", () => {
     }
 
     expect(benchmarkWrapper).toContain("Refusing to run production-text benchmark");
+    expect(benchmarkWrapper).not.toContain('"--local-only"');
     expect(plannerWrapper).toContain("GPU planner:");
     expect(benchmarkLoop).toContain("inspectLocalKoboldGpuResidency");
     expect(benchmarkLoop).toContain("local-production-text benchmark requires a GPU-backed local planner");

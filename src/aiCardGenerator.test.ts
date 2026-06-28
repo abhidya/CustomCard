@@ -428,6 +428,41 @@ describe("AI card generator service", () => {
     expect(JSON.stringify(result.payload)).toContain("Qwen3-8B");
   });
 
+  it("blocks small local planners before production-text Comfy generation", async () => {
+    const fetchImpl = vi.fn(async () => {
+      throw new Error("Production planner gate should run before provider calls");
+    });
+    const service = createAiCardGenerationService({
+      env: {
+        CUSTOMCARD_LOCAL_LLM_BASE_URL: "http://127.0.0.1:1234/v1",
+        CUSTOMCARD_LOCAL_LLM_MODEL: "local-qwen-card-copy",
+        CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS: "8192",
+        CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS: "3200",
+        CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188",
+        CUSTOMCARD_COMFYUI_WORKFLOW_ID: "customcard-production-text-overlay",
+        CUSTOMCARD_AI_FLOW_CONFIG_JSON: JSON.stringify({ flows: localAiFlowConfig() }),
+        CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "local-openai-compatible-chat",
+        CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "local-comfyui-api-image"
+      },
+      fetchImpl
+    });
+
+    const result = await service.generateCard(cardRequest, { rateKey: "test-small-production-planner-blocked" });
+
+    expect(result.statusCode).toBe(503);
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(result.payload).toMatchObject({
+      status: "provider-unavailable",
+      production_text_service: expect.objectContaining({
+        classification: "smoke-only",
+        runAllowed: false,
+        creativeContract: "full-production-card-copy-json"
+      })
+    });
+    expect(JSON.stringify(result.payload)).toContain("production-suitable planner");
+    expect(JSON.stringify(result.payload)).toContain("local-qwen-card-copy");
+  });
+
   it("passes trusted local Comfy workflow templates, ids, and input metadata from worker env", async () => {
     const tempDir = mkdtempSync(join(tmpdir(), "customcard-comfy-workflow-"));
     const workflowPath = join(tempDir, "workflow.json");
@@ -527,7 +562,9 @@ describe("AI card generator service", () => {
       const service = createAiCardGenerationService({
         env: {
           CUSTOMCARD_LOCAL_LLM_BASE_URL: "http://127.0.0.1:1234/v1",
-          CUSTOMCARD_LOCAL_LLM_MODEL: "local-qwen-card-copy",
+          CUSTOMCARD_LOCAL_LLM_MODEL: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+          CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS: "8192",
+          CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS: "3200",
           CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188",
           CUSTOMCARD_COMFYUI_IMAGE_WIDTH: "640",
           CUSTOMCARD_COMFYUI_IMAGE_HEIGHT: "896",
@@ -539,7 +576,13 @@ describe("AI card generator service", () => {
             panel_id: "{{panel_id}}",
             seed: "{{seed}}"
           }),
-          CUSTOMCARD_AI_FLOW_CONFIG_JSON: JSON.stringify({ flows: localAiFlowConfig() }),
+          CUSTOMCARD_AI_FLOW_CONFIG_JSON: JSON.stringify({
+            flows: localAiFlowConfig().map((config) =>
+              config.flowId === "card-copy"
+                ? { ...config, model: "koboldcpp/gemma-4-31B-it-Q4_K_M", maxTokens: 3200 }
+                : config
+            )
+          }),
           CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "local-openai-compatible-chat",
           CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "local-comfyui-api-image"
         },
@@ -553,6 +596,11 @@ describe("AI card generator service", () => {
       const payload = result.payload as {
         card_copy: { panels: Array<{ id: string; headline: string; body: string }> };
         images: Array<{ rendering_mode?: string }>;
+        service_evidence: {
+          production_text: { active: boolean; rendering_mode: string; planner: { classification: string } };
+          image_prompt_quality: { passed: boolean };
+          production_recommendation: string;
+        };
       };
       expect(comfyPromptBodies).toHaveLength(4);
       for (const body of comfyPromptBodies) {
@@ -591,6 +639,15 @@ describe("AI card generator service", () => {
         }
       });
       expect(payload.images.every((image) => image.rendering_mode === "final-text-composited")).toBe(true);
+      expect(payload.service_evidence.production_text).toMatchObject({
+        active: true,
+        rendering_mode: "final-text-composited",
+        planner: {
+          classification: "production-suitable"
+        }
+      });
+      expect(payload.service_evidence.image_prompt_quality.passed).toBe(true);
+      expect(payload.service_evidence.production_recommendation).toBe("requires-review-before-promotion");
     } finally {
       rmSync(tempDir, { force: true, recursive: true });
     }
