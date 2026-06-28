@@ -716,20 +716,10 @@ export function createApiRouteFamilies(deps) {
 
   async function handleAiRoute({ authContext, path, request, requestUrl, response, route }) {
     if (path === "/api/ai/jobs/status") {
-      let result = await apiRuntime.readQueuedJob({
+      const result = await apiRuntime.readQueuedJob({
         authContext,
         jobId: requestUrl.searchParams.get("job_id") ?? requestUrl.searchParams.get("jobId") ?? ""
       });
-      if (shouldRunInlineQueueWorker(result.payload)) {
-        await runInlineQueueWorkerForJob({
-          authContext,
-          jobId: result.payload.job_id
-        });
-        result = await apiRuntime.readQueuedJob({
-          authContext,
-          jobId: result.payload.job_id
-        });
-      }
       sendJson(response, result.statusCode, result.payload);
       return true;
     }
@@ -774,14 +764,6 @@ export function createApiRouteFamilies(deps) {
     return true;
   }
 
-  function shouldRunInlineQueueWorker(payload) {
-    return Boolean(
-      payload?.queue_status === "queued" &&
-      String(payload.route_id ?? "").startsWith("ai-") &&
-      process.env.CUSTOMCARD_INLINE_QUEUE_WORKER !== "disabled"
-    );
-  }
-
   function providerCompleteBodyLimit() {
     const parsed = Number.parseInt(String(process.env.CUSTOMCARD_PROVIDER_COMPLETE_BODY_LIMIT_BYTES ?? "12000000"), 10);
     return Number.isFinite(parsed) ? Math.min(24_000_000, Math.max(256_000, parsed)) : 12_000_000;
@@ -790,29 +772,6 @@ export function createApiRouteFamilies(deps) {
   function parseStrictJsonBody(bodyText) {
     if (!bodyText) return {};
     return JSON.parse(bodyText);
-  }
-
-  async function runInlineQueueWorkerForJob({ authContext, jobId }) {
-    try {
-      const { createWorkerRuntime } = await import("./worker-runtime.mjs");
-      // Reuse the API's existing Postgres pool to avoid a new connection round-trip.
-      // Do NOT call runtime.close() — the pool is owned by apiRuntime, not this worker.
-      const sharedPool = apiRuntime.getAiFlowCostPool
-        ? await apiRuntime.getAiFlowCostPool()
-        : undefined;
-      const runtime = createWorkerRuntime({
-        routes,
-        postgresPoolFactory: sharedPool ? () => sharedPool : undefined
-      });
-      const result = await runtime.runJobById({ jobId, userId: authContext.userId });
-      if (result?.blockers?.length > 0) {
-        console.error("[inline-worker] blocked:", result.blockers.join("; "));
-      }
-      return result;
-    } catch (err) {
-      console.error("[inline-worker] error:", err?.message ?? String(err));
-      return undefined;
-    }
   }
 
   async function persistAiGeneratedImages({ authContext, result }) {

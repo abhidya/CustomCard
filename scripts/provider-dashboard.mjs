@@ -1,12 +1,14 @@
 import { createServer } from "node:http";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
-import { spawn } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
+import { promisify } from "node:util";
 
 const serviceName = "customcard-provider-dashboard";
 const defaultPort = 8794;
 const defaultHost = "127.0.0.1";
 const defaultRoutes = ["ai-card-generate"];
+const execFileAsync = promisify(execFile);
 
 async function main() {
   const flags = parseFlags(process.argv.slice(2));
@@ -107,29 +109,29 @@ async function readProviderStatus({ env, baseUrl, routes }) {
 async function readComfyStatus({ comfyUrl }) {
   const startedAt = Date.now();
   try {
-    const statsResponse = await fetch(`${comfyUrl}/system_stats`, { signal: AbortSignal.timeout(2500) });
-    const stats = await statsResponse.json().catch(() => ({}));
-    const [queueResult, historyResult] = await Promise.allSettled([
+    const [statsResult, gpuTelemetryResult, queueResult, historyResult] = await Promise.allSettled([
+      fetch(`${comfyUrl}/system_stats`, { signal: AbortSignal.timeout(2500) }),
+      readNvidiaGpuTelemetry(),
       fetchJsonWithTimeout(`${comfyUrl}/queue`),
       fetchJsonWithTimeout(`${comfyUrl}/history`)
     ]);
+    if (statsResult.status !== "fulfilled") throw statsResult.reason;
+    const statsResponse = statsResult.value;
+    const stats = await statsResponse.json().catch(() => ({}));
+    const gpuTelemetry = gpuTelemetryResult.status === "fulfilled" ? gpuTelemetryResult.value : { status: "missing", gpus: [] };
     const queue = queueResult.status === "fulfilled" ? queueResult.value : {};
     const history = historyResult.status === "fulfilled" ? historyResult.value : {};
     const recentHistory = normalizeComfyHistory(history);
     const failedPrompt = recentHistory.find((item) => item.failedNodeId || /error|failed/i.test(item.status));
+    const gpu = mergeComfyAndNvidiaGpuStats(stats.devices, gpuTelemetry);
     return {
       ok: statsResponse.ok,
       status: statsResponse.ok ? "ready" : `http-${statsResponse.status}`,
       endpoint: comfyUrl,
       elapsedMs: Date.now() - startedAt,
-      gpu: Array.isArray(stats.devices)
-        ? stats.devices.map((device) => ({
-            name: safeText(device.name, "GPU"),
-            type: safeText(device.type, ""),
-            vramFree: safeNumber(device.vram_free),
-            vramTotal: safeNumber(device.vram_total)
-          }))
-        : [],
+      gpu,
+      gpuTelemetryStatus: gpuTelemetry.status,
+      gpuTelemetryDetail: gpuTelemetry.detail || "",
       queueRunning: Array.isArray(queue.queue_running) ? queue.queue_running.length : 0,
       queuePending: Array.isArray(queue.queue_pending) ? queue.queue_pending.length : 0,
       runningPrompts: normalizeComfyQueueEntries(queue.queue_running),
@@ -144,6 +146,8 @@ async function readComfyStatus({ comfyUrl }) {
       endpoint: comfyUrl,
       elapsedMs: Date.now() - startedAt,
       gpu: [],
+      gpuTelemetryStatus: "unavailable",
+      gpuTelemetryDetail: "",
       queueRunning: 0,
       queuePending: 0,
       detail: error instanceof Error ? error.message : "ComfyUI is not reachable."
@@ -175,6 +179,107 @@ function readLatestWorkerLog(cwd) {
     lines: rawLines.slice(-120).map(redactLogLine),
     ...parsed
   };
+}
+
+async function readNvidiaGpuTelemetry() {
+  const query = [
+    "index",
+    "name",
+    "utilization.gpu",
+    "utilization.memory",
+    "memory.used",
+    "memory.total",
+    "temperature.gpu",
+    "power.draw",
+    "power.limit",
+    "fan.speed",
+    "clocks.current.graphics",
+    "clocks.current.memory",
+    "pstate"
+  ].join(",");
+  try {
+    const { stdout } = await execFileAsync(
+      process.env.NVIDIA_SMI_PATH || "nvidia-smi",
+      [`--query-gpu=${query}`, "--format=csv,noheader,nounits"],
+      {
+        encoding: "utf8",
+        maxBuffer: 128_000,
+        windowsHide: true,
+        signal: AbortSignal.timeout(1800)
+      }
+    );
+    const gpus = parseNvidiaSmiGpuCsv(stdout);
+    return {
+      status: gpus.length ? "ready" : "empty",
+      gpus
+    };
+  } catch (error) {
+    return {
+      status: "missing",
+      detail: error instanceof Error ? sanitizeDiagnosticText(error.message) : "nvidia-smi is unavailable.",
+      gpus: []
+    };
+  }
+}
+
+function parseNvidiaSmiGpuCsv(stdout) {
+  return String(stdout ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [index, name, gpu, memory, memoryUsed, memoryTotal, temperature, powerDraw, powerLimit, fan, graphicsClock, memoryClock, pstate] =
+        line.split(",").map((item) => item.trim());
+      const memoryUsedMiB = nullableNumber(memoryUsed);
+      const memoryTotalMiB = nullableNumber(memoryTotal);
+      const powerDrawW = nullableNumber(powerDraw);
+      const powerLimitW = nullableNumber(powerLimit);
+      return {
+        index: nullableNumber(index),
+        name: safeText(name, "GPU"),
+        utilizationGpuPercent: nullableNumber(gpu),
+        utilizationMemoryPercent: nullableNumber(memory),
+        memoryUsedMiB,
+        memoryTotalMiB,
+        memoryFreeMiB: memoryTotalMiB !== null && memoryUsedMiB !== null ? Math.max(0, memoryTotalMiB - memoryUsedMiB) : null,
+        memoryUsedPercent: percentOf(memoryUsedMiB, memoryTotalMiB),
+        temperatureC: nullableNumber(temperature),
+        powerDrawW,
+        powerLimitW,
+        powerPercent: percentOf(powerDrawW, powerLimitW),
+        fanSpeedPercent: nullableNumber(fan),
+        graphicsClockMhz: nullableNumber(graphicsClock),
+        memoryClockMhz: nullableNumber(memoryClock),
+        pstate: safeText(pstate, "")
+      };
+    })
+    .filter((gpu) => Number.isFinite(gpu.index));
+}
+
+function mergeComfyAndNvidiaGpuStats(comfyDevices, telemetry) {
+  const comfy = Array.isArray(comfyDevices)
+    ? comfyDevices.map((device, index) => ({
+        index,
+        name: safeText(device.name, "GPU"),
+        type: safeText(device.type, ""),
+        vramFree: safeNumber(device.vram_free),
+        vramTotal: safeNumber(device.vram_total)
+      }))
+    : [];
+  const nvidia = Array.isArray(telemetry?.gpus) ? telemetry.gpus : [];
+  const indexes = [...new Set([...comfy.map((gpu) => gpu.index), ...nvidia.map((gpu) => gpu.index)])].sort((left, right) => left - right);
+  return indexes.map((index) => {
+    const comfyGpu = comfy.find((gpu) => gpu.index === index) ?? {};
+    const nvidiaGpu = nvidia.find((gpu) => gpu.index === index) ?? {};
+    return {
+      ...comfyGpu,
+      ...nvidiaGpu,
+      index,
+      name: safeText(nvidiaGpu.name ?? comfyGpu.name, "GPU"),
+      type: safeText(comfyGpu.type, ""),
+      telemetrySource: nvidiaGpu.name ? "nvidia-smi" : comfyGpu.name ? "comfy" : "unknown"
+    };
+  });
 }
 
 async function fetchJsonWithTimeout(url, timeoutMs = 2500) {
@@ -413,6 +518,20 @@ function dashboardHtml({ baseUrl, comfyUrl, routes }) {
     .queue-lane { min-width:0; display:grid; align-content:start; gap:8px; }
     .queue-lane h3 { display:flex; justify-content:space-between; align-items:center; gap:8px; min-height:26px; }
     .queue-lane h3 span { color:var(--muted); font-size:12px; font-weight:850; }
+    .gpu-stack { display:grid; gap:8px; margin-top:10px; }
+    .gpu-card { min-width:0; padding:10px; border:1px solid var(--line); border-radius:8px; background:var(--surface-2); }
+    .gpu-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:8px; }
+    .gpu-title { min-width:0; display:grid; gap:2px; }
+    .gpu-title strong { overflow-wrap:anywhere; }
+    .meter-grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; }
+    .meter { min-width:0; display:grid; gap:6px; padding:8px; border:1px solid #263244; border-radius:8px; background:#0b1220; }
+    .meter-top { display:flex; justify-content:space-between; gap:8px; color:#cbd5e1; font-size:12px; font-weight:800; }
+    .meter-top strong { color:var(--ink); font-weight:900; overflow-wrap:anywhere; text-align:right; }
+    .meter-bar { height:7px; overflow:hidden; border-radius:999px; background:#1e293b; }
+    .meter-bar span { display:block; height:100%; min-width:2px; border-radius:999px; background:var(--good); }
+    .meter-bar span.warn { background:var(--warn); }
+    .meter-bar span.bad { background:var(--bad); }
+    .meter-bar span.info { background:var(--info); }
     .mono { font-family:"JetBrains Mono", "SFMono-Regular", Consolas, monospace; font-variant-numeric:tabular-nums; }
     .subtle { color:var(--muted); font-size:12px; }
     .node-grid { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
@@ -426,7 +545,7 @@ function dashboardHtml({ baseUrl, comfyUrl, routes }) {
     .empty { min-height:92px; display:grid; place-items:center; color:var(--muted); border:1px dashed #334155; border-radius:8px; background:rgba(15, 23, 42, .55); text-align:center; padding:12px; }
     .error { color:var(--bad); font-weight:800; }
     @media (max-width: 1180px) { .queue-lanes { grid-template-columns:1fr; } }
-    @media (max-width: 980px) { .grid, .ops-grid, .metrics, .split { grid-template-columns:1fr; } header { display:grid; } .actions { justify-content:flex-start; } }
+    @media (max-width: 980px) { .grid, .ops-grid, .metrics, .split, .meter-grid { grid-template-columns:1fr; } header { display:grid; } .actions { justify-content:flex-start; } }
     @media (prefers-reduced-motion: no-preference) { .node.active { animation:pulse 1.4s ease-in-out infinite; } @keyframes pulse { 0%, 100% { box-shadow:0 0 0 rgba(56, 189, 248, 0); } 50% { box-shadow:0 0 0 4px rgba(56, 189, 248, .18); } } }
   </style>
 </head>
@@ -527,9 +646,10 @@ function dashboardHtml({ baseUrl, comfyUrl, routes }) {
           '<div class="meta"><span>HTTP ' + esc(p.httpStatus || 'n/a') + '</span><span>' + esc(p.elapsedMs || 0) + 'ms</span><span>' + esc((p.routeScope || routes).join(', ')) + '</span><span>TTL ' + esc(p.leaseTtlSeconds || 0) + 's</span></div>' +
           (p.detail ? '<p class="error">' + esc(p.detail) + '</p>' : '');
         comfyCard.innerHTML =
-          '<div class="head"><div><h2>ComfyUI</h2><p>' + esc(c.endpoint || '') + '</p></div>' + pill(c.status || 'unknown', c.ok) + '</div>' +
-          '<div class="metrics">' + metric('Running', c.queueRunning) + metric('Pending', c.queuePending) + metric('Latency', formatDurationMs(c.elapsedMs)) + metric('Failed node', c.failedPrompt?.failedNodeId || 'none') + '</div>' +
-          '<div class="meta">' + (c.gpu || []).map(g => '<span>' + esc(g.name) + ' VRAM ' + esc(formatBytes(g.vramFree)) + ' free</span>').join('') + '</div>' +
+          '<div class="head"><div><h2>ComfyUI status</h2><p>' + esc(c.endpoint || '') + '</p></div>' + pill('API ' + (c.status || 'unknown'), c.ok) + '</div>' +
+          '<div class="metrics">' + metric('API', c.ok ? 'reachable' : (c.status || 'offline')) + metric('Queue', (c.queueRunning || 0) + ' run / ' + (c.queuePending || 0) + ' wait') + metric('Latency', formatDurationMs(c.elapsedMs)) + metric('History', (c.recentHistory || []).length) + '</div>' +
+          '<div class="meta"><span>system_stats ' + esc(c.ok ? 'reachable' : 'offline') + '</span><span>failed node ' + esc(c.failedPrompt?.failedNodeId || 'none') + '</span><span>GPU source ' + esc(c.gpuTelemetryStatus || 'unknown') + '</span></div>' +
+          renderGpuTelemetry(c) +
           (c.failedPrompt?.error ? '<p class="error">Last Comfy failure: node ' + esc(c.failedPrompt.failedNodeId) + ' ' + esc(c.failedPrompt.failedNodeType) + ' - ' + esc(c.failedPrompt.error) + '</p>' : '') +
           (c.detail ? '<p class="error">' + esc(c.detail) + '</p>' : '');
         runtimeCard.innerHTML =
@@ -571,6 +691,71 @@ function dashboardHtml({ baseUrl, comfyUrl, routes }) {
     }
     function isUserInspectingDiagnostics() {
       return document.querySelector("#provider-queue-card details[open], #execution-card details[open], #jobs-card details[open], #activity-card details[open]") || document.activeElement?.closest?.("#provider-queue-card, #execution-card, #jobs-card, #activity-card, #log-lines");
+    }
+    function renderGpuTelemetry(c) {
+      const gpus = c.gpu || [];
+      const sourceTone = c.gpuTelemetryStatus === 'ready' ? 'info' : gpus.length ? 'warn' : 'bad';
+      const sourceLabel = c.gpuTelemetryStatus === 'ready' ? 'nvidia-smi' : c.gpuTelemetryStatus || 'missing';
+      const statusLine = '<h3>GPU resources</h3><div class="meta"><span>GPU telemetry ' + esc(sourceLabel) + '</span>' + (c.gpuTelemetryDetail ? '<span>' + esc(c.gpuTelemetryDetail) + '</span>' : '') + '</div>';
+      if (!gpus.length) return statusLine + '<div class="empty">No GPU devices reported by ComfyUI or nvidia-smi.</div>';
+      return statusLine + '<div class="gpu-stack">' + gpus.map(gpu => {
+        const gpuPercent = finiteValue(gpu.utilizationGpuPercent);
+        const memoryPercent = gpuMemoryUsedPercent(gpu);
+        const powerPercent = finiteValue(gpu.powerPercent);
+        return '<div class="gpu-card">' +
+          '<div class="gpu-head"><div class="gpu-title"><strong>' + esc('#' + gpu.index + ' ' + (gpu.name || 'GPU')) + '</strong><span class="subtle">' + esc(gpu.type || gpu.telemetrySource || 'GPU') + '</span></div>' + pill(gpu.pstate || gpu.telemetrySource || 'gpu', true, sourceTone) + '</div>' +
+          '<div class="meter-grid">' +
+            meter('GPU', formatPercent(gpuPercent), gpuPercent, percentTone(gpuPercent)) +
+            meter('VRAM', gpuMemoryLabel(gpu), memoryPercent, percentTone(memoryPercent)) +
+            meter('Power', gpuPowerLabel(gpu), powerPercent, percentTone(powerPercent)) +
+          '</div>' +
+          '<div class="meta"><span>Temp ' + esc(formatTemperature(gpu.temperatureC)) + '</span><span>Fan ' + esc(formatPercent(gpu.fanSpeedPercent)) + '</span><span>Gfx clock ' + esc(formatClock(gpu.graphicsClockMhz)) + '</span><span>Mem clock ' + esc(formatClock(gpu.memoryClockMhz)) + '</span></div>' +
+        '</div>';
+      }).join('') + '</div>';
+    }
+    function meter(label, value, percent, tone) {
+      const width = clampPercent(percent);
+      return '<div class="meter"><div class="meter-top"><span>' + esc(label) + '</span><strong>' + esc(value) + '</strong></div><div class="meter-bar"><span class="' + esc(tone || '') + '" style="width:' + width + '%"></span></div></div>';
+    }
+    function gpuMemoryUsedPercent(gpu) {
+      const fromNvidia = finiteValue(gpu.memoryUsedPercent);
+      if (fromNvidia !== null) return fromNvidia;
+      const total = finiteValue(gpu.vramTotal);
+      const free = finiteValue(gpu.vramFree);
+      if (!total || free === null) return null;
+      return ((total - free) / total) * 100;
+    }
+    function gpuMemoryLabel(gpu) {
+      const used = finiteValue(gpu.memoryUsedMiB);
+      const total = finiteValue(gpu.memoryTotalMiB);
+      if (used !== null && total !== null) return formatMiB(used) + ' / ' + formatMiB(total);
+      const vramTotal = finiteValue(gpu.vramTotal);
+      const vramFree = finiteValue(gpu.vramFree);
+      if (vramTotal !== null && vramFree !== null) return formatBytes(vramTotal - vramFree) + ' / ' + formatBytes(vramTotal);
+      return 'n/a';
+    }
+    function gpuPowerLabel(gpu) {
+      const draw = finiteValue(gpu.powerDrawW);
+      const limit = finiteValue(gpu.powerLimitW);
+      if (draw !== null && limit !== null) return formatWatts(draw) + ' / ' + formatWatts(limit);
+      if (draw !== null) return formatWatts(draw);
+      return 'n/a';
+    }
+    function finiteValue(value) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number : null;
+    }
+    function clampPercent(value) {
+      const number = finiteValue(value);
+      if (number === null) return 0;
+      return Math.max(0, Math.min(100, Math.round(number)));
+    }
+    function percentTone(value) {
+      const number = finiteValue(value);
+      if (number === null) return '';
+      if (number >= 90) return 'bad';
+      if (number >= 70) return 'warn';
+      return 'info';
     }
     function renderProviderQueueCard(provider) {
       const metrics = provider?.metrics || {};
@@ -799,6 +984,27 @@ function dashboardHtml({ baseUrl, comfyUrl, routes }) {
     function shortId(value) { const text = String(value || ''); return text.length > 18 ? text.slice(0, 8) + '...' + text.slice(-6) : text; }
     function formatTime(value) { return value ? new Date(value).toLocaleTimeString() : 'n/a'; }
     function formatDateTime(value) { return value ? new Date(value).toLocaleString() : 'n/a'; }
+    function formatPercent(value) {
+      const number = finiteValue(value);
+      return number === null ? 'n/a' : Math.round(number) + '%';
+    }
+    function formatWatts(value) {
+      const number = finiteValue(value);
+      return number === null ? 'n/a' : number.toFixed(number < 10 ? 1 : 0) + 'W';
+    }
+    function formatTemperature(value) {
+      const number = finiteValue(value);
+      return number === null ? 'n/a' : Math.round(number) + 'C';
+    }
+    function formatClock(value) {
+      const number = finiteValue(value);
+      return number === null ? 'n/a' : Math.round(number) + ' MHz';
+    }
+    function formatMiB(value) {
+      const number = finiteValue(value);
+      if (number === null || number <= 0) return 'n/a';
+      return number >= 1024 ? (number / 1024).toFixed(1) + ' GB' : Math.round(number) + ' MB';
+    }
     function formatDurationSeconds(value) {
       const seconds = Math.max(0, Math.round(Number(value || 0)));
       if (seconds < 60) return seconds + 's';
@@ -949,6 +1155,20 @@ function safeText(value, fallback) {
 function safeNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number : 0;
+}
+
+function nullableNumber(value) {
+  const text = String(value ?? "").trim();
+  if (!text || /^(n\/a|\[not supported\]|not supported)$/i.test(text)) return null;
+  const number = Number(text);
+  return Number.isFinite(number) ? number : null;
+}
+
+function percentOf(value, total) {
+  const number = Number(value);
+  const denominator = Number(total);
+  if (!Number.isFinite(number) || !Number.isFinite(denominator) || denominator <= 0) return null;
+  return (number / denominator) * 100;
 }
 
 function positiveInteger(value, fallback, min, max) {

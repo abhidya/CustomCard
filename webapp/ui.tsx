@@ -40,7 +40,6 @@ export function CreateFlowStepper({ currentView, onNavigate }: { currentView: Vi
 export function PanelArt({ panel, className }: { panel: CardPanel; className?: string }) {
   const svg = useMemo(() => buildPanelSvg(panel), [panel]);
   const inlineSrc = useMemo(() => svgDataUri(svg), [svg]);
-  const placeholderSrc = useMemo(() => panelPlaceholderDataUri(panel), [panel]);
   const panelImageUrl = useMemo(() => normalizeBrowserImageUrl(panel.imageUrl), [panel.imageUrl]);
   const [objectSrc, setObjectSrc] = useState<string | undefined>();
   const [fallbackSrc, setFallbackSrc] = useState<string | undefined>();
@@ -57,7 +56,7 @@ export function PanelArt({ panel, className }: { panel: CardPanel; className?: s
     return () => URL.revokeObjectURL(objectUrl);
   }, [panelImageUrl, svg]);
 
-  const src = fallbackSrc ?? objectSrc ?? (panelImageUrl ? placeholderSrc : inlineSrc);
+  const src = fallbackSrc ?? objectSrc ?? inlineSrc;
 
   return (
     <img
@@ -74,11 +73,6 @@ export function PanelArt({ panel, className }: { panel: CardPanel; className?: s
 
 function svgDataUri(svg: string): string {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-}
-
-function panelPlaceholderDataUri(panel: CardPanel): string {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${panel.width}" height="${panel.height}" viewBox="0 0 ${panel.width} ${panel.height}"><rect width="100%" height="100%" fill="#f7f8fa"/></svg>`;
-  return svgDataUri(svg);
 }
 
 function canCreateSvgObjectUrl(): boolean {

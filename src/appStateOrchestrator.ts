@@ -46,6 +46,7 @@ import {
   type PanelOverrides
 } from "./panelEdits";
 import { buildBrowserIdempotencyKey, buildBrowserRequestHeaders, fetchBrowser } from "./browserRequestAdapter";
+import { materializeBrowserImageUrlForSvg } from "./browserImageMaterialization";
 import { resolveCardGenerationEndpoint } from "./browserGatePolicy";
 import { normalizeBrowserImageUrl } from "./browserImageUrl";
 // --- Bootstrap constants (canonical home; reviewerBootstrap.ts re-exports these) ---
@@ -427,7 +428,8 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
             const imageUrl = image?.image_url;
             if (!imageUrl) return;
             try {
-              await preloadGeneratedPanelImage(imageUrl);
+              const embeddableImageUrl = await materializeGeneratedPanelImageUrl(imageUrl, getCustomerApiToken);
+              await preloadGeneratedPanelImage(embeddableImageUrl);
               loadedPanelCount += 1;
               setAiDraft((current) => {
                 if (!current) return current;
@@ -436,7 +438,7 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
                   ...current,
                   generatedBy: "ai-text-and-image",
                   panels: current.panels.map((candidate) =>
-                    candidate.id === panel.id ? { ...candidate, imageUrl: imageUrl, imageRendering } : candidate
+                    candidate.id === panel.id ? { ...candidate, imageUrl: embeddableImageUrl, imageRendering } : candidate
                   )
                 };
               });
@@ -852,4 +854,17 @@ function preloadGeneratedPanelImage(imageUrl: string): Promise<void> {
     image.onerror = () => reject(new Error("Generated panel image did not load."));
     image.src = imageUrl;
   });
+}
+
+async function materializeGeneratedPanelImageUrl(
+  imageUrl: string,
+  getCustomerApiToken?: CustomerApiTokenProvider
+): Promise<string> {
+  return materializeBrowserImageUrlForSvg(imageUrl, (url) =>
+    fetchBrowser(url, {
+      cache: "no-store",
+      getToken: getCustomerApiToken,
+      method: "GET"
+    })
+  );
 }

@@ -226,7 +226,6 @@ That future mode avoids DB credentials and R2 credentials on the local worker wh
 On Vercel/prod:
 
 ```bash
-CUSTOMCARD_INLINE_QUEUE_WORKER=disabled
 CUSTOMCARD_PROVIDER_WORKER_TOKEN_SHA256=<sha256 token>
 CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS=ai-card-generate
 CUSTOMCARD_ARTIFACT_PERSISTENCE=enabled

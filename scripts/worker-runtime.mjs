@@ -8,7 +8,7 @@ import { createObjectStoreRuntime } from "./object-store-runtime.mjs";
 import { createPostgresRuntime } from "./postgres-runtime.mjs";
 import {
   buildProviderWorkerResult,
-  compactProviderWorkerResultPayload,
+  compactAiWorkerPayload,
   hasLiveProviderNetworkCall
 } from "./provider-worker-payload-contract.mjs";
 import {
@@ -465,7 +465,7 @@ async function runQueuedAiJob({ job, aiService, method, persistGeneratedImageArt
     routeId: job.routeId,
     httpStatusCode: result.statusCode,
     providerCallMode: hasLiveProviderNetworkCall(payload) ? "live-provider" : "provider-disabled",
-    payload: compactProviderWorkerResultPayload(payload),
+    payload: compactAiWorkerPayload(payload),
     evidence: "Worker completed queued AI flow with server-selected provider config and durable cost gate."
   });
 }

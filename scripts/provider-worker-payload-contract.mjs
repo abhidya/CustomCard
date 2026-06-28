@@ -96,6 +96,10 @@ export function compactProviderWorkerResultPayload(payload = {}) {
   };
 }
 
+export function compactAiWorkerPayload(payload = {}) {
+  return compactProviderWorkerResultPayload(payload);
+}
+
 export function hasLiveProviderNetworkCall(payload = {}) {
   return Array.isArray(payload.provider_call_events)
     ? payload.provider_call_events.some((event) => event?.live_network_call === true && event?.status !== "blocked")
