@@ -1,4 +1,5 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { basename, relative, resolve } from "node:path";
 import {
   buildModelBenchmarkAdminCatalog,
@@ -7,7 +8,10 @@ import {
 } from "./model-benchmark-loop.mjs";
 
 const repoRoot = resolve(import.meta.dirname, "..");
-const evidenceRoot = resolve(repoRoot, "docs/evidence/generated-card-comparisons");
+const evidenceRoot = resolve(
+  process.env.CUSTOMCARD_ADMIN_MODEL_BENCHMARK_ROOT ||
+    (process.env.VERCEL ? resolve(tmpdir(), "customcard-admin-model-benchmarks") : resolve(repoRoot, "docs/evidence/generated-card-comparisons"))
+);
 const allowedPhases = new Set(["smoke", "full", "pipeline-quality", "typography"]);
 const reliabilityValues = new Set(["pass", "partial", "failed", "not-graded"]);
 const decisionValues = new Set(["keep", "retry", "drop", "promote", "not-decided"]);
@@ -39,7 +43,6 @@ export async function runAdminModelBenchmark({ body = {} } = {}) {
     };
   }
 
-  mkdirSync(evidenceRoot, { recursive: true });
   const runStamp = new Date().toISOString().replace(/[:.]/g, "-");
   const outputDir = resolve(evidenceRoot, `admin-model-benchmark-${runStamp}`);
   const phaseDir = safeSegment(
@@ -64,6 +67,7 @@ export async function runAdminModelBenchmark({ body = {} } = {}) {
   args.live = normalized.live ? "true" : "false";
 
   try {
+    mkdirSync(evidenceRoot, { recursive: true });
     const result = await runModelBenchmarkLoopFromArgs(args);
     return {
       statusCode: 200,
@@ -87,10 +91,10 @@ export async function runAdminModelBenchmark({ body = {} } = {}) {
     };
   } catch (error) {
     return {
-      statusCode: 500,
+      statusCode: 409,
       payload: {
         service: "customcard-api",
-        status: "model-benchmark-run-failed",
+        status: "model-benchmark-run-blocked",
         error: error instanceof Error ? error.message : "Unknown model benchmark failure.",
         outputDir: relativePath(outputDir),
         phase: normalized.phase,

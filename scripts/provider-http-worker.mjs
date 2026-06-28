@@ -144,6 +144,7 @@ export function createProviderHttpWorkerRuntime({
 }
 
 async function processProviderJob({ aiService, baseUrl, fetchImpl, job, now, token, workerId }) {
+  const startedAt = Date.now();
   try {
     const result = await executeLeasedJob({ aiService, job });
     const completion = await postJson({
@@ -158,7 +159,13 @@ async function processProviderJob({ aiService, baseUrl, fetchImpl, job, now, tok
       }
     });
     if (!completion.ok) throw new Error(`Complete request failed with HTTP ${completion.status}: ${completion.text}`);
-    return { job_id: job.job_id, route_id: job.route_id, status: "succeeded", completed_at: now().toISOString() };
+    return {
+      job_id: job.job_id,
+      route_id: job.route_id,
+      status: "succeeded",
+      duration_ms: Date.now() - startedAt,
+      completed_at: now().toISOString()
+    };
   } catch (error) {
     const message = errorMessage(error);
     await postJson({
@@ -172,7 +179,13 @@ async function processProviderJob({ aiService, baseUrl, fetchImpl, job, now, tok
         error: message
       }
     }).catch(() => undefined);
-    return { job_id: job.job_id, route_id: job.route_id, status: "failed", reason: message };
+    return {
+      job_id: job.job_id,
+      route_id: job.route_id,
+      status: "failed",
+      duration_ms: Date.now() - startedAt,
+      reason: message
+    };
   }
 }
 

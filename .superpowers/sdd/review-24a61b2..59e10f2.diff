@@ -1,0 +1,1208 @@
+﻿# Review package: 24a61b27..59e10f2c
+
+## Commits
+59e10f2c Add hosted AI setup profile reporting
+
+## Files changed
+ docs/cloudflare-workers-ai-setup.md       |  8 +++
+ infra/README.md                           | 18 ++++---
+ infra/env/.env.example                    |  4 +-
+ scripts/hosted-vercel-env-inventory.mjs   | 87 ++++++++++++++++++++++++++++++-
+ scripts/hosted-vercel-env-repair.mjs      |  3 ++
+ src/aiFlowConfig.test.ts                  | 50 +++++++++++++++---
+ src/aiFlowConfigData.mjs                  | 14 +++--
+ src/aiProviderSetupProfile.mjs            | 45 ++++++++++++++++
+ src/providerRuntime.test.ts               | 18 ++++++-
+ src/providerRuntime.ts                    | 25 +++++++--
+ tests/hosted-vercel-env-inventory.test.ts | 34 +++++++++++-
+ tests/hosted-vercel-env-repair.test.ts    | 34 +++++++++++-
+ 12 files changed, 312 insertions(+), 28 deletions(-)
+
+## Diff
+diff --git a/docs/cloudflare-workers-ai-setup.md b/docs/cloudflare-workers-ai-setup.md
+index d09b5968..bbade4aa 100644
+--- a/docs/cloudflare-workers-ai-setup.md
++++ b/docs/cloudflare-workers-ai-setup.md
+@@ -5,35 +5,43 @@ first live hosted model path. Keep real values in ignored local env files and in
+ Vercel's encrypted environment store; tracked files should only contain
+ placeholders and model IDs.
+ 
+ ## Environment
+ 
+ Required shared configuration:
+ 
+ ```bash
+ CLOUDFLARE_ACCOUNT_ID=replace-me
+ CLOUDFLARE_API_TOKEN=replace-me
++CUSTOMCARD_AI_CARD_COPY_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
++CUSTOMCARD_CLOUDFLARE_TEXT_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
+ CLOUDFLARE_WORKERS_AI_TEXT_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
+ CLOUDFLARE_WORKERS_AI_IMAGE_MODEL=@cf/bytedance/stable-diffusion-xl-lightning
+ ```
+ 
+ Optional split-token overrides:
+ 
+ ```bash
+ CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN=replace-me
+ CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN=replace-me
+ ```
+ 
+ The runtime uses `CLOUDFLARE_API_TOKEN` unless a lane-specific token is set. Use
+ split tokens when Cloudflare issues separate Workers AI tokens for LLM and image
+ generation.
+ 
++For the production-text local Comfy path, hosted Cloudflare image keys are not
++required. Keep the Cloudflare text/account setup for card copy, but only add
++`CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN` or
++`CLOUDFLARE_WORKERS_AI_IMAGE_MODEL` when you are explicitly validating the live
++Cloudflare image adapter instead of the local Comfy workflow.
++
+ ## Recommended Models
+ 
+ Use `@cf/qwen/qwen3-30b-a3b-fp8` as the default LLM for production card copy.
+ It is the current Cloudflare text model for the full card-copy JSON contract,
+ and card-copy requests send a JSON Schema through `response_format` so panel
+ copy is not prompt-only JSON.
+ 
+ Use `cloudflare-workers-ai-image` as the preferred live card-image adapter right
+ now. The app still keeps `browser-svg-renderer` as the deterministic fallback and
+ debug path for flat 1500 x 2100 artwork layers, but Cloudflare remains visible in
+diff --git a/infra/README.md b/infra/README.md
+index f1400875..0b85e76b 100644
+--- a/infra/README.md
++++ b/infra/README.md
+@@ -200,38 +200,44 @@ Real external ordering stays disabled with `REAL_ORDER_KILL_SWITCH=disabled` unt
+   WooCommerce, Square, Intercom, Monday.com, Amazon Selling Partner API, and
+   Etsy keys listed in `env/.env.example`.
+ - Text and image AI providers: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
+   `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_KEY`,
+   `AZURE_OPENAI_CHAT_DEPLOYMENT`, `AZURE_OPENAI_IMAGE_DEPLOYMENT`,
+   `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`,
+   `BEDROCK_TEXT_MODEL_ID`, `BEDROCK_IMAGE_MODEL_ID`,
+   `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`,
+   `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN`,
+   `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`,
++  `CUSTOMCARD_AI_CARD_COPY_MODEL`, `CUSTOMCARD_CLOUDFLARE_TEXT_MODEL`,
+   `CLOUDFLARE_WORKERS_AI_TEXT_MODEL`, `CLOUDFLARE_WORKERS_AI_IMAGE_MODEL`,
+   `GOOGLE_GENERATIVE_AI_API_KEY`, `MISTRAL_API_KEY`, `COHERE_API_KEY`,
+   `PERPLEXITY_API_KEY`, `XAI_API_KEY`, `TOGETHER_API_KEY`, `GROQ_API_KEY`,
+   `DEEPSEEK_API_KEY`, `FIREWORKS_API_KEY`, `STABILITY_API_KEY`,
+   `HUGGINGFACE_API_TOKEN`, `DEEPAI_API_KEY`, `REPLICATE_API_TOKEN`, `IDEOGRAM_API_KEY`,
+   `LEONARDO_API_KEY`, `FAL_KEY`, `BFL_API_KEY`.
+ - Self-hosted model fallback: `SELF_HOSTED_LLM_BASE_URL`,
+   `SELF_HOSTED_LLM_API_KEY`.
+ 
+ Cloudflare Workers AI can use one shared `CLOUDFLARE_API_TOKEN` for both
+ chat and image generation, or separate lane-specific tokens through
+ `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN` and
+-`CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`. The recommended low-cost defaults are
+-`@cf/meta/llama-3.1-8b-instruct-fast` for JSON Mode card copy and prompt/chat
+-work and `@cf/bytedance/stable-diffusion-xl-lightning` for image generation.
+-Use `@cf/meta/llama-3.3-70b-instruct-fp8-fast` as the text quality fallback and
+-`@cf/black-forest-labs/flux-1-schnell` as the higher-quality image fallback
+-when budget allows.
++`CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`. Set
++`CUSTOMCARD_AI_CARD_COPY_MODEL=@cf/qwen/qwen3-30b-a3b-fp8` to pin the hosted
++production card-copy route, and mirror that same 30B model into
++`CUSTOMCARD_CLOUDFLARE_TEXT_MODEL` / `CLOUDFLARE_WORKERS_AI_TEXT_MODEL` when you
++want the generic Cloudflare text lane to match. Use
++`@cf/bytedance/stable-diffusion-xl-lightning` as the current Cloudflare image
++default, and keep `@cf/black-forest-labs/flux-1-schnell` as the higher-quality
++image fallback when prompt adherence matters more than the absolute lowest cost.
++The production-text local Comfy path does not require hosted Cloudflare image
++tokens or image model keys; those hosted image keys are only needed when you
++intend to validate the live Cloudflare image lane.
+ - Notification providers: `RESEND_API_KEY`, `SENDGRID_API_KEY`,
+   `POSTMARK_SERVER_TOKEN`, `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`,
+   `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`,
+   `TWILIO_MESSAGING_SERVICE_SID`, `WHATSAPP_ACCESS_TOKEN`,
+   `WHATSAPP_PHONE_NUMBER_ID`, `EXPO_ACCESS_TOKEN`, `FIREBASE_PROJECT_ID`,
+   `FIREBASE_SERVICE_ACCOUNT_JSON`, `CUSTOMERIO_APP_API_KEY`,
+   `CUSTOMERIO_TRANSACTIONAL_MESSAGE_ID`, `BRAZE_REST_ENDPOINT`,
+   `BRAZE_REST_API_KEY`, `BRAZE_CANVAS_ID`, `ONESIGNAL_APP_ID`,
+   `ONESIGNAL_REST_API_KEY`, `COURIER_AUTH_TOKEN`, `COURIER_TEMPLATE_ID`,
+   `KNOCK_API_KEY`, `KNOCK_WORKFLOW_KEY`, `NOVU_API_KEY`, `NOVU_WORKFLOW_ID`,
+diff --git a/infra/env/.env.example b/infra/env/.env.example
+index 6062ebc6..c0e45873 100644
+--- a/infra/env/.env.example
++++ b/infra/env/.env.example
+@@ -172,21 +172,23 @@ AWS_ACCESS_KEY_ID=replace-me
+ AWS_SECRET_ACCESS_KEY=replace-me
+ AWS_REGION=replace-me
+ BEDROCK_TEXT_MODEL_ID=replace-me
+ BEDROCK_IMAGE_MODEL_ID=replace-me
+ ANTHROPIC_API_KEY=replace-me
+ GOOGLE_GENERATIVE_AI_API_KEY=replace-me
+ CLOUDFLARE_ACCOUNT_ID=replace-me
+ CLOUDFLARE_API_TOKEN=replace-me
+ CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN=replace-me
+ CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN=replace-me
+-CLOUDFLARE_WORKERS_AI_TEXT_MODEL=@cf/meta/llama-3.1-8b-instruct-fast
++CUSTOMCARD_AI_CARD_COPY_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
++CUSTOMCARD_CLOUDFLARE_TEXT_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
++CLOUDFLARE_WORKERS_AI_TEXT_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
+ CLOUDFLARE_WORKERS_AI_IMAGE_MODEL=@cf/bytedance/stable-diffusion-xl-lightning
+ CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=browser-svg-renderer
+ CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG=false
+ CUSTOMCARD_TRUST_PROXY_HEADERS=false
+ MISTRAL_API_KEY=replace-me
+ COHERE_API_KEY=replace-me
+ PERPLEXITY_API_KEY=replace-me
+ XAI_API_KEY=replace-me
+ TOGETHER_API_KEY=replace-me
+ GROQ_API_KEY=replace-me
+diff --git a/scripts/hosted-vercel-env-inventory.mjs b/scripts/hosted-vercel-env-inventory.mjs
+index 7c9fd69a..e40c249e 100644
+--- a/scripts/hosted-vercel-env-inventory.mjs
++++ b/scripts/hosted-vercel-env-inventory.mjs
+@@ -1,29 +1,36 @@
+ import { spawn } from "node:child_process";
+ import { mkdirSync, writeFileSync } from "node:fs";
+ import { dirname, resolve } from "node:path";
+ import { pathToFileURL } from "node:url";
++import {
++  buildAiProviderSetupProfile,
++  hostedAiCardCopySetupKeys,
++  productionCardCopyModel,
++  productionCardCopyModelOverrideEnvKey
++} from "../src/aiProviderSetupProfile.mjs";
+ 
+ const guardEnvName = "CUSTOMCARD_HOSTED_ENV_INVENTORY";
+ const guardRequirement = "CUSTOMCARD_HOSTED_ENV_INVENTORY=enabled";
+ const defaultProductionBaseUrl = "https://customcard-three.vercel.app";
+ 
+ const requiredHostedEnvVars = Object.freeze([
+   "CUSTOMCARD_API_RUNTIME",
+   "DATABASE_URL",
+   "AUTH_SESSION_SECRET",
+   "CLERK_JWT_KEY",
+   "CLERK_AUTHORIZED_PARTIES",
+   "CLERK_ISSUER",
+   "CLERK_AUDIENCE",
+   "IDEMPOTENCY_KEY_TTL_HOURS"
+ ]);
++const aiSetupProfile = Object.freeze(buildAiProviderSetupProfile());
+ 
+ export async function runHostedVercelEnvInventory({
+   env = process.env,
+   commandRunner = runVercelEnvLs,
+   now = new Date()
+ } = {}) {
+   const target = resolveVercelEnvTarget(env);
+   const blockers = [...target.blockers];
+   if (env[guardEnvName] !== "enabled") {
+     blockers.unshift(`${guardRequirement} is required before hosted Vercel env inventory runs.`);
+@@ -55,29 +62,32 @@ export async function runHostedVercelEnvInventory({
+       target,
+       entries: [],
+       blockers: [`vercel env ls --format=json exited with code ${command?.exitCode ?? "unknown"}.`],
+       now,
+       command
+     });
+   }
+ 
+   let entries;
+   try {
+-    entries = parseVercelEnvJson(command.stdout);
++    entries = parseVercelEnvInventoryPayload(command.stdout);
+   } catch (error) {
+     const message = error instanceof Error ? error.message : "Unable to parse vercel env ls JSON.";
+     return buildReport({ target, entries: [], blockers: [message], now, command });
+   }
+ 
+   const inventory = buildInventory(entries, target.vercelTarget);
+   const missing = inventory.requiredKeys.filter((key) => !key.present).map((key) => key.name);
+-  const inventoryBlockers = missing.map((name) => `${name} is missing from the Vercel ${target.vercelTarget} env inventory.`);
++  const inventoryBlockers = [
++    ...missing.map((name) => `${name} is missing from the Vercel ${target.vercelTarget} env inventory.`),
++    ...inventory.aiCardCopySetup.blockers
++  ];
+ 
+   return buildReport({ target, entries, blockers: inventoryBlockers, now, command });
+ }
+ 
+ export function resolveVercelEnvTarget(env = process.env) {
+   const targetEnvironment = normalizeTargetEnvironment(env.CUSTOMCARD_HOSTED_API_ENV ?? env.CUSTOMCARD_APP_ENV);
+   const explicitVercelTarget = normalizeVercelTarget(env.CUSTOMCARD_VERCEL_ENV_TARGET);
+   const vercelTarget = explicitVercelTarget || (targetEnvironment === "qa" ? "preview" : "production");
+   const baseUrl = normalizeBaseUrl(env.CUSTOMCARD_HOSTED_API_BASE_URL || env.CUSTOMCARD_API_BASE_URL) ||
+     normalizeBaseUrl(targetEnvironment === "qa" ? env.CUSTOMCARD_QA_API_BASE_URL : env.CUSTOMCARD_PRODUCTION_API_BASE_URL) ||
+@@ -95,20 +105,24 @@ export function resolveVercelEnvTarget(env = process.env) {
+   }
+   if (!vercelTarget) {
+     blockers.push("CUSTOMCARD_VERCEL_ENV_TARGET must be production, preview, or development.");
+   }
+   blockers.push(...validateBaseUrl(baseUrl, targetEnvironment));
+ 
+   return { targetEnvironment, vercelTarget, baseUrl, blockers };
+ }
+ 
+ export function parseVercelEnvJson(stdout) {
++  return parseVercelEnvInventoryPayload(stdout).map(({ name, targets }) => ({ name, targets }));
++}
++
++function parseVercelEnvInventoryPayload(stdout) {
+   const text = String(stdout ?? "").trim();
+   if (!text) throw new Error("vercel env ls --format=json returned empty output.");
+   let payload;
+   try {
+     payload = JSON.parse(text);
+   } catch {
+     throw new Error("vercel env ls --format=json returned invalid JSON.");
+   }
+ 
+   return collectEnvRecords(payload).map(normalizeEnvRecord).filter(Boolean);
+@@ -133,20 +147,27 @@ function buildReport({ target, entries, blockers, now, command }) {
+           detail: inventory.clerkJwtVerifierConfigured
+             ? "Clerk JWT verifier key, issuer, audience, and authorized parties are present."
+             : "Clerk JWT verifier env keys are incomplete."
+         },
+         {
+           id: "postgres-runtime-env",
+           passed: inventory.customcardApiRuntimeConfigured && inventory.databaseUrlConfigured,
+           detail: inventory.customcardApiRuntimeConfigured && inventory.databaseUrlConfigured
+             ? "Hosted runtime mode and DATABASE_URL env keys are present."
+             : "Hosted runtime mode or DATABASE_URL env keys are missing."
++        },
++        {
++          id: "ai-card-copy-setup",
++          passed: inventory.aiCardCopySetup.ready,
++          detail: inventory.aiCardCopySetup.ready
++            ? `Cloudflare card-copy setup is present, and ${productionCardCopyModelOverrideEnvKey} pins the production ${productionCardCopyModel} model.`
++            : inventory.aiCardCopySetup.blockers.join(" ")
+         }
+       ];
+   const passed = checks.filter((check) => check.passed).length;
+   const failed = checks.length - passed;
+   const ready = blockers.length === 0 && failed === 0;
+ 
+   return {
+     service: "customcard-hosted-vercel-env-inventory",
+     status: ready ? "ready" : "blocked",
+     scope: "live-hosted-env-sync",
+@@ -157,26 +178,29 @@ function buildReport({ target, entries, blockers, now, command }) {
+     command: {
+       name: "vercel env ls --format=json",
+       exitCode: command?.exitCode ?? null,
+       stdoutParsed: Boolean(command && command.exitCode === 0)
+     },
+     mutationsEnabled: false,
+     valuesRedacted: true,
+     requiredKeys: inventory.requiredKeys,
+     keyCount: inventory.keyCount,
+     scopedKeyCount: inventory.scopedKeyCount,
++    aiCardCopySetup: inventory.aiCardCopySetup,
+     envSync: {
+       requiredKeysPresent: inventory.missingRequiredKeys.length === 0,
+       customcardApiRuntimeConfigured: inventory.customcardApiRuntimeConfigured,
+       databaseUrlConfigured: inventory.databaseUrlConfigured,
+       clerkJwtVerifierConfigured: inventory.clerkJwtVerifierConfigured,
+       idempotencyConfigured: inventory.idempotencyConfigured,
++      aiCardCopySetupConfigured: inventory.aiCardCopySetup.baseConfigured,
++      aiCardCopyProductionModelPinned: inventory.aiCardCopySetup.productionModelOverridePresent,
+       environmentSynced: ready
+     },
+     checks,
+     passed,
+     failed,
+     blockers
+   };
+ }
+ 
+ function buildInventory(entries, vercelTarget) {
+@@ -188,27 +212,86 @@ function buildInventory(entries, vercelTarget) {
+     present: scopedNames.has(name),
+     targets: Array.from(new Set(scopedEntries.filter((entry) => entry.name === name).flatMap((entry) => entry.targets))).sort()
+   }));
+   const missingRequiredKeys = requiredKeys.filter((key) => !key.present).map((key) => key.name);
+ 
+   return {
+     requiredKeys,
+     missingRequiredKeys,
+     keyCount: allNames.length,
+     scopedKeyCount: scopedNames.size,
++    aiCardCopySetup: buildAiCardCopySetup(scopedNames),
+     customcardApiRuntimeConfigured: scopedNames.has("CUSTOMCARD_API_RUNTIME"),
+     databaseUrlConfigured: scopedNames.has("DATABASE_URL"),
+     clerkJwtVerifierConfigured: ["CLERK_JWT_KEY", "CLERK_AUTHORIZED_PARTIES", "CLERK_ISSUER", "CLERK_AUDIENCE"].every((name) => scopedNames.has(name)),
+     idempotencyConfigured: scopedNames.has("IDEMPOTENCY_KEY_TTL_HOURS")
+   };
+ }
+ 
++function buildAiCardCopySetup(scopedNames) {
++  const tokenEnvKeys = aiSetupProfile.cardCopy.tokenEnvKeys.map((name) => ({
++    name,
++    present: scopedNames.has(name)
++  }));
++  const modelEnvKeys = aiSetupProfile.cardCopy.modelEnvKeys.map((name) => ({
++    name,
++    present: scopedNames.has(name)
++  }));
++  const tokenConfigured = tokenEnvKeys.some((entry) => entry.present);
++  const modelConfigured = modelEnvKeys.some((entry) => entry.present);
++  const productionModelOverridePresent = scopedNames.has(productionCardCopyModelOverrideEnvKey);
++  const blockers = [];
++
++  if (!scopedNames.has(aiSetupProfile.cardCopy.accountEnvKey)) {
++    blockers.push(`${aiSetupProfile.cardCopy.accountEnvKey} is missing from the Vercel card-copy env inventory.`);
++  }
++  if (!tokenConfigured) {
++    blockers.push(
++      `${aiSetupProfile.cardCopy.tokenEnvKeys.join(" or ")} is missing from the Vercel card-copy env inventory.`
++    );
++  }
++  if (!modelConfigured) {
++    blockers.push(
++      `${aiSetupProfile.cardCopy.modelEnvKeys.join(", ")} are missing from the Vercel card-copy env inventory.`
++    );
++  }
++  if (!productionModelOverridePresent) {
++    blockers.push(
++      `${productionCardCopyModelOverrideEnvKey} is missing, so hosted card-copy is not explicitly pinned to ${productionCardCopyModel}.`
++    );
++  }
++
++  return {
++    providerId: aiSetupProfile.cardCopy.providerId,
++    defaultModel: aiSetupProfile.cardCopy.defaultModel,
++    expectedSetupKeys: [...hostedAiCardCopySetupKeys],
++    accountEnvKey: {
++      name: aiSetupProfile.cardCopy.accountEnvKey,
++      present: scopedNames.has(aiSetupProfile.cardCopy.accountEnvKey)
++    },
++    tokenEnvKeys,
++    modelEnvKeys,
++    productionModelOverrideEnvKey: {
++      name: productionCardCopyModelOverrideEnvKey,
++      present: productionModelOverridePresent
++    },
++    productionModelOverridePresent,
++    baseConfigured:
++      scopedNames.has(aiSetupProfile.cardCopy.accountEnvKey) &&
++      tokenConfigured &&
++      modelConfigured,
++    localProductionTextComfyRequiresHostedImageKeys: aiSetupProfile.localProductionTextComfy.requiresHostedImageKeys,
++    ready: blockers.length === 0,
++    blockers
++  };
++}
++
+ function collectEnvRecords(payload) {
+   if (Array.isArray(payload)) return payload;
+   if (!payload || typeof payload !== "object") return [];
+ 
+   for (const key of ["envs", "env", "items", "data", "records", "variables"]) {
+     if (Array.isArray(payload[key])) return payload[key];
+   }
+ 
+   return Object.entries(payload).map(([name, value]) => {
+     if (value && typeof value === "object" && !Array.isArray(value)) return { name, ...value };
+diff --git a/scripts/hosted-vercel-env-repair.mjs b/scripts/hosted-vercel-env-repair.mjs
+index 5347a301..aac2e81d 100644
+--- a/scripts/hosted-vercel-env-repair.mjs
++++ b/scripts/hosted-vercel-env-repair.mjs
+@@ -185,34 +185,37 @@ function buildReport({ inventory, values, repairPlan, applyResults, blockers, no
+     status: blockers.length === 0 && (missingKeys.length === 0 || applySucceeded || !apply) ? "ready" : "blocked",
+     scope: "live-hosted-env-repair",
+     checkedAt: now instanceof Date ? now.toISOString() : new Date(now).toISOString(),
+     targetEnvironment: inventory?.targetEnvironment ?? null,
+     vercelTarget: inventory?.vercelTarget ?? null,
+     baseUrl: inventory?.baseUrl ?? null,
+     applyEnabled: apply,
+     partialApplyEnabled: allowPartialApply,
+     valuesRedacted: true,
+     missingRepairKeys: missingKeys,
++    aiCardCopySetup: inventory?.aiCardCopySetup ?? null,
+     valueInputs,
+     repairPlan,
+     applyResults: applyResults.map((result) => ({
+       key: result.key,
+       target: result.target,
+       exitCode: result.exitCode
+     })),
+     appliedRepairKeys,
+     remainingUnappliedRepairKeys,
+     envSync: {
+       beforeRepairEnvironmentSynced: inventory?.envSync?.environmentSynced === true,
+       repairKeysMissing: missingKeys.length,
+       repairApplied: applySucceeded,
+       partialRepairApplied: appliedRepairKeys.length > 0 && !applySucceeded,
++      aiCardCopySetupConfigured: inventory?.envSync?.aiCardCopySetupConfigured === true,
++      aiCardCopyProductionModelPinned: inventory?.envSync?.aiCardCopyProductionModelPinned === true,
+       environmentSynced: false
+     },
+     blockers
+   };
+ }
+ 
+ function runVercelEnvAdd({ key, value, target, env }) {
+   return new Promise((resolveReport) => {
+     const child = spawn("vercel", ["env", "add", key, target], {
+       cwd: process.cwd(),
+diff --git a/src/aiFlowConfig.test.ts b/src/aiFlowConfig.test.ts
+index b994400b..19bdffb4 100644
+--- a/src/aiFlowConfig.test.ts
++++ b/src/aiFlowConfig.test.ts
+@@ -1,11 +1,20 @@
++import { readFileSync } from "node:fs";
++import { resolve } from "node:path";
+ import { describe, expect, it } from "vitest";
++import {
++  cloudflareTextModelEnvKeys,
++  localProductionTextComfyGuidance,
++  productionCardCopyModel,
++  productionCardCopyModelOverrideEnvKey,
++  productionCardCopyProviderId
++} from "./aiProviderSetupProfile.mjs";
+ import {
+   buildDefaultAiFlowAdminConfigs,
+   loadBrowserAiFlowAdminConfigs,
+   resolveAiFlowConfig,
+   saveBrowserAiFlowAdminConfigs,
+   summarizeAiFlowConfigs
+ } from "./aiFlowConfig";
+ 
+ const cloudflareEnv = {
+   CLOUDFLARE_ACCOUNT_ID: "acct_123",
+@@ -17,70 +26,83 @@ const cloudflareEnv = {
+ 
+ const recommendedCardGenerationEnv = {
+   HUGGINGFACE_API_TOKEN: "hf-token",
+   DEEPAI_API_KEY: "deepai-token"
+ };
+ 
+ describe("AI flow config", () => {
+   it("resolves configured Cloudflare text flows as live-ready from env", () => {
+     const flow = resolveAiFlowConfig("card-copy", cloudflareEnv);
+ 
+-    expect(flow.primaryAdapterId).toBe("cloudflare-workers-ai-chat");
+-    expect(flow.model).toBe("@cf/qwen/qwen3-30b-a3b-fp8");
++    expect(flow.primaryAdapterId).toBe(productionCardCopyProviderId);
++    expect(flow.model).toBe(productionCardCopyModel);
+     expect(flow.liveProviderCallsEnabled).toBe(true);
+     expect(flow.readyForLiveCalls).toBe(true);
+     expect(flow.blockedReasons).toEqual([]);
+   });
+ 
+   it("defaults card generation to Cloudflare copy and RunComfy image with live calls enabled", () => {
+     const configs = buildDefaultAiFlowAdminConfigs();
+     const cardCopy = configs.find((config) => config.flowId === "card-copy");
+     const cardImage = configs.find((config) => config.flowId === "card-image");
+ 
+-    expect(cardCopy?.primaryAdapterId).toBe("cloudflare-workers-ai-chat");
++    expect(cardCopy?.primaryAdapterId).toBe(productionCardCopyProviderId);
+     expect(cardCopy?.fallbackAdapterId).toBe("huggingface-chat");
+     expect(cardCopy?.fallbackQueueEnabled).toBe(true);
+-    expect(cardCopy?.model).toBe("@cf/qwen/qwen3-30b-a3b-fp8");
++    expect(cardCopy?.model).toBe(productionCardCopyModel);
+     expect(cardCopy?.rateLimitPerMinute).toBe(4);
+     expect(cardCopy?.perRequestBudgetCents).toBe(5);
+     expect(cardCopy?.liveProviderCallsEnabled).toBe(true);
+     expect(cardImage?.primaryAdapterId).toBe("runcomfy-model-api-image");
+     expect(cardImage?.model).toBe("blackforestlabs/flux-2/dev/text-to-image");
+     expect(cardImage?.fallbackAdapterId).toBe("cloudflare-workers-ai-image");
+     expect(cardImage?.fallbackQueueEnabled).toBe(true);
+     expect(cardImage?.rateLimitPerMinute).toBe(8);
+     expect(cardImage?.perRequestBudgetCents).toBe(1);
+     expect(cardImage?.liveProviderCallsEnabled).toBe(true);
+   });
+ 
+   it("lets the production card-copy model env override stale admin and provider defaults", () => {
+     const flow = resolveAiFlowConfig(
+       "card-copy",
+       {
+         CLOUDFLARE_ACCOUNT_ID: "acct_123",
+         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
+         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
+-        CUSTOMCARD_AI_CARD_COPY_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8"
++        CUSTOMCARD_AI_CARD_COPY_MODEL: productionCardCopyModel
+       },
+       [
+         {
+           flowId: "card-copy",
+           primaryAdapterId: "cloudflare-workers-ai-chat",
+           fallbackAdapterId: "huggingface-chat",
+           model: "@cf/meta/llama-3.1-8b-instruct-fast",
+           liveProviderCallsEnabled: true
+         }
+       ]
+     );
+ 
+-    expect(flow.primaryAdapterId).toBe("cloudflare-workers-ai-chat");
+-    expect(flow.model).toBe("@cf/qwen/qwen3-30b-a3b-fp8");
++    expect(flow.primaryAdapterId).toBe(productionCardCopyProviderId);
++    expect(flow.model).toBe(productionCardCopyModel);
++    expect(flow.readyForLiveCalls).toBe(true);
++  });
++
++  it("treats the route-specific card-copy model pin as a valid hosted Cloudflare text setup key", () => {
++    const flow = resolveAiFlowConfig("card-copy", {
++      CLOUDFLARE_ACCOUNT_ID: "acct_123",
++      CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
++      [productionCardCopyModelOverrideEnvKey]: productionCardCopyModel
++    });
++
++    expect(cloudflareTextModelEnvKeys).toContain(productionCardCopyModelOverrideEnvKey);
++    expect(flow.primaryAdapterId).toBe(productionCardCopyProviderId);
++    expect(flow.model).toBe(productionCardCopyModel);
+     expect(flow.readyForLiveCalls).toBe(true);
+   });
+ 
+   it("uses the fallback Qwen plus DeepAI text2img combo when only those credentials exist", () => {
+     const cardCopy = resolveAiFlowConfig("card-copy", recommendedCardGenerationEnv);
+     const cardImage = resolveAiFlowConfig("card-image", {
+       ...recommendedCardGenerationEnv,
+     });
+ 
+     expect(cardCopy.primaryAdapterId).toBe("huggingface-chat");
+@@ -220,20 +242,34 @@ describe("AI flow config", () => {
+ 
+   it("summarizes configured providers without exposing secret values", () => {
+     const summary = summarizeAiFlowConfigs(cloudflareEnv);
+ 
+     expect(summary.total).toBe(3);
+     expect(summary.configuredProviders).toEqual(
+       expect.arrayContaining(["cloudflare-workers-ai-chat", "cloudflare-workers-ai-image"])
+     );
+     expect(JSON.stringify(summary)).not.toContain("token_text");
+   });
++
++  it("keeps docs and env examples pinned to the shared production card-copy setup profile", () => {
++    const envExample = readFileSync(resolve("D:/manny/Documents/CustomCard/infra/env/.env.example"), "utf8");
++    const infraReadme = readFileSync(resolve("D:/manny/Documents/CustomCard/infra/README.md"), "utf8");
++    const cloudflareSetupDoc = readFileSync(resolve("D:/manny/Documents/CustomCard/docs/cloudflare-workers-ai-setup.md"), "utf8");
++
++    expect(envExample).toContain(`${productionCardCopyModelOverrideEnvKey}=${productionCardCopyModel}`);
++    expect(envExample).toContain(`CUSTOMCARD_CLOUDFLARE_TEXT_MODEL=${productionCardCopyModel}`);
++    expect(envExample).toContain(`CLOUDFLARE_WORKERS_AI_TEXT_MODEL=${productionCardCopyModel}`);
++    expect(infraReadme).toContain(`CUSTOMCARD_AI_CARD_COPY_MODEL=${productionCardCopyModel}`);
++    expect(cloudflareSetupDoc).toContain(`CUSTOMCARD_AI_CARD_COPY_MODEL=${productionCardCopyModel}`);
++    expect(cloudflareSetupDoc).toContain("hosted Cloudflare image keys are not");
++    expect(localProductionTextComfyGuidance.requiresHostedImageKeys).toBe(false);
++  });
+ });
+ 
+ function installSessionStorageStub() {
+   const original = Object.getOwnPropertyDescriptor(globalThis, "sessionStorage");
+   const store = new Map<string, string>();
+   const storage = {
+     getItem: (key: string) => store.get(key) ?? null,
+     setItem: (key: string, value: string) => {
+       store.set(key, value);
+     },
+diff --git a/src/aiFlowConfigData.mjs b/src/aiFlowConfigData.mjs
+index 32d461bc..a2c0617a 100644
+--- a/src/aiFlowConfigData.mjs
++++ b/src/aiFlowConfigData.mjs
+@@ -1,10 +1,16 @@
++import {
++  cloudflareTextCredentialGroups,
++  cloudflareTextModelEnvKeys,
++  productionCardCopyModel
++} from "./aiProviderSetupProfile.mjs";
++
+ export const aiFlowAdminConfigStorageKey = "customcard-ai-flow-admin-config-v1";
+ 
+ const textProviderAdapterIds = [
+   "local-openai-compatible-chat",
+   "huggingface-chat",
+   "cloudflare-workers-ai-chat",
+   "openai-responses-chat",
+   "anthropic-messages-chat",
+   "google-gemini-chat",
+   "groq-chat",
+@@ -104,23 +110,21 @@ const placeholderValues = new Set([
+   "not-set",
+   "replace-me",
+   "replace-me-do-not-commit-real-secret",
+   "sample",
+   "todo",
+   "unset"
+ ]);
+ 
+ export const aiProviderEnvRequirements = {
+   "cloudflare-workers-ai-chat": [
+-    ["CLOUDFLARE_ACCOUNT_ID"],
+-    ["CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", "CLOUDFLARE_API_TOKEN"],
+-    ["CLOUDFLARE_WORKERS_AI_TEXT_MODEL"]
++    ...cloudflareTextCredentialGroups
+   ],
+   "cloudflare-workers-ai-image": [
+     ["CLOUDFLARE_ACCOUNT_ID"],
+     ["CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN", "CLOUDFLARE_API_TOKEN"]
+   ],
+   "openai-responses-chat": [["OPENAI_API_KEY"]],
+   "openai-images": [["OPENAI_API_KEY"]],
+   "anthropic-messages-chat": [["ANTHROPIC_API_KEY"]],
+   "google-gemini-chat": [["GOOGLE_GENERATIVE_AI_API_KEY"]],
+   "google-gemini-image": [["GOOGLE_GENERATIVE_AI_API_KEY"]],
+@@ -139,21 +143,21 @@ export const aiProviderEnvRequirements = {
+   "local-openai-compatible-chat": [["CUSTOMCARD_LOCAL_LLM_BASE_URL", "LMSTUDIO_BASE_URL", "KOBOLDCPP_BASE_URL"]],
+   "local-comfyui-api-image": [["CUSTOMCARD_COMFYUI_URL", "COMFYUI_URL"]],
+   "stability-stable-image": [["STABILITY_API_KEY"]],
+   "replicate-image": [["REPLICATE_API_TOKEN"]],
+   "fal-image": [["FAL_KEY"]],
+   "bfl-flux-image": [["BFL_API_KEY"]],
+   "runcomfy-model-api-image": [["RUNCOMFY_API_TOKEN"]]
+ };
+ 
+ const aiProviderModelEnvKeys = {
+-  "cloudflare-workers-ai-chat": ["CUSTOMCARD_CLOUDFLARE_TEXT_MODEL", "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"],
++  "cloudflare-workers-ai-chat": [...cloudflareTextModelEnvKeys],
+   "cloudflare-workers-ai-image": ["CUSTOMCARD_CLOUDFLARE_IMAGE_MODEL", "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL"],
+   "openai-responses-chat": ["CUSTOMCARD_OPENAI_TEXT_MODEL", "OPENAI_TEXT_MODEL", "CARD_TEXT_MODEL"],
+   "openai-images": ["CUSTOMCARD_OPENAI_IMAGE_MODEL", "OPENAI_IMAGE_MODEL", "CARD_IMAGE_MODEL"],
+   "anthropic-messages-chat": ["CUSTOMCARD_ANTHROPIC_TEXT_MODEL", "ANTHROPIC_MODEL", "CARD_TEXT_MODEL"],
+   "google-gemini-chat": ["CUSTOMCARD_GEMINI_TEXT_MODEL", "GEMINI_TEXT_MODEL", "GOOGLE_GENERATIVE_AI_MODEL"],
+   "google-gemini-image": ["CUSTOMCARD_GEMINI_IMAGE_MODEL", "GEMINI_IMAGE_MODEL", "CARD_IMAGE_MODEL"],
+   "deepai-text2img-image": ["CUSTOMCARD_DEEPAI_IMAGE_MODEL", "DEEPAI_IMAGE_MODEL"],
+   "huggingface-chat": ["CUSTOMCARD_HUGGINGFACE_TEXT_MODEL", "HUGGINGFACE_TEXT_MODEL"],
+   "huggingface-image": ["CUSTOMCARD_HUGGINGFACE_IMAGE_MODEL", "HUGGINGFACE_IMAGE_MODEL"],
+   "mistral-chat": ["CUSTOMCARD_MISTRAL_TEXT_MODEL", "MISTRAL_MODEL"],
+@@ -173,21 +177,21 @@ const aiProviderModelEnvKeys = {
+   ],
+   "local-comfyui-api-image": ["CUSTOMCARD_COMFYUI_CHECKPOINT", "CUSTOMCARD_LOCAL_COMFYUI_CHECKPOINT", "COMFYUI_CHECKPOINT"],
+   "stability-stable-image": ["CUSTOMCARD_STABILITY_IMAGE_MODEL", "STABILITY_IMAGE_MODEL"],
+   "replicate-image": ["CUSTOMCARD_REPLICATE_IMAGE_MODEL", "REPLICATE_IMAGE_MODEL"],
+   "fal-image": ["CUSTOMCARD_FAL_IMAGE_MODEL", "FAL_IMAGE_MODEL"],
+   "bfl-flux-image": ["CUSTOMCARD_BFL_IMAGE_MODEL", "BFL_IMAGE_MODEL"],
+   "runcomfy-model-api-image": []
+ };
+ 
+ const defaultModelsByAdapter = {
+-  "cloudflare-workers-ai-chat": "@cf/qwen/qwen3-30b-a3b-fp8",
++  "cloudflare-workers-ai-chat": productionCardCopyModel,
+   "cloudflare-workers-ai-image": "@cf/black-forest-labs/flux-1-schnell",
+   "openai-responses-chat": "gpt-4o-mini",
+   "openai-images": "gpt-image-2",
+   "anthropic-messages-chat": "claude-3-5-haiku-latest",
+   "google-gemini-chat": "gemini-1.5-flash",
+   "google-gemini-image": "gemini-3.1-flash-image",
+   "deepai-text2img-image": "text2img",
+   "huggingface-chat": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+   "huggingface-image": "black-forest-labs/FLUX.1-schnell",
+   "mistral-chat": "mistral-small-latest",
+diff --git a/src/aiProviderSetupProfile.mjs b/src/aiProviderSetupProfile.mjs
+new file mode 100644
+index 00000000..f6dfd84b
+--- /dev/null
++++ b/src/aiProviderSetupProfile.mjs
+@@ -0,0 +1,45 @@
++export const productionCardCopyProviderId = "cloudflare-workers-ai-chat";
++export const productionCardCopyModel = "@cf/qwen/qwen3-30b-a3b-fp8";
++export const productionCardCopyModelOverrideEnvKey = "CUSTOMCARD_AI_CARD_COPY_MODEL";
++export const cloudflareTextModelEnvKeys = Object.freeze([
++  productionCardCopyModelOverrideEnvKey,
++  "CUSTOMCARD_CLOUDFLARE_TEXT_MODEL",
++  "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"
++]);
++export const cloudflareTextCredentialGroups = Object.freeze([
++  Object.freeze(["CLOUDFLARE_ACCOUNT_ID"]),
++  Object.freeze(["CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", "CLOUDFLARE_API_TOKEN"]),
++  Object.freeze([...cloudflareTextModelEnvKeys])
++]);
++export const hostedAiCardCopySetupKeys = Object.freeze([
++  "CLOUDFLARE_ACCOUNT_ID",
++  "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
++  "CLOUDFLARE_API_TOKEN",
++  ...cloudflareTextModelEnvKeys
++]);
++export const localProductionTextComfyGuidance = Object.freeze({
++  workflow: "local-production-text-comfy",
++  requiresHostedImageKeys: false,
++  detail:
++    "The production-text local Comfy path only needs hosted Cloudflare text setup for card copy. Do not require Cloudflare image tokens or image model keys unless you are validating the live Cloudflare image lane."
++});
++
++export function buildAiProviderSetupProfile() {
++  return {
++    cardCopy: {
++      providerId: productionCardCopyProviderId,
++      defaultModel: productionCardCopyModel,
++      accountEnvKey: "CLOUDFLARE_ACCOUNT_ID",
++      tokenEnvKeys: ["CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", "CLOUDFLARE_API_TOKEN"],
++      modelEnvKeys: [...cloudflareTextModelEnvKeys],
++      modelOverrideEnvKey: productionCardCopyModelOverrideEnvKey
++    },
++    localProductionTextComfy: {
++      ...localProductionTextComfyGuidance
++    }
++  };
++}
++
++export function isProductionCardCopyModelOverrideKey(envKey) {
++  return String(envKey ?? "").trim() === productionCardCopyModelOverrideEnvKey;
++}
+diff --git a/src/providerRuntime.test.ts b/src/providerRuntime.test.ts
+index 8d2e041a..781e160f 100644
+--- a/src/providerRuntime.test.ts
++++ b/src/providerRuntime.test.ts
+@@ -1,11 +1,12 @@
+ import { describe, expect, it } from "vitest";
++import { productionCardCopyModel, productionCardCopyModelOverrideEnvKey } from "./aiProviderSetupProfile.mjs";
+ import { providerCatalog } from "./providerCatalog";
+ import {
+   buildAuthRuntime,
+   buildContactImportRuntime,
+   buildCrmRuntime,
+   buildEventImportRuntime,
+   buildImageGenerationRuntime,
+   buildNotificationRuntime,
+   buildObservabilityRuntime,
+   buildPaymentRuntime,
+@@ -61,24 +62,25 @@ const readyEnv: ProviderRuntimeEnv = {
+   CARDDAV_APP_PASSWORD: "configured-carddav-app-password",
+   CARDDAV_BASE_URL: "https://contacts.customcard.test",
+   CARDDAV_USERNAME: "configured-carddav-user",
+   CLERK_AUTHORIZED_PARTIES: "https://customcard.test",
+   CLERK_AUDIENCE: "customcard-api",
+   CLERK_ISSUER: "https://clerk.customcard.test",
+   CLERK_JWT_KEY: "configured-clerk-jwt-key",
+   CLERK_SECRET_KEY: "configured-clerk-secret-key",
+   CLOUDFLARE_ACCOUNT_ID: "configured-cloudflare-account-id",
+   CLOUDFLARE_API_TOKEN: "configured-cloudflare-api-token",
++  CUSTOMCARD_AI_CARD_COPY_MODEL: productionCardCopyModel,
+   CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "configured-cloudflare-image-token",
+   CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning",
+   CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "configured-cloudflare-text-token",
+-  CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8",
++  CLOUDFLARE_WORKERS_AI_TEXT_MODEL: productionCardCopyModel,
+   COHERE_API_KEY: "configured-cohere-key",
+   COGNITO_APP_CLIENT_ID: "configured-cognito-client-id",
+   COGNITO_DOMAIN: "customcard-auth",
+   COGNITO_USER_POOL_ID: "us-east-1_customcard",
+   COURIER_AUTH_TOKEN: "configured-courier-token",
+   COURIER_TEMPLATE_ID: "configured-courier-template",
+   CUSTOMCARD_AUTH_CALLBACK_URL: "https://customcard.test/auth/callback",
+   CUSTOMERIO_APP_API_KEY: "configured-customerio-app-api-key",
+   CUSTOMERIO_TRANSACTIONAL_MESSAGE_ID: "configured-customerio-transactional-message-id",
+   CUSTOMCARD_PAYMENT_CANCEL_URL: "https://customcard.test/payment/cancel",
+@@ -554,20 +556,34 @@ describe("provider runtime contracts", () => {
+       headers: expect.objectContaining({ authorization: "Bearer {CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN}" })
+     });
+     expect(
+       buildTextChatRuntime("cloudflare-workers-ai-chat", textInput, {
+         ...readyEnv,
+         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: undefined
+       }, openGates).request
+     ).toMatchObject({
+       headers: expect.objectContaining({ authorization: "Bearer {CLOUDFLARE_API_TOKEN}" })
+     });
++    expect(
++      buildTextChatRuntime(
++        "cloudflare-workers-ai-chat",
++        { ...textInput, model: productionCardCopyModel },
++        {
++          ...readyEnv,
++          [productionCardCopyModelOverrideEnvKey]: productionCardCopyModel
++        },
++        openGates
++      ).request
++    ).toMatchObject({
++      credentialRefs: expect.arrayContaining([productionCardCopyModelOverrideEnvKey]),
++      body: expect.objectContaining({ model: productionCardCopyModel })
++    });
+     expect(buildTextChatRuntime("cohere-chat", textInput, readyEnv, openGates).request?.url).toBe(
+       "https://api.cohere.com/v2/chat"
+     );
+     expect(buildTextChatRuntime("perplexity-sonar-chat", textInput, readyEnv, openGates).request?.url).toBe(
+       "https://api.perplexity.ai/chat/completions"
+     );
+     expect(buildTextChatRuntime("xai-chat", textInput, readyEnv, openGates).request?.url).toBe(
+       "https://api.x.ai/v1/chat/completions"
+     );
+     expect(buildTextChatRuntime("together-chat", textInput, readyEnv, openGates).request?.url).toBe(
+diff --git a/src/providerRuntime.ts b/src/providerRuntime.ts
+index 2668ac2f..51f691c1 100644
+--- a/src/providerRuntime.ts
++++ b/src/providerRuntime.ts
+@@ -1,11 +1,16 @@
+ import { buildVendorHandoff, parseFreeImport, type VendorId } from "./customerWorkflow";
++import {
++  cloudflareTextModelEnvKeys,
++  productionCardCopyModel,
++  productionCardCopyModelOverrideEnvKey
++} from "./aiProviderSetupProfile.mjs";
+ import {
+   getProviderAdapter,
+   providerCatalog,
+   type ChatMessage,
+   type ProviderAdapter,
+   type ProviderCapability,
+   type ProviderStatus
+ } from "./providerCatalog";
+ import { buildPrinterPricingComparison } from "./printerPricing";
+ import { buildSamplePrintExportPackage, summarizePrintExportPackage } from "./printExport";
+@@ -960,21 +965,21 @@ function configuredModel(
+   }
+   return fallbackModel;
+ }
+ 
+ function configuredNumber(value: number | undefined, fallback: number): number {
+   return Number.isFinite(value) ? Number(value) : fallback;
+ }
+ 
+ function textModelEnvKeys(adapterId: string): string[] {
+   const envKeysByAdapter: Record<string, string[]> = {
+-    "cloudflare-workers-ai-chat": ["CUSTOMCARD_CLOUDFLARE_TEXT_MODEL", "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"],
++    "cloudflare-workers-ai-chat": [...cloudflareTextModelEnvKeys],
+     "openai-responses-chat": ["CUSTOMCARD_OPENAI_TEXT_MODEL", "OPENAI_TEXT_MODEL", "CARD_TEXT_MODEL"],
+     "anthropic-messages-chat": ["CUSTOMCARD_ANTHROPIC_TEXT_MODEL", "ANTHROPIC_MODEL", "CARD_TEXT_MODEL"],
+     "google-gemini-chat": ["CUSTOMCARD_GEMINI_TEXT_MODEL", "GEMINI_TEXT_MODEL", "GOOGLE_GENERATIVE_AI_MODEL"],
+     "huggingface-chat": ["CUSTOMCARD_HUGGINGFACE_TEXT_MODEL", "HUGGINGFACE_TEXT_MODEL"],
+     "mistral-chat": ["CUSTOMCARD_MISTRAL_TEXT_MODEL", "MISTRAL_MODEL"],
+     "cohere-chat": ["CUSTOMCARD_COHERE_TEXT_MODEL", "COHERE_MODEL"],
+     "perplexity-sonar-chat": ["CUSTOMCARD_PERPLEXITY_TEXT_MODEL", "PERPLEXITY_MODEL"],
+     "xai-chat": ["CUSTOMCARD_XAI_TEXT_MODEL", "XAI_MODEL"],
+     "together-chat": ["CUSTOMCARD_TOGETHER_TEXT_MODEL", "TOGETHER_TEXT_MODEL"],
+     "groq-chat": ["CUSTOMCARD_GROQ_TEXT_MODEL", "GROQ_MODEL"],
+@@ -1002,39 +1007,52 @@ function imageModelEnvKeys(adapterId: string): string[] {
+     "local-comfyui-api-image": ["CUSTOMCARD_COMFYUI_CHECKPOINT", "CUSTOMCARD_LOCAL_COMFYUI_CHECKPOINT", "COMFYUI_CHECKPOINT"],
+     "runcomfy-model-api-image": [],
+     "luma-image": ["CUSTOMCARD_LUMA_IMAGE_MODEL", "LUMA_IMAGE_MODEL"],
+     "replicate-image": ["CUSTOMCARD_REPLICATE_IMAGE_MODEL", "REPLICATE_IMAGE_MODEL"]
+   };
+   return envKeysByAdapter[adapterId] ?? [];
+ }
+ 
+ function defaultTextModel(adapterId: string): string {
+   const defaults: Record<string, string> = {
+-    "cloudflare-workers-ai-chat": "@cf/qwen/qwen3-30b-a3b-fp8",
++    "cloudflare-workers-ai-chat": productionCardCopyModel,
+     "openai-responses-chat": "gpt-4o-mini",
+     "anthropic-messages-chat": "claude-3-5-haiku-latest",
+     "google-gemini-chat": "gemini-1.5-flash",
+     "huggingface-chat": "meta-llama/Llama-3.2-3B-Instruct",
+     "mistral-chat": "mistral-small-latest",
+     "cohere-chat": "command-r7b-12-2024",
+     "perplexity-sonar-chat": "sonar",
+     "xai-chat": "grok-3-mini",
+     "together-chat": "meta-llama/Llama-3.2-3B-Instruct-Turbo",
+     "groq-chat": "llama-3.1-8b-instant",
+     "deepseek-chat": "deepseek-chat",
+     "fireworks-chat": "accounts/fireworks/models/llama-v3p1-8b-instruct",
+     "local-openai-compatible-chat": "local-default",
+     "self-hosted-openai-compatible-chat": "local-default"
+   };
+   return defaults[adapterId] ?? "{CLOUDFLARE_WORKERS_AI_TEXT_MODEL}";
+ }
+ 
++function configuredModelRef(
++  requestedModel: string | undefined,
++  envKeys: string[],
++  env: ProviderRuntimeEnv,
++  fallbackRef: string
++): string {
++  if (requestedModel?.trim()) return requestedModel.trim() === productionCardCopyModel ? productionCardCopyModelOverrideEnvKey : fallbackRef;
++  for (const envKey of envKeys) {
++    if (hasUsableEnvValue(env[envKey])) return envKey;
++  }
++  return fallbackRef;
++}
++
+ function defaultImageModel(adapterId: string): string {
+   const defaults: Record<string, string> = {
+     "cloudflare-workers-ai-image": "@cf/black-forest-labs/flux-1-schnell",
+     "openai-images": "gpt-image-2",
+     "google-gemini-image": "gemini-3.1-flash-image",
+     "deepai-text2img-image": "text2img",
+     "huggingface-image": "black-forest-labs/FLUX.1-schnell",
+     "stability-stable-image": "stable-image-core",
+     "together-image": "black-forest-labs/FLUX.1-schnell-Free",
+     "fal-image": "fal-ai/flux/schnell",
+@@ -1232,25 +1250,26 @@ function buildTextChatRequest(
+       contents: [{ role: "user", parts: [{ text: prompt }] }],
+       generationConfig: { maxOutputTokens: maxTokens, temperature },
+       metadata: { redactions: sanitized.redactions }
+     }, [], {
+       "x-goog-api-key": "{GOOGLE_GENERATIVE_AI_API_KEY}"
+     });
+   }
+ 
+   if (adapter.id === "cloudflare-workers-ai-chat") {
+     const apiTokenRef = cloudflareWorkersAiTokenRef(env, "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN");
++    const modelRef = configuredModelRef(input.model, textModelEnvKeys(adapter.id), env, productionCardCopyModelOverrideEnvKey);
+     return request(
+       adapter,
+       "POST",
+       "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/v1/chat/completions",
+-      ["CLOUDFLARE_ACCOUNT_ID", apiTokenRef, "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"],
++      ["CLOUDFLARE_ACCOUNT_ID", apiTokenRef, modelRef],
+       {
+         model,
+         messages: [{ role: "user", content: prompt }],
+         max_tokens: maxTokens,
+         temperature,
+         metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
+       },
+       [],
+       { authorization: `Bearer {${apiTokenRef}}` }
+     );
+diff --git a/tests/hosted-vercel-env-inventory.test.ts b/tests/hosted-vercel-env-inventory.test.ts
+index ef31b897..cfc469aa 100644
+--- a/tests/hosted-vercel-env-inventory.test.ts
++++ b/tests/hosted-vercel-env-inventory.test.ts
+@@ -1,11 +1,15 @@
+ import { describe, expect, it, vi } from "vitest";
++import {
++  productionCardCopyModel,
++  productionCardCopyModelOverrideEnvKey
++} from "../src/aiProviderSetupProfile.mjs";
+ import {
+   parseVercelEnvJson,
+   resolveVercelEnvTarget,
+   runHostedVercelEnvInventory
+ } from "../scripts/hosted-vercel-env-inventory.mjs";
+ 
+ const requiredKeys = [
+   "CUSTOMCARD_API_RUNTIME",
+   "DATABASE_URL",
+   "AUTH_SESSION_SECRET",
+@@ -107,20 +111,24 @@ describe("hosted Vercel env inventory", () => {
+     const secretJwtKey = "-----BEGIN PUBLIC KEY-----super-secret-----END PUBLIC KEY-----";
+     const commandRunner = vi.fn(async () => ({
+       exitCode: 0,
+       stdout: JSON.stringify({
+         envs: [
+           ...requiredKeys.map((key) => ({
+             key,
+             target: ["production"],
+             value: key === "DATABASE_URL" ? secretDatabaseUrl : key === "CLERK_JWT_KEY" ? secretJwtKey : `secret-${key}`
+           })),
++          { key: "CLOUDFLARE_ACCOUNT_ID", target: ["production"], value: "account-secret" },
++          { key: "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", target: ["production"], value: "cloudflare-text-secret" },
++          { key: productionCardCopyModelOverrideEnvKey, target: ["production"], value: productionCardCopyModel },
++          { key: "CUSTOMCARD_CLOUDFLARE_TEXT_MODEL", target: ["production"], value: productionCardCopyModel },
+           { key: "CUSTOMCARD_API_RUNTIME", target: ["preview"], value: "postgres" }
+         ]
+       }),
+       stderr: "unused stderr super-secret"
+     }));
+ 
+     const report = await runHostedVercelEnvInventory({
+       env: {
+         CUSTOMCARD_HOSTED_ENV_INVENTORY: "enabled",
+         CUSTOMCARD_HOSTED_API_ENV: "production",
+@@ -134,65 +142,87 @@ describe("hosted Vercel env inventory", () => {
+       status: "ready",
+       targetEnvironment: "production",
+       vercelTarget: "production",
+       valuesRedacted: true,
+       envSync: {
+         requiredKeysPresent: true,
+         customcardApiRuntimeConfigured: true,
+         databaseUrlConfigured: true,
+         clerkJwtVerifierConfigured: true,
+         idempotencyConfigured: true,
++        aiCardCopySetupConfigured: true,
++        aiCardCopyProductionModelPinned: true,
+         environmentSynced: true
+       },
+-      passed: 3,
++      passed: 4,
+       failed: 0,
+       blockers: []
+     });
+     expect(commandRunner).toHaveBeenCalledWith(
+       expect.objectContaining({
+         vercelTarget: "production"
+       })
+     );
+     expect(report.requiredKeys).toEqual(
+       expect.arrayContaining([
+         { name: "DATABASE_URL", present: true, targets: ["production"] },
+         { name: "CLERK_JWT_KEY", present: true, targets: ["production"] }
+       ])
+     );
++    expect(report.aiCardCopySetup).toMatchObject({
++      providerId: "cloudflare-workers-ai-chat",
++      defaultModel: productionCardCopyModel,
++      productionModelOverridePresent: true,
++      localProductionTextComfyRequiresHostedImageKeys: false,
++      productionModelOverrideEnvKey: {
++        name: productionCardCopyModelOverrideEnvKey,
++        present: true
++      }
++    });
+     const serialized = JSON.stringify(report);
+     expect(serialized).not.toContain(secretDatabaseUrl);
+     expect(serialized).not.toContain(secretJwtKey);
+     expect(serialized).not.toContain("super-secret");
+     expect(serialized).not.toContain("secret-CUSTOMCARD_API_RUNTIME");
++    expect(serialized).not.toContain("cloudflare-text-secret");
+   });
+ 
+   it("blocks env sync proof when required scoped keys are missing", async () => {
+     const commandRunner = vi.fn(async () => ({
+       exitCode: 0,
+       stdout: JSON.stringify({
+         envs: requiredKeys
+           .filter((key) => key !== "CLERK_AUDIENCE")
+           .map((key) => ({ key, target: ["production"], value: "redacted-by-script" }))
++          .concat([
++            { key: "CLOUDFLARE_ACCOUNT_ID", target: ["production"], value: "account-secret" },
++            { key: "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", target: ["production"], value: "cloudflare-text-secret" }
++          ])
+       }),
+       stderr: ""
+     }));
+ 
+     const report = await runHostedVercelEnvInventory({
+       env: {
+         CUSTOMCARD_HOSTED_ENV_INVENTORY: "enabled",
+         CUSTOMCARD_HOSTED_API_ENV: "production",
+         CUSTOMCARD_HOSTED_API_BASE_URL: "https://customcard-three.vercel.app"
+       },
+       commandRunner
+     });
+ 
+     expect(report.status).toBe("blocked");
+     expect(report.blockers).toEqual(
+-      expect.arrayContaining(["CLERK_AUDIENCE is missing from the Vercel production env inventory."])
++      expect.arrayContaining([
++        "CLERK_AUDIENCE is missing from the Vercel production env inventory.",
++        `${productionCardCopyModelOverrideEnvKey} is missing, so hosted card-copy is not explicitly pinned to ${productionCardCopyModel}.`
++      ])
+     );
+     expect(report.envSync).toMatchObject({
+       requiredKeysPresent: false,
+       clerkJwtVerifierConfigured: false,
++      aiCardCopySetupConfigured: false,
++      aiCardCopyProductionModelPinned: false,
+       environmentSynced: false
+     });
+   });
+ });
+diff --git a/tests/hosted-vercel-env-repair.test.ts b/tests/hosted-vercel-env-repair.test.ts
+index a92fedb7..a44539ae 100644
+--- a/tests/hosted-vercel-env-repair.test.ts
++++ b/tests/hosted-vercel-env-repair.test.ts
+@@ -1,29 +1,51 @@
+ import { describe, expect, it, vi } from "vitest";
++import {
++  productionCardCopyModel,
++  productionCardCopyModelOverrideEnvKey
++} from "../src/aiProviderSetupProfile.mjs";
+ import { runHostedVercelEnvRepair } from "../scripts/hosted-vercel-env-repair.mjs";
+ 
+ const missingInventory = {
+   targetEnvironment: "production",
+   vercelTarget: "production",
+   baseUrl: "https://customcard-three.vercel.app",
+   command: { stdoutParsed: true },
+   requiredKeys: [
+     { name: "CUSTOMCARD_API_RUNTIME", present: true },
+     { name: "DATABASE_URL", present: true },
+     { name: "AUTH_SESSION_SECRET", present: true },
+     { name: "CLERK_JWT_KEY", present: true },
+     { name: "CLERK_AUTHORIZED_PARTIES", present: true },
+     { name: "CLERK_ISSUER", present: false },
+     { name: "CLERK_AUDIENCE", present: false },
+     { name: "IDEMPOTENCY_KEY_TTL_HOURS", present: false }
+   ],
+-  envSync: { environmentSynced: false }
++  aiCardCopySetup: {
++    providerId: "cloudflare-workers-ai-chat",
++    defaultModel: productionCardCopyModel,
++    productionModelOverrideEnvKey: {
++      name: productionCardCopyModelOverrideEnvKey,
++      present: false
++    },
++    productionModelOverridePresent: false,
++    baseConfigured: true,
++    localProductionTextComfyRequiresHostedImageKeys: false,
++    blockers: [
++      `${productionCardCopyModelOverrideEnvKey} is missing, so hosted card-copy is not explicitly pinned to ${productionCardCopyModel}.`
++    ]
++  },
++  envSync: {
++    environmentSynced: false,
++    aiCardCopySetupConfigured: true,
++    aiCardCopyProductionModelPinned: false
++  }
+ };
+ 
+ const repairValues = {
+   CLERK_ISSUER: "https://clerk.customcard.app",
+   CLERK_AUDIENCE: "customcard-api",
+   IDEMPOTENCY_KEY_TTL_HOURS: "24"
+ };
+ 
+ describe("hosted Vercel env repair", () => {
+   it("fails closed before inspecting or applying without the explicit guard", async () => {
+@@ -69,23 +91,29 @@ describe("hosted Vercel env repair", () => {
+     });
+ 
+     expect(report).toMatchObject({
+       status: "ready",
+       targetEnvironment: "production",
+       vercelTarget: "production",
+       checkedAt: "2026-06-15T16:00:00.000Z",
+       applyEnabled: false,
+       valuesRedacted: true,
+       missingRepairKeys: ["CLERK_ISSUER", "CLERK_AUDIENCE", "IDEMPOTENCY_KEY_TTL_HOURS"],
++      aiCardCopySetup: {
++        productionModelOverridePresent: false,
++        localProductionTextComfyRequiresHostedImageKeys: false
++      },
+       envSync: {
+         repairKeysMissing: 3,
+         repairApplied: false,
++        aiCardCopySetupConfigured: true,
++        aiCardCopyProductionModelPinned: false,
+         environmentSynced: false
+       },
+       blockers: []
+     });
+     expect(report.repairPlan).toEqual([
+       { key: "CLERK_ISSUER", target: "production", valueSupplied: true, action: "plan-only" },
+       { key: "CLERK_AUDIENCE", target: "production", valueSupplied: true, action: "plan-only" },
+       { key: "IDEMPOTENCY_KEY_TTL_HOURS", target: "production", valueSupplied: true, action: "plan-only" }
+     ]);
+     expect(commandRunner).not.toHaveBeenCalled();
+@@ -133,20 +161,22 @@ describe("hosted Vercel env repair", () => {
+       commandRunner
+     });
+ 
+     expect(report).toMatchObject({
+       status: "ready",
+       applyEnabled: true,
+       valuesRedacted: true,
+       envSync: {
+         repairKeysMissing: 3,
+         repairApplied: true,
++        aiCardCopySetupConfigured: true,
++        aiCardCopyProductionModelPinned: false,
+         environmentSynced: false
+       },
+       blockers: []
+     });
+     expect(commandRunner).toHaveBeenCalledTimes(3);
+     expect(report.applyResults).toEqual([
+       { key: "CLERK_ISSUER", target: "production", exitCode: 0 },
+       { key: "CLERK_AUDIENCE", target: "production", exitCode: 0 },
+       { key: "IDEMPOTENCY_KEY_TTL_HOURS", target: "production", exitCode: 0 }
+     ]);
+@@ -172,20 +202,22 @@ describe("hosted Vercel env repair", () => {
+       status: "blocked",
+       applyEnabled: true,
+       partialApplyEnabled: true,
+       valuesRedacted: true,
+       appliedRepairKeys: ["IDEMPOTENCY_KEY_TTL_HOURS"],
+       remainingUnappliedRepairKeys: ["CLERK_ISSUER", "CLERK_AUDIENCE"],
+       envSync: {
+         repairKeysMissing: 3,
+         repairApplied: false,
+         partialRepairApplied: true,
++        aiCardCopySetupConfigured: true,
++        aiCardCopyProductionModelPinned: false,
+         environmentSynced: false
+       }
+     });
+     expect(report.repairPlan).toEqual([
+       { key: "CLERK_ISSUER", target: "production", valueSupplied: false, action: "blocked-missing-value" },
+       { key: "CLERK_AUDIENCE", target: "production", valueSupplied: false, action: "blocked-missing-value" },
+       { key: "IDEMPOTENCY_KEY_TTL_HOURS", target: "production", valueSupplied: true, action: "vercel-env-add" }
+     ]);
+     expect(report.blockers).toEqual(
+       expect.arrayContaining([

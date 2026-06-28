@@ -352,7 +352,7 @@ export function createApiRouteFamilies(deps) {
       if (!body.ok) return true;
       const result = await runAdminLocalAiLoop({
         body: body.value,
-        writeReport: process.env.CUSTOMCARD_ADMIN_LOCAL_AI_LOOP_WRITE_REPORT !== "disabled"
+        writeReport: shouldWriteAdminLocalAiLoopReport()
       });
       sendJson(response, result.statusCode, result.payload);
       return true;
@@ -863,5 +863,12 @@ export function createApiRouteFamilies(deps) {
       if (key.toLowerCase() === name.toLowerCase()) return Array.isArray(value) ? value[0] ?? "" : String(value);
     }
     return "";
+  }
+
+  function shouldWriteAdminLocalAiLoopReport() {
+    const configured = String(process.env.CUSTOMCARD_ADMIN_LOCAL_AI_LOOP_WRITE_REPORT ?? "").trim().toLowerCase();
+    if (["1", "true", "yes", "enabled", "on"].includes(configured)) return true;
+    if (["0", "false", "no", "disabled", "off"].includes(configured)) return false;
+    return !process.env.VERCEL;
   }
 }

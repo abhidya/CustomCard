@@ -23,7 +23,6 @@ import {
 } from "../../src/adminRuntimeConfigData.mjs";
 import type { AiGenerationJobEvidence } from "../../src/aiGenerationJobs";
 import { buildBrowserIdempotencyKey, fetchBrowser, requestBrowserJson } from "../../src/browserRequestAdapter";
-import { resolveCardGenerationEndpoint } from "../../src/browserGatePolicy";
 import { providerCatalog } from "../../src/providerCatalog";
 import { ProviderQueueStatusPanel, useProviderQueueStatus } from "../../src/providerQueueStatusPanel";
 import { normalizeBrowserImageUrl } from "../browserImageUrl";
@@ -33,18 +32,6 @@ const adapterLabels = new Map(providerCatalog.map((adapter) => [adapter.id, adap
 
 function adapterLabel(adapterId: string): string {
   return adapterLabels.get(adapterId) ?? adapterId;
-}
-
-interface ProbeResult {
-  ms: number;
-  ok: boolean;
-  status?: number;
-}
-
-interface ProbeTarget {
-  id: string;
-  name: string;
-  url: string;
 }
 
 interface BucketObject {
@@ -93,6 +80,14 @@ interface BucketViewerPayload {
   objects?: BucketObject[];
   renderPackets?: BucketRenderPacketGroup[];
   blockers?: string[];
+}
+
+interface BucketViewerErrorPayload {
+  status?: string;
+  error?: string;
+  detail?: string;
+  blockers?: string[];
+  requiredAuth?: string;
 }
 
 interface BucketJsonPreview {
@@ -211,6 +206,38 @@ interface LocalAiLoopPayload {
   error?: string;
 }
 
+interface AdminReadinessPayload {
+  status?: string;
+  runtime?: {
+    mode?: string;
+    authEnforced?: boolean;
+    postgresConfigured?: boolean;
+    artifactStore?: {
+      configured?: boolean;
+      provider?: string;
+      bucket?: string | null;
+      credentialMode?: string;
+      liveNetworkCalls?: boolean;
+      blockers?: string[];
+    };
+  };
+  persistence?: {
+    providerUsageLedgerTable?: boolean;
+    idempotencyTable?: boolean;
+    appendOnlyAudit?: boolean;
+    renderPacketArtifacts?: boolean;
+    signedArtifactUrls?: boolean;
+  };
+  blockers?: string[];
+}
+
+interface CriticalDependencyRow {
+  id: string;
+  name: string;
+  state: "ok" | "fail" | "wait";
+  detail: string;
+}
+
 type LocalAiLoopMode = "plan" | "queue" | "queue-and-run";
 type LocalAiWorkerReports = NonNullable<LocalAiLoopPayload["workerResult"]>["reports"];
 type BucketSort = "lastModified" | "key";
@@ -219,26 +246,7 @@ type BucketOrder = "asc" | "desc";
 const defaultBucketPageSize = 5;
 const defaultBenchmarkPhase = "pipeline-quality";
 
-function buildProbeTargets(): ProbeTarget[] {
-  const { legacyBaseUrl: cardGenUrl } = resolveCardGenerationEndpoint(import.meta.env);
-  return [
-    { id: "web", name: "Web app", url: "/?probe=1" },
-    { id: "api", name: "API health", url: "/api/health" },
-    ...(cardGenUrl ? [{ id: "cardgen", name: "AI card generation", url: cardGenUrl }] : [])
-  ];
-}
-
-async function probe(url: string): Promise<ProbeResult> {
-  const start = performance.now();
-  try {
-    const response = await fetchBrowser(url, { cache: "no-store" });
-    return { ms: Math.round(performance.now() - start), ok: response.ok, status: response.status };
-  } catch {
-    return { ms: Math.round(performance.now() - start), ok: false };
-  }
-}
-
-/** Focused operator console: live status, dependency latency, users, provider policy. */
+/** Focused operator console: live status, critical dependencies, users, provider policy. */
 export function AdminView({
   aiFlowConfigs,
   aiGenerationJobs,
@@ -254,27 +262,34 @@ export function AdminView({
   getAdminApiToken?: () => Promise<string | undefined>;
   fullAudit: ReactNode;
 }) {
-  /* ---------- live dependency probes ---------- */
-  const [targets] = useState(buildProbeTargets);
-  const [results, setResults] = useState<Record<string, ProbeResult | "running">>({});
-  const [lastRunAt, setLastRunAt] = useState<string | null>(null);
+  /* ---------- persisted critical dependency readiness ---------- */
+  const [adminReadiness, setAdminReadiness] = useState<AdminReadinessPayload | null>(null);
+  const [adminReadinessLoading, setAdminReadinessLoading] = useState(false);
+  const [adminReadinessError, setAdminReadinessError] = useState("");
 
-  const runProbes = useCallback(() => {
-    for (const target of targets) {
-      setResults((current) => ({ ...current, [target.id]: "running" }));
-      void probe(target.url).then((result) => {
-        setResults((current) => ({ ...current, [target.id]: result }));
-      });
-    }
-    setLastRunAt(new Date().toLocaleTimeString());
-  }, [targets]);
+  const loadAdminReadiness = useCallback(() => {
+    setAdminReadinessLoading(true);
+    setAdminReadinessError("");
+    requestBrowserJson<AdminReadinessPayload>("/api/admin/readiness", {
+      cache: "no-store",
+      getToken: getAdminApiToken
+    })
+      .then(({ payload, response }) => {
+        if (!response.ok) throw new Error(payload?.status || `Admin readiness returned HTTP ${response.status}`);
+        setAdminReadiness(payload ?? null);
+      })
+      .catch((error: unknown) => {
+        setAdminReadinessError(error instanceof Error ? error.message : "Admin readiness is unavailable.");
+      })
+      .finally(() => setAdminReadinessLoading(false));
+  }, [getAdminApiToken]);
 
   useEffect(() => {
-    runProbes();
-  }, [runProbes]);
+    loadAdminReadiness();
+  }, [loadAdminReadiness]);
 
-  const apiResult = results.api;
-  const serviceUp = apiResult !== undefined && apiResult !== "running" && apiResult.ok;
+  const serviceUp = adminReadiness?.status === "ready" && !adminReadinessError;
+  const criticalDependencyRows = useMemo(() => buildCriticalDependencyRows(adminReadiness), [adminReadiness]);
   const providerQueueStatus = useProviderQueueStatus(getAdminApiToken);
 
   /* ---------- safety controls ---------- */
@@ -421,7 +436,10 @@ export function AdminView({
       idempotencyKey: buildBrowserIdempotencyKey("/api/admin/model-benchmarks/run")
     })
       .then(({ payload, response }) => {
-        if (!response.ok) throw new Error(payload?.error || payload?.status || `Model benchmark run returned HTTP ${response.status}`);
+        if (!response.ok) {
+          setBenchmarkRunResult(payload ?? null);
+          throw new Error(payload?.error || payload?.status || `Model benchmark run returned HTTP ${response.status}`);
+        }
         setBenchmarkRunResult(payload ?? null);
         loadModelBenchmarkCatalog();
       })
@@ -444,7 +462,13 @@ export function AdminView({
       idempotencyKey: buildBrowserIdempotencyKey("/api/admin/local-ai-loop/run")
     })
       .then(({ payload, response }) => {
-        if (!response.ok) throw new Error(payload?.error || payload?.queueResult?.error || payload?.status || `Local AI loop returned HTTP ${response.status}`);
+        if (!response.ok) {
+          if (payload?.status === "blocked" || payload?.blockers?.length || payload?.queueResult?.status === "blocked") {
+            setLocalAiLoopResult(payload ?? null);
+            return;
+          }
+          throw new Error(payload?.error || payload?.queueResult?.error || payload?.status || `Local AI loop returned HTTP ${response.status}`);
+        }
         setLocalAiLoopResult(payload ?? null);
       })
       .catch((error: unknown) => {
@@ -550,8 +574,10 @@ export function AdminView({
   const [bucketJsonPreviews, setBucketJsonPreviews] = useState<Record<string, BucketJsonPreview>>({});
 
   const loadBucketObjects = useCallback((cursor = "", pageIndex = 0, cursorHistory: string[] = [""]) => {
+    const normalizedPrefix = normalizeBucketPrefixInput(bucketPrefix);
+    if (normalizedPrefix !== bucketPrefix) setBucketPrefix(normalizedPrefix);
     const params = new URLSearchParams({
-      prefix: bucketPrefix,
+      prefix: normalizedPrefix,
       limit: String(bucketPageSize),
       sort: bucketSort,
       order: bucketOrder
@@ -559,19 +585,19 @@ export function AdminView({
     if (cursor) params.set("cursor", cursor);
     setBucketLoading(true);
     setBucketError("");
-    requestBrowserJson<BucketViewerPayload & { status?: string }>(`/api/admin/artifacts/bucket?${params.toString()}`, {
+    requestBrowserJson<BucketViewerPayload & BucketViewerErrorPayload>(`/api/admin/artifacts/bucket?${params.toString()}`, {
       cache: "no-store",
-      getToken: getAdminApiToken
+      getToken: getAdminApiToken,
+      requireToken: true
     })
       .then(({ payload, response }) => {
-        if (!response.ok) throw new Error(payload?.status || `Bucket viewer returned HTTP ${response.status}`);
+        if (!response.ok) throw new Error(bucketViewerErrorMessage(payload, response.status));
         setBucketPayload(payload as BucketViewerPayload);
         setBucketPageIndex(pageIndex);
         setBucketCursorHistory(cursorHistory);
       })
       .catch((error: unknown) => {
-        if (pageIndex === 0) setBucketPayload(null);
-        setBucketError(error instanceof Error ? error.message : "Bucket viewer is unavailable.");
+        setBucketError(bucketViewerCatchMessage(error));
       })
       .finally(() => setBucketLoading(false));
   }, [bucketOrder, bucketPageSize, bucketPrefix, bucketSort, getAdminApiToken]);
@@ -685,7 +711,7 @@ export function AdminView({
             <h2>Service</h2>
             <span className="opsStatus" data-ok={serviceUp}>
               <Activity size={14} />
-              {apiResult === "running" || apiResult === undefined ? "Checking" : serviceUp ? "Live" : "Check API"}
+              {adminReadinessLoading && !adminReadiness ? "Checking" : serviceUp ? "Live" : "Check API"}
             </span>
           </div>
           <ul className="opsFacts">
@@ -710,32 +736,28 @@ export function AdminView({
           </button>
         </section>
 
-        {/* ---- Dependency latency ---- */}
+        {/* ---- Critical dependencies ---- */}
         <section className="panelcard opsCard">
           <div className="opsCardHead">
-            <h2>Dependency latency</h2>
-            <button className="btn btn-ghost btn-sm" onClick={runProbes} type="button">
+            <h2>Critical dependencies</h2>
+            <button className="btn btn-ghost btn-sm" onClick={loadAdminReadiness} type="button">
               <RefreshCw size={14} />
-              Re-run
+              Refresh
             </button>
           </div>
           <ul className="opsProbes">
-            {targets.map((target) => {
-              const result = results[target.id];
-              return (
-                <li key={target.id}>
-                  <span className="opsProbeDot" data-state={result === "running" || result === undefined ? "wait" : result.ok ? "ok" : "fail"} />
-                  <span className="opsProbeName">{target.name}</span>
-                  <span className="opsProbeMs">
-                    {result === undefined || result === "running"
-                      ? "…"
-                      : `${result.ms} ms${result.ok ? "" : result.status ? ` · HTTP ${result.status}` : " · unavailable"}`}
-                  </span>
-                </li>
-              );
-            })}
+            {criticalDependencyRows.map((row) => (
+              <li key={row.id}>
+                <span className="opsProbeDot" data-state={adminReadinessLoading ? "wait" : row.state} />
+                <span className="opsProbeName">{row.name}</span>
+                <span className="opsProbeMs">{adminReadinessLoading ? "..." : row.detail}</span>
+              </li>
+            ))}
           </ul>
-          <small className="opsFoot">Measured from this browser{lastRunAt ? ` · last run ${lastRunAt}` : ""}.</small>
+          <small className="opsFoot">
+            Source: persisted admin readiness, runtime mode, and critical dependency contracts.
+            {adminReadinessError ? ` ${adminReadinessError}` : ""}
+          </small>
         </section>
 
         {/* ---- Users ---- */}
@@ -1532,6 +1554,76 @@ export function AdminView({
       {auditOpen ? <div className="opsAudit reveal">{fullAudit}</div> : null}
     </section>
   );
+}
+
+function buildCriticalDependencyRows(readiness: AdminReadinessPayload | null): CriticalDependencyRow[] {
+  if (!readiness) {
+    return [
+      { id: "postgres", name: "Postgres", state: "wait", detail: "Waiting for admin readiness" },
+      { id: "object-store", name: "Object store", state: "wait", detail: "Waiting for admin readiness" },
+      { id: "cost-ledger", name: "Cost ledger", state: "wait", detail: "Waiting for admin readiness" }
+    ];
+  }
+
+  const runtime = readiness.runtime ?? {};
+  const persistence = readiness.persistence ?? {};
+  const artifactStore = runtime.artifactStore ?? {};
+  const postgresReady = runtime.mode === "postgres" && runtime.postgresConfigured !== false;
+  const artifactReady = artifactStore.configured === true;
+  const ledgerReady = postgresReady && persistence.providerUsageLedgerTable === true;
+  const queueReady = postgresReady && persistence.idempotencyTable === true && persistence.appendOnlyAudit === true;
+
+  return [
+    {
+      id: "postgres",
+      name: "Postgres",
+      state: postgresReady ? "ok" : "fail",
+      detail: runtime.mode ? `${runtime.mode}${postgresReady ? " persisted" : " not durable"}` : "runtime unavailable"
+    },
+    {
+      id: "object-store",
+      name: "Object store",
+      state: artifactReady ? "ok" : "fail",
+      detail: artifactReady
+        ? `${artifactStore.provider ?? "configured"} - ${artifactStore.credentialMode ?? "credentials ready"}`
+        : artifactStore.blockers?.[0] ?? "artifact persistence not configured"
+    },
+    {
+      id: "cost-ledger",
+      name: "Cost ledger",
+      state: ledgerReady ? "ok" : "fail",
+      detail: ledgerReady ? "provider_call_events persisted" : "provider_call_events unavailable"
+    },
+    {
+      id: "queue",
+      name: "Job queue",
+      state: queueReady ? "ok" : "fail",
+      detail: queueReady ? "api_jobs and audit contracts persisted" : "durable queue evidence unavailable"
+    }
+  ];
+}
+
+function normalizeBucketPrefixInput(value: string): string {
+  const text = value.trim().replaceAll("\\", "/");
+  if (!text) return "projects/";
+  const projectsIndex = text.indexOf("projects/");
+  if (!text.startsWith("projects/") && projectsIndex > 0) return text.slice(projectsIndex);
+  if (text.startsWith("projects/")) return text;
+  if (/^[a-zA-Z0-9._-]+$/.test(text)) return `projects/${text}/`;
+  return text;
+}
+
+function bucketViewerErrorMessage(payload: BucketViewerErrorPayload | undefined, status: number): string {
+  const detail = payload?.blockers?.[0] ?? payload?.detail ?? payload?.error ?? payload?.status;
+  const auth = payload?.requiredAuth ? ` (${payload.requiredAuth})` : "";
+  return detail ? `Bucket viewer returned HTTP ${status}: ${detail}${auth}` : `Bucket viewer returned HTTP ${status}`;
+}
+
+function bucketViewerCatchMessage(error: unknown): string {
+  if (error instanceof Error && error.message === "auth-token-required") {
+    return "Bucket viewer needs an admin session token. Sign in as an admin, then refresh the bucket.";
+  }
+  return error instanceof Error ? error.message : "Bucket viewer is unavailable.";
 }
 
 function buildAiQueueLanes(jobs: AiGenerationJobEvidence[]) {

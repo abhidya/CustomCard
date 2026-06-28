@@ -215,14 +215,14 @@ describe("retail printer operation start packets", () => {
       (operation) => operation.kind === "upload-image"
     );
 
-    expect(startPacket?.requiredEvidence).toBe(profile.requiredEvidence);
+    expect(startPacket?.requiredEvidence).toEqual(profile.requiredEvidence);
     expect(startPacket?.forbiddenFields).toEqual(["raw relationship memories", "raw payment card data", "unapproved recipient PII"]);
     expect(startPacket?.providerEntrypoint).toMatchObject({
       evidenceMode: profile.evidenceMode,
       couponMode: profile.couponMode
     });
-    expect(adapterOperation?.requiredEvidence).toBe(profile.adapterRequiredEvidence);
-    expect(adapterOperation?.certificationGateIds).toBe(profile.adapterCertificationGateIds);
+    expect(adapterOperation?.requiredEvidence).toEqual(profile.adapterRequiredEvidence);
+    expect(adapterOperation?.certificationGateIds).toEqual(profile.adapterCertificationGateIds);
     expect(adapterOperation?.providerEntrypoint).toMatchObject({
       evidenceMode: profile.evidenceMode,
       couponMode: profile.providerEntrypointCouponMode

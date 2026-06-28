@@ -1,0 +1,364 @@
+﻿# Review package: 1ec1df6b..d3e4c86848def4d7b98d73c1194d9bf2a60f107c
+
+## Commits
+d3e4c868 Add Task 4 drift guards and setup docs contract
+
+## Files changed
+ docs/cloudflare-workers-ai-setup.md            | 10 ++++--
+ docs/comfyui-production-text-workflow.md       | 12 +++++++-
+ docs/vercel-env-structure.md                   |  7 ++++-
+ infra/env/.env.example                         |  3 ++
+ src/aiProviderSetupProfile.test.ts             | 42 ++++++++++++++++++++++++++
+ tests/hosted-vercel-env-inventory.test.ts      | 14 +++++++++
+ tests/production-text-readiness-doctor.test.ts | 14 +++++++--
+ 7 files changed, 96 insertions(+), 6 deletions(-)
+
+## Diff
+diff --git a/docs/cloudflare-workers-ai-setup.md b/docs/cloudflare-workers-ai-setup.md
+index bbade4aa..7ddead8e 100644
+--- a/docs/cloudflare-workers-ai-setup.md
++++ b/docs/cloudflare-workers-ai-setup.md
+@@ -1,47 +1,53 @@
+ # Cloudflare Workers AI Setup
+ 
+ Cloudflare Workers AI is the preferred low-cost AI provider for this app's
+ first live hosted model path. Keep real values in ignored local env files and in
+ Vercel's encrypted environment store; tracked files should only contain
+ placeholders and model IDs.
+ 
+ ## Environment
+ 
+-Required shared configuration:
++Required hosted card-copy text configuration:
+ 
+ ```bash
+ CLOUDFLARE_ACCOUNT_ID=replace-me
+ CLOUDFLARE_API_TOKEN=replace-me
+ CUSTOMCARD_AI_CARD_COPY_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
+ CUSTOMCARD_CLOUDFLARE_TEXT_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
+ CLOUDFLARE_WORKERS_AI_TEXT_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
+-CLOUDFLARE_WORKERS_AI_IMAGE_MODEL=@cf/bytedance/stable-diffusion-xl-lightning
+ ```
+ 
+ Optional split-token overrides:
+ 
+ ```bash
+ CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN=replace-me
+ CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN=replace-me
+ ```
+ 
+ The runtime uses `CLOUDFLARE_API_TOKEN` unless a lane-specific token is set. Use
+ split tokens when Cloudflare issues separate Workers AI tokens for LLM and image
+ generation.
+ 
+ For the production-text local Comfy path, hosted Cloudflare image keys are not
+ required. Keep the Cloudflare text/account setup for card copy, but only add
+ `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN` or
+ `CLOUDFLARE_WORKERS_AI_IMAGE_MODEL` when you are explicitly validating the live
+ Cloudflare image adapter instead of the local Comfy workflow.
+ 
++Optional live Cloudflare image lane configuration:
++
++```bash
++CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN=replace-me
++CLOUDFLARE_WORKERS_AI_IMAGE_MODEL=@cf/bytedance/stable-diffusion-xl-lightning
++```
++
+ ## Recommended Models
+ 
+ Use `@cf/qwen/qwen3-30b-a3b-fp8` as the default LLM for production card copy.
+ It is the current Cloudflare text model for the full card-copy JSON contract,
+ and card-copy requests send a JSON Schema through `response_format` so panel
+ copy is not prompt-only JSON.
+ 
+ Use `cloudflare-workers-ai-image` as the preferred live card-image adapter right
+ now. The app still keeps `browser-svg-renderer` as the deterministic fallback and
+ debug path for flat 1500 x 2100 artwork layers, but Cloudflare remains visible in
+diff --git a/docs/comfyui-production-text-workflow.md b/docs/comfyui-production-text-workflow.md
+index 8c66f5c5..c158c236 100644
+--- a/docs/comfyui-production-text-workflow.md
++++ b/docs/comfyui-production-text-workflow.md
+@@ -12,20 +12,24 @@ experiments, but production greeting cards need exact copy, stable wrapping, and
+ repeatable print output.
+ 
+ ## Current Repo State
+ 
+ - `customcard-hybrid-reserved-layout.json` is a benchmark workflow. It renders
+   text-safe artwork in Comfy, then the benchmark script flattens text with
+   Sharp/SVG outside Comfy.
+ - `customcard-production-text-overlay.json` is the production candidate. It adds
+   the repo-owned `CustomCardTextComposer` node after `VAEDecode` and before
+   `SaveImage`.
++- `scripts/comfy-production-text-setup.mjs` is the shared setup facts module
++  for this workflow. Keep the workflow path, `CustomCardTextComposer` node
++  source, required class name, default Comfy URL, and setup instructions there
++  first so docs, doctors, and wrappers do not drift.
+ - `local-production-text` is the benchmark phase for this candidate. With a
+   configured local LLM, it runs fixed customer request fixtures through the real
+   card-copy planner, then treats Comfy output as the final text-composited panel
+   and bypasses the benchmark preview overlay. The lower-level phase still has a
+   one-run sunburst compositor calibration fixture, but the tracked wrapper only
+   allows that path when `-AllowCompositorFixtureFallback` is passed explicitly.
+ - `buildImagePromptPlan` now carries `headline`, `body`, and normalized
+   `text_layout` into image-provider execution as `panel_copy`.
+ - `scripts/local-comfy-production-text.mjs` is the shared production text
+   contract used by both the app generator and benchmark loop. Put template
+@@ -280,21 +284,27 @@ Comfy template variables exposed by the local adapter include:
+ - `comfyui-workflows/customcard-hybrid-reserved-layout.json`
+   - Benchmark fallback.
+   - Comfy creates artwork only.
+   - Benchmark compositor creates final previews outside Comfy.
+ - `comfyui-workflows/customcard-production-text-overlay.json`
+   - Production candidate.
+   - Requires checked-in `CustomCardTextComposer`.
+   - Comfy returns the final panel image with exact copy rendered.
+ - `scripts/comfyui-production-text-preflight.mjs`
+   - Offline/live preflight.
+-  - Verifies workflow JSON, node source, and live `/object_info` when requested.
++  - Verifies the shared setup facts, workflow JSON, node source, and live
++    `/object_info` when requested.
++- `scripts/comfy-production-text-setup.mjs`
++  - Shared setup facts for the production-text workflow.
++  - Pins `comfyui-workflows/customcard-production-text-overlay.json`,
++    `comfyui-custom-nodes/CustomCardTextComposer`, required class
++    `CustomCardTextComposer`, default Comfy URL, and operator setup steps.
+ - `scripts/production-text-readiness-doctor.mjs`
+   - Advisory or blocking readiness check for promotion attempts.
+   - Aggregates workflow/node availability, live Comfy status, latest aggregate
+     quality, local model inventory, and active planner endpoint suitability.
+   - Accepts hosted/self-hosted planner auth through
+     `CUSTOMCARD_LOCAL_LLM_API_KEY` or `--local-llm-api-key`, so protected
+     OpenAI-compatible endpoints can be checked without falling back to local
+     KoboldCPP.
+   - Treats known-small planners such as Qwen3-4B/8B as smoke/failure evidence,
+     not production evidence.
+diff --git a/docs/vercel-env-structure.md b/docs/vercel-env-structure.md
+index b11fee66..19584431 100644
+--- a/docs/vercel-env-structure.md
++++ b/docs/vercel-env-structure.md
+@@ -83,20 +83,24 @@ production keys are:
+ ### Google Calendar OAuth
+ 
+ - `GOOGLE_OAUTH_CLIENT_ID`
+ - `GOOGLE_OAUTH_CLIENT_SECRET`
+ - `GOOGLE_OAUTH_REDIRECT_URI`
+ - `GOOGLE_OAUTH_STATE_SECRET`
+ - `GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY`
+ 
+ ### AI Providers
+ 
++Hosted card-copy uses Cloudflare text/account keys. The local production-text
++Comfy path does not require Cloudflare image keys unless you are explicitly
++proving the live Cloudflare image lane.
++
+ - `CLOUDFLARE_ACCOUNT_ID`
+ - `CLOUDFLARE_API_TOKEN`
+ - `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`
+ - `CLOUDFLARE_WORKERS_AI_IMAGE_MODEL`
+ - `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN`
+ - `CLOUDFLARE_WORKERS_AI_TEXT_MODEL`
+ 
+ ### Object Store
+ 
+ - `ARTIFACT_SIGNED_URL_TTL_MINUTES`
+@@ -170,21 +174,22 @@ resource.
+ - `WALGREENS_API_KEY`
+ - `WALGREENS_VENDOR_MODE`
+ 
+ ## Operational Rules
+ 
+ - Vercel env changes apply to new deployments. Redeploy after changing runtime
+   or provider env.
+ - Use `vercel env ls --format=json` for scoped key inventory.
+ - Use `CUSTOMCARD_HOSTED_ENV_INVENTORY=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:env:inventory`
+   to produce a redacted key-coverage report. The report must not include env
+-  values, only key names and target scopes.
++  values, only key names and target scopes. Treat these inventory artifacts as
++  setup proof, not a place to copy or store secrets.
+ - Use `CUSTOMCARD_HOSTED_ENV_REPAIR=enabled npm run hosted:env:repair` for a
+   redacted repair plan. To apply missing production keys, also set
+   `CUSTOMCARD_HOSTED_ENV_REPAIR_APPLY=enabled`,
+   `CUSTOMCARD_HOSTED_ENV_REPAIR_ACKNOWLEDGE_PRODUCTION=enabled`, and provide the
+   remaining missing keys in the process env. Use
+   `CUSTOMCARD_HOSTED_ENV_REPAIR_ALLOW_PARTIAL=enabled` only when intentionally
+   applying a valid subset while keeping the report blocked on remaining keys.
+   The repair report must not include the values.
+ - Use `CUSTOMCARD_HOSTED_CLERK_PUBLIC_CONFIG_PROBE=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:clerk:public-config`
+   to fetch the deployed public app shell and JavaScript assets, redact Clerk
+diff --git a/infra/env/.env.example b/infra/env/.env.example
+index c0e45873..8c3744cc 100644
+--- a/infra/env/.env.example
++++ b/infra/env/.env.example
+@@ -171,20 +171,23 @@ AZURE_OPENAI_IMAGE_DEPLOYMENT=replace-me
+ AWS_ACCESS_KEY_ID=replace-me
+ AWS_SECRET_ACCESS_KEY=replace-me
+ AWS_REGION=replace-me
+ BEDROCK_TEXT_MODEL_ID=replace-me
+ BEDROCK_IMAGE_MODEL_ID=replace-me
+ ANTHROPIC_API_KEY=replace-me
+ GOOGLE_GENERATIVE_AI_API_KEY=replace-me
+ CLOUDFLARE_ACCOUNT_ID=replace-me
+ CLOUDFLARE_API_TOKEN=replace-me
+ CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN=replace-me
++# Hosted card-copy uses the Cloudflare text/account keys above. The local
++# production-text Comfy workflow does not require the image keys below unless
++# you are explicitly validating the live Cloudflare image lane.
+ CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN=replace-me
+ CUSTOMCARD_AI_CARD_COPY_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
+ CUSTOMCARD_CLOUDFLARE_TEXT_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
+ CLOUDFLARE_WORKERS_AI_TEXT_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
+ CLOUDFLARE_WORKERS_AI_IMAGE_MODEL=@cf/bytedance/stable-diffusion-xl-lightning
+ CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=browser-svg-renderer
+ CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG=false
+ CUSTOMCARD_TRUST_PROXY_HEADERS=false
+ MISTRAL_API_KEY=replace-me
+ COHERE_API_KEY=replace-me
+diff --git a/src/aiProviderSetupProfile.test.ts b/src/aiProviderSetupProfile.test.ts
+new file mode 100644
+index 00000000..65ae9202
+--- /dev/null
++++ b/src/aiProviderSetupProfile.test.ts
+@@ -0,0 +1,42 @@
++import { readFileSync } from "node:fs";
++import { resolve } from "node:path";
++import { describe, expect, it } from "vitest";
++import {
++  buildAiProviderSetupProfile,
++  productionCardCopyModel,
++  productionCardCopyModelOverrideEnvKey,
++  productionCardCopyProviderId
++} from "./aiProviderSetupProfile.mjs";
++
++const repoRoot = "D:/manny/Documents/CustomCard";
++
++describe("AI provider setup profile drift guards", () => {
++  it("keeps the shared Cloudflare card-copy contract pinned across code and docs", () => {
++    const profile = buildAiProviderSetupProfile();
++    const flowConfigSource = readFileSync(resolve(repoRoot, "src/aiFlowConfigData.mjs"), "utf8");
++    const providerRuntimeSource = readFileSync(resolve(repoRoot, "src/providerRuntime.ts"), "utf8");
++    const controlPlaneSource = readFileSync(resolve(repoRoot, "src/aiProviderControlPlane.ts"), "utf8");
++    const cloudflareSetupDoc = readFileSync(resolve(repoRoot, "docs/cloudflare-workers-ai-setup.md"), "utf8");
++    const envExample = readFileSync(resolve(repoRoot, "infra/env/.env.example"), "utf8");
++
++    expect(profile.cardCopy).toMatchObject({
++      providerId: productionCardCopyProviderId,
++      defaultModel: productionCardCopyModel,
++      modelOverrideEnvKey: productionCardCopyModelOverrideEnvKey
++    });
++    expect(profile.localProductionTextComfy.requiresHostedImageKeys).toBe(false);
++
++    expect(flowConfigSource).toMatch(/flowId: "card-copy"[\s\S]*defaultPrimaryAdapterId: "cloudflare-workers-ai-chat"/);
++    expect(flowConfigSource).toContain('"cloudflare-workers-ai-chat": productionCardCopyModel');
++    expect(providerRuntimeSource).toContain('"cloudflare-workers-ai-chat": productionCardCopyModel');
++    expect(controlPlaneSource).toContain('id: aiRoutePolicyIdsByFlowId["card-copy"] ?? "card-copy-route-v1"');
++    expect(controlPlaneSource).toContain(`modelId: "${productionCardCopyModel}"`);
++
++    expect(cloudflareSetupDoc).toContain(`${productionCardCopyModelOverrideEnvKey}=${productionCardCopyModel}`);
++    expect(cloudflareSetupDoc).toContain(`CUSTOMCARD_CLOUDFLARE_TEXT_MODEL=${productionCardCopyModel}`);
++    expect(cloudflareSetupDoc).toContain(`CLOUDFLARE_WORKERS_AI_TEXT_MODEL=${productionCardCopyModel}`);
++    expect(envExample).toContain(`${productionCardCopyModelOverrideEnvKey}=${productionCardCopyModel}`);
++    expect(envExample).toContain(`CUSTOMCARD_CLOUDFLARE_TEXT_MODEL=${productionCardCopyModel}`);
++    expect(envExample).toContain(`CLOUDFLARE_WORKERS_AI_TEXT_MODEL=${productionCardCopyModel}`);
++  });
++});
+diff --git a/tests/hosted-vercel-env-inventory.test.ts b/tests/hosted-vercel-env-inventory.test.ts
+index cfc469aa..f89ed922 100644
+--- a/tests/hosted-vercel-env-inventory.test.ts
++++ b/tests/hosted-vercel-env-inventory.test.ts
+@@ -1,10 +1,12 @@
++import { readFileSync } from "node:fs";
++import { resolve } from "node:path";
+ import { describe, expect, it, vi } from "vitest";
+ import {
+   productionCardCopyModel,
+   productionCardCopyModelOverrideEnvKey
+ } from "../src/aiProviderSetupProfile.mjs";
+ import {
+   parseVercelEnvJson,
+   resolveVercelEnvTarget,
+   runHostedVercelEnvInventory
+ } from "../scripts/hosted-vercel-env-inventory.mjs";
+@@ -14,20 +16,32 @@ const requiredKeys = [
+   "DATABASE_URL",
+   "AUTH_SESSION_SECRET",
+   "CLERK_JWT_KEY",
+   "CLERK_AUTHORIZED_PARTIES",
+   "CLERK_ISSUER",
+   "CLERK_AUDIENCE",
+   "IDEMPOTENCY_KEY_TTL_HOURS"
+ ];
+ 
+ describe("hosted Vercel env inventory", () => {
++  it("documents redacted hosted setup reports and keeps local Comfy free of Cloudflare image-key requirements", () => {
++    const vercelDoc = readFileSync(resolve("D:/manny/Documents/CustomCard/docs/vercel-env-structure.md"), "utf8");
++    const cloudflareDoc = readFileSync(resolve("D:/manny/Documents/CustomCard/docs/cloudflare-workers-ai-setup.md"), "utf8");
++
++    expect(vercelDoc).toContain("The report must not include env");
++    expect(vercelDoc).toContain("values, only key names and target scopes.");
++    expect(vercelDoc).toContain("Treat these inventory artifacts as");
++    expect(vercelDoc).toContain("setup proof, not a place to copy or store secrets.");
++    expect(vercelDoc).toContain("does not require Cloudflare image keys");
++    expect(cloudflareDoc).toContain("hosted Cloudflare image keys are not");
++  });
++
+   it("fails closed until the guarded env inventory is explicitly enabled", async () => {
+     const commandRunner = vi.fn();
+ 
+     const report = await runHostedVercelEnvInventory({
+       env: {
+         CUSTOMCARD_HOSTED_API_ENV: "qa",
+         CUSTOMCARD_QA_API_BASE_URL: "https://qa.customcard.test"
+       },
+       commandRunner,
+       now: new Date("2026-06-15T15:00:00.000Z")
+diff --git a/tests/production-text-readiness-doctor.test.ts b/tests/production-text-readiness-doctor.test.ts
+index 0f8cb033..0fb3298d 100644
+--- a/tests/production-text-readiness-doctor.test.ts
++++ b/tests/production-text-readiness-doctor.test.ts
+@@ -1,13 +1,13 @@
+-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
++import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+ import { tmpdir } from "node:os";
+-import { join } from "node:path";
++import { join, resolve } from "node:path";
+ import { afterEach, describe, expect, it, vi } from "vitest";
+ import {
+   productionTextNodeSourceRelativePath,
+   productionTextRequiredCompositorInputs,
+   productionTextRequiredNodeClass,
+   productionTextWorkflowRelativePath,
+   resolveProductionTextComfyUrl
+ } from "../scripts/comfy-production-text-setup.mjs";
+ import { runPreflight } from "../scripts/comfyui-production-text-preflight.mjs";
+ import { runDoctor } from "../scripts/production-text-readiness-doctor.mjs";
+@@ -54,20 +54,30 @@ function gpuResidencyProbe() {
+     pids: [1234],
+     nvidiaProcessIds: [1234]
+   };
+ }
+ 
+ describe("production text readiness doctor", () => {
+   afterEach(() => {
+     vi.restoreAllMocks();
+   });
+ 
++  it("keeps the production-text doc pinned to the shared setup facts and required live node", () => {
++    const workflowDoc = readFileSync(resolve("D:/manny/Documents/CustomCard/docs/comfyui-production-text-workflow.md"), "utf8");
++
++    expect(workflowDoc).toContain("scripts/comfy-production-text-setup.mjs");
++    expect(workflowDoc).toContain(productionTextWorkflowRelativePath);
++    expect(workflowDoc).toContain(productionTextNodeSourceRelativePath);
++    expect(workflowDoc).toContain(productionTextRequiredNodeClass);
++    expect(workflowDoc).toContain("shared setup facts");
++  });
++
+   it("does not treat a model name as production-ready without reported runtime budget", async () => {
+     const root = mkdtempSync(join(tmpdir(), "production-text-readiness-doctor-"));
+     const modelRoot = join(root, "models");
+     mkdirSync(modelRoot, { recursive: true });
+     writeFileSync(join(modelRoot, "gemma-4-31B-it-Q4_K_M.gguf"), "fake model marker");
+     const aggregatePath = join(root, "benchmark-aggregate.json");
+     writePassingAggregate(aggregatePath);
+ 
+     vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
+       const target = String(url);

@@ -133,6 +133,46 @@ describe("queued AI generation responses", () => {
     });
   });
 
+  it("normalizes queued signed artifact image URLs before studio preloading", async () => {
+    const response = new Response(
+      JSON.stringify({
+        status: "job-result-ready",
+        job_id: "job-ai-card-main",
+        queue_status: "succeeded",
+        result_available: true,
+        result: {
+          status: "ai-result-ready",
+          routeId: "ai-card-generate",
+          payload: {
+            card_copy: {
+              panels: [{ id: "front", headline: "For Papa", body: "A warm note." }]
+            },
+            images: [
+              {
+                panel_id: "front",
+                image_url:
+                  "https://customcard-three-git-main.vercel.app/api/artifacts/projects/p/render-packets/r/front.webp?expires=1770000000&signature=abc"
+              }
+            ]
+          }
+        }
+      }),
+      { status: 200, headers: { "content-type": "application/json" } }
+    );
+
+    await expect(readAiGenerationJobStatusResponse(response)).resolves.toMatchObject({
+      status: "ready",
+      result: {
+        images: [
+          {
+            panel_id: "front",
+            image_url: "/api/artifacts/projects/p/render-packets/r/front.webp?expires=1770000000&signature=abc"
+          }
+        ]
+      }
+    });
+  });
+
   it("keeps queued job status pending until the worker has a result", async () => {
     const response = new Response(
       JSON.stringify({

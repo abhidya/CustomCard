@@ -91,6 +91,30 @@ describe("Vite API middleware", () => {
     expect(routes.some((route: { path: string }) => route.path === "/api/ai/card/generate")).toBe(true);
   });
 
+  it("serves dynamic artifact URLs through the JSON API handler", async () => {
+    const artifactPath = "/api/artifacts/projects/project/render-packets/render/front.svg";
+    const response = await fetch(`${baseUrl}${artifactPath}`);
+
+    expect(response.status).not.toBe(200);
+    expect(response.headers.get("content-type")).toContain("application/json");
+    await expect(response.json()).resolves.toMatchObject({
+      service: "customcard-api",
+      status: "artifact-store-unconfigured"
+    });
+  });
+
+  it("serves delegated artifact URLs through the JSON API handler", async () => {
+    const artifactPath = "/api/artifacts/projects/project/render-packets/render/front.svg";
+    const response = await fetch(`${baseUrl}/api/_route?__customcard_path=${encodeURIComponent(artifactPath)}`);
+
+    expect(response.status).not.toBe(200);
+    expect(response.headers.get("content-type")).toContain("application/json");
+    await expect(response.json()).resolves.toMatchObject({
+      service: "customcard-api",
+      status: "artifact-store-unconfigured"
+    });
+  });
+
   it("serves Walgreens checkout uploads through the JSON API handler", async () => {
     const response = await fetch(`${baseUrl}${walgreensCheckoutUploadRoute}`, {
       method: "POST",

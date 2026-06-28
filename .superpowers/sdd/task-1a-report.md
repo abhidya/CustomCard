@@ -140,3 +140,21 @@ Result:
 - 2 test files passed
 - 20 tests passed
 - 0 failures
+
+## Final re-review follow-up fix notes
+
+- Fixed the remaining sparse cross-flow overwrite in `src/aiRouteActivation.mjs`. Each config source is still normalized with the active `env`, but `normalizeOptionalAiFlowAdminConfigs` now filters the normalized result back down to only the flow ids explicitly present in that source before merge.
+- Updated `mergeAiFlowAdminConfigs` to return the merged explicit per-flow config list directly instead of running a final `normalizeAiFlowAdminConfigs(...)` pass that would densify sparse sources again.
+- Strengthened the unrelated-flow preservation regression in `src/aiRouteActivation.test.ts` by giving `card-image` a non-default `promptInstructions` value and asserting it survives a later sparse `card-copy` override loaded through `ai_flow_configs`.
+
+## Final re-review follow-up test results
+
+Command run:
+
+`rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/npm.ps1 run test -- --run src/aiRouteActivation.test.ts src/aiFlowConfig.test.ts`
+
+Result:
+
+- 2 test files passed
+- 20 tests passed
+- 0 failures
