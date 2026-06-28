@@ -1,12 +1,14 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { aiRoutePolicyIdsByFlowId } from "./aiRoutePolicyIds.mjs";
 import {
   buildAiProviderSetupProfile,
   productionCardCopyModel,
   productionCardCopyModelOverrideEnvKey,
   productionCardCopyProviderId
 } from "./aiProviderSetupProfile.mjs";
+import { aiPromptProfiles, aiProviderModelCatalog, aiRoutePolicies } from "./aiProviderControlPlane";
 
 const repoRoot = "D:/manny/Documents/CustomCard";
 
@@ -15,9 +17,17 @@ describe("AI provider setup profile drift guards", () => {
     const profile = buildAiProviderSetupProfile();
     const flowConfigSource = readFileSync(resolve(repoRoot, "src/aiFlowConfigData.mjs"), "utf8");
     const providerRuntimeSource = readFileSync(resolve(repoRoot, "src/providerRuntime.ts"), "utf8");
-    const controlPlaneSource = readFileSync(resolve(repoRoot, "src/aiProviderControlPlane.ts"), "utf8");
     const cloudflareSetupDoc = readFileSync(resolve(repoRoot, "docs/cloudflare-workers-ai-setup.md"), "utf8");
     const envExample = readFileSync(resolve(repoRoot, "infra/env/.env.example"), "utf8");
+    const cardCopyRoutePolicyId = aiRoutePolicyIdsByFlowId["card-copy"];
+    const cardCopyRoutePolicy = aiRoutePolicies.find((policy) => policy.id === cardCopyRoutePolicyId);
+    const cardCopyPrimaryModels = aiProviderModelCatalog.filter((entry) =>
+      cardCopyRoutePolicy?.primaryModelIds.includes(entry.id)
+    );
+    const qwenCardCopyCatalogEntry = aiProviderModelCatalog.find(
+      (entry) => entry.adapterId === productionCardCopyProviderId && entry.modelId === productionCardCopyModel
+    );
+    const cardCopyPromptProfile = aiPromptProfiles.find((profile) => profile.flowId === "card-copy");
 
     expect(profile.cardCopy).toMatchObject({
       providerId: productionCardCopyProviderId,
@@ -29,8 +39,27 @@ describe("AI provider setup profile drift guards", () => {
     expect(flowConfigSource).toMatch(/flowId: "card-copy"[\s\S]*defaultPrimaryAdapterId: "cloudflare-workers-ai-chat"/);
     expect(flowConfigSource).toContain('"cloudflare-workers-ai-chat": productionCardCopyModel');
     expect(providerRuntimeSource).toContain('"cloudflare-workers-ai-chat": productionCardCopyModel');
-    expect(controlPlaneSource).toContain('id: aiRoutePolicyIdsByFlowId["card-copy"] ?? "card-copy-route-v1"');
-    expect(controlPlaneSource).toContain(`modelId: "${productionCardCopyModel}"`);
+    expect(qwenCardCopyCatalogEntry).toMatchObject({
+      id: "cloudflare-qwen3-30b-card-copy",
+      adapterId: productionCardCopyProviderId,
+      modelId: productionCardCopyModel
+    });
+    expect(cardCopyRoutePolicy).toMatchObject({
+      id: cardCopyRoutePolicyId,
+      flowId: "card-copy",
+      primaryModelIds: [qwenCardCopyCatalogEntry?.id]
+    });
+    expect(cardCopyPrimaryModels).toHaveLength(1);
+    expect(cardCopyPrimaryModels[0]).toMatchObject({
+      id: qwenCardCopyCatalogEntry?.id,
+      adapterId: productionCardCopyProviderId,
+      modelId: productionCardCopyModel
+    });
+    expect(cardCopyPromptProfile).toMatchObject({
+      flowId: "card-copy",
+      adapterId: productionCardCopyProviderId,
+      modelId: productionCardCopyModel
+    });
 
     expect(cloudflareSetupDoc).toContain(`${productionCardCopyModelOverrideEnvKey}=${productionCardCopyModel}`);
     expect(cloudflareSetupDoc).toContain(`CUSTOMCARD_CLOUDFLARE_TEXT_MODEL=${productionCardCopyModel}`);
