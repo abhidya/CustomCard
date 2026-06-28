@@ -182,7 +182,21 @@ describe("provider HTTP worker", () => {
 
     expect(runtime.describe()).toMatchObject({
       copyAdapter: "openai-responses-chat",
-      copyModel: "gpt-4.1-mini"
+      copyModel: "gpt-4.1-mini",
+      imageAdapter: "openai-images",
+      imageModel: "gpt-image-2",
+      aiFlowReadiness: {
+        cardCopy: expect.objectContaining({
+          adapterId: "openai-responses-chat",
+          model: "gpt-4.1-mini",
+          readyForLiveCalls: true
+        }),
+        cardImage: expect.objectContaining({
+          adapterId: "openai-images",
+          model: "gpt-image-2",
+          readyForLiveCalls: true
+        })
+      }
     });
     expect(report).toMatchObject({
       status: "ready",
@@ -200,6 +214,10 @@ describe("provider HTTP worker", () => {
             card_copy: expect.objectContaining({
               adapter_id: "openai-responses-chat",
               model: "gpt-4.1-mini"
+            }),
+            card_image: expect.objectContaining({
+              adapter_id: "openai-images",
+              model: "gpt-image-2"
             })
           }
         }

@@ -49,7 +49,7 @@ export function createProviderHttpWorkerRuntime({
         routeScope,
         copyAdapter: aiFlowReadiness.cardCopy.adapterId,
         copyModel: aiFlowReadiness.cardCopy.model,
-        imageAdapter: resolvedEnv.CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID,
+        imageAdapter: aiFlowReadiness.cardImage.adapterId,
         imageModel: aiFlowReadiness.cardImage.model,
         comfyUrl: resolvedEnv.CUSTOMCARD_COMFYUI_URL || resolvedEnv.COMFYUI_URL || null,
         aiFlowReadiness,
