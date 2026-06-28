@@ -1,6 +1,6 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   productionTextNodeSourceRelativePath,
@@ -59,6 +59,16 @@ function gpuResidencyProbe() {
 describe("production text readiness doctor", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it("keeps the production-text doc pinned to the shared setup facts and required live node", () => {
+    const workflowDoc = readFileSync(resolve("D:/manny/Documents/CustomCard/docs/comfyui-production-text-workflow.md"), "utf8");
+
+    expect(workflowDoc).toContain("scripts/comfy-production-text-setup.mjs");
+    expect(workflowDoc).toContain(productionTextWorkflowRelativePath);
+    expect(workflowDoc).toContain(productionTextNodeSourceRelativePath);
+    expect(workflowDoc).toContain(productionTextRequiredNodeClass);
+    expect(workflowDoc).toContain("shared setup facts");
   });
 
   it("does not treat a model name as production-ready without reported runtime budget", async () => {
