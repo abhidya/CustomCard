@@ -39,12 +39,6 @@ services:
       AUTH_SESSION_SECRET: ${AUTH_SESSION_SECRET:?set AUTH_SESSION_SECRET}
       ARTIFACT_SIGNED_URL_TTL_MINUTES: 15
       SECRET_PROVIDER: managed_secret_store
-      WALGREENS_VENDOR_MODE: disabled_until_certified
-      CVS_VENDOR_MODE: disabled_until_certified
-      FEDEX_VENDOR_MODE: disabled_until_certified
-      WALMART_VENDOR_MODE: disabled_until_certified
-      STAPLES_VENDOR_MODE: disabled_until_certified
-      OFFICE_DEPOT_VENDOR_MODE: disabled_until_certified
     depends_on:
       - postgres
       - redis
@@ -72,12 +66,6 @@ services:
       AUTH_SESSION_SECRET: ${AUTH_SESSION_SECRET:?set AUTH_SESSION_SECRET}
       ARTIFACT_SIGNED_URL_TTL_MINUTES: 15
       SECRET_PROVIDER: managed_secret_store
-      WALGREENS_VENDOR_MODE: disabled_until_certified
-      CVS_VENDOR_MODE: disabled_until_certified
-      FEDEX_VENDOR_MODE: disabled_until_certified
-      WALMART_VENDOR_MODE: disabled_until_certified
-      STAPLES_VENDOR_MODE: disabled_until_certified
-      OFFICE_DEPOT_VENDOR_MODE: disabled_until_certified
     depends_on:
       - postgres
       - redis

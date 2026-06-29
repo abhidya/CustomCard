@@ -113,6 +113,11 @@ function cloudflareImageAiFlowConfig(overrides: Record<string, unknown> = {}) {
       primaryAdapterId: "cloudflare-workers-ai-image",
       fallbackAdapterId: "cloudflare-workers-ai-image",
       model: "@cf/bytedance/stable-diffusion-xl-lightning",
+      renderingMode: "",
+      workflowId: "",
+      workflowPath: "",
+      workflowJson: "",
+      workflowInputsJson: "",
       liveProviderCallsEnabled: true,
       ...overrides
     }
@@ -137,6 +142,11 @@ function imageProviderAiFlowConfig(
       primaryAdapterId: adapterId,
       fallbackAdapterId: adapterId,
       model,
+      renderingMode: "",
+      workflowId: "",
+      workflowPath: "",
+      workflowJson: "",
+      workflowInputsJson: "",
       liveProviderCallsEnabled: true,
       ...overrides
     }
@@ -360,12 +370,20 @@ describe("AI card generator service", () => {
     const service = createAiCardGenerationService({
       env: {
         CUSTOMCARD_LOCAL_LLM_BASE_URL: "http://127.0.0.1:1234/v1",
-        CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188",
-        CUSTOMCARD_COMFYUI_STEPS: "4",
-        CUSTOMCARD_COMFYUI_TIMEOUT_MS: "10000"
+        CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188"
       },
       fetchImpl,
-      aiFlowAdminConfig: localAiFlowConfig()
+      aiFlowAdminConfig: localAiFlowConfig().map((config) =>
+        config.flowId === "card-image"
+          ? {
+              ...config,
+              workflowInputsJson: JSON.stringify({
+                steps: 4,
+                timeout_ms: 10000
+              })
+            }
+          : config
+      )
     });
 
     const result = await service.generateCard(cardRequest, { rateKey: "test-local-ai-card" });
@@ -392,14 +410,14 @@ describe("AI card generator service", () => {
     expect(payload.images.every((image) => image.width === 512 && image.height === 704)).toBe(true);
   });
 
-  it("uses the configured local LLM request timeout for OpenAI-compatible planner calls", async () => {
+  it("uses the service-owned local LLM request timeout for OpenAI-compatible planner calls", async () => {
     const localProviderFetch = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit, timeoutOptions?: { timeoutLabel?: string; timeoutMs?: number }) => {
       const body = JSON.parse(String(init?.body));
       const userPrompt = JSON.parse(body.messages[1].content);
 
       expect(timeoutOptions).toMatchObject({
         timeoutLabel: "Local LLM chat completion request",
-        timeoutMs: 123456
+        timeoutMs: 1200000
       });
       expect(body.max_tokens).toBe(3200);
       expect(body.response_format).toBeUndefined();
@@ -445,11 +463,14 @@ describe("AI card generator service", () => {
     expect(JSON.stringify(result.payload)).toContain("Happy Birthday Sara");
   });
 
-  it("blocks local planner requests when the serving model does not match the requested model", async () => {
-    const localProviderFetch = vi.fn(async (url: RequestInfo | URL) => {
+  it("ignores legacy local planner env feature flags", async () => {
+    const localProviderFetch = vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
       const requestUrl = String(url);
-      if (requestUrl === "http://127.0.0.1:5013/v1/models") {
-        return new Response(JSON.stringify({ data: [{ id: "koboldcpp/Qwen3-8B-Q4_K_M" }] }), {
+      if (requestUrl === "http://127.0.0.1:5013/v1/chat/completions") {
+        const body = JSON.parse(String(init?.body));
+        expect(body.model).toBe("koboldcpp/gemma-4-31B-it-Q4_K_M");
+        expect(body.response_format).toBeUndefined();
+        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
           status: 200,
           headers: { "content-type": "application/json" }
         });
@@ -465,7 +486,8 @@ describe("AI card generator service", () => {
     const service = createAiCardGenerationService({
       env: {
         CUSTOMCARD_LOCAL_LLM_BASE_URL: "http://127.0.0.1:5013/v1",
-        CUSTOMCARD_LOCAL_LLM_REQUIRE_MODEL_MATCH: "true"
+        CUSTOMCARD_LOCAL_LLM_REQUIRE_MODEL_MATCH: "true",
+        CUSTOMCARD_LOCAL_LLM_STRICT_RESPONSE_FORMAT: "true"
       },
       fetchImpl,
       aiFlowAdminConfig: buildDefaultAiFlowAdminConfigs().map((config) => {
@@ -483,13 +505,12 @@ describe("AI card generator service", () => {
       })
     });
 
-    const result = await service.generateCard(cardRequest, { rateKey: "test-local-planner-model-guard" });
+    const result = await service.generateCard(cardRequest, { rateKey: "test-local-planner-env-flags" });
 
-    expect(result.statusCode).toBe(503);
+    expect(result.statusCode).toBe(200);
     expect(localProviderFetch).toHaveBeenCalledTimes(1);
     expect(fetchImpl).not.toHaveBeenCalled();
-    expect(JSON.stringify(result.payload)).toContain("Local LLM model mismatch");
-    expect(JSON.stringify(result.payload)).toContain("Qwen3-8B");
+    expect(JSON.stringify(result.payload)).toContain("Happy Birthday Sara");
   });
 
   it("blocks small local planners before production-text Comfy generation", async () => {
@@ -632,10 +653,7 @@ describe("AI card generator service", () => {
       const service = createAiCardGenerationService({
         env: {
           CUSTOMCARD_LOCAL_LLM_BASE_URL: "http://127.0.0.1:1234/v1",
-          CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188",
-          CUSTOMCARD_COMFYUI_IMAGE_WIDTH: "640",
-          CUSTOMCARD_COMFYUI_IMAGE_HEIGHT: "896",
-          CUSTOMCARD_COMFYUI_TIMEOUT_MS: "10000"
+          CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188"
         },
         fetchImpl,
         aiFlowAdminConfig: localAiFlowConfig().map((config) => {
@@ -654,6 +672,9 @@ describe("AI card generator service", () => {
               workflowId: "customcard-production-text-overlay",
               workflowPath,
               workflowInputsJson: JSON.stringify({
+                width: 640,
+                height: 896,
+                timeout_ms: 10000,
                 workflow_id: "{{workflow_id}}",
                 panel_id: "{{panel_id}}",
                 seed: "{{seed}}"
@@ -2590,8 +2611,7 @@ describe("AI card generator service", () => {
       env: {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
-        RUNCOMFY_API_TOKEN: "test_runcomfy_token",
-        CUSTOMCARD_RUNCOMFY_IMAGE_POLL_INTERVAL_MS: "0"
+        RUNCOMFY_API_TOKEN: "test_runcomfy_token"
       },
       fetchImpl,
       aiFlowAdminConfig: runComfyAiFlowConfig()
@@ -2669,8 +2689,7 @@ describe("AI card generator service", () => {
       env: {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
-        RUNCOMFY_API_TOKEN: "test_runcomfy_token",
-        CUSTOMCARD_RUNCOMFY_IMAGE_POLL_INTERVAL_MS: "0"
+        RUNCOMFY_API_TOKEN: "test_runcomfy_token"
       },
       fetchImpl,
       aiFlowAdminConfig: runComfyAiFlowConfig()

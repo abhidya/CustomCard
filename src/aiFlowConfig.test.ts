@@ -73,6 +73,16 @@ describe("AI flow config", () => {
     expect(cardImage?.renderingMode).toBe("final-text-composited");
     expect(cardImage?.workflowId).toBe("customcard-production-text-overlay");
     expect(cardImage?.workflowPath).toBe("comfyui-workflows/customcard-production-text-overlay.json");
+    expect(JSON.parse(cardImage?.workflowInputsJson ?? "{}")).toMatchObject({
+      width: 512,
+      height: 704,
+      steps: 18,
+      cfg: 6.5,
+      sampler: "euler",
+      scheduler: "normal",
+      poll_ms: 1500,
+      timeout_ms: 360000
+    });
     expect(cardImage?.rateLimitPerMinute).toBe(8);
     expect(cardImage?.perRequestBudgetCents).toBe(1);
     expect(cardImage?.liveProviderCallsEnabled).toBe(true);

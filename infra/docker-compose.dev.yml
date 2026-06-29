@@ -13,12 +13,6 @@ services:
       OBJECT_STORE_ACCESS_KEY_ID: customcard
       OBJECT_STORE_SECRET_ACCESS_KEY: customcard-dev-only
       OBJECT_STORE_REGION: us-east-1
-      WALGREENS_VENDOR_MODE: disabled_until_certified
-      CVS_VENDOR_MODE: disabled_until_certified
-      FEDEX_VENDOR_MODE: disabled_until_certified
-      WALMART_VENDOR_MODE: disabled_until_certified
-      STAPLES_VENDOR_MODE: disabled_until_certified
-      OFFICE_DEPOT_VENDOR_MODE: disabled_until_certified
     volumes:
       - ..:/app
       - /app/node_modules
@@ -39,12 +33,6 @@ services:
       OBJECT_STORE_ACCESS_KEY_ID: customcard
       OBJECT_STORE_SECRET_ACCESS_KEY: customcard-dev-only
       OBJECT_STORE_REGION: us-east-1
-      WALGREENS_VENDOR_MODE: disabled_until_certified
-      CVS_VENDOR_MODE: disabled_until_certified
-      FEDEX_VENDOR_MODE: disabled_until_certified
-      WALMART_VENDOR_MODE: disabled_until_certified
-      STAPLES_VENDOR_MODE: disabled_until_certified
-      OFFICE_DEPOT_VENDOR_MODE: disabled_until_certified
     volumes:
       - ..:/app
       - /app/node_modules

@@ -1,7 +1,7 @@
 import { execFileSync, spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { createServer, type Server } from "node:http";
 import { describe, expect, it } from "vitest";
-import { handleApiRequest } from "../scripts/api-server.mjs";
+import { handleApiRequest, resolveLocalAuthFallbacksEnabled } from "../scripts/api-server.mjs";
 import { apiRouteContracts } from "../src/apiRouteContractsData.mjs";
 
 const shellDoctorTimeoutMs = 30_000;
@@ -59,6 +59,25 @@ function walgreensPortalEvidenceArtifact() {
 }
 
 describe("api server wrapper", () => {
+  it("enables seeded local auth only for explicit CLI or memory-mode Vite dev", () => {
+    expect(resolveLocalAuthFallbacksEnabled({
+      argv: ["node", "scripts/api-server.mjs", "--local-auth-fallbacks"],
+      env: { CUSTOMCARD_API_RUNTIME: "postgres" }
+    })).toBe(true);
+    expect(resolveLocalAuthFallbacksEnabled({
+      argv: ["node", "node_modules/vite/bin/vite.js", "--host", "127.0.0.1"],
+      env: { CUSTOMCARD_API_RUNTIME: "memory" }
+    })).toBe(true);
+    expect(resolveLocalAuthFallbacksEnabled({
+      argv: ["node", "node_modules/vite/bin/vite.js", "--host", "127.0.0.1"],
+      env: { CUSTOMCARD_API_RUNTIME: "contract" }
+    })).toBe(false);
+    expect(resolveLocalAuthFallbacksEnabled({
+      argv: ["node", "scripts/api-server.mjs"],
+      env: { CUSTOMCARD_API_RUNTIME: "memory" }
+    })).toBe(false);
+  });
+
   it("passes its doctor contract", () => {
     const output = execFileSync(nodeBinary, ["scripts/api-server.mjs", "--doctor"], {
       encoding: "utf8",

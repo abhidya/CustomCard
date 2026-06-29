@@ -2121,15 +2121,13 @@ async function executeTypographyImageProvider({ image, panelId, prompt, negative
   }
 
   if (image.adapterId === "deepai-text2img-image") {
+    const workflowInputs = parseImageWorkflowInputs(image.workflowInputsJson);
     const body = new FormData();
     body.set("text", truncateText(prompt, 2048));
     body.set("negative_prompt", truncateText(negativePrompt, 700));
-    body.set("width", String(env.CUSTOMCARD_DEEPAI_IMAGE_WIDTH || env.DEEPAI_IMAGE_WIDTH || "768"));
-    body.set("height", String(env.CUSTOMCARD_DEEPAI_IMAGE_HEIGHT || env.DEEPAI_IMAGE_HEIGHT || "1024"));
-    body.set(
-      "image_generator_version",
-      String(env.CUSTOMCARD_DEEPAI_IMAGE_GENERATOR_VERSION || env.DEEPAI_IMAGE_GENERATOR_VERSION || "standard")
-    );
+    body.set("width", String(boundedIntegerEnv(workflowInputs.width, 256, 2048, 768)));
+    body.set("height", String(boundedIntegerEnv(workflowInputs.height, 256, 2048, 1024)));
+    body.set("image_generator_version", String(workflowInputs.image_generator_version || workflowInputs.imageGeneratorVersion || "standard"));
     const response = await fetchWithProviderBackoff(
       fetchImpl,
       "https://api.deepai.org/api/text2img",
@@ -2222,16 +2220,17 @@ async function executeTypographyImageProvider({ image, panelId, prompt, negative
 
 async function executeLocalComfyTypographyImage({ image, panelId, prompt, negativePrompt, panelCopy = {}, env, fetchImpl }) {
   const comfyUrl = localComfyUiBaseUrl(env);
-  const width = boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_IMAGE_WIDTH || env.COMFYUI_IMAGE_WIDTH, 256, 2048, 960);
-  const height = boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_IMAGE_HEIGHT || env.COMFYUI_IMAGE_HEIGHT, 256, 2048, 1344);
-  const steps = boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_STEPS || env.COMFYUI_STEPS, 1, 80, 18);
-  const cfg = boundedNumberEnv(env.CUSTOMCARD_COMFYUI_CFG || env.COMFYUI_CFG, 0, 30, 6.5);
-  const sampler = String(env.CUSTOMCARD_COMFYUI_SAMPLER || env.COMFYUI_SAMPLER || "euler").trim() || "euler";
-  const scheduler = String(env.CUSTOMCARD_COMFYUI_SCHEDULER || env.COMFYUI_SCHEDULER || "normal").trim() || "normal";
+  const workflowInputs = parseImageWorkflowInputs(image.workflowInputsJson);
+  const width = boundedIntegerEnv(workflowInputs.width, 256, 2048, 960);
+  const height = boundedIntegerEnv(workflowInputs.height, 256, 2048, 1344);
+  const steps = boundedIntegerEnv(workflowInputs.steps, 1, 80, 18);
+  const cfg = boundedNumberEnv(workflowInputs.cfg, 0, 30, 6.5);
+  const sampler = String(workflowInputs.sampler || "euler").trim() || "euler";
+  const scheduler = String(workflowInputs.scheduler || "normal").trim() || "normal";
   const checkpoint = image.model || "DreamShaper_8_pruned.safetensors";
   const deterministicSeed = numericSeed(`${checkpoint}:${panelId}:${prompt}`);
   const seed = boundedIntegerEnv(
-    env.CUSTOMCARD_COMFYUI_SEED || env.COMFYUI_SEED || deterministicSeed,
+    workflowInputs.seed ?? deterministicSeed,
     0,
     2 ** 32 - 1,
     deterministicSeed
@@ -2248,6 +2247,7 @@ async function executeLocalComfyTypographyImage({ image, panelId, prompt, negati
     seed,
     steps,
     width,
+    clientId: String(workflowInputs.client_id || workflowInputs.clientId || "").trim(),
     workflowId: localComfyWorkflowId(image),
     ...localComfyTypographyVariables({ panelId, panelCopy, width, height })
   };
@@ -2258,8 +2258,8 @@ async function executeLocalComfyTypographyImage({ image, panelId, prompt, negati
   const promptId = String(promptResponse.prompt_id || "").trim();
   if (!promptId) throw new Error("Local ComfyUI did not return a prompt_id.");
   const output = await waitForLocalComfyImage(fetchImpl, comfyUrl, promptId, {
-    pollMs: boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_POLL_INTERVAL_MS || env.COMFYUI_POLL_INTERVAL_MS, 250, 30_000, 1500),
-    timeoutMs: boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_TIMEOUT_MS || env.COMFYUI_TIMEOUT_MS, 10_000, 900_000, 360_000)
+    pollMs: boundedIntegerEnv(workflowInputs.poll_ms ?? workflowInputs.pollMs, 250, 30_000, 1500),
+    timeoutMs: boundedIntegerEnv(workflowInputs.timeout_ms ?? workflowInputs.timeoutMs, 10_000, 900_000, 360_000)
   });
   const imageUrl = new URL(localComfyUiApiUrl(comfyUrl, "/view"));
   imageUrl.searchParams.set("filename", output.filename);
@@ -2292,11 +2292,23 @@ function readLocalComfyWorkflowFile(workflowPath) {
   return readFileSync(resolvedPath, "utf8");
 }
 
+function parseImageWorkflowInputs(workflowInputsJson = "") {
+  const raw = String(workflowInputsJson || "").trim();
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 function buildLocalComfyPromptBody({ env, image, workflow, variables }) {
   const workflowInputs = localComfyWorkflowInputsForMetadata(env, variables, image.workflowInputsJson);
   return {
     prompt: workflow,
-    client_id: firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_CLIENT_ID", "COMFYUI_CLIENT_ID"]) || "customcard-local-typography-benchmark",
+    client_id: String(workflowInputs.client_id || workflowInputs.clientId || variables.clientId || "").trim() ||
+      "customcard-local-typography-benchmark",
     extra_data: {
       customcard: {
         workflow_id: variables.workflowId,

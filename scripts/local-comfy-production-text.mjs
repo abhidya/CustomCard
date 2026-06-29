@@ -102,6 +102,8 @@ export function localComfyTemplateVariable(key, variables) {
   const values = {
     cfg: variables.cfg,
     checkpoint: variables.checkpoint,
+    client_id: variables.clientId || "",
+    clientId: variables.clientId || "",
     height: variables.height,
     negative_prompt: variables.negativePrompt || "",
     negativePrompt: variables.negativePrompt || "",

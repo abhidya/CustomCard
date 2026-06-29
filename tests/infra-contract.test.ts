@@ -108,7 +108,7 @@ describe("production infrastructure contract", () => {
       expect(manifest).toContain("worker:");
       expect(manifest).toContain("postgres:");
       expect(manifest).toContain("redis:");
-      expect(manifest).toContain("WALGREENS_VENDOR_MODE: disabled_until_certified");
+      expect(manifest).not.toContain("VENDOR_MODE");
     }
     expect(devCompose).toContain("minio:");
     expect(devCompose).toContain("MINIO_ROOT_USER: customcard");
@@ -396,12 +396,7 @@ describe("production infrastructure contract", () => {
     expect(env).toContain("BETTERSTACK_INGESTING_HOST=");
     expect(env).toContain("TRANSACTIONAL_EMAIL_API_KEY=");
     expect(env).toContain("Live order gates are owned by admin safety controls.");
-    expect(env).toContain("WALGREENS_VENDOR_MODE=disabled_until_certified");
-    expect(env).toContain("CVS_VENDOR_MODE=disabled_until_certified");
-    expect(env).toContain("FEDEX_VENDOR_MODE=disabled_until_certified");
-    expect(env).toContain("WALMART_VENDOR_MODE=disabled_until_certified");
-    expect(env).toContain("STAPLES_VENDOR_MODE=disabled_until_certified");
-    expect(env).toContain("OFFICE_DEPOT_VENDOR_MODE=disabled_until_certified");
+    expect(env).not.toContain("VENDOR_MODE");
   });
 
   it("keeps coverage instrumentation on core, orchestration, and mobile contract modules", () => {
@@ -1725,7 +1720,7 @@ describe("production infrastructure contract", () => {
       providerUsageLedger: true,
       queueJobs: true
     });
-    expect(report.readiness.api).toMatchObject({ statefulRoutes: 39, idempotentMutations: 22 });
+    expect(report.readiness.api).toMatchObject({ statefulRoutes: 41, idempotentMutations: 23 });
     expect(report.readiness.localBrowserState).toMatchObject({
       auditItems: 6,
       dbRequiredItems: 0,

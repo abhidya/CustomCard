@@ -48,7 +48,7 @@ loadLocalAiEnvFiles();
 
 export const routes = apiRouteContracts;
 
-const localAuthFallbacksEnabled = process.argv.includes("--local-auth-fallbacks");
+const localAuthFallbacksEnabled = resolveLocalAuthFallbacksEnabled();
 const apiRuntime = createApiRuntime({ env: process.env, routes, localAuthFallbacksEnabled });
 const walgreensCheckout = createWalgreensHostedCheckoutService({
   env: process.env,
@@ -103,6 +103,18 @@ function parseLocalEnv(text) {
     if (key) parsed[key] = value;
   }
   return parsed;
+}
+
+export function resolveLocalAuthFallbacksEnabled({ argv = process.argv, env = process.env } = {}) {
+  if (argv.includes("--local-auth-fallbacks")) return true;
+  return isViteDevServerEntrypoint(argv) && String(env.CUSTOMCARD_API_RUNTIME ?? "").trim().toLowerCase() === "memory";
+}
+
+function isViteDevServerEntrypoint(argv) {
+  return argv.some((part) => {
+    const text = String(part ?? "").replace(/\\/g, "/");
+    return text === "vite" || /(^|\/)vite(\/bin)?\/vite\.js$/i.test(text) || /(^|\/)vite\.js$/i.test(text);
+  });
 }
 
 // Best-effort per-instance rate limit for the public Walgreens checkout routes.

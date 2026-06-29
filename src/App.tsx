@@ -1179,7 +1179,21 @@ function AiFlowConfigPanel({
                   <span>Provider</span>
                   <select
                     value={config.primaryAdapterId}
-                    onChange={(event) => patchFlow(flow.flowId, { primaryAdapterId: event.target.value })}
+                    onChange={(event) => {
+                      const primaryAdapterId = event.target.value;
+                      patchFlow(flow.flowId, {
+                        primaryAdapterId,
+                        ...(flow.capability === "image-generation" && primaryAdapterId !== "local-comfyui-api-image"
+                          ? {
+                              renderingMode: "",
+                              workflowId: "",
+                              workflowPath: "",
+                              workflowJson: "",
+                              workflowInputsJson: ""
+                            }
+                          : {})
+                      });
+                    }}
                   >
                     {flow.allowedAdapterIds.map((adapterId) => (
                       <option key={adapterId} value={adapterId}>

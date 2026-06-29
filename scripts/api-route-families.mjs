@@ -252,7 +252,7 @@ export function createApiRouteFamilies(deps) {
     if (path === "/api/admin/provider/jobs/status") {
       const routeIds = adminProviderJobStatusRouteIds(requestUrl);
       const result = await apiRuntime.readProviderJobStatus({
-        authContext: { ...authContext, providerRouteIds: routeIds },
+        authContext,
         routeIds
       });
       sendJson(response, result.statusCode, result.payload);
@@ -276,6 +276,29 @@ export function createApiRouteFamilies(deps) {
         responsePayload: {
           service: "customcard-api",
           status: "admin-ai-flow-configs-save-accepted"
+        }
+      });
+      sendJson(response, result.statusCode, result.payload);
+      return true;
+    }
+
+    if (path === "/api/admin/worker-config" && request?.method === "GET") {
+      sendJson(response, 200, await apiRuntime.readAdminWorkerConfig());
+      return true;
+    }
+
+    if (path === "/api/admin/worker-config" && request?.method === "POST") {
+      if (!requireIdempotencyKey({ request, response, path })) return true;
+      const bodyText = await readValidatedJsonBodyText({ request, response, path });
+      if (!bodyText.ok) return true;
+      const result = await apiRuntime.persistMutation({
+        route,
+        request,
+        authContext,
+        bodyText: bodyText.value,
+        responsePayload: {
+          service: "customcard-api",
+          status: "admin-worker-config-save-accepted"
         }
       });
       sendJson(response, result.statusCode, result.payload);

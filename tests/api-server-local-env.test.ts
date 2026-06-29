@@ -26,7 +26,6 @@ describe("API server local env loading", () => {
     writeFileSync(
       join(cwd, ".env.local"),
       [
-        "WALGREENS_VENDOR_MODE=sandbox",
         "WALGREENS_API_KEY=test-api-key",
         "WALGREENS_AFF_ID=test-aff-id",
         "PUBLIC_APP_ORIGIN=http://127.0.0.1:5173",

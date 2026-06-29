@@ -1,5 +1,10 @@
 import { apiRouteContracts as defaultRoutes } from "../src/apiRouteContractsData.mjs";
 import {
+  adminRuntimeConfigKeys,
+  normalizeAdminAiFlowConfigInput,
+  normalizeAdminWorkerConfigInput
+} from "../src/adminRuntimeConfigData.mjs";
+import {
   createAiCardGenerationService,
 } from "./ai-card-generator.mjs";
 import { createAiFlowCostGate, createPostgresAiFlowCostStore } from "./ai-flow-cost-gate.mjs";
@@ -26,11 +31,13 @@ export function createWorkerRuntime({
   generatedImageArtifactPersister,
   fetchImpl = globalThis.fetch,
   aiFlowAdminConfig = [],
+  workerConfig,
   workerId = defaultWorkerId(env),
   now = () => new Date()
 } = {}) {
   const postgresRuntime = createPostgresRuntime({ env, postgresPoolFactory });
   const objectStoreRuntime = createObjectStoreRuntime({ env, fetchImpl });
+  const startupWorkerConfig = normalizeAdminWorkerConfigInput(workerConfig);
   const effectiveGeneratedImageArtifactPersister =
     generatedImageArtifactPersister ??
     (({ authContext, payload }) =>
@@ -56,10 +63,10 @@ export function createWorkerRuntime({
         executionMode: "postgres-lease",
         workerId,
         queueBackedRoutes: queueBackedRouteIds,
-        leaseSeconds: workerLeaseSeconds(env),
-        batchSize: workerBatchSize(env),
-        retryBackoffSeconds: workerRetryBackoffSeconds(env),
-        pollIntervalMs: workerPollIntervalMs(env),
+        leaseSeconds: startupWorkerConfig.worker.leaseSeconds,
+        batchSize: startupWorkerConfig.worker.batchSize,
+        retryBackoffSeconds: startupWorkerConfig.worker.retryBackoffSeconds,
+        pollIntervalMs: startupWorkerConfig.worker.pollIntervalMs,
         postgres: postgresRuntime.describe(),
         artifactStore: objectStoreRuntime.describe(),
         idempotency: "required",
@@ -69,7 +76,8 @@ export function createWorkerRuntime({
     validate({ requirePostgres = false } = {}) {
       return validateWorkerEnv(env, { requirePostgres });
     },
-    async runOnce({ limit = workerBatchSize(env) } = {}) {
+    async runOnce({ limit } = {}) {
+      const config = await readWorkerAdminWorkerConfig(postgresRuntime, workerConfig);
       const blockers = validateWorkerEnv(env, { requirePostgres: true });
       if (blockers.length > 0) {
         return {
@@ -84,8 +92,9 @@ export function createWorkerRuntime({
         };
       }
 
-      const expired = await requeueExpiredJobs({ postgresRuntime, leaseSeconds: workerLeaseSeconds(env) });
-      const jobs = await leaseJobs({ postgresRuntime, workerId, limit, routeIds: Array.from(routeIdSet) });
+      const selectedLimit = safeIntegerValue(limit, config.worker.batchSize, 1, 25);
+      const expired = await requeueExpiredJobs({ postgresRuntime, leaseSeconds: config.worker.leaseSeconds });
+      const jobs = await leaseJobs({ postgresRuntime, workerId, limit: selectedLimit, routeIds: Array.from(routeIdSet) });
       const report = {
         service: "customcard-worker",
         status: "ready",
@@ -105,13 +114,14 @@ export function createWorkerRuntime({
         now,
         postgresRuntime,
         report,
-        retryBackoffSeconds: workerRetryBackoffSeconds(env),
+        retryBackoffSeconds: config.worker.retryBackoffSeconds,
         routeIdSet
       });
 
       return report;
     },
     async runJobById({ jobId, userId }) {
+      const config = await readWorkerAdminWorkerConfig(postgresRuntime, workerConfig);
       const blockers = validateWorkerEnv(env, { requirePostgres: true });
       if (blockers.length > 0) {
         return {
@@ -127,7 +137,7 @@ export function createWorkerRuntime({
         };
       }
 
-      const expired = await requeueExpiredJobs({ postgresRuntime, leaseSeconds: workerLeaseSeconds(env) });
+      const expired = await requeueExpiredJobs({ postgresRuntime, leaseSeconds: config.worker.leaseSeconds });
       const jobs = await leaseJobById({ postgresRuntime, workerId, jobId, userId, routeIds: Array.from(routeIdSet) });
       const report = {
         service: "customcard-worker",
@@ -148,15 +158,15 @@ export function createWorkerRuntime({
         now,
         postgresRuntime,
         report,
-        retryBackoffSeconds: workerRetryBackoffSeconds(env),
+        retryBackoffSeconds: config.worker.retryBackoffSeconds,
         routeIdSet
       });
 
       return report;
     },
     async runLoop({
-      limit = workerBatchSize(env),
-      pollIntervalMs = workerPollIntervalMs(env),
+      limit,
+      pollIntervalMs,
       maxIterations = Number.POSITIVE_INFINITY,
       stopWhenIdle = false,
       shouldContinue = () => true,
@@ -176,7 +186,10 @@ export function createWorkerRuntime({
       };
 
       while (report.iterations < maxIterations && shouldContinue()) {
-        const iteration = await this.runOnce({ limit });
+        const config = await readWorkerAdminWorkerConfig(postgresRuntime, workerConfig);
+        const selectedLimit = safeIntegerValue(limit, config.worker.batchSize, 1, 25);
+        const selectedPollIntervalMs = safeIntegerValue(pollIntervalMs, config.worker.pollIntervalMs, 0, 60000);
+        const iteration = await this.runOnce({ limit: selectedLimit });
         report.iterations += 1;
         report.processed += iteration.processed ?? 0;
         report.succeeded += iteration.succeeded ?? 0;
@@ -193,7 +206,9 @@ export function createWorkerRuntime({
           break;
         }
         if (stopWhenIdle && iteration.leased === 0) break;
-        if (report.iterations < maxIterations && shouldContinue() && pollIntervalMs > 0) await sleep(pollIntervalMs);
+        if (report.iterations < maxIterations && shouldContinue() && selectedPollIntervalMs > 0) {
+          await sleep(selectedPollIntervalMs);
+        }
       }
 
       return report;
@@ -440,12 +455,29 @@ async function readWorkerAdminAiFlowConfig(postgresRuntime, env) {
     const result = await postgresRuntime.query(
       `SELECT payload
        FROM admin_runtime_configs
-       WHERE key = 'ai-flow-configs'
-       LIMIT 1`
+       WHERE key = $1
+       LIMIT 1`,
+      [adminRuntimeConfigKeys.aiFlowConfigs]
     );
-    return result.rows[0]?.payload?.configs ?? result.rows[0]?.payload?.aiFlowConfigs ?? [];
+    return normalizeAdminAiFlowConfigInput(result.rows[0]?.payload ?? {}, env, { migrateLegacyDefaults: true });
   } catch {
     return [];
+  }
+}
+
+async function readWorkerAdminWorkerConfig(postgresRuntime, explicitConfig) {
+  if (explicitConfig) return normalizeAdminWorkerConfigInput(explicitConfig);
+  try {
+    const result = await postgresRuntime.query(
+      `SELECT payload
+       FROM admin_runtime_configs
+       WHERE key = $1
+       LIMIT 1`,
+      [adminRuntimeConfigKeys.workerConfig]
+    );
+    return normalizeAdminWorkerConfigInput(result.rows[0]?.payload ?? {});
+  } catch {
+    return normalizeAdminWorkerConfigInput();
   }
 }
 
@@ -497,22 +529,6 @@ function normalizeJson(value) {
   return value;
 }
 
-function workerBatchSize(env) {
-  return safeIntegerEnv(env.CUSTOMCARD_WORKER_BATCH_SIZE, 5, 1, 25);
-}
-
-function workerLeaseSeconds(env) {
-  return safeIntegerEnv(env.CUSTOMCARD_WORKER_LEASE_SECONDS, 300, 30, 3600);
-}
-
-function workerRetryBackoffSeconds(env) {
-  return safeIntegerEnv(env.CUSTOMCARD_WORKER_RETRY_BACKOFF_SECONDS, 60, 5, 3600);
-}
-
-function workerPollIntervalMs(env) {
-  return safeIntegerEnv(env.CUSTOMCARD_WORKER_POLL_INTERVAL_MS, 5000, 250, 60000);
-}
-
 function defaultWorkerId(env) {
   return String(env.CUSTOMCARD_WORKER_ID ?? `${env.HOSTNAME ?? "local"}:${process.pid}`);
 }
@@ -525,7 +541,7 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function safeIntegerEnv(value, fallback, min, max) {
+function safeIntegerValue(value, fallback, min, max) {
   const parsed = Number.parseInt(String(value ?? ""), 10);
   if (!Number.isFinite(parsed)) return fallback;
   return Math.min(max, Math.max(min, parsed));

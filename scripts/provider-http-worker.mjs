@@ -5,6 +5,7 @@ import {
   createAiRouteActivationContext,
   resolveAiRouteActivation
 } from "../src/aiRouteActivation.mjs";
+import { normalizeAdminWorkerConfigInput } from "../src/adminRuntimeConfigData.mjs";
 import { createAiCardGenerationService, loadLocalAiEnvFiles } from "./ai-card-generator.mjs";
 import { buildLocalComfyWorkerAiFlowConfig, resolveLocalComfyWorkerEnv } from "./local-comfy-worker.mjs";
 import {
@@ -29,15 +30,17 @@ export function createProviderHttpWorkerRuntime({
   env = process.env,
   fetchImpl = (...args) => globalThis.fetch(...args),
   aiFlowAdminConfig,
+  workerConfig,
   routes,
   now = () => new Date()
 } = {}) {
   const resolvedEnv = resolveProviderHttpWorkerEnv(env);
+  const resolvedWorkerConfig = normalizeAdminWorkerConfigInput(workerConfig);
   const workerAiFlowAdminConfig = aiFlowAdminConfig ?? buildLocalComfyWorkerAiFlowConfig(resolvedEnv);
   const baseUrl = trimTrailingSlash(resolvedEnv.CUSTOMCARD_PROVIDER_API_BASE_URL);
   const workerId = resolvedEnv.CUSTOMCARD_WORKER_ID;
   const token = String(resolvedEnv.CUSTOMCARD_PROVIDER_WORKER_TOKEN ?? "").trim();
-  const routeScope = providerRouteScope(routes, resolvedEnv);
+  const routeScope = providerRouteScope(routes, resolvedWorkerConfig);
   const aiFlowReadiness = providerAiFlowReadiness(resolvedEnv, workerAiFlowAdminConfig);
   const aiService = createAiCardGenerationService({ env: resolvedEnv, fetchImpl, aiFlowAdminConfig: workerAiFlowAdminConfig });
 
@@ -56,7 +59,7 @@ export function createProviderHttpWorkerRuntime({
         comfyUrl: resolvedEnv.CUSTOMCARD_COMFYUI_URL || resolvedEnv.COMFYUI_URL || null,
         aiFlowReadiness,
         hasProviderToken: token.length >= 32,
-        pollIntervalMs: workerPollIntervalMs(resolvedEnv)
+        pollIntervalMs: resolvedWorkerConfig.providerWorker.pollIntervalMs
       };
     },
     validate() {
@@ -66,7 +69,7 @@ export function createProviderHttpWorkerRuntime({
       blockers.push(...providerAiFlowBlockers(aiFlowReadiness));
       return blockers;
     },
-    async runOnce({ limit = workerBatchSize(resolvedEnv) } = {}) {
+    async runOnce({ limit } = {}) {
       const blockers = this.validate();
       if (blockers.length > 0) {
         return { ...this.describe(), status: "blocked", blockers, leased: 0, processed: 0, succeeded: 0, failed: 0 };
@@ -75,7 +78,7 @@ export function createProviderHttpWorkerRuntime({
         fetchImpl,
         token,
         url: `${baseUrl}/api/provider/jobs/lease`,
-        body: { worker_id: workerId, routes: routeScope, limit }
+        body: { worker_id: workerId, routes: routeScope, limit: safeInteger(limit, resolvedWorkerConfig.providerWorker.batchSize, 1, 5) }
       });
       if (!lease.ok) {
         return {
@@ -109,8 +112,8 @@ export function createProviderHttpWorkerRuntime({
       return report;
     },
     async runLoop({
-      limit = workerBatchSize(resolvedEnv),
-      pollIntervalMs = workerPollIntervalMs(resolvedEnv),
+      limit,
+      pollIntervalMs,
       maxIterations = Number.POSITIVE_INFINITY,
       shouldContinue = () => true,
       onReport
@@ -125,7 +128,9 @@ export function createProviderHttpWorkerRuntime({
         results: []
       };
       while (report.iterations < maxIterations && shouldContinue()) {
-        const iteration = await this.runOnce({ limit });
+        const selectedLimit = safeInteger(limit, resolvedWorkerConfig.providerWorker.batchSize, 1, 5);
+        const selectedPollIntervalMs = safeInteger(pollIntervalMs, resolvedWorkerConfig.providerWorker.pollIntervalMs, 0, 60000);
+        const iteration = await this.runOnce({ limit: selectedLimit });
         report.iterations += 1;
         report.processed += iteration.processed ?? 0;
         report.succeeded += iteration.succeeded ?? 0;
@@ -138,7 +143,7 @@ export function createProviderHttpWorkerRuntime({
           report.blockers = iteration.blockers ?? [];
           break;
         }
-        if ((iteration.leased ?? 0) === 0 && pollIntervalMs > 0) await sleep(pollIntervalMs);
+        if ((iteration.leased ?? 0) === 0 && selectedPollIntervalMs > 0) await sleep(selectedPollIntervalMs);
       }
       return report;
     }
@@ -320,23 +325,15 @@ function providerAiFlowBlockers(readiness) {
   );
 }
 
-function providerRouteScope(routes, env) {
+function providerRouteScope(routes, workerConfig) {
   const configured = Array.isArray(routes) && routes.length > 0
     ? routes
-    : String(env.CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS ?? "ai-card-generate").split(/[,\s]+/);
+    : workerConfig.providerWorker.routeIds;
   const normalized = configured.map((routeId) => String(routeId ?? "").trim()).filter(Boolean);
   return Array.from(new Set(normalized.length > 0 ? normalized : ["ai-card-generate"]));
 }
 
-function workerBatchSize(env) {
-  return safeIntegerEnv(env.CUSTOMCARD_PROVIDER_WORKER_BATCH_SIZE ?? env.CUSTOMCARD_WORKER_BATCH_SIZE, 1, 1, 5);
-}
-
-function workerPollIntervalMs(env) {
-  return safeIntegerEnv(env.CUSTOMCARD_PROVIDER_WORKER_POLL_INTERVAL_MS ?? env.CUSTOMCARD_WORKER_POLL_INTERVAL_MS, 5000, 250, 60000);
-}
-
-function safeIntegerEnv(value, fallback, min, max) {
+function safeInteger(value, fallback, min, max) {
   const parsed = Number.parseInt(String(value ?? ""), 10);
   if (!Number.isFinite(parsed)) return fallback;
   return Math.min(max, Math.max(min, parsed));

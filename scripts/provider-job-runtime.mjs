@@ -1,5 +1,9 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import {
+  adminRuntimeConfigKeys,
+  normalizeAdminWorkerConfigInput
+} from "../src/adminRuntimeConfigData.mjs";
+import {
   hasLiveProviderNetworkCall,
   normalizeProviderCompletionResult,
   providerArtifactUploadContract,
@@ -16,15 +20,22 @@ export function createProviderJobRuntime({
   env = process.env,
   getPool,
   postgresRuntime,
-  persistGeneratedImageArtifacts
+  persistGeneratedImageArtifacts,
+  workerConfig
 } = {}) {
+  async function readWorkerConfig(pool) {
+    return readProviderAdminWorkerConfig({ pool, workerConfig });
+  }
+
   return {
     authorize(route, request) {
       return authorizeProviderToken({ env, route, request });
     },
     async leaseJobs({ authContext, workerId, routeIds, limit } = {}) {
       const selectedWorkerId = safeProviderWorkerId(workerId);
-      const selectedRouteIds = allowedProviderRouteIds(authContext, routeIds);
+      const pool = await getPool();
+      const config = await readWorkerConfig(pool);
+      const selectedRouteIds = allowedProviderRouteIds(config.providerWorker.routeIds, routeIds);
       if (!selectedWorkerId) {
         return {
           statusCode: 400,
@@ -38,8 +49,7 @@ export function createProviderJobRuntime({
         };
       }
 
-      const pool = await getPool();
-      const leaseSeconds = providerLeaseSeconds(env);
+      const leaseSeconds = config.providerWorker.leaseSeconds;
       await requeueExpiredProviderJobs(pool, leaseSeconds);
       const result = await pool.query(
         `WITH next_jobs AS (
@@ -60,7 +70,7 @@ export function createProviderJobRuntime({
              updated_at = NOW()
          WHERE id IN (SELECT id FROM next_jobs)
          RETURNING id, user_id, route_id, idempotency_key_id, payload, attempt_count, max_attempts, locked_at`,
-        [providerLeaseLimit(limit), selectedRouteIds, selectedWorkerId]
+        [providerLeaseLimit(limit, config.providerWorker.batchSize), selectedRouteIds, selectedWorkerId]
       );
       const jobs = result.rows.map((row) =>
         providerLeasePayload({
@@ -84,7 +94,9 @@ export function createProviderJobRuntime({
       };
     },
     async readStatus({ authContext, routeIds } = {}) {
-      const selectedRouteIds = allowedProviderRouteIds(authContext, routeIds);
+      const pool = await getPool();
+      const config = await readWorkerConfig(pool);
+      const selectedRouteIds = allowedProviderRouteIds(config.providerWorker.routeIds, routeIds);
       if (selectedRouteIds.length === 0) {
         return {
           statusCode: 403,
@@ -92,8 +104,7 @@ export function createProviderJobRuntime({
         };
       }
 
-      const pool = await getPool();
-      const leaseSeconds = providerLeaseSeconds(env);
+      const leaseSeconds = config.providerWorker.leaseSeconds;
       const result = await pool.query(
         `WITH scoped_jobs AS (
            SELECT status, created_at, updated_at, locked_at, attempt_count, max_attempts, result
@@ -215,13 +226,20 @@ export function createProviderJobRuntime({
       if (!row) {
         return { statusCode: 404, payload: { service: "customcard-api", status: "job-not-found", job_id: selectedJobId } };
       }
-      if (!allowedProviderRouteIds(authContext, [row.route_id]).includes(row.route_id)) {
+      const config = await readWorkerConfig(pool);
+      if (!allowedProviderRouteIds(config.providerWorker.routeIds, [row.route_id]).includes(row.route_id)) {
         return {
           statusCode: 403,
           payload: { service: "customcard-api", status: "provider-route-not-allowed", job_id: selectedJobId, route_id: row.route_id }
         };
       }
-      const lockCheck = validateProviderLease({ row, workerId: selectedWorkerId, leaseToken, env });
+      const lockCheck = validateProviderLease({
+        row,
+        workerId: selectedWorkerId,
+        leaseToken,
+        env,
+        leaseSeconds: config.providerWorker.leaseSeconds
+      });
       if (!lockCheck.ok) {
         return {
           statusCode: lockCheck.statusCode,
@@ -287,7 +305,7 @@ export function createProviderJobRuntime({
           job,
           body,
           workerId: selectedWorkerId,
-          retryBackoffSeconds: providerRetryBackoffSeconds(env),
+          retryBackoffSeconds: config.providerWorker.retryBackoffSeconds,
           now
         });
         return {
@@ -299,7 +317,7 @@ export function createProviderJobRuntime({
             route_id: job.routeId,
             queue_status: failed.status,
             result_available: false,
-            retry_after_seconds: failed.status === "queued" ? providerRetryBackoffSeconds(env) : null
+            retry_after_seconds: failed.status === "queued" ? config.providerWorker.retryBackoffSeconds : null
           }
         };
       }
@@ -328,6 +346,22 @@ export function providerRuntimeUnavailable(runtimeMode) {
   };
 }
 
+async function readProviderAdminWorkerConfig({ pool, workerConfig }) {
+  if (workerConfig) return normalizeAdminWorkerConfigInput(workerConfig);
+  try {
+    const result = await pool.query(
+      `SELECT payload
+       FROM admin_runtime_configs
+       WHERE key = $1
+       LIMIT 1`,
+      [adminRuntimeConfigKeys.workerConfig]
+    );
+    return normalizeAdminWorkerConfigInput(result.rows[0]?.payload ?? {});
+  } catch {
+    return normalizeAdminWorkerConfigInput();
+  }
+}
+
 export function authorizeProviderToken({ env, route, request }) {
   const token = readBearerToken(request);
   if (!token) return authError(401, "auth-required", route);
@@ -353,13 +387,12 @@ export function authorizeProviderToken({ env, route, request }) {
     ok: true,
     role: "provider",
     userId: providerId,
-    sessionId: stableProviderId("provider-session", tokenHash),
-    providerRouteIds: providerRouteIdsFromEnv(env)
+    sessionId: stableProviderId("provider-session", tokenHash)
   };
 }
 
-export function allowedProviderRouteIds(authContext, requestedRouteIds) {
-  const allowed = new Set(Array.isArray(authContext?.providerRouteIds) ? authContext.providerRouteIds : []);
+export function allowedProviderRouteIds(allowedRouteIds, requestedRouteIds) {
+  const allowed = new Set(Array.isArray(allowedRouteIds) ? allowedRouteIds : []);
   const requested = Array.isArray(requestedRouteIds) && requestedRouteIds.length > 0
     ? requestedRouteIds.map((routeId) => safeId(routeId, "")).filter(Boolean)
     : Array.from(allowed);
@@ -415,37 +448,12 @@ function configuredProviderTokenHash(env) {
   return createHash("sha256").update(token).digest("hex");
 }
 
-function providerRouteIdsFromEnv(env) {
-  const configured = String(env.CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS ?? "ai-card-generate");
-  return Array.from(
-    new Set(
-      configured
-        .split(/[,\s]+/)
-        .map((routeId) => safeId(routeId, ""))
-        .filter(Boolean)
-    )
-  );
-}
-
 function safeProviderWorkerId(value) {
   return safeId(value, "");
 }
 
-function providerLeaseLimit(value) {
-  return safeInteger(value, 1, 1, 5);
-}
-
-function providerLeaseSeconds(env) {
-  return safeInteger(env.CUSTOMCARD_PROVIDER_WORKER_LEASE_SECONDS ?? env.CUSTOMCARD_WORKER_LEASE_SECONDS, 300, 30, 3600);
-}
-
-function providerRetryBackoffSeconds(env) {
-  return safeInteger(
-    env.CUSTOMCARD_PROVIDER_WORKER_RETRY_BACKOFF_SECONDS ?? env.CUSTOMCARD_WORKER_RETRY_BACKOFF_SECONDS,
-    60,
-    5,
-    3600
-  );
+function providerLeaseLimit(value, fallback) {
+  return safeInteger(value, fallback, 1, 5);
 }
 
 async function requeueExpiredProviderJobs(pool, leaseSeconds) {
@@ -489,11 +497,11 @@ function providerLeaseSigningSecret(env) {
   return String(env.AUTH_SESSION_SECRET ?? env.OBJECT_STORE_SIGNING_SECRET ?? "customcard-provider-lease-dev-secret").trim();
 }
 
-function validateProviderLease({ row, workerId, leaseToken, env }) {
+function validateProviderLease({ row, workerId, leaseToken, env, leaseSeconds }) {
   if (row.status !== "running") return { ok: false, statusCode: 409, status: "job-not-running" };
   if (row.locked_by !== workerId) return { ok: false, statusCode: 409, status: "job-locked-by-another-worker" };
   const lockedAtIso = safeDateIso(row.locked_at);
-  const expiresAtMs = new Date(lockedAtIso).getTime() + providerLeaseSeconds(env) * 1000;
+  const expiresAtMs = new Date(lockedAtIso).getTime() + leaseSeconds * 1000;
   if (Date.now() > expiresAtMs) return { ok: false, statusCode: 409, status: "lease-expired" };
   const expected = providerLeaseToken({
     jobId: row.id,

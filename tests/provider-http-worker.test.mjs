@@ -10,8 +10,16 @@ import {
 const providerBaseEnv = {
   CUSTOMCARD_PROVIDER_API_BASE_URL: "https://customcard.example",
   CUSTOMCARD_PROVIDER_WORKER_TOKEN: "test-provider-worker-token-32-chars",
-  CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS: "ai-card-generate",
   CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188"
+};
+const workerConfig = {
+  providerWorker: {
+    routeIds: ["ai-card-generate"],
+    batchSize: 1,
+    leaseSeconds: 300,
+    retryBackoffSeconds: 60,
+    pollIntervalMs: 5000
+  }
 };
 const localImageAdminConfig = [
   {
@@ -72,7 +80,8 @@ describe("provider HTTP worker", () => {
     const target = loadProviderWorkerEnvFiles({ cwd, target: {} });
     const runtime = createProviderHttpWorkerRuntime({
       env: { ...providerBaseEnv, ...target },
-      aiFlowAdminConfig: cloudflareCopyLocalImageAdminConfig
+      aiFlowAdminConfig: cloudflareCopyLocalImageAdminConfig,
+      workerConfig
     });
 
     expect(Object.keys(target).some((key) => key.startsWith("CUSTOMCARD_AI_"))).toBe(false);
@@ -92,6 +101,7 @@ describe("provider HTTP worker", () => {
         ...providerBaseEnv
       },
       aiFlowAdminConfig: cloudflareCopyLocalImageAdminConfig,
+      workerConfig,
       fetchImpl
     });
 
@@ -112,7 +122,6 @@ describe("provider HTTP worker", () => {
     const env = {
       CUSTOMCARD_PROVIDER_API_BASE_URL: "https://customcard.example",
       CUSTOMCARD_PROVIDER_WORKER_TOKEN: "test-provider-worker-token-32-chars",
-      CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS: "ai-card-generate",
       OPENAI_API_KEY: "openai_token"
     };
     const aiFlowAdminConfig = [
@@ -186,7 +195,7 @@ describe("provider HTTP worker", () => {
       }
       throw new Error(`Unexpected fetch ${requestUrl}`);
     });
-    const runtime = createProviderHttpWorkerRuntime({ env, aiFlowAdminConfig, fetchImpl });
+    const runtime = createProviderHttpWorkerRuntime({ env, aiFlowAdminConfig, workerConfig, fetchImpl });
 
     const report = await runtime.runOnce();
     const completion = completionBodies[0];
@@ -215,6 +224,10 @@ describe("provider HTTP worker", () => {
       processed: 1,
       succeeded: 1,
       failed: 0
+    });
+    expect(JSON.parse(String(fetchImpl.mock.calls[0][1]?.body))).toMatchObject({
+      routes: ["ai-card-generate"],
+      limit: 1
     });
     expect(completion).toMatchObject({
       status: "succeeded",

@@ -75,7 +75,6 @@ async function setupProvider({ env, flags }) {
   const localUpdates = {
     CUSTOMCARD_PROVIDER_API_BASE_URL: baseUrl,
     CUSTOMCARD_PROVIDER_WORKER_TOKEN: rawToken,
-    CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS: routeScope.join(","),
     CUSTOMCARD_WORKER_ID: workerId
   };
   if (!env.CUSTOMCARD_COMFYUI_URL && !env.COMFYUI_URL) localUpdates.CUSTOMCARD_COMFYUI_URL = "http://127.0.0.1:8188";
@@ -89,8 +88,6 @@ async function setupProvider({ env, flags }) {
     : await configureVercelProviderEnv({
         vercel,
         tokenHash,
-        routeScope,
-        leaseSeconds: String(flags["lease-seconds"] ?? env.CUSTOMCARD_PROVIDER_WORKER_LEASE_SECONDS ?? "300"),
         dryRun: Boolean(flags["dry-run"])
       });
   if (vercelReport.status === "blocked") blockers.push(...vercelReport.blockers);
@@ -261,14 +258,12 @@ async function probeProviderStatus({ baseUrl, token, routes }) {
   }
 }
 
-async function configureVercelProviderEnv({ vercel, tokenHash, routeScope, leaseSeconds, dryRun }) {
+async function configureVercelProviderEnv({ vercel, tokenHash, dryRun }) {
   if (!vercel) return { status: "blocked", blockers: ["Vercel CLI not found. Set VERCEL_CLI_PATH or install Vercel CLI."] };
   const inventory = vercelProviderEnvSummary(vercel);
   if (inventory.status === "blocked") return inventory;
   const required = {
-    CUSTOMCARD_PROVIDER_WORKER_TOKEN_SHA256: tokenHash,
-    CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS: routeScope.join(","),
-    CUSTOMCARD_PROVIDER_WORKER_LEASE_SECONDS: leaseSeconds
+    CUSTOMCARD_PROVIDER_WORKER_TOKEN_SHA256: tokenHash
   };
   const added = [];
   const skipped = [];
@@ -324,8 +319,6 @@ function vercelProviderEnvSummary(vercel) {
   return {
     status: "ready",
     hasProviderTokenHash: names.includes("CUSTOMCARD_PROVIDER_WORKER_TOKEN_SHA256"),
-    hasProviderRouteScope: names.includes("CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS"),
-    hasProviderLeaseSeconds: names.includes("CUSTOMCARD_PROVIDER_WORKER_LEASE_SECONDS"),
     names
   };
 }
@@ -511,7 +504,7 @@ function parseCli(argv) {
 }
 
 function routeScopeFromFlags(flags, env) {
-  const source = String(flags.routes ?? env.CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS ?? defaultRoutes.join(","));
+  const source = String(flags.routes ?? defaultRoutes.join(","));
   const routes = source.split(/[,\s]+/).map((route) => route.trim()).filter(Boolean);
   return Array.from(new Set(routes.length > 0 ? routes : defaultRoutes));
 }

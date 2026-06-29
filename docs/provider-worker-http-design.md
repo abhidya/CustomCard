@@ -56,7 +56,6 @@ Recommended local env file:
 # .env.provider.local
 CUSTOMCARD_PROVIDER_API_BASE_URL=https://<your-production-vercel-domain>
 CUSTOMCARD_PROVIDER_WORKER_TOKEN=<raw provider token>
-CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS=ai-card-generate
 CUSTOMCARD_WORKER_ID=manny-comfy-01
 CUSTOMCARD_COMFYUI_URL=http://127.0.0.1:8188
 ```
@@ -97,8 +96,6 @@ Server env:
 
 ```bash
 CUSTOMCARD_PROVIDER_WORKER_TOKEN_SHA256=<sha256 of local token>
-CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS=ai-card-generate
-CUSTOMCARD_PROVIDER_WORKER_LEASE_SECONDS=300
 ```
 
 Local worker env:
@@ -227,7 +224,6 @@ On Vercel/prod:
 
 ```bash
 CUSTOMCARD_PROVIDER_WORKER_TOKEN_SHA256=<sha256 token>
-CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS=ai-card-generate
 OBJECT_STORE_URL=memory://customcard-artifacts
 OBJECT_STORE_URL=<r2 s3-compatible endpoint>
 OBJECT_STORE_BUCKET=<bucket>
@@ -247,3 +243,5 @@ CUSTOMCARD_COMFYUI_URL=http://127.0.0.1:8188
 CUSTOMCARD_LOCAL_LLM_BASE_URL=http://127.0.0.1:1234/v1
 npm run provider:start
 ```
+
+Provider route scope, lease TTL, retry backoff, batch size, and poll interval are configured in Admin > Workers through `/api/admin/worker-config`.

@@ -76,11 +76,11 @@ const readyEnv: ProviderRuntimeEnv = {
   COURIER_AUTH_TOKEN: "configured-courier-token",
   COURIER_TEMPLATE_ID: "configured-courier-template",
   CUSTOMCARD_AUTH_CALLBACK_URL: "https://customcard.test/auth/callback",
+  CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188",
   CUSTOMERIO_APP_API_KEY: "configured-customerio-app-api-key",
   CUSTOMERIO_TRANSACTIONAL_MESSAGE_ID: "configured-customerio-transactional-message-id",
   CUSTOMCARD_PAYMENT_CANCEL_URL: "https://customcard.test/payment/cancel",
   CUSTOMCARD_PAYMENT_SUCCESS_URL: "https://customcard.test/payment/success",
-  CVS_VENDOR_MODE: "certification-configured-only",
   DATABASE_URL: "postgres://customcard:test@localhost:5432/customcard",
   DATADOG_API_KEY: "configured-datadog-api-key",
   DATADOG_SITE: "datadoghq.com",
@@ -91,7 +91,6 @@ const readyEnv: ProviderRuntimeEnv = {
   DYNAMICS_RESOURCE_URL: "https://customcard.crm.dynamics.com",
   DYNAMICS_TENANT_ID: "configured-dynamics-tenant-id",
   EXPO_ACCESS_TOKEN: "configured-expo-access-token",
-  FEDEX_VENDOR_MODE: "certification-configured-only",
   FAL_KEY: "configured-fal-key",
   FIREWORKS_API_KEY: "configured-fireworks-key",
   FIREBASE_API_KEY: "configured-firebase-api-key",
@@ -130,7 +129,6 @@ const readyEnv: ProviderRuntimeEnv = {
   MISTRAL_API_KEY: "configured-mistral-key",
   MAILGUN_API_KEY: "configured-mailgun-key",
   MAILGUN_DOMAIN: "mg.customcard.test",
-  OFFICE_DEPOT_VENDOR_MODE: "certification-configured-only",
   OBJECT_STORE_BUCKET: "customcard-test",
   OBJECT_STORE_URL: "file:///tmp/customcard-object-store",
   NOTION_API_KEY: "configured-notion-key",
@@ -178,7 +176,6 @@ const readyEnv: ProviderRuntimeEnv = {
   SQUARE_LOCATION_ID: "configured-square-location-id",
   SQUARE_WEBHOOK_SIGNATURE_KEY: "configured-square-webhook-signature-key",
   STABILITY_API_KEY: "configured-stability-key",
-  STAPLES_VENDOR_MODE: "certification-configured-only",
   SHOPIFY_ADMIN_ACCESS_TOKEN: "configured-shopify-token",
   SHOPIFY_SHOP_DOMAIN: "customcard-test.myshopify.com",
   SUPABASE_ANON_KEY: "configured-supabase-anon-key",
@@ -192,8 +189,6 @@ const readyEnv: ProviderRuntimeEnv = {
   TWILIO_ACCOUNT_SID: "configured-twilio-account-sid",
   TWILIO_AUTH_TOKEN: "configured-twilio-auth-token",
   TWILIO_MESSAGING_SERVICE_SID: "configured-twilio-messaging-service-sid",
-  WALGREENS_VENDOR_MODE: "certification-configured-only",
-  WALMART_VENDOR_MODE: "certification-configured-only",
   WHATSAPP_ACCESS_TOKEN: "configured-whatsapp-token",
   WHATSAPP_PHONE_NUMBER_ID: "configured-whatsapp-phone-number-id",
   WOOCOMMERCE_CONSUMER_KEY: "configured-woocommerce-consumer-key",
@@ -706,6 +701,12 @@ describe("provider runtime contracts", () => {
       url: "https://model-api.runcomfy.net/v1/models/{admin-selected-runcomfy-model}",
       headers: expect.objectContaining({ authorization: "Bearer {RUNCOMFY_API_TOKEN}" })
     });
+    const localComfyRuntime = buildImageGenerationRuntime("local-comfyui-api-image", imageInput, readyEnv, openGates);
+    expect(localComfyRuntime.mode).toBe("blocked");
+    expect(localComfyRuntime.request).toBeUndefined();
+    expect(localComfyRuntime.readiness.blockedReasons).toContain(
+      "Adapter is contract-only: Local-only ComfyUI REST adapter for one-panel-at-a-time card artwork generation with the CustomCardTextComposer final text workflow."
+    );
     expect(buildImageGenerationRuntime("adobe-firefly-image", imageInput, readyEnv, openGates).request?.headers).toMatchObject({
       "x-api-key": "{ADOBE_FIREFLY_API_KEY}"
     });

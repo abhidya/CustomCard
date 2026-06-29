@@ -9,7 +9,9 @@ import {
   adminAiFlowConfigReadUnavailablePayload,
   adminRuntimeConfigKeys,
   buildAdminAiFlowConfigPayload,
-  buildUpdatedAdminAiFlowConfigPayload
+  buildAdminWorkerConfigPayload,
+  buildUpdatedAdminAiFlowConfigPayload,
+  buildUpdatedAdminWorkerConfigPayload
 } from "../src/adminRuntimeConfigData.mjs";
 import { createObjectStoreRuntime } from "./object-store-runtime.mjs";
 import { createPostgresRuntime, postgresPoolConfig } from "./postgres-runtime.mjs";
@@ -238,6 +240,9 @@ function createContractApiRuntime({ env, routes, objectStoreRuntime }) {
     },
     async readAdminAiFlowConfig() {
       return buildAdminAiFlowConfigPayload({ env, runtimeMode: "contract" });
+    },
+    async readAdminWorkerConfig() {
+      return buildAdminWorkerConfigPayload({ runtimeMode: "contract" });
     },
     async readAdminSafetyControls() {
       return normalizeAdminSafetyControls();
@@ -583,6 +588,9 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime, localAuthFall
     },
     async readAdminAiFlowConfig() {
       return readAdminAiFlowConfigMemory(adminRuntimeConfigs, env);
+    },
+    async readAdminWorkerConfig() {
+      return readAdminWorkerConfigMemory(adminRuntimeConfigs);
     },
     async readAdminSafetyControls() {
       return readAdminSafetyControlsMemory(adminRuntimeConfigs);
@@ -1189,6 +1197,9 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
     async readAdminAiFlowConfig() {
       return readAdminAiFlowConfigPostgres({ getPool, env });
     },
+    async readAdminWorkerConfig() {
+      return readAdminWorkerConfigPostgres({ getPool });
+    },
     async readAdminSafetyControls() {
       return readAdminSafetyControlsPostgres({ getPool });
     },
@@ -1260,6 +1271,7 @@ const memoryRoutePersistenceAdapters = {
   "data-requests": persistDataRequestMemory,
   "admin-card-gallery-save": persistCardGalleryMemory,
   "admin-ai-flow-configs-save": persistAdminAiFlowConfigMemory,
+  "admin-worker-config-save": persistAdminWorkerConfigMemory,
   "admin-safety-controls-save": persistAdminSafetyControlsMemory
 };
 
@@ -1273,6 +1285,7 @@ const postgresRoutePersistenceAdapters = {
   "data-requests": persistDataRequestPostgres,
   "admin-card-gallery-save": persistCardGalleryPostgres,
   "admin-ai-flow-configs-save": persistAdminAiFlowConfigPostgres,
+  "admin-worker-config-save": persistAdminWorkerConfigPostgres,
   "admin-safety-controls-save": persistAdminSafetyControlsPostgres
 };
 
@@ -1388,7 +1401,8 @@ function readAdminAiFlowConfigMemory(adminRuntimeConfigs, env) {
     runtimeMode: "memory",
     version: record?.version ?? 0,
     updatedAtIso: record?.updatedAtIso ?? null,
-    updatedBy: record?.updatedBy ?? null
+    updatedBy: record?.updatedBy ?? null,
+    migrateLegacyDefaults: true
   });
 }
 
@@ -1402,6 +1416,37 @@ function persistAdminAiFlowConfigMemory({ repositories, authContext, bodyText, e
     runtimeMode: "memory"
   });
   repositories.adminRuntimeConfigs.set(adminRuntimeConfigKeys.aiFlowConfigs, {
+    payload,
+    version: payload.version,
+    updatedAtIso: payload.updatedAtIso,
+    updatedBy: payload.updatedBy
+  });
+  return {
+    persisted: true,
+    payload
+  };
+}
+
+function readAdminWorkerConfigMemory(adminRuntimeConfigs) {
+  const record = adminRuntimeConfigs.get(adminRuntimeConfigKeys.workerConfig);
+  return buildAdminWorkerConfigPayload({
+    input: record?.payload,
+    runtimeMode: "memory",
+    version: record?.version ?? 0,
+    updatedAtIso: record?.updatedAtIso ?? null,
+    updatedBy: record?.updatedBy ?? null
+  });
+}
+
+function persistAdminWorkerConfigMemory({ repositories, authContext, bodyText }) {
+  const current = readAdminWorkerConfigMemory(repositories.adminRuntimeConfigs);
+  const payload = buildUpdatedAdminWorkerConfigPayload({
+    body: parseJsonBody(bodyText),
+    authContext,
+    current,
+    runtimeMode: "memory"
+  });
+  repositories.adminRuntimeConfigs.set(adminRuntimeConfigKeys.workerConfig, {
     payload,
     version: payload.version,
     updatedAtIso: payload.updatedAtIso,
@@ -1851,7 +1896,8 @@ async function readAdminAiFlowConfigPostgres({ getPool, env }) {
       runtimeMode: "postgres",
       version: row?.version ?? 0,
       updatedAtIso: row?.updated_at ? new Date(row.updated_at).toISOString() : null,
-      updatedBy: row?.updated_by ?? null
+      updatedBy: row?.updated_by ?? null,
+      migrateLegacyDefaults: true
     });
   } catch (error) {
     return adminAiFlowConfigReadUnavailablePayload({ env, runtimeMode: "postgres", error });
@@ -1892,6 +1938,71 @@ async function persistAdminAiFlowConfigPostgres({ client, authContext, bodyText,
        updated_by = EXCLUDED.updated_by,
        updated_at = NOW()`,
     [adminRuntimeConfigKeys.aiFlowConfigs, JSON.stringify(payload), payload.version, payload.updatedBy]
+  );
+  return {
+    persisted: true,
+    payload
+  };
+}
+
+async function readAdminWorkerConfigPostgres({ getPool }) {
+  try {
+    const row = await readAdminRuntimeConfigPostgres({ getPool, key: adminRuntimeConfigKeys.workerConfig });
+    return buildAdminWorkerConfigPayload({
+      input: normalizeJson(row?.payload ?? {}),
+      runtimeMode: "postgres",
+      version: row?.version ?? 0,
+      updatedAtIso: row?.updated_at ? new Date(row.updated_at).toISOString() : null,
+      updatedBy: row?.updated_by ?? null
+    });
+  } catch (error) {
+    return {
+      ...buildAdminWorkerConfigPayload({ runtimeMode: "postgres" }),
+      status: "blocked",
+      repository: {
+        ...buildAdminWorkerConfigPayload({ runtimeMode: "postgres" }).repository,
+        persisted: false,
+        status: "read-unavailable"
+      },
+      blockers: [
+        error instanceof Error ? `Admin worker config store unavailable: ${error.message}` : "Admin worker config store unavailable."
+      ]
+    };
+  }
+}
+
+async function persistAdminWorkerConfigPostgres({ client, authContext, bodyText }) {
+  await ensureAdminRuntimeConfigsPostgres(client);
+  const existing = await client.query(
+    `SELECT payload, version, updated_by, updated_at
+     FROM admin_runtime_configs
+     WHERE key = $1
+     FOR UPDATE`,
+    [adminRuntimeConfigKeys.workerConfig]
+  );
+  const currentRow = existing.rows[0];
+  const current = buildAdminWorkerConfigPayload({
+    input: normalizeJson(currentRow?.payload ?? {}),
+    runtimeMode: "postgres",
+    version: currentRow?.version ?? 0,
+    updatedAtIso: currentRow?.updated_at ? new Date(currentRow.updated_at).toISOString() : null,
+    updatedBy: currentRow?.updated_by ?? null
+  });
+  const payload = buildUpdatedAdminWorkerConfigPayload({
+    body: parseJsonBody(bodyText),
+    authContext,
+    current,
+    runtimeMode: "postgres"
+  });
+  await client.query(
+    `INSERT INTO admin_runtime_configs (key, payload, version, updated_by)
+     VALUES ($1, $2::jsonb, $3, $4)
+     ON CONFLICT (key) DO UPDATE SET
+       payload = EXCLUDED.payload,
+       version = EXCLUDED.version,
+       updated_by = EXCLUDED.updated_by,
+       updated_at = NOW()`,
+    [adminRuntimeConfigKeys.workerConfig, JSON.stringify(payload), payload.version, payload.updatedBy]
   );
   return {
     persisted: true,

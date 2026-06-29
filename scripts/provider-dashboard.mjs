@@ -1071,7 +1071,7 @@ function parseEnvFile(path) {
 }
 
 function routeScopeFromFlags(flags, env) {
-  return String(flags.routes ?? env.CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS ?? defaultRoutes.join(","))
+  return String(flags.routes ?? defaultRoutes.join(","))
     .split(/[,\s]+/)
     .map((routeId) => routeId.trim())
     .filter(Boolean);

@@ -43,14 +43,11 @@ Environment:
 
 - `CUSTOMCARD_API_RUNTIME=postgres` is required for execution.
 - `DATABASE_URL` points at the durable Postgres database containing `api_jobs`.
-- `CUSTOMCARD_WORKER_BATCH_SIZE` controls jobs leased per iteration; default `5`, range `1..25`.
-- `CUSTOMCARD_WORKER_LEASE_SECONDS` controls stale-running requeue time; default `300`, range `30..3600`.
-- `CUSTOMCARD_WORKER_RETRY_BACKOFF_SECONDS` controls retry delay after failure; default `60`, range `5..3600`.
-- `CUSTOMCARD_WORKER_POLL_INTERVAL_MS` controls idle poll interval; default `5000`, range `250..60000`.
+- Queue worker batch, lease, retry, poll, and provider route scope are persisted through `/api/admin/worker-config` and edited in Admin > Workers.
 - `CUSTOMCARD_WORKER_ID` may pin a stable worker name; otherwise host and process id are used.
 - Direct Postgres workers require `DATABASE_URL` and shared object-store env.
 - Provider HTTP workers require `CUSTOMCARD_PROVIDER_API_BASE_URL`, `CUSTOMCARD_PROVIDER_WORKER_TOKEN`, and local provider env only. They must not need `DATABASE_URL` or R2 writer credentials.
-- Hosted API provider routes accept `CUSTOMCARD_PROVIDER_WORKER_TOKEN_SHA256` or `CUSTOMCARD_PROVIDER_WORKER_TOKEN`, and route scope is restricted with `CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS` such as `ai-card-generate`.
+- Hosted API provider routes accept `CUSTOMCARD_PROVIDER_WORKER_TOKEN_SHA256` or `CUSTOMCARD_PROVIDER_WORKER_TOKEN`; route scope is restricted by the Admin worker config.
 
 Provider fallback configuration:
 
@@ -61,7 +58,7 @@ Provider fallback configuration:
 - Checked-in Comfy API workflows live under `comfyui-workflows/`. Run `npm run comfy:models:setup` to hydrate the practical SDXL, Z-Image, and FLUX.2 Klein assets into the configured ComfyUI `models/` folder. Add `-- --include-qwen` only for the Qwen Image/Edit research branch, and `-- --include-gated` only after accepting FLUX.1 Schnell terms and setting `HF_TOKEN`.
 - Current local benchmark candidates:
   - SDXL base: `--workflow-path comfyui-workflows/customcard-sdxl-checkpoint.json --checkpoint sd_xl_base_1.0.safetensors`.
-  - SDXL Turbo: same checkpoint workflow with `CUSTOMCARD_COMFYUI_CHECKPOINT=sd_xl_turbo_1.0_fp16.safetensors`, `CUSTOMCARD_COMFYUI_STEPS=2`, `CUSTOMCARD_COMFYUI_CFG=0`, `CUSTOMCARD_COMFYUI_SAMPLER=euler_ancestral`, `CUSTOMCARD_COMFYUI_SCHEDULER=sgm_uniform`.
+  - SDXL Turbo: same checkpoint workflow with checkpoint `sd_xl_turbo_1.0_fp16.safetensors` and Admin workflow inputs JSON such as `{"steps":2,"cfg":0,"sampler":"euler_ancestral","scheduler":"sgm_uniform"}`.
   - SDXL Lightning LoRA: `--workflow-path comfyui-workflows/customcard-sdxl-lightning-lora.json --checkpoint sd_xl_base_1.0.safetensors`.
   - Z-Image Turbo research: `--workflow-path comfyui-workflows/customcard-z-image-turbo.json`.
   - FLUX.2 Klein 4B quality target: `--workflow-path comfyui-workflows/customcard-flux2-klein-4b.json`. Run this on a 16GB+ GPU or cloud ComfyUI runner for fair scoring.

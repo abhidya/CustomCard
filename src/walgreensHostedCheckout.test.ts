@@ -135,11 +135,10 @@ describe("Walgreens hosted checkout", () => {
     });
   });
 
-  it("ignores legacy WALGREENS_VENDOR_MODE and stays closed until admin safety controls select a mode", async () => {
+  it("stays closed until admin safety controls select a mode", async () => {
     const fetchImpl = createWalgreensCheckoutDummyFetch();
     const service = createWalgreensHostedCheckoutService({
       env: {
-        WALGREENS_VENDOR_MODE: "sandbox",
         WALGREENS_API_KEY: "test-api-key",
         WALGREENS_AFF_ID: "photoapi",
         PUBLIC_APP_ORIGIN: "http://127.0.0.1:5173"

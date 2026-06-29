@@ -121,10 +121,10 @@ variables are missing or still use placeholder values.
 
 The legacy Walgreens hosted-checkout backend remains disabled by default and is
 not exposed in the current customer app flow. If it is revisited for a certified
-sandbox pilot, keep server-only values such as `WALGREENS_VENDOR_MODE`,
-`WALGREENS_API_KEY`, `WALGREENS_AFF_ID`, and `PUBLIC_APP_ORIGIN` in `.env.local`,
-`infra/env/.env`, or Vercel environment variables only; tracked examples use
-placeholders.
+sandbox pilot, keep server-only credentials such as `WALGREENS_API_KEY`,
+`WALGREENS_AFF_ID`, and `PUBLIC_APP_ORIGIN` in `.env.local`, `infra/env/.env`,
+or Vercel environment variables only; vendor mode belongs in admin safety
+controls.
 
 Local `.env.local` and `infra/env/.env` files are operator-owned, ignored
 secret files. Security scans may report them, but cleanup work must not delete,

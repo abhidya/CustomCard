@@ -8,10 +8,12 @@ const calendarConnectionStartRoute = apiRouteContracts.find((route) => route.id 
 const providerJobLeaseRoute = apiRouteContracts.find((route) => route.id === "provider-job-lease")!;
 const providerJobStatusRoute = apiRouteContracts.find((route) => route.id === "provider-job-status")!;
 const adminAiFlowConfigsSaveRoute = apiRouteContracts.find((route) => route.id === "admin-ai-flow-configs-save")!;
+const adminWorkerConfigSaveRoute = apiRouteContracts.find((route) => route.id === "admin-worker-config-save")!;
 const persistedMutationRouteIds = [
   "admin-ai-flow-configs-save",
   "admin-card-gallery-save",
   "admin-safety-controls-save",
+  "admin-worker-config-save",
   "card-projects",
   "customer-draft-state-save",
   "data-requests",
@@ -255,6 +257,76 @@ describe("api runtime safety", () => {
     });
   });
 
+  it("persists worker queue policy through admin runtime config instead of env knobs", async () => {
+    const runtime = createApiRuntime({
+      env: {
+        CUSTOMCARD_API_RUNTIME: "memory",
+        AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
+        CUSTOMCARD_CUSTOMER_SESSION_TOKEN: "test-customer-session-token",
+        CUSTOMCARD_ADMIN_SESSION_TOKEN: "test-admin-session-token"
+      },
+      routes: apiRouteContracts,
+      localAuthFallbacksEnabled: true
+    });
+    const authContext = { ok: true, userId: "admin-demo", role: "admin", sessionId: "session-admin" };
+
+    const saved = await runtime.persistMutation({
+      route: adminWorkerConfigSaveRoute,
+      request: { headers: { "x-idempotency-key": "admin-worker-config-0001" } },
+      authContext,
+      bodyText: JSON.stringify({
+        worker: {
+          batchSize: 2,
+          leaseSeconds: 120,
+          retryBackoffSeconds: 15,
+          pollIntervalMs: 1000
+        },
+        providerWorker: {
+          routeIds: ["ai-card-generate", "manual-vendor-handoff"],
+          batchSize: 3,
+          leaseSeconds: 180,
+          retryBackoffSeconds: 20,
+          pollIntervalMs: 1500
+        }
+      }),
+      responsePayload: { service: "customcard-api", status: "accepted" }
+    });
+
+    expect(saved.statusCode).toBe(202);
+    expect(saved.payload).toMatchObject({
+      service: "customcard-admin-worker-config",
+      version: 1,
+      updatedBy: "admin-demo",
+      worker: {
+        batchSize: 2,
+        leaseSeconds: 120,
+        retryBackoffSeconds: 15,
+        pollIntervalMs: 1000
+      },
+      providerWorker: {
+        routeIds: ["ai-card-generate", "manual-vendor-handoff"],
+        batchSize: 3,
+        leaseSeconds: 180,
+        retryBackoffSeconds: 20,
+        pollIntervalMs: 1500
+      },
+      repositoryPersisted: true,
+      idempotencyPersisted: true
+    });
+
+    await expect(runtime.readAdminWorkerConfig()).resolves.toMatchObject({
+      version: 1,
+      providerWorker: {
+        routeIds: ["ai-card-generate", "manual-vendor-handoff"],
+        batchSize: 3
+      },
+      repository: {
+        credentialsStored: false,
+        rawCustomerContentStored: false
+      }
+    });
+  });
+
   it("does not require real-order safety controls as runtime env vars", () => {
     const runtime = createApiRuntime({
       env: {
@@ -374,8 +446,7 @@ test-clerk-jwt-key
         CUSTOMCARD_API_RUNTIME: "postgres",
         DATABASE_URL: "postgres://customcard-db.internal/customcard",
         AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
-        CUSTOMCARD_PROVIDER_WORKER_TOKEN: providerToken,
-        CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS: "ai-card-generate"
+        CUSTOMCARD_PROVIDER_WORKER_TOKEN: providerToken
       },
       routes: apiRouteContracts,
       postgresPoolFactory: () => createProviderPool([])
@@ -397,15 +468,13 @@ test-clerk-jwt-key
       runtime.authorize(providerJobLeaseRoute, { headers: { authorization: `Bearer ${providerToken}` } })
     ).resolves.toMatchObject({
       ok: true,
-      role: "provider",
-      providerRouteIds: ["ai-card-generate"]
+      role: "provider"
     });
     await expect(
       runtime.authorize(providerJobStatusRoute, { headers: { authorization: `Bearer ${providerToken}` } })
     ).resolves.toMatchObject({
       ok: true,
-      role: "provider",
-      providerRouteIds: ["ai-card-generate"]
+      role: "provider"
     });
   });
 
@@ -438,8 +507,7 @@ test-clerk-jwt-key
         CUSTOMCARD_API_RUNTIME: "postgres",
         DATABASE_URL: "postgres://customcard-db.internal/customcard",
         AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
-        CUSTOMCARD_PROVIDER_WORKER_TOKEN: providerToken,
-        CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS: "ai-card-generate"
+        CUSTOMCARD_PROVIDER_WORKER_TOKEN: providerToken
       },
       routes: apiRouteContracts,
       postgresPoolFactory: () => pool
@@ -466,6 +534,7 @@ test-clerk-jwt-key
     });
     expect(leasedJob.payload.requestContext.authContext.sessionId).toBe("provider-lease");
     expect(leasedJob.lease_token).toMatch(/^[a-f0-9]{64}$/);
+    expect(queries.some((query) => query.sql.includes("FROM admin_runtime_configs") && query.params.includes("worker-config"))).toBe(true);
     expect(queries.some((query) => query.sql.includes("FOR UPDATE SKIP LOCKED"))).toBe(true);
 
     const status = await runtime.readProviderJobStatus({
@@ -608,6 +677,24 @@ function createProviderPool(queries: Array<{ sql: string; params: unknown[] }>, 
   const client = {
     async query(sql: string, params: unknown[] = []) {
       queries.push({ sql: compactSql(sql), params });
+      if (sql.includes("FROM admin_runtime_configs")) {
+        return {
+          rows: [
+            {
+              payload: {
+                providerWorker: {
+                  routeIds: ["ai-card-generate"],
+                  batchSize: 1,
+                  leaseSeconds: 300,
+                  retryBackoffSeconds: 60,
+                  pollIntervalMs: 5000
+                }
+              }
+            }
+          ],
+          rowCount: 1
+        };
+      }
       if (sql.includes("WITH scoped_jobs")) {
         return {
           rows: [

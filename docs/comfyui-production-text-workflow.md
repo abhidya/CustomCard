@@ -405,10 +405,9 @@ Comfy template variables exposed by the local adapter include:
   - Accepts `-PlannerMaxTokens` and `-PlannerContextSize` while keeping the full
     planner prompt. Do not shrink the creative contract to fit a 4096-context
     local model.
-  - Accepts `-PlannerRequestTimeoutMs` and exports
-    `CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS`; the default is `1200000` so a
-    production-size local planner can finish the full JSON contract instead of
-    hitting Node's five-minute response-header ceiling.
+  - Accepts `-PlannerRequestTimeoutMs` for benchmark-only local planner runs;
+    the customer service path keeps local planner timeout behavior in code and
+    keeps provider/model/workflow choices in Admin config.
   - Rejects known-small local planners such as Qwen3-4B/8B for production
     evidence. Use `-AllowSmallPlanner` only for exploratory failure evidence.
   - Fails fast when no production planner is available. Use
@@ -576,7 +575,8 @@ single assigned GPU, pass explicit rerun-plan planner args and prove it with
 - Test a flatter illustration/stationery checkpoint, masks, or stricter workflow
   controls so the surrounding artwork stays restrained instead of dense
   ornamental fill or object/mockup scenes.
-- Add per-panel seed offsets when `CUSTOMCARD_COMFYUI_SEED` is set.
+- Add per-panel seed offsets through Admin workflow inputs JSON instead of
+  service env values.
 - Add OCR or local vision-review evidence to catch pseudo-text and object-scene
   failures automatically.
 - Promote only after a benchmark aggregate and the production visual QA gate

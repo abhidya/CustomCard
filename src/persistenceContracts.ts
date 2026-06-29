@@ -251,6 +251,8 @@ export const apiPersistenceRouteContracts: ApiRoutePersistenceContract[] = [
   routePersistence("admin-provider-governance", "read-only", "admin", ["auth_sessions", "provider_connections", "provider_call_events", "audit_log"], true, false, false),
   routePersistence("admin-ai-flow-configs", "read-only", "admin", ["auth_sessions", "admin_runtime_configs", "audit_log"], true, false, false),
   routePersistence("admin-ai-flow-configs-save", "mutation", "admin", ["auth_sessions", "idempotency_keys", "admin_runtime_configs", "audit_log"], true, true, false),
+  routePersistence("admin-worker-config", "read-only", "admin", ["auth_sessions", "admin_runtime_configs", "audit_log"], true, false, false),
+  routePersistence("admin-worker-config-save", "mutation", "admin", ["auth_sessions", "idempotency_keys", "admin_runtime_configs", "audit_log"], true, true, false),
   routePersistence("admin-safety-controls", "read-only", "admin", ["auth_sessions", "admin_runtime_configs", "audit_log"], true, false, false),
   routePersistence("admin-safety-controls-save", "mutation", "admin", ["auth_sessions", "idempotency_keys", "admin_runtime_configs", "audit_log"], true, true, false),
   routePersistence("admin-persistence-readiness", "read-only", "admin", ["auth_sessions", "idempotency_keys", "api_jobs", "audit_log"], true, false, false),

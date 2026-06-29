@@ -9,12 +9,6 @@ data:
   OBJECT_STORE_BUCKET: "customcard-prod"
   ARTIFACT_SIGNED_URL_TTL_MINUTES: "15"
   SECRET_PROVIDER: "managed_secret_store"
-  WALGREENS_VENDOR_MODE: "disabled_until_certified"
-  CVS_VENDOR_MODE: "disabled_until_certified"
-  FEDEX_VENDOR_MODE: "disabled_until_certified"
-  WALMART_VENDOR_MODE: "disabled_until_certified"
-  STAPLES_VENDOR_MODE: "disabled_until_certified"
-  OFFICE_DEPOT_VENDOR_MODE: "disabled_until_certified"
 ---
 apiVersion: v1
 kind: Secret

@@ -132,7 +132,7 @@ const checks = [
       "--once",
       "--describe",
       "runtime.runLoop",
-      "CUSTOMCARD_WORKER_POLL_INTERVAL_MS",
+      "/api/admin/worker-config",
       "CUSTOMCARD_API_RUNTIME=postgres"
     ]
   }),

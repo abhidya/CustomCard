@@ -22,6 +22,8 @@ export interface AiFlowDefinition {
   renderingMode?: "" | "final-text-composited";
   workflowId?: string;
   workflowPath?: string;
+  workflowJson?: string;
+  workflowInputsJson?: string;
   promptInstructions: string;
 }
 
@@ -85,6 +87,7 @@ export interface BenchmarkBestAiWorkflowExpectation {
   renderingMode?: "" | "final-text-composited";
   workflowId?: string;
   workflowPath?: string;
+  workflowInputsJson?: string;
   evidenceLabel: string;
 }
 
@@ -129,6 +132,7 @@ export interface AiFlowBenchmarkParitySummary {
 }
 
 export const aiFlowAdminConfigStorageKey: string;
+export const benchmarkLocalComfyWorkflowInputsJson: string;
 export const benchmarkBestAiWorkflow: BenchmarkBestAiWorkflow;
 export const aiFlowDefinitions: AiFlowDefinition[];
 export const aiProviderEnvRequirements: Record<string, string[][]>;

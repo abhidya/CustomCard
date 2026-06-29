@@ -23,7 +23,10 @@ import {
 } from "../../src/aiFlowConfig";
 import {
   adminAiFlowConfigsRoute,
-  type AdminAiFlowConfigPayload
+  adminWorkerConfigRoute,
+  buildAdminWorkerConfigPayload,
+  type AdminAiFlowConfigPayload,
+  type AdminWorkerConfigPayload
 } from "../../src/adminRuntimeConfigData.mjs";
 import type { AiGenerationJobEvidence } from "../../src/aiGenerationJobs";
 import { buildBrowserIdempotencyKey, fetchBrowser, requestBrowserJson } from "../../src/browserRequestAdapter";
@@ -249,6 +252,8 @@ interface CriticalDependencyRow {
 
 type LocalAiLoopMode = "plan" | "queue" | "queue-and-run";
 type LocalAiWorkerReports = NonNullable<LocalAiLoopPayload["workerResult"]>["reports"];
+type AdminWorkerConfigDraft = AdminWorkerConfigPayload["workerConfig"];
+type AdminWorkerConfigGroup = keyof AdminWorkerConfigDraft;
 type BucketSort = "lastModified" | "key";
 type BucketOrder = "asc" | "desc";
 
@@ -547,10 +552,91 @@ export function AdminView({
   );
   const benchmarkBestMatched = benchmarkBestParity.status === "matched";
 
+  /* ---------- worker queue config edits ---------- */
+  const [workerConfigPayload, setWorkerConfigPayload] = useState<AdminWorkerConfigPayload | null>(null);
+  const [workerConfigDraft, setWorkerConfigDraft] = useState<AdminWorkerConfigDraft>(
+    () => buildAdminWorkerConfigPayload().workerConfig
+  );
+  const [workerConfigLoading, setWorkerConfigLoading] = useState(false);
+  const [workerConfigSaving, setWorkerConfigSaving] = useState(false);
+  const [workerConfigError, setWorkerConfigError] = useState("");
+
+  const loadWorkerConfig = useCallback(() => {
+    setWorkerConfigLoading(true);
+    setWorkerConfigError("");
+    requestBrowserJson<AdminWorkerConfigPayload>(adminWorkerConfigRoute, {
+      cache: "no-store",
+      getToken: getAdminApiToken
+    })
+      .then(({ payload, response }) => {
+        if (!response.ok) throw new Error(payload?.status || `Worker config returned HTTP ${response.status}`);
+        if (!payload?.worker || !payload?.providerWorker) throw new Error("Worker config response did not include queue settings.");
+        setWorkerConfigPayload(payload);
+        setWorkerConfigDraft(payload.workerConfig);
+      })
+      .catch((error: unknown) => {
+        setWorkerConfigError(error instanceof Error ? error.message : "Worker config is unavailable.");
+      })
+      .finally(() => setWorkerConfigLoading(false));
+  }, [getAdminApiToken]);
+
+  useEffect(() => {
+    loadWorkerConfig();
+  }, [loadWorkerConfig]);
+
+  const saveWorkerConfig = useCallback(() => {
+    setWorkerConfigSaving(true);
+    setWorkerConfigError("");
+    requestBrowserJson<AdminWorkerConfigPayload>(adminWorkerConfigRoute, {
+      body: workerConfigDraft,
+      getToken: getAdminApiToken,
+      idempotencyKey: buildBrowserIdempotencyKey(adminWorkerConfigRoute)
+    })
+      .then(({ payload, response }) => {
+        if (!response.ok) throw new Error(payload?.status || `Worker config save returned HTTP ${response.status}`);
+        if (!payload?.worker || !payload?.providerWorker) throw new Error("Worker config save did not return queue settings.");
+        setWorkerConfigPayload(payload);
+        setWorkerConfigDraft(payload.workerConfig);
+      })
+      .catch((error: unknown) => {
+        setWorkerConfigError(error instanceof Error ? error.message : "Worker config was not saved.");
+      })
+      .finally(() => setWorkerConfigSaving(false));
+  }, [getAdminApiToken, workerConfigDraft]);
+
+  const savedWorkerConfig = workerConfigPayload?.workerConfig ?? buildAdminWorkerConfigPayload().workerConfig;
+  const workerConfigDirty = JSON.stringify(workerConfigDraft) !== JSON.stringify(savedWorkerConfig);
+
   function updateFlow(flowId: AiFlowAdminConfig["flowId"], patch: Partial<AiFlowAdminConfig>) {
     setAiFlowDraftConfigs((current) =>
       current.map((config) => (config.flowId === flowId ? { ...config, ...patch } : config))
     );
+  }
+
+  function updateWorkerConfigNumber(
+    group: AdminWorkerConfigGroup,
+    key: "batchSize" | "leaseSeconds" | "retryBackoffSeconds" | "pollIntervalMs",
+    rawValue: string
+  ) {
+    const parsed = Number.parseInt(rawValue, 10);
+    if (!Number.isFinite(parsed)) return;
+    setWorkerConfigDraft((current) => ({
+      ...current,
+      [group]: {
+        ...current[group],
+        [key]: parsed
+      }
+    }));
+  }
+
+  function updateProviderWorkerRoutes(rawValue: string) {
+    setWorkerConfigDraft((current) => ({
+      ...current,
+      providerWorker: {
+        ...current.providerWorker,
+        routeIds: rawValue.split(/[,\s]+/).map((routeId) => routeId.trim()).filter(Boolean)
+      }
+    }));
   }
 
   function updateFlowNumber(
@@ -1461,7 +1547,21 @@ export function AdminView({
                     <label>
                       Provider
                       <select
-                        onChange={(event) => updateFlow(flow.flowId, { primaryAdapterId: event.target.value })}
+                        onChange={(event) => {
+                          const primaryAdapterId = event.target.value;
+                          updateFlow(flow.flowId, {
+                            primaryAdapterId,
+                            ...(flow.capability === "image-generation" && primaryAdapterId !== "local-comfyui-api-image"
+                              ? {
+                                  renderingMode: "",
+                                  workflowId: "",
+                                  workflowPath: "",
+                                  workflowJson: "",
+                                  workflowInputsJson: ""
+                                }
+                              : {})
+                          });
+                        }}
                         value={config.primaryAdapterId}
                       >
                         {flow.allowedAdapterIds.map((adapterId) => (
@@ -1674,6 +1774,182 @@ export function AdminView({
           </div>
           <small className="opsFoot">
             Only adapters allowed for each flow are listed — the full provider catalog stays in the audit view.
+          </small>
+        </section>
+
+        {/* ---- Worker config ---- */}
+        <section className="panelcard opsCard opsCard-wide">
+          <div className="opsCardHead">
+            <h2>Workers</h2>
+            <span className="opsStatus" data-ok={!workerConfigDirty && !workerConfigError}>
+              {workerConfigDirty ? "Unsaved edits" : workerConfigError ? "Needs attention" : "Admin configured"}
+            </span>
+          </div>
+          <div className="opsInlineActions">
+            <button className="btn btn-secondary btn-sm" disabled={workerConfigLoading || workerConfigSaving} onClick={loadWorkerConfig} type="button">
+              <RefreshCw size={14} />
+              Reload
+            </button>
+            <button className="btn btn-primary btn-sm" disabled={!workerConfigDirty || workerConfigLoading || workerConfigSaving} onClick={saveWorkerConfig} type="button">
+              <Save size={14} />
+              {workerConfigSaving ? "Saving" : "Save"}
+            </button>
+          </div>
+          {workerConfigError ? <p className="opsError">{workerConfigError}</p> : null}
+          {workerConfigPayload ? (
+            <small className="opsFoot">
+              Worker config v{workerConfigPayload.version || 0}
+              {workerConfigPayload.updatedAtIso ? ` saved ${new Date(workerConfigPayload.updatedAtIso).toLocaleString()}` : " from defaults"}
+              {workerConfigPayload.updatedBy ? ` by ${workerConfigPayload.updatedBy}` : ""}.
+            </small>
+          ) : null}
+          <ul className="opsFacts opsFacts-five">
+            <li>
+              <span>Queue batch</span>
+              <strong>{workerConfigDraft.worker.batchSize}</strong>
+            </li>
+            <li>
+              <span>Queue lease</span>
+              <strong>{workerConfigDraft.worker.leaseSeconds}s</strong>
+            </li>
+            <li>
+              <span>Provider batch</span>
+              <strong>{workerConfigDraft.providerWorker.batchSize}</strong>
+            </li>
+            <li>
+              <span>Provider lease</span>
+              <strong>{workerConfigDraft.providerWorker.leaseSeconds}s</strong>
+            </li>
+            <li>
+              <span>Route scope</span>
+              <strong>{workerConfigDraft.providerWorker.routeIds.length}</strong>
+            </li>
+          </ul>
+          <div className="flowList">
+            <div className="flowRow">
+              <div className="flowRowHead">
+                <strong>Queue worker</strong>
+                <span className="opsStatus" data-ok={!workerConfigDirty}>Postgres lease</span>
+              </div>
+              <div className="flowControls">
+                <label>
+                  Batch size
+                  <input
+                    inputMode="numeric"
+                    max={25}
+                    min={1}
+                    onChange={(event) => updateWorkerConfigNumber("worker", "batchSize", event.target.value)}
+                    type="number"
+                    value={workerConfigDraft.worker.batchSize}
+                  />
+                </label>
+                <label>
+                  Lease seconds
+                  <input
+                    inputMode="numeric"
+                    max={3600}
+                    min={30}
+                    onChange={(event) => updateWorkerConfigNumber("worker", "leaseSeconds", event.target.value)}
+                    type="number"
+                    value={workerConfigDraft.worker.leaseSeconds}
+                  />
+                </label>
+                <label>
+                  Retry backoff
+                  <input
+                    inputMode="numeric"
+                    max={3600}
+                    min={5}
+                    onChange={(event) => updateWorkerConfigNumber("worker", "retryBackoffSeconds", event.target.value)}
+                    type="number"
+                    value={workerConfigDraft.worker.retryBackoffSeconds}
+                  />
+                </label>
+                <label>
+                  Poll interval
+                  <input
+                    inputMode="numeric"
+                    max={60000}
+                    min={250}
+                    onChange={(event) => updateWorkerConfigNumber("worker", "pollIntervalMs", event.target.value)}
+                    type="number"
+                    value={workerConfigDraft.worker.pollIntervalMs}
+                  />
+                </label>
+              </div>
+            </div>
+            <div className="flowRow">
+              <div className="flowRowHead">
+                <strong>Provider HTTP worker</strong>
+                <span className="opsStatus" data-ok={workerConfigDraft.providerWorker.routeIds.length > 0}>
+                  {workerConfigDraft.providerWorker.routeIds.length} routes
+                </span>
+              </div>
+              <div className="flowControls">
+                <label>
+                  Route scope
+                  <input
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    onChange={(event) => updateProviderWorkerRoutes(event.target.value)}
+                    spellCheck={false}
+                    value={workerConfigDraft.providerWorker.routeIds.join(" ")}
+                  />
+                </label>
+                <label>
+                  Batch size
+                  <input
+                    inputMode="numeric"
+                    max={5}
+                    min={1}
+                    onChange={(event) => updateWorkerConfigNumber("providerWorker", "batchSize", event.target.value)}
+                    type="number"
+                    value={workerConfigDraft.providerWorker.batchSize}
+                  />
+                </label>
+                <label>
+                  Lease seconds
+                  <input
+                    inputMode="numeric"
+                    max={3600}
+                    min={30}
+                    onChange={(event) => updateWorkerConfigNumber("providerWorker", "leaseSeconds", event.target.value)}
+                    type="number"
+                    value={workerConfigDraft.providerWorker.leaseSeconds}
+                  />
+                </label>
+                <label>
+                  Retry backoff
+                  <input
+                    inputMode="numeric"
+                    max={3600}
+                    min={5}
+                    onChange={(event) => updateWorkerConfigNumber("providerWorker", "retryBackoffSeconds", event.target.value)}
+                    type="number"
+                    value={workerConfigDraft.providerWorker.retryBackoffSeconds}
+                  />
+                </label>
+                <label>
+                  Poll interval
+                  <input
+                    inputMode="numeric"
+                    max={60000}
+                    min={250}
+                    onChange={(event) => updateWorkerConfigNumber("providerWorker", "pollIntervalMs", event.target.value)}
+                    type="number"
+                    value={workerConfigDraft.providerWorker.pollIntervalMs}
+                  />
+                </label>
+              </div>
+              <div className="flowMeta" aria-label="Provider worker route scope">
+                {workerConfigDraft.providerWorker.routeIds.map((routeId) => (
+                  <span key={routeId}>{routeId}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+          <small className="opsFoot">
+            Worker config stores routing and queue behavior only; tokens, API base URLs, and database credentials stay server env.
           </small>
         </section>
       </div>

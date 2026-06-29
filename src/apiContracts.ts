@@ -57,7 +57,7 @@ import {
   retailPrinterCouponPortalEvidenceRoute
 } from "./retailPrinterCouponPortalEvidenceData.mjs";
 import { normalizeAdminSafetyControls } from "./adminSafetyControlsData.mjs";
-import { buildAdminAiFlowConfigPayload } from "./adminRuntimeConfigData.mjs";
+import { buildAdminAiFlowConfigPayload, buildAdminWorkerConfigPayload } from "./adminRuntimeConfigData.mjs";
 import {
   buildAdminPanelModel,
   buildCustomerChatTranscript,
@@ -358,6 +358,9 @@ export function resolveApiContractResponse(path: string) {
   }
   if (path === "/api/admin/ai-flow-configs") {
     return buildAdminAiFlowConfigPayload();
+  }
+  if (path === "/api/admin/worker-config") {
+    return buildAdminWorkerConfigPayload();
   }
   if (path === "/api/admin/safety-controls") {
     return normalizeAdminSafetyControls();

@@ -118,7 +118,6 @@ workflow choices are admin configuration, not Vercel env.
 - `PUBLIC_APP_ORIGIN`
 - `WALGREENS_AFF_ID`
 - `WALGREENS_API_KEY`
-- `WALGREENS_VENDOR_MODE`
 
 ## Preview
 
@@ -166,7 +165,6 @@ resource.
 - `VITE_CLERK_PUBLISHABLE_KEY`
 - `WALGREENS_AFF_ID`
 - `WALGREENS_API_KEY`
-- `WALGREENS_VENDOR_MODE`
 
 ## Operational Rules
 

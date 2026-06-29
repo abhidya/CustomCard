@@ -22,7 +22,7 @@ describe("buildWalgreensAdapterConfig", () => {
   };
 
   it("disabled_until_certified needs no credentials", () => {
-    const cfg = buildWalgreensAdapterConfig({ WALGREENS_VENDOR_MODE: "sandbox" }, dummy);
+    const cfg = buildWalgreensAdapterConfig({}, dummy);
     expect(cfg.mode).toBe("disabled_until_certified");
     expect(cfg.baseUrl).toBe("");
   });
@@ -67,7 +67,7 @@ describe("buildWalgreensAdapterConfig", () => {
 
 describe("createWalgreensPhotoAdapter — disabled mode", () => {
   it("throws on construction when mode is disabled_until_certified", () => {
-    const cfg = buildWalgreensAdapterConfig({ WALGREENS_VENDOR_MODE: "sandbox" }, createWalgreensDummyFetch());
+    const cfg = buildWalgreensAdapterConfig({}, createWalgreensDummyFetch());
     expect(() => createWalgreensPhotoAdapter(cfg)).toThrow("disabled_until_certified");
   });
 });
@@ -76,7 +76,7 @@ describe("createWalgreensPhotoAdapter — disabled mode", () => {
 
 function sandboxAdapter() {
   const cfg = buildWalgreensAdapterConfig(
-    { WALGREENS_VENDOR_MODE: "production", WALGREENS_API_KEY: "test-key", WALGREENS_AFF_ID: "photoapi" },
+    { WALGREENS_API_KEY: "test-key", WALGREENS_AFF_ID: "photoapi" },
     createWalgreensDummyFetch(),
     { vendorModes: { walgreens: "sandbox" as const } }
   );

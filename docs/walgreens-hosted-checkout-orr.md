@@ -29,8 +29,8 @@ card image bytes or customer checkout fields in CustomCard.
 ## Required Controls
 
 - Customer auth is required before upload/session requests.
-- `WALGREENS_VENDOR_MODE` must remain disabled until operator certification is
-  recorded.
+- Admin safety controls must keep Walgreens disabled until operator
+  certification is recorded.
 - Real orders remain disabled in route contracts and readiness summaries.
 - Upload accepts card image bytes only and forwards them to Walgreens write-only
   photo storage.

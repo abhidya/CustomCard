@@ -54,9 +54,9 @@
   real values and do not infer remote Vercel state from a missing pulled secret.
 - Vite exposes only `VITE_*` variables to browser code; keep server secrets
   unprefixed and server-side.
-- Walgreens hosted checkout ignores legacy `WALGREENS_VENDOR_MODE` for the
-  safety gate. Use `/api/admin/safety-controls` and set
-  `vendorModes.walgreens` to `sandbox` or `production`.
+- Walgreens hosted checkout mode is owned by admin safety controls. Use
+  `/api/admin/safety-controls` and set `vendorModes.walgreens` to `sandbox` or
+  `production`.
 
 ### Check/test output pattern
 - Use the wrapper and a Windows-safe temp path:
@@ -83,8 +83,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/npm.ps1 run 
   stdin without printing them:
 
 ```powershell
-rtk vercel env rm WALGREENS_VENDOR_MODE production --yes
-$env:WALGREENS_VENDOR_MODE | rtk vercel env add WALGREENS_VENDOR_MODE production --yes --sensitive
+Get-Content .\secrets\example.txt | rtk vercel env add EXAMPLE_SECRET production --yes --sensitive
 ```
 
 - Repeat for each key and environment (`production`, `preview`, or `development`) intentionally. For production Walgreens hosted checkout, keep `PUBLIC_APP_ORIGIN=https://customcard-three.vercel.app`.

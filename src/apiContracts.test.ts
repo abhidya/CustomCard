@@ -41,6 +41,8 @@ describe("api contracts", () => {
         "admin-provider-governance",
         "admin-ai-flow-configs",
         "admin-ai-flow-configs-save",
+        "admin-worker-config",
+        "admin-worker-config-save",
         "admin-safety-controls",
         "admin-safety-controls-save",
         "admin-persistence-readiness",

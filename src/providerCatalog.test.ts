@@ -322,9 +322,7 @@ describe("provider catalog", () => {
     expect(admin.coverage.requiredEnv).toContain("BETTERSTACK_INGESTING_HOST");
     expect(admin.coverage.requiredEnv).toContain("OBJECT_STORE_SIGNING_SECRET");
     expect(admin.coverage.requiredEnv).toContain("MICROSOFT_CLIENT_ID");
-    expect(admin.coverage.requiredEnv).toContain("WALMART_VENDOR_MODE");
-    expect(admin.coverage.requiredEnv).toContain("STAPLES_VENDOR_MODE");
-    expect(admin.coverage.requiredEnv).toContain("OFFICE_DEPOT_VENDOR_MODE");
+    expect(admin.coverage.requiredEnv.some((key) => key.endsWith("_VENDOR_MODE"))).toBe(false);
     expect(admin.deploymentAdapters.map((adapter) => adapter.label)).toContain("Cheap droplet compose");
     expect(providerCatalog.find((adapter) => adapter.id === "object-store-render-packets")).toMatchObject({
       credentials: expect.arrayContaining(["OBJECT_STORE_URL", "OBJECT_STORE_SIGNING_SECRET"]),

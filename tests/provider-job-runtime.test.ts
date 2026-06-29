@@ -8,12 +8,21 @@ import {
 
 const providerEnv = {
   AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
-  CUSTOMCARD_PROVIDER_WORKER_TOKEN: "test-provider-worker-token-32-chars",
-  CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS: "ai-card-generate manual-vendor-handoff"
+  CUSTOMCARD_PROVIDER_WORKER_TOKEN: "test-provider-worker-token-32-chars"
+};
+
+const providerWorkerConfig = {
+  providerWorker: {
+    routeIds: ["ai-card-generate", "manual-vendor-handoff"],
+    batchSize: 1,
+    leaseSeconds: 300,
+    retryBackoffSeconds: 60,
+    pollIntervalMs: 5000
+  }
 };
 
 describe("provider job runtime", () => {
-  it("authorizes provider tokens into explicit route scope", () => {
+  it("authorizes provider tokens without env route-scope flags", () => {
     const route = { id: "provider-job-lease", auth: "provider-token" };
 
     expect(authorizeProviderToken({ env: providerEnv, route, request: { headers: {} } })).toMatchObject({
@@ -29,8 +38,7 @@ describe("provider job runtime", () => {
       })
     ).toMatchObject({
       ok: true,
-      role: "provider",
-      providerRouteIds: ["ai-card-generate", "manual-vendor-handoff"]
+      role: "provider"
     });
   });
 
@@ -104,11 +112,12 @@ describe("provider job runtime", () => {
             max_attempts: 3,
             locked_at: "2030-01-01T00:00:00.000Z"
           }
-        ])
+        ]),
+      workerConfig: providerWorkerConfig
     });
 
     const lease = await runtime.leaseJobs({
-      authContext: { ok: true, role: "provider", userId: "provider-worker", providerRouteIds: ["ai-card-generate"] },
+      authContext: { ok: true, role: "provider", userId: "provider-worker" },
       workerId: "local-comfy-01",
       routeIds: ["ai-card-generate", "render-packets"],
       limit: 1
@@ -143,6 +152,7 @@ describe("provider job runtime", () => {
     let expiredUpdateAttempts = 0;
     const runtime = createProviderJobRuntime({
       env: providerEnv,
+      workerConfig: providerWorkerConfig,
       getPool: async () => ({
         async query(sql: string, params: unknown[] = []) {
           queries.push({ sql: compactSql(sql), params });
@@ -164,7 +174,7 @@ describe("provider job runtime", () => {
     });
 
     const lease = await runtime.leaseJobs({
-      authContext: { ok: true, role: "provider", userId: "provider-worker", providerRouteIds: ["ai-card-generate"] },
+      authContext: { ok: true, role: "provider", userId: "provider-worker" },
       workerId: "local-comfy-01",
       routeIds: ["ai-card-generate"],
       limit: 1
@@ -180,6 +190,7 @@ describe("provider job runtime", () => {
     const queries: Array<{ sql: string; params: unknown[] }> = [];
     const runtime = createProviderJobRuntime({
       env: providerEnv,
+      workerConfig: providerWorkerConfig,
       getPool: async () => ({
         async query(sql: string, params: unknown[] = []) {
           queries.push({ sql: compactSql(sql), params });
@@ -208,7 +219,7 @@ describe("provider job runtime", () => {
     });
 
     const status = await runtime.readStatus({
-      authContext: { ok: true, role: "provider", userId: "provider-worker", providerRouteIds: ["ai-card-generate"] },
+      authContext: { ok: true, role: "provider", userId: "provider-worker" },
       routeIds: ["ai-card-generate"]
     });
 

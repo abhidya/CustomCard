@@ -384,7 +384,6 @@ API credentials are available. Sandbox is ready to test against.
 # Vercel — set for Preview first, then Production once certified
 vercel env add WALGREENS_API_KEY preview
 vercel env add WALGREENS_AFF_ID preview
-vercel env add WALGREENS_VENDOR_MODE preview
 vercel env add PUBLIC_APP_ORIGIN preview
 # Optional: revenue share
 vercel env add WALGREENS_PUBLISHER_ID preview
@@ -393,7 +392,6 @@ vercel env add WALGREENS_PUBLISHER_ID preview
 Local (Vite or Docker):
 ```
 # in .env.local or infra/env/.env  (both gitignored)
-WALGREENS_VENDOR_MODE=sandbox
 WALGREENS_API_KEY=<your-key>
 WALGREENS_AFF_ID=<your-aff-id>
 PUBLIC_APP_ORIGIN=http://127.0.0.1:5173
@@ -536,4 +534,4 @@ DATABASE_URL="postgres://..." node scripts/hosted-api-readiness-doctor.mjs
 | Live model chat | 🔑 Needs prompt audit + API key | `liveModelCallsEnabled` |
 | Live price quotes | 🔑 Needs vendor API access | `liveQuoteEnabled` |
 | Real order placement | 🔒 Needs vendor cert + kill-switch | `realOrdersEnabled` |
-| Walgreens sandbox calls | 🔑 `WALGREENS_VENDOR_MODE=sandbox` + API key | `WALGREENS_VENDOR_MODE` |
+| Walgreens sandbox calls | 🔑 API key + admin safety controls | `vendorModes.walgreens` |

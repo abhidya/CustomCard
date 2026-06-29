@@ -105,10 +105,10 @@ rtk rg -n "pattern" AGENTS.md CLAUDE.md README.md docs scripts src tests -g "!**
   sensitive remote env var is absent.
 - Vite only exposes `VITE_*` variables to browser code. Keep server secrets
   unprefixed and server-side.
-- Walgreens hosted checkout ignores legacy `WALGREENS_VENDOR_MODE` for the
-  safety gate. To exercise sandbox/prod checkout paths, set
-  `vendorModes.walgreens` through `/api/admin/safety-controls`; otherwise the
-  service remains `disabled_until_certified`.
+- Walgreens hosted checkout mode is owned by admin safety controls. To exercise
+  sandbox/prod checkout paths, set `vendorModes.walgreens` through
+  `/api/admin/safety-controls`; otherwise the service remains
+  `disabled_until_certified`.
 
 For the local ComfyUI hybrid typography benchmark, use:
 
@@ -192,9 +192,8 @@ experiment and does not prove `panel_copy` reaches Comfy.
   run the underlying `.mjs` via `tools/node.ps1` with PowerShell `$env:` values.
 
 ### Env and provider gates
-- Walgreens hosted checkout is controlled by admin safety controls, not just
-  `.env.local`: `WALGREENS_VENDOR_MODE=sandbox` alone is ignored by the hosted
-  checkout service.
+- Walgreens hosted checkout is controlled by admin safety controls, not
+  `.env.local`; vendor mode must not be modeled as an env key.
 - For Vercel env work, use redacted inventory/repair scripts when possible and
   never echo secrets. `vercel env pull --environment=production` can omit
   encrypted production values.

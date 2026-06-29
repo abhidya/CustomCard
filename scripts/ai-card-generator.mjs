@@ -1116,22 +1116,20 @@ async function executeHuggingFaceImage({ flow, env, fetchImpl, panelId, prompt, 
 
 async function executeLocalComfyUiImage({ flow, env, fetchImpl, panelId, prompt, negativePrompt, panelCopy = {} }) {
   const comfyUrl = localComfyUiBaseUrl(env);
-  const width = boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_IMAGE_WIDTH || env.COMFYUI_IMAGE_WIDTH, 256, 2048, 512);
-  const height = boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_IMAGE_HEIGHT || env.COMFYUI_IMAGE_HEIGHT, 256, 2048, 704);
-  const steps = boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_STEPS || env.COMFYUI_STEPS, 1, 80, 18);
-  const cfg = boundedNumberEnv(env.CUSTOMCARD_COMFYUI_CFG || env.COMFYUI_CFG, 1, 20, 6.5);
-  const sampler = String(env.CUSTOMCARD_COMFYUI_SAMPLER || env.COMFYUI_SAMPLER || "euler").trim() || "euler";
-  const scheduler = String(env.CUSTOMCARD_COMFYUI_SCHEDULER || env.COMFYUI_SCHEDULER || "normal").trim() || "normal";
+  const runtimeInputs = runtimeInputsForFlow(flow);
+  const width = configuredInteger(runtimeInputs, ["width", "image_width", "imageWidth"], 256, 2048, 512);
+  const height = configuredInteger(runtimeInputs, ["height", "image_height", "imageHeight"], 256, 2048, 704);
+  const steps = configuredInteger(runtimeInputs, ["steps", "num_steps", "numSteps"], 1, 80, 18);
+  const cfg = configuredNumber(runtimeInputs, ["cfg", "cfg_scale", "cfgScale"], 1, 20, 6.5);
+  const sampler = configuredString(runtimeInputs, ["sampler", "sampler_name", "samplerName"], "euler");
+  const scheduler = configuredString(runtimeInputs, ["scheduler"], "normal");
+  const clientId = configuredString(runtimeInputs, ["client_id", "clientId"], "customcard-local-comfyui-provider");
   const deterministicSeed = numericSeed(`${flow.model}:${panelId}:${prompt}`);
-  const seed = boundedIntegerEnv(
-    env.CUSTOMCARD_COMFYUI_SEED || env.COMFYUI_SEED || deterministicSeed,
-    0,
-    2 ** 32 - 1,
-    deterministicSeed
-  );
+  const seed = configuredInteger(runtimeInputs, ["seed"], 0, 2 ** 32 - 1, deterministicSeed);
   const variables = {
     cfg,
     checkpoint: flow.model || "DreamShaper_8_pruned.safetensors",
+    clientId,
     height,
     negativePrompt,
     panelId,
@@ -1146,13 +1144,13 @@ async function executeLocalComfyUiImage({ flow, env, fetchImpl, panelId, prompt,
   };
   const workflow = buildLocalComfyWorkflow({ flow, variables });
   const promptResponse = await postJson(fetchImpl, localComfyUiApiUrl(comfyUrl, "/prompt"), {
-    body: buildLocalComfyPromptBody({ env, flow, workflow, variables })
+    body: buildLocalComfyPromptBody({ flow, workflow, variables })
   });
   const promptId = String(promptResponse.prompt_id || "").trim();
   if (!promptId) throw new Error("Local ComfyUI did not return a prompt_id.");
   const output = await waitForLocalComfyImage(fetchImpl, comfyUrl, promptId, {
-    pollMs: boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_POLL_INTERVAL_MS || env.COMFYUI_POLL_INTERVAL_MS, 250, 30_000, 1500),
-    timeoutMs: boundedIntegerEnv(env.CUSTOMCARD_COMFYUI_TIMEOUT_MS || env.COMFYUI_TIMEOUT_MS, 10_000, 900_000, 360_000)
+    pollMs: configuredInteger(runtimeInputs, ["poll_ms", "pollMs", "poll_interval_ms", "pollIntervalMs"], 250, 30_000, 1500),
+    timeoutMs: configuredInteger(runtimeInputs, ["timeout_ms", "timeoutMs"], 10_000, 900_000, 360_000)
   });
   const imageUrl = new URL(localComfyUiApiUrl(comfyUrl, "/view"));
   imageUrl.searchParams.set("filename", output.filename);
@@ -1189,9 +1187,9 @@ function readLocalComfyWorkflowFile(workflowPath) {
   return readFileSync(resolvedPath, "utf8");
 }
 
-function buildLocalComfyPromptBody({ env, flow, workflow, variables }) {
+function buildLocalComfyPromptBody({ flow, workflow, variables }) {
   const workflowId = localComfyWorkflowId(flow);
-  const workflowInputs = localComfyWorkflowInputsForMetadata(env, variables, flow.workflowInputsJson);
+  const workflowInputs = localComfyWorkflowInputsForMetadata({}, variables, flow.workflowInputsJson);
   const customcardExtraData = Object.fromEntries(
     Object.entries({
       workflow_id: workflowId,
@@ -1202,7 +1200,7 @@ function buildLocalComfyPromptBody({ env, flow, workflow, variables }) {
   );
   return {
     prompt: workflow,
-    client_id: firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_CLIENT_ID", "COMFYUI_CLIENT_ID"]) || "customcard-local-comfyui-provider",
+    client_id: variables.clientId,
     ...(Object.keys(customcardExtraData).length > 0
       ? {
           extra_data: {
@@ -1218,14 +1216,15 @@ function localComfyWorkflowId(flow) {
 }
 
 async function executeDeepAiText2ImgImage({ flow, env, fetchImpl, panelId, prompt, negativePrompt }) {
+  const runtimeInputs = runtimeInputsForFlow(flow);
   const body = new FormData();
   body.set("text", buildDeepAiTextPrompt({ panelId, prompt }));
   body.set("negative_prompt", buildDeepAiNegativePrompt({ prompt, negativePrompt }));
-  body.set("width", String(env.CUSTOMCARD_DEEPAI_IMAGE_WIDTH || env.DEEPAI_IMAGE_WIDTH || "768"));
-  body.set("height", String(env.CUSTOMCARD_DEEPAI_IMAGE_HEIGHT || env.DEEPAI_IMAGE_HEIGHT || "1024"));
+  body.set("width", String(configuredInteger(runtimeInputs, ["width", "image_width", "imageWidth"], 256, 2048, 768)));
+  body.set("height", String(configuredInteger(runtimeInputs, ["height", "image_height", "imageHeight"], 256, 2048, 1024)));
   body.set(
     "image_generator_version",
-    String(env.CUSTOMCARD_DEEPAI_IMAGE_GENERATOR_VERSION || env.DEEPAI_IMAGE_GENERATOR_VERSION || "standard")
+    configuredString(runtimeInputs, ["image_generator_version", "imageGeneratorVersion"], "standard")
   );
   const response = await fetchWithProviderBackoff(
     fetchImpl,
@@ -1279,13 +1278,9 @@ async function executeRunComfyModelApiImage({ flow, env, fetchImpl, panelId, pro
     `${baseUrl}/v1/requests/${encodeURIComponent(requestId)}/result`
   );
 
-  const maxPolls = boundedIntegerEnv(env.CUSTOMCARD_RUNCOMFY_IMAGE_MAX_POLLS || env.RUNCOMFY_IMAGE_MAX_POLLS, 1, 120, 30);
-  const pollIntervalMs = boundedIntegerEnv(
-    env.CUSTOMCARD_RUNCOMFY_IMAGE_POLL_INTERVAL_MS || env.RUNCOMFY_IMAGE_POLL_INTERVAL_MS,
-    0,
-    30_000,
-    2000
-  );
+  const runtimeInputs = runtimeInputsForFlow(flow);
+  const maxPolls = configuredInteger(runtimeInputs, ["max_polls", "maxPolls"], 1, 120, 30);
+  const pollIntervalMs = configuredInteger(runtimeInputs, ["poll_interval_ms", "pollIntervalMs"], 0, 30_000, 2000);
   let completed = false;
   for (let attempt = 0; attempt < maxPolls; attempt += 1) {
     const statusResponse = await fetchImpl(statusUrl, {
@@ -1560,10 +1555,16 @@ function buildRunComfyImageRequestBody({ flow, panelId, prompt, negativePrompt }
 function runComfyInputOverrides(raw, variables) {
   if (!raw) return {};
   try {
-    return interpolateRunComfyInput(JSON.parse(String(raw)), variables);
+    return omitRunComfyRuntimeOnlyInputs(interpolateRunComfyInput(JSON.parse(String(raw)), variables));
   } catch {
     return {};
   }
+}
+
+function omitRunComfyRuntimeOnlyInputs(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const omitted = new Set(["max_polls", "maxPolls", "poll_interval_ms", "pollIntervalMs"]);
+  return Object.fromEntries(Object.entries(value).filter(([key]) => !omitted.has(key)));
 }
 
 function interpolateRunComfyInput(value, variables) {
@@ -1747,6 +1748,44 @@ function boundedNumberEnv(value, min, max, fallback) {
   return Math.min(Math.max(parsed, min), max);
 }
 
+function runtimeInputsForFlow(flow) {
+  const rawInputs = String(flow?.workflowInputsJson || "").trim();
+  if (!rawInputs) return {};
+  try {
+    const parsed = JSON.parse(rawInputs);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function configuredValue(settings, keys) {
+  if (!settings || typeof settings !== "object") return undefined;
+  for (const key of keys) {
+    if (!Object.prototype.hasOwnProperty.call(settings, key)) continue;
+    const value = settings[key];
+    if (value === undefined || value === null) continue;
+    if (typeof value === "string" && !value.trim()) continue;
+    return value;
+  }
+  return undefined;
+}
+
+function configuredInteger(settings, keys, min, max, fallback) {
+  return boundedIntegerEnv(configuredValue(settings, keys), min, max, fallback);
+}
+
+function configuredNumber(settings, keys, min, max, fallback) {
+  return boundedNumberEnv(configuredValue(settings, keys), min, max, fallback);
+}
+
+function configuredString(settings, keys, fallback) {
+  const value = configuredValue(settings, keys);
+  if (value === undefined) return fallback;
+  const normalized = String(value).trim();
+  return normalized || fallback;
+}
+
 function buildDeepAiQuietCarePrompt({ panelId }) {
   const role = panelId === "front" ? "front cover" : panelId === "back" ? "back cover" : "interior panel";
   const shared = [
@@ -1824,11 +1863,11 @@ function openAiCompatibleAdapter(adapterId, env) {
       url,
       headers: apiKey ? { authorization: `Bearer ${apiKey}` } : {},
       localProvider: true,
-      localModelGuard: truthyEnv(firstUsableEnv(env, ["CUSTOMCARD_LOCAL_LLM_REQUIRE_MODEL_MATCH", "KOBOLDCPP_REQUIRE_MODEL_MATCH"])),
+      localModelGuard: false,
       modelsUrl: localOpenAiModelsUrl(url),
-      strictResponseFormat: firstUsableEnv(env, ["CUSTOMCARD_LOCAL_LLM_STRICT_RESPONSE_FORMAT", "KOBOLDCPP_STRICT_RESPONSE_FORMAT"]),
+      strictResponseFormat: "",
       timeoutLabel: "Local LLM chat completion request",
-      timeoutMs: localLlmRequestTimeoutMs(env)
+      timeoutMs: defaultLocalLlmRequestTimeoutMs
     };
   }
   const config = adapters[adapterId];
@@ -1858,19 +1897,6 @@ async function postJson(fetchImpl, url, { headers = {}, body, localProvider = fa
     throw new Error(data?.errors?.[0]?.message || "AI provider rejected the request.");
   }
   return data;
-}
-
-function localLlmRequestTimeoutMs(env) {
-  return boundedIntegerEnv(
-    firstUsableEnv(env, [
-      "CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS",
-      "LMSTUDIO_REQUEST_TIMEOUT_MS",
-      "KOBOLDCPP_REQUEST_TIMEOUT_MS"
-    ]),
-    10_000,
-    3_600_000,
-    defaultLocalLlmRequestTimeoutMs
-  );
 }
 
 async function assertLocalOpenAiModelMatch(fetchImpl, compatible, requestedModel) {

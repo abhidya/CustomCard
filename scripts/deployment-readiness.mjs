@@ -38,14 +38,7 @@ const checks = [
     "OBJECT_STORE_SECRET_ACCESS_KEY: customcard-dev-only",
     "OBJECT_STORE_REGION: us-east-1"
   ]),
-  checkIncludes("local-dev", "dev-compose-vendor-domain-types", contents.devCompose, [
-    "WALGREENS_VENDOR_MODE: disabled_until_certified",
-    "CVS_VENDOR_MODE: disabled_until_certified",
-    "FEDEX_VENDOR_MODE: disabled_until_certified",
-    "WALMART_VENDOR_MODE: disabled_until_certified",
-    "STAPLES_VENDOR_MODE: disabled_until_certified",
-    "OFFICE_DEPOT_VENDOR_MODE: disabled_until_certified"
-  ]),
+  checkAbsent("local-dev", "dev-compose-no-vendor-mode-env", contents.devCompose, ["VENDOR_MODE"]),
   checkIncludes("cheap-droplet", "droplet-runtime-target", contents.dropletCompose, [
     "target: runtime",
     'restart: unless-stopped',
@@ -63,14 +56,9 @@ const checks = [
   ]),
   checkIncludes("cheap-droplet", "droplet-managed-secrets", contents.dropletCompose, [
     "SECRET_PROVIDER: managed_secret_store",
-    "${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}",
-    "WALGREENS_VENDOR_MODE: disabled_until_certified",
-    "CVS_VENDOR_MODE: disabled_until_certified",
-    "FEDEX_VENDOR_MODE: disabled_until_certified",
-    "WALMART_VENDOR_MODE: disabled_until_certified",
-    "STAPLES_VENDOR_MODE: disabled_until_certified",
-    "OFFICE_DEPOT_VENDOR_MODE: disabled_until_certified"
+    "${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}"
   ]),
+  checkAbsent("cheap-droplet", "droplet-no-vendor-mode-env", contents.dropletCompose, ["VENDOR_MODE"]),
   checkIncludes("cheap-droplet", "droplet-stateful-services", contents.dropletCompose, [
     "postgres:",
     "redis:",
@@ -114,14 +102,9 @@ const checks = [
     "OBJECT_STORE_SECRET_ACCESS_KEY",
     "OBJECT_STORE_SIGNING_SECRET",
     "ARTIFACT_SIGNED_URL_TTL_MINUTES",
-    "WALGREENS_VENDOR_MODE",
-    "CVS_VENDOR_MODE",
-    "FEDEX_VENDOR_MODE",
-    "WALMART_VENDOR_MODE",
-    "STAPLES_VENDOR_MODE",
-    "OFFICE_DEPOT_VENDOR_MODE",
     "runtime:doctor"
   ]),
+  checkAbsent("cloud-native", "k8s-no-vendor-mode-env", contents.k8s, ["VENDOR_MODE"]),
   checkIncludes("cloud-native", "k8s-probes-and-resources", contents.k8s, [
     "readinessProbe:",
     "livenessProbe:",
@@ -251,12 +234,6 @@ const checks = [
     "SHOPIFY_SHOP_DOMAIN=",
     "SHOPIFY_ADMIN_ACCESS_TOKEN=",
     "Live order gates are owned by admin safety controls.",
-    "WALGREENS_VENDOR_MODE=disabled_until_certified",
-    "CVS_VENDOR_MODE=disabled_until_certified",
-    "FEDEX_VENDOR_MODE=disabled_until_certified",
-    "WALMART_VENDOR_MODE=disabled_until_certified",
-    "STAPLES_VENDOR_MODE=disabled_until_certified",
-    "OFFICE_DEPOT_VENDOR_MODE=disabled_until_certified",
     "OPENAI_API_KEY=",
     "AZURE_OPENAI_ENDPOINT=",
     "AZURE_OPENAI_API_KEY=",
@@ -319,6 +296,7 @@ const checks = [
     "BETTERSTACK_SOURCE_TOKEN=",
     "BETTERSTACK_INGESTING_HOST="
   ]),
+  checkAbsent("runtime", "runtime-env-example-no-vendor-mode-env", contents.envExample, ["VENDOR_MODE"]),
   checkIncludes("data", "migration-critical-tables", contents.migration, [
     "CREATE TABLE users",
     "CREATE TABLE auth_sessions",

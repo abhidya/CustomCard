@@ -37,6 +37,22 @@ const imageProviderAdapterIds = [
   "runcomfy-model-api-image"
 ];
 
+export const benchmarkLocalComfyWorkflowInputsJson = JSON.stringify(
+  {
+    width: 512,
+    height: 704,
+    steps: 18,
+    cfg: 6.5,
+    sampler: "euler",
+    scheduler: "normal",
+    poll_ms: 1500,
+    timeout_ms: 360000,
+    client_id: "customcard-local-comfyui-provider"
+  },
+  null,
+  2
+);
+
 export const benchmarkBestAiWorkflow = {
   id: "cloudflare-qwen3-30b-local-comfy-production-text-v8",
   label: "Cloudflare Qwen3 30B + Comfy production text composer",
@@ -69,6 +85,7 @@ export const benchmarkBestAiWorkflow = {
       renderingMode: "final-text-composited",
       workflowId: "customcard-production-text-overlay",
       workflowPath: "comfyui-workflows/customcard-production-text-overlay.json",
+      workflowInputsJson: benchmarkLocalComfyWorkflowInputsJson,
       evidenceLabel: "CustomCardTextComposer final images"
     }
   ]
@@ -135,8 +152,9 @@ export const aiFlowDefinitions = [
     renderingMode: "final-text-composited",
     workflowId: "customcard-production-text-overlay",
     workflowPath: "comfyui-workflows/customcard-production-text-overlay.json",
+    workflowInputsJson: benchmarkLocalComfyWorkflowInputsJson,
     promptInstructions:
-      "Create one portrait 5x7 print panel at a time from the card-copy flow's literal image_prompt. Do not use internal form labels as art direction, do not make a collage or folded mockup, and reserve exact typography for app-rendered overlays."
+      "Create one portrait 5x7 print panel at a time from the card-copy flow's literal image_prompt. Do not use internal form labels as art direction, do not make a collage or folded mockup, and reserve exact typography for the CustomCardTextComposer final text workflow."
   }
 ];
 
@@ -466,6 +484,13 @@ function normalizeAiFlowOverride(input, definition, env) {
   if (!input || typeof input !== "object") return fallback;
   const primaryAdapterId = normalizeAdapter(input.primaryAdapterId, definition.allowedAdapterIds, fallback.primaryAdapterId);
   const fallbackAdapterId = normalizeAdapter(input.fallbackAdapterId, definition.allowedAdapterIds, fallback.fallbackAdapterId);
+  const supportsLocalWorkflow =
+    definition.capability === "image-generation" && primaryAdapterId === "local-comfyui-api-image";
+  const supportsImageInputs = definition.capability === "image-generation";
+  const workflowInputsFallback = primaryAdapterId === fallback.primaryAdapterId ? fallback.workflowInputsJson : "";
+  const renderingMode = supportsLocalWorkflow
+    ? normalizeRenderingMode(input.renderingMode, fallback.renderingMode)
+    : "";
 
   return {
     flowId: definition.flowId,
@@ -483,11 +508,11 @@ function normalizeAiFlowOverride(input, definition, env) {
     contextWindowTokens: normalizeNumber(input.contextWindowTokens, fallback.contextWindowTokens, 0, 1_000_000),
     maxTokens: normalizeNumber(input.maxTokens, fallback.maxTokens, 0, 4000),
     temperature: normalizeNumber(input.temperature, fallback.temperature, 0, 2),
-    renderingMode: normalizeRenderingMode(input.renderingMode, fallback.renderingMode),
-    workflowId: normalizeOptionalString(input.workflowId, fallback.workflowId, 160),
-    workflowPath: normalizeOptionalString(input.workflowPath, fallback.workflowPath, 500),
-    workflowJson: normalizeOptionalString(input.workflowJson, fallback.workflowJson, 100_000),
-    workflowInputsJson: normalizeOptionalString(input.workflowInputsJson, fallback.workflowInputsJson, 50_000)
+    renderingMode,
+    workflowId: supportsLocalWorkflow ? normalizeOptionalString(input.workflowId, fallback.workflowId, 160) : "",
+    workflowPath: supportsLocalWorkflow ? normalizeOptionalString(input.workflowPath, fallback.workflowPath, 500) : "",
+    workflowJson: supportsLocalWorkflow ? normalizeOptionalString(input.workflowJson, fallback.workflowJson, 100_000) : "",
+    workflowInputsJson: supportsImageInputs ? normalizeOptionalString(input.workflowInputsJson, workflowInputsFallback, 50_000) : ""
   };
 }
 
@@ -512,8 +537,8 @@ function buildFallbackOverride(definition, env) {
     renderingMode: definition.renderingMode ?? "",
     workflowId: definition.workflowId ?? "",
     workflowPath: definition.workflowPath ?? "",
-    workflowJson: "",
-    workflowInputsJson: ""
+    workflowJson: definition.workflowJson ?? "",
+    workflowInputsJson: definition.workflowInputsJson ?? ""
   };
 }
 

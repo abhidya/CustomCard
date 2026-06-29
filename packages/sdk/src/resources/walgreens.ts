@@ -8,8 +8,8 @@ import type {
 } from "../types.js";
 
 /**
- * Walgreens hosted-checkout integration. Gated by `WALGREENS_VENDOR_MODE` on
- * the server. These routes make external calls but never place a real order or
+ * Walgreens hosted-checkout integration. Gated by server-side admin safety
+ * controls. These routes make external calls but never place a real order or
  * persist customer identity locally.
  */
 export class WalgreensResource {

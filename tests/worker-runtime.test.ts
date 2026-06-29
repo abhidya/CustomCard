@@ -179,9 +179,17 @@ describe("worker runtime", () => {
       }
     ]);
     const runtime = createWorkerRuntime({
-      env: { ...baseEnv, CUSTOMCARD_API_RUNTIME: "postgres", CUSTOMCARD_WORKER_POLL_INTERVAL_MS: "250" },
+      env: { ...baseEnv, CUSTOMCARD_API_RUNTIME: "postgres" },
       routes,
       postgresPoolFactory: () => pool,
+      workerConfig: {
+        worker: {
+          batchSize: 5,
+          leaseSeconds: 300,
+          retryBackoffSeconds: 60,
+          pollIntervalMs: 250
+        }
+      },
       workerId: "worker-loop-test"
     });
 

@@ -259,14 +259,13 @@ live Cloudflare image lane.
   `OBJECT_STORE_PUBLIC_BASE_URL`, `OBJECT_STORE_SIGNING_SECRET`,
   `ARTIFACT_SIGNED_URL_TTL_MINUTES`. Bucket-admin setup also uses
   `CLOUDFLARE_ACCOUNT_ID` and a short-lived `CLOUDFLARE_API_TOKEN`.
-- Live vendor adapters: `WALGREENS_VENDOR_MODE`, `CVS_VENDOR_MODE`,
-  `FEDEX_VENDOR_MODE`, `WALMART_VENDOR_MODE`, `STAPLES_VENDOR_MODE`,
-  `OFFICE_DEPOT_VENDOR_MODE`.
+- Live vendor adapters: mode and kill-switch state are persisted through admin
+  safety controls, not environment variables.
 - Persistence controls: `CUSTOMCARD_API_RUNTIME`, `AUTH_SESSION_SECRET`,
   `CLERK_JWT_KEY`, `CLERK_AUTHORIZED_PARTIES`, `CLERK_ISSUER`,
   `CLERK_AUDIENCE`, `CUSTOMCARD_CUSTOMER_SESSION_TOKEN`,
   `CUSTOMCARD_ADMIN_SESSION_TOKEN`, `IDEMPOTENCY_KEY_TTL_HOURS`.
 
 These keys are documented for deployment readiness only. The current repo state
-does not make live provider calls, and vendor modes remain
-`disabled_until_certified` while admin safety controls keep live orders closed.
+does not make live provider calls, and admin safety controls keep live orders
+closed until certification is recorded.
