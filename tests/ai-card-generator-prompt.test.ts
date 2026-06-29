@@ -233,6 +233,118 @@ describe("AI card generator image prompts", () => {
     expect(deepAiPrompts.join("\n")).not.toContain("blank note card, and muted phone");
     expect(deepAiPrompts.join("\n")).not.toContain("warm title-safe glow");
   });
+
+  it("repairs manuscript and fake-writing prompts before sending image work", async () => {
+    const deepAiPrompts: string[] = [];
+    const fetchImpl = async (url: string | URL | Request, init?: RequestInit) => {
+      const href = String(url);
+      if (href.includes("chat/completions")) {
+        return jsonResponse({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  theme_guide: {
+                    theme_title: "Quiet Botanical Birthday",
+                    palette: ["warm ivory", "deep green", "soft gold"],
+                    motifs: ["leaf edge", "small trail mark", "quiet open center"],
+                    border_style: "thin leaf rule",
+                    front_back_pairing: "single leaf hero and lower echo",
+                    interior_pairing: "light interiors with edge leaves"
+                  },
+                  panels: ["front", "inside-left", "inside-right", "back"].map((id) => ({
+                    id,
+                    headline: id === "back" ? "" : "Happy Birthday Papa",
+                    body:
+                      id === "inside-right"
+                        ? "Wishing you joy, peace, and more good days outside with the people who love you."
+                        : id === "inside-left"
+                          ? "For the hikes, stories, and lessons that stay with us."
+                          : "",
+                    art_direction: "Botanical birthday stationery with quiet text-safe space.",
+                    visual_cue: "One leafy edge motif, soft gold corner rule, and a clean open text-safe field.",
+                    text_layout: {
+                      headline_zone: "upper",
+                      body_zone: id === "back" ? "bottom" : "center",
+                      alignment: "center",
+                      font_pairing: "soft-serif",
+                      color_mode: "dark-ink",
+                      scale: "standard"
+                    },
+                    image_prompt:
+                      "Ornate notebook manuscript page filled with fake handwritten prayers, religious calligraphy, ink scribbles, and margin notes around a central message field.",
+                    image_negative_prompt: "readable text, fake text, letters, people, face, portrait, hands"
+                  })),
+                  memory_citations: ["Papa loves walks, stories, and family wisdom."]
+                })
+              }
+            }
+          ]
+        });
+      }
+
+      if (href.includes("deepai.org/api/text2img")) {
+        const body = init?.body;
+        if (body instanceof FormData) {
+          deepAiPrompts.push(String(body.get("text") || ""));
+        }
+        return jsonResponse({ output_url: `data:image/png;base64,${onePixelPng}` });
+      }
+
+      throw new Error(`Unexpected fetch URL: ${href}`);
+    };
+
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "account",
+        CLOUDFLARE_API_TOKEN: "token",
+        DEEPAI_API_KEY: "deepai"
+      },
+      fetchImpl
+    });
+
+    const response = await service.generateCard(
+      {
+        sender: "Mann",
+        recipient: "Papa",
+        relationship: "son",
+        occasion: "birthday",
+        tone: "sentimental",
+        style: "botanical",
+        language: "English",
+        personal_note: "Make a warm birthday card for Papa.",
+        memory_notes: ["walks", "stories", "family wisdom"],
+        aiFlowConfig: [
+          {
+            flowId: "card-copy",
+            primaryAdapterId: "cloudflare-workers-ai-chat",
+            liveProviderCallsEnabled: true
+          },
+          {
+            flowId: "card-image",
+            primaryAdapterId: "deepai-text2img-image",
+            liveProviderCallsEnabled: true
+          }
+        ]
+      },
+      {
+        rateKey: "manuscript-repair-test",
+        trustRequestAiFlowConfig: true
+      }
+    );
+
+    const promptText = deepAiPrompts.join("\n").toLowerCase();
+
+    expect(response.statusCode).toBe(200);
+    expect(deepAiPrompts).toHaveLength(4);
+    expect(promptText).toContain("no readable text");
+    expect(promptText).not.toContain("notebook");
+    expect(promptText).not.toContain("manuscript");
+    expect(promptText).not.toContain("handwritten prayers");
+    expect(promptText).not.toContain("religious calligraphy");
+    expect(promptText).not.toContain("ink scribbles");
+    expect(promptText).not.toContain("margin notes");
+  });
 });
 
 function jsonResponse(body: unknown) {

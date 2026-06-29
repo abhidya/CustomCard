@@ -2063,9 +2063,9 @@ function buildPanelImagePrompt(input, panelId, panel) {
         front:
           "Full-bleed flat 2D artwork layer with editorial stationery restraint for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, use edge/corner ornament only, no central medallion, no ornate frame around copy, no caption plaque, and avoid all-over motif wallpaper.",
         "inside-left":
-          "Full-bleed flat 2D artwork layer with editorial stationery restraint for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, edge-led stationery layout, thin perimeter rule, sparse edge/corner or lower-edge motifs only, quiet blank center, clean text-safe area, generous safe margins, no central medallion, no ornate frame around copy, no inner text box.",
+          "Full-bleed flat 2D artwork layer with editorial stationery restraint for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast unmarked paper field, edge-led stationery layout, thin perimeter rule, sparse edge/corner or lower-edge motifs only, quiet blank center, clean text-safe area, generous safe margins, no central medallion, no ornate frame around copy, no inner text box.",
         "inside-right":
-          "Full-bleed flat 2D artwork layer with editorial stationery restraint for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, edge-led stationery layout, thin perimeter rule, sparse edge/corner or lower-edge motifs only, quiet blank center, clean text-safe area, generous safe margins, no central medallion, no ornate frame around copy, no inner text box.",
+          "Full-bleed flat 2D artwork layer with editorial stationery restraint for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast unmarked paper field, edge-led stationery layout, thin perimeter rule, sparse edge/corner or lower-edge motifs only, quiet blank center, clean text-safe area, generous safe margins, no central medallion, no ornate frame around copy, no inner text box.",
         back:
           "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque."
       })[panelId];
@@ -2150,7 +2150,7 @@ function normalizeImagePrompt(prompt, panelId, input, panel) {
     guardrails.push(
       isSympathyInput(input)
         ? "Use a light warm-ivory low-contrast open field for the interior; keep artwork on edges and preserve a quiet blank center."
-        : "Use a light ivory or cream low-contrast note-sheet field for the interior unless the user explicitly requested a dark interior."
+        : "Use a light ivory or cream low-contrast unmarked paper field for the interior unless the user explicitly requested a dark interior."
     );
   }
   if (!/\b(?:camera-free|flat artwork layer|artwork layer only|not (?:a )?(?:physical|photographed|photo))\b/i.test(base)) {
@@ -2184,7 +2184,7 @@ function sympathyImagePromptNeedsRepair(prompt, input) {
 }
 
 function imagePromptHasUnsafeSubject(prompt) {
-  return /\b(person|people|human|owner|customer|customers|face|portrait|body|hands?|holding|model|signature|handwriting|lettering|readable text|thank[- ]you note|['"]?thank you['"]?\s+sign|signage|sign|worn|creased)\b/i.test(prompt) ||
+  return /\b(person|people|human|owner|customer|customers|face|portrait|body|hands?|holding|model|signature|handwriting|handwritten|lettering|readable text|thank[- ]you note|['"]?thank you['"]?\s+sign|signage|sign|worn|creased|notebook|journal|diary|ledger|manuscript|open book|book page|ruled paper|lined paper|written document|document page|paper sheet|ink scribbles|scribbled writing|margin notes)\b/i.test(prompt) ||
     /(?:shop|store|brand|company|business)['’]?\s+logo|\blogo\s+(?:in|at|on|near|as)\b/i.test(prompt);
 }
 
@@ -2289,25 +2289,44 @@ function normalizeImageNegativePrompt(value) {
         ...String(value || "").split(","),
         "readable text",
         "fake text",
-        "hands",
-        "product photo",
+        "pseudo text",
+        "gibberish text",
+        "handwriting",
+        "calligraphy",
+        "religious calligraphy",
+        "notebook",
+        "manuscript",
+        "ink scribbles",
+        "margin notes",
         "central medallion",
         "ornate frame around copy",
         "glyph-like marks",
+        "hands",
+        "product photo",
         "halo behind text",
         "decorative ring under typography",
         "rays behind copy",
         "busy text-safe field",
-        "pseudo text",
-        "gibberish text",
         "letters",
         "words",
         "numbers",
         "typography",
-        "handwriting",
-        "calligraphy",
+        "handwritten notes",
+        "decorative script",
         "cursive script",
         "faux script",
+        "journal",
+        "diary",
+        "ledger",
+        "book page",
+        "open book",
+        "ruled paper",
+        "lined paper",
+        "written document",
+        "document page",
+        "paper sheet",
+        "scribbled writing",
+        "fake manuscript",
         "text blocks",
         "signature",
         "label",
@@ -2323,7 +2342,6 @@ function normalizeImageNegativePrompt(value) {
         "physical card mockup",
         "framed physical card",
         "paper card photo",
-        "paper sheet",
         "card within a card",
         "inner card rectangle",
         "blank tag",

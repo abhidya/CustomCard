@@ -963,6 +963,10 @@ describe("AI card generator service", () => {
     expect(front?.image_negative_prompt).toContain("central medallion");
     expect(front?.image_negative_prompt).toContain("ornate frame around copy");
     expect(front?.image_negative_prompt).toContain("glyph-like marks");
+    expect(front?.image_negative_prompt).toContain("notebook");
+    expect(front?.image_negative_prompt).toContain("manuscript");
+    expect(front?.image_negative_prompt).toContain("religious calligraphy");
+    expect(front?.image_negative_prompt).toContain("ink scribbles");
   });
 
   it("retries aquarium benchmark copy before image work when required request facts are missing", async () => {
