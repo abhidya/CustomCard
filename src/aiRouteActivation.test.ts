@@ -209,7 +209,7 @@ describe("AI route activation", () => {
     expect(flowConfigReads).toBe(0);
     expect(activations).toHaveLength(3);
     expect(activations.find((activation) => activation.flowId === "card-image")?.selectedAdapterId).toBe(
-      "runcomfy-model-api-image"
+      "local-comfyui-api-image"
     );
   });
 

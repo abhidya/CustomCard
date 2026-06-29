@@ -13,6 +13,7 @@ import {
   loadBrowserAiFlowAdminConfigs,
   resolveAiFlowConfig,
   saveBrowserAiFlowAdminConfigs,
+  summarizeBenchmarkBestAiWorkflowParity,
   summarizeAiFlowConfigs,
   type AiFlowAdminConfig
 } from "./aiFlowConfig";
@@ -52,7 +53,7 @@ describe("AI flow config", () => {
     expect(flow.blockedReasons).toEqual([]);
   });
 
-  it("defaults card generation to Cloudflare copy and RunComfy image with live calls enabled", () => {
+  it("defaults card generation to the benchmark-backed Cloudflare copy plus local Comfy image lane", () => {
     const configs = buildDefaultAiFlowAdminConfigs();
     const cardCopy = configs.find((config) => config.flowId === "card-copy");
     const cardImage = configs.find((config) => config.flowId === "card-image");
@@ -61,13 +62,17 @@ describe("AI flow config", () => {
     expect(cardCopy?.fallbackAdapterId).toBe("huggingface-chat");
     expect(cardCopy?.fallbackQueueEnabled).toBe(true);
     expect(cardCopy?.model).toBe(productionCardCopyModel);
+    expect(cardCopy?.maxTokens).toBe(3200);
     expect(cardCopy?.rateLimitPerMinute).toBe(4);
     expect(cardCopy?.perRequestBudgetCents).toBe(5);
     expect(cardCopy?.liveProviderCallsEnabled).toBe(true);
-    expect(cardImage?.primaryAdapterId).toBe("runcomfy-model-api-image");
-    expect(cardImage?.model).toBe("blackforestlabs/flux-2/dev/text-to-image");
+    expect(cardImage?.primaryAdapterId).toBe("local-comfyui-api-image");
+    expect(cardImage?.model).toBe("sd_xl_turbo_1.0_fp16.safetensors");
     expect(cardImage?.fallbackAdapterId).toBe("cloudflare-workers-ai-image");
     expect(cardImage?.fallbackQueueEnabled).toBe(true);
+    expect(cardImage?.renderingMode).toBe("final-text-composited");
+    expect(cardImage?.workflowId).toBe("customcard-production-text-overlay");
+    expect(cardImage?.workflowPath).toBe("comfyui-workflows/customcard-production-text-overlay.json");
     expect(cardImage?.rateLimitPerMinute).toBe(8);
     expect(cardImage?.perRequestBudgetCents).toBe(1);
     expect(cardImage?.liveProviderCallsEnabled).toBe(true);
@@ -206,17 +211,67 @@ describe("AI flow config", () => {
     expect(flow.blockedReasons).toEqual([]);
   });
 
+  it("lets admin clear production text workflow fields for standard local Comfy artwork mode", () => {
+    const flow = resolveAiFlowConfig("card-image", {
+      CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188"
+    }, [
+      {
+        flowId: "card-image",
+        primaryAdapterId: "local-comfyui-api-image",
+        fallbackAdapterId: "local-comfyui-api-image",
+        model: "DreamShaper_8_pruned.safetensors",
+        renderingMode: "",
+        workflowId: "",
+        workflowPath: "",
+        workflowJson: "",
+        workflowInputsJson: "",
+        liveProviderCallsEnabled: true
+      }
+    ]);
+
+    expect(flow.renderingMode).toBe("");
+    expect(flow.workflowId).toBe("");
+    expect(flow.workflowPath).toBe("");
+    expect(flow.model).toBe("DreamShaper_8_pruned.safetensors");
+    expect(flow.readyForLiveCalls).toBe(true);
+  });
+
   it("normalizes the removed deterministic SVG renderer back to the default image adapter", () => {
     const flow = resolveAiFlowConfig("card-image", cloudflareEnv, [
       { flowId: "card-image", primaryAdapterId: "browser-svg-renderer", liveProviderCallsEnabled: true }
     ]);
 
-    expect(flow.primaryAdapterId).toBe("runcomfy-model-api-image");
+    expect(flow.primaryAdapterId).toBe("local-comfyui-api-image");
     expect(flow.fallbackAdapterId).toBe("cloudflare-workers-ai-image");
     expect(flow.liveProviderCallsEnabled).toBe(true);
     expect(flow.readyForLiveCalls).toBe(false);
     expect(flow.blockedReasons).toEqual(
-      expect.arrayContaining(["runcomfy-model-api-image missing RUNCOMFY_API_TOKEN."])
+      expect.arrayContaining(["local-comfyui-api-image missing CUSTOMCARD_COMFYUI_URL or COMFYUI_URL."])
+    );
+  });
+
+  it("summarizes drift from the benchmark-best workflow for admin provider review", () => {
+    const defaults = buildDefaultAiFlowAdminConfigs();
+    const defaultParity = summarizeBenchmarkBestAiWorkflowParity(defaults);
+    const runComfyParity = summarizeBenchmarkBestAiWorkflowParity(
+      defaults.map((config) =>
+        config.flowId === "card-image"
+          ? {
+              ...config,
+              primaryAdapterId: "runcomfy-model-api-image",
+              model: "blackforestlabs/flux-2/dev/text-to-image",
+              renderingMode: ""
+            }
+          : config
+      )
+    );
+
+    expect(defaultParity.status).toBe("matched");
+    expect(defaultParity.matched).toBe(defaultParity.total);
+    expect(defaultParity.evidencePath).toContain("production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8");
+    expect(runComfyParity.status).toBe("drift");
+    expect(runComfyParity.rows.find((row) => row.flowId === "card-image")?.missing).toEqual(
+      expect.arrayContaining(["Provider", "Model", "Rendering"])
     );
   });
 

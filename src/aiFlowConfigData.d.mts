@@ -19,6 +19,9 @@ export interface AiFlowDefinition {
   contextWindowTokens: number;
   maxTokens: number;
   temperature: number;
+  renderingMode?: "" | "final-text-composited";
+  workflowId?: string;
+  workflowPath?: string;
   promptInstructions: string;
 }
 
@@ -71,7 +74,62 @@ export interface AiProviderModelPreset {
   detail?: string;
 }
 
+export interface BenchmarkBestAiWorkflowExpectation {
+  flowId: AiFlowId;
+  primaryAdapterId: string;
+  fallbackAdapterId?: string;
+  model?: string;
+  contextWindowTokens?: number;
+  maxTokens?: number;
+  temperature?: number;
+  renderingMode?: "" | "final-text-composited";
+  workflowId?: string;
+  workflowPath?: string;
+  evidenceLabel: string;
+}
+
+export interface BenchmarkBestAiWorkflow {
+  id: string;
+  label: string;
+  status: string;
+  evidencePath: string;
+  summaryPath: string;
+  rationale: string;
+  blockers: string[];
+  flowExpectations: BenchmarkBestAiWorkflowExpectation[];
+}
+
+export interface AiFlowBenchmarkParityCheck {
+  label: string;
+  actual: string | number | boolean;
+  expected: string | number | boolean | undefined;
+  matched: boolean;
+}
+
+export interface AiFlowBenchmarkParityRow {
+  flowId: AiFlowId;
+  label: string;
+  matched: boolean;
+  missing: string[];
+  checks: AiFlowBenchmarkParityCheck[];
+  evidenceLabel: string;
+}
+
+export interface AiFlowBenchmarkParitySummary {
+  workflowId: string;
+  label: string;
+  status: "matched" | "drift";
+  matched: number;
+  total: number;
+  evidencePath: string;
+  summaryPath: string;
+  rationale: string;
+  blockers: string[];
+  rows: AiFlowBenchmarkParityRow[];
+}
+
 export const aiFlowAdminConfigStorageKey: string;
+export const benchmarkBestAiWorkflow: BenchmarkBestAiWorkflow;
 export const aiFlowDefinitions: AiFlowDefinition[];
 export const aiProviderEnvRequirements: Record<string, string[][]>;
 export const aiProviderModelPresets: Record<string, AiProviderModelPreset[]>;
@@ -93,6 +151,10 @@ export function summarizeAiFlowConfigs(
   env?: Record<string, string | undefined>,
   adminOverrides?: Partial<AiFlowAdminConfig>[]
 ): AiFlowConfigSummary;
+export function summarizeBenchmarkBestAiWorkflowParity(
+  adminOverrides?: Partial<AiFlowAdminConfig>[],
+  env?: Record<string, string | undefined>
+): AiFlowBenchmarkParitySummary;
 export function normalizeAiFlowAdminConfigs(
   input: unknown,
   env?: Record<string, string | undefined>

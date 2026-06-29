@@ -16,7 +16,11 @@ import {
   WandSparkles
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { AiFlowAdminConfig, AiFlowConfigSummary } from "../../src/aiFlowConfig";
+import {
+  summarizeBenchmarkBestAiWorkflowParity,
+  type AiFlowAdminConfig,
+  type AiFlowConfigSummary
+} from "../../src/aiFlowConfig";
 import {
   adminAiFlowConfigsRoute,
   type AdminAiFlowConfigPayload
@@ -32,6 +36,11 @@ const adapterLabels = new Map(providerCatalog.map((adapter) => [adapter.id, adap
 
 function adapterLabel(adapterId: string): string {
   return adapterLabels.get(adapterId) ?? adapterId;
+}
+
+function formatBenchmarkCheckValue(value: string | number | boolean | undefined): string {
+  if (value === undefined || value === "") return "not set";
+  return String(value);
 }
 
 interface BucketObject {
@@ -532,6 +541,11 @@ export function AdminView({
   const effectiveAiFlowSummary = aiFlowPayload?.summary ?? aiFlowSummary;
   const savedAiFlowConfigs = aiFlowPayload?.configs ?? aiFlowConfigs;
   const aiFlowDirty = JSON.stringify(aiFlowDraftConfigs) !== JSON.stringify(savedAiFlowConfigs);
+  const benchmarkBestParity = useMemo(
+    () => summarizeBenchmarkBestAiWorkflowParity(aiFlowDraftConfigs),
+    [aiFlowDraftConfigs]
+  );
+  const benchmarkBestMatched = benchmarkBestParity.status === "matched";
 
   function updateFlow(flowId: AiFlowAdminConfig["flowId"], patch: Partial<AiFlowAdminConfig>) {
     setAiFlowDraftConfigs((current) =>
@@ -1388,6 +1402,49 @@ export function AdminView({
               {aiFlowPayload.updatedBy ? ` by ${aiFlowPayload.updatedBy}` : ""}.
             </small>
           ) : null}
+          <section className="providerBenchmark" aria-label="Benchmark-best workflow parity">
+            <div className="providerBenchmarkHead">
+              <div>
+                <span>Benchmark-best workflow</span>
+                <strong>{benchmarkBestParity.label}</strong>
+              </div>
+              <span className="opsStatus" data-ok={benchmarkBestMatched}>
+                {benchmarkBestMatched
+                  ? "Matches benchmark"
+                  : `${benchmarkBestParity.matched}/${benchmarkBestParity.total} lanes matched`}
+              </span>
+            </div>
+            <div className="providerBenchmarkGrid">
+              {benchmarkBestParity.rows.map((row) => (
+                <div className="providerBenchmarkRow" data-ok={row.matched} key={row.flowId}>
+                  <div>
+                    <strong>{row.label}</strong>
+                    <span>{row.evidenceLabel}</span>
+                  </div>
+                  <small>
+                    {row.matched
+                      ? row.checks
+                          .map((check) => `${check.label}: ${formatBenchmarkCheckValue(check.expected)}`)
+                          .join(" | ")
+                      : `Needs ${row.missing.join(", ")}`}
+                  </small>
+                </div>
+              ))}
+            </div>
+            <p>{benchmarkBestParity.rationale}</p>
+            <details className="providerBenchmarkDetails">
+              <summary>Evidence and promotion blockers</summary>
+              <div className="providerBenchmarkPaths">
+                <code>{benchmarkBestParity.evidencePath}</code>
+                <code>{benchmarkBestParity.summaryPath}</code>
+              </div>
+              <ul>
+                {benchmarkBestParity.blockers.map((blocker) => (
+                  <li key={blocker}>{blocker}</li>
+                ))}
+              </ul>
+            </details>
+          </section>
           <div className="flowList">
             {effectiveAiFlowSummary.flows.map((flow) => {
               const config = aiFlowDraftConfigs.find((candidate) => candidate.flowId === flow.flowId);

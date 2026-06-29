@@ -46,7 +46,7 @@ Checked-in Comfy workflows:
 - `comfyui-workflows/customcard-z-image-turbo.json`
 - `comfyui-workflows/customcard-qwen-image-research.json`
 
-Important constraint: `customcard-production-text-overlay.json` can render exact copy with the checked-in `CustomCardTextComposer` node, but current research says it is not yet promoted as the default production path. Use it for controlled evidence and marketing candidates, then manually grade outputs.
+Important constraint: `customcard-production-text-overlay.json` can render exact copy with the checked-in `CustomCardTextComposer` node and is the admin default for the benchmark-backed production text lane. Use it only where the target Comfy runtime has the custom node installed, then manually grade outputs before customer promotion.
 
 ## Safe Prompt Contract
 

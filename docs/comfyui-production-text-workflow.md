@@ -202,7 +202,8 @@ https://docs.comfy.org/development/core-concepts/custom-nodes
 
 Production implication:
 
-- `customcard-production-text-overlay.json` should not be the default workflow
+- `customcard-production-text-overlay.json` is the admin default because it is
+  the best structural benchmark lane, but live image work must stay blocked
   until the target Comfy runtime includes `CustomCardTextComposer` and the
   pinned fonts.
 - Use `tools/install-comfy-customcard-text-node.ps1` to link the checked-in node

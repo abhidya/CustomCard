@@ -14,7 +14,7 @@ CustomCard keeps live provider traffic disabled by default, but production readi
 
 - `provider.request.reserved`: emitted before a paid or credential-gated provider request would be attempted; reserves estimated budget.
 - `provider.request.blocked`: emitted when a provider is skipped for missing credentials, safety gates, budget, rate limit, circuit state, or status.
-- `provider.fallback.selected`: emitted when the system selects the ready-local fallback such as `browser-svg-renderer`.
+- `provider.fallback.selected`: emitted when the system selects the next ready fallback, such as hosted Cloudflare image or the local Comfy image lane when configured.
 - `provider.spend.budget_near_limit`: emitted by the monitoring layer when tenant or adapter spend reaches the warning threshold.
 - `provider.spend.budget_exhausted`: emitted when the router returns `monthly-budget-exceeded`.
 - `provider.rate_limited`: emitted when the router returns `rate-limit-exceeded`.
@@ -39,7 +39,7 @@ The provider ledger must keep `pii_free = TRUE` and `live_network_call = FALSE` 
 1. Missing provider key:
    - Remove `OPENAI_API_KEY`.
    - Run an image-generation plan with `openai-images` preferred.
-   - Expected: router records `missing-credentials` and selects `browser-svg-renderer`.
+   - Expected: router records `missing-credentials` and selects the next configured fallback; for the current card-image lane that is Cloudflare image after local Comfy, or no live image adapter if neither is configured.
 
 2. Monthly budget exhausted:
    - Seed prior `provider_call_events` for the same tenant, adapter, and month until `openai-images` has only less than one panel request left.

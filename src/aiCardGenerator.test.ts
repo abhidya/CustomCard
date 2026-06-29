@@ -67,6 +67,11 @@ function localAiFlowConfig() {
         primaryAdapterId: "local-comfyui-api-image",
         fallbackAdapterId: "local-comfyui-api-image",
         model: "DreamShaper_8_pruned.safetensors",
+        renderingMode: "",
+        workflowId: "",
+        workflowPath: "",
+        workflowJson: "",
+        workflowInputsJson: "",
         liveProviderCallsEnabled: true
       };
     }
@@ -750,7 +755,7 @@ describe("AI card generator service", () => {
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(String(firstCall[0])).toContain("/ai/v1/chat/completions");
     expect(requestBody.model).toBe(cloudflareTextModel);
-    expect(requestBody.max_tokens).toBe(2200);
+    expect(requestBody.max_tokens).toBe(3200);
     expect(requestBody.messages[0].content).toContain("theme, layout, and copy plan");
     expect(userPrompt.task).toContain("The LLM owns the creative concept");
     expect(userPrompt.section_order).toEqual(
@@ -3028,9 +3033,9 @@ describe("AI card generator service", () => {
 
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(payload.generated_by).toBe("ai-text-only");
-    expect(payload.ai_flow.card_image.primary_adapter_id).toBe("runcomfy-model-api-image");
+    expect(payload.ai_flow.card_image.primary_adapter_id).toBe("local-comfyui-api-image");
     expect(payload.ai_flow.card_image.adapter_id).toBe("");
-    expect(payload.ai_flow.card_image.provider_failure).toContain("RUNCOMFY_API_TOKEN");
+    expect(payload.ai_flow.card_image.provider_failure).toContain("CUSTOMCARD_COMFYUI_URL or COMFYUI_URL");
     expect(payload.images).toEqual([]);
     expect(JSON.stringify(result.payload)).not.toContain("test_text_token");
   });
@@ -3092,7 +3097,7 @@ describe("AI card generator service", () => {
 
     expect(payload.generated_by).toBe("ai-text-only");
     expect(payload.images).toEqual([]);
-    expect(payload.ai_flow.card_image.provider_failure).toContain("RUNCOMFY_API_TOKEN");
+    expect(payload.ai_flow.card_image.provider_failure).toContain("CUSTOMCARD_COMFYUI_URL or COMFYUI_URL");
   });
 
   it("uses the customer-chat flow for chat replies", async () => {

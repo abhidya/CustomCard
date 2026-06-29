@@ -37,6 +37,43 @@ const imageProviderAdapterIds = [
   "runcomfy-model-api-image"
 ];
 
+export const benchmarkBestAiWorkflow = {
+  id: "cloudflare-qwen3-30b-local-comfy-production-text-v8",
+  label: "Cloudflare Qwen3 30B + Comfy production text composer",
+  status: "structural-pass-needs-manual-visual-gate",
+  evidencePath:
+    "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8/production-text-workflow-README.md",
+  summaryPath:
+    "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8/production-text-workflow-summary.json",
+  rationale:
+    "All three required local-production-text fixtures completed with four panels, Cloudflare Qwen3 30B card copy, local ComfyUI image generation, and CustomCardTextComposer final text composition. Manual visual QA still gates customer promotion.",
+  blockers: [
+    "Manual visual QA and aggregate promotion gates still decide customer promotion.",
+    "The selected Comfy runtime must expose CustomCardTextComposer before live image work."
+  ],
+  flowExpectations: [
+    {
+      flowId: "card-copy",
+      primaryAdapterId: "cloudflare-workers-ai-chat",
+      model: productionCardCopyModel,
+      contextWindowTokens: 8192,
+      maxTokens: 3200,
+      temperature: 0.62,
+      evidenceLabel: "Full card-copy JSON contract"
+    },
+    {
+      flowId: "card-image",
+      primaryAdapterId: "local-comfyui-api-image",
+      fallbackAdapterId: "cloudflare-workers-ai-image",
+      model: "sd_xl_turbo_1.0_fp16.safetensors",
+      renderingMode: "final-text-composited",
+      workflowId: "customcard-production-text-overlay",
+      workflowPath: "comfyui-workflows/customcard-production-text-overlay.json",
+      evidenceLabel: "CustomCardTextComposer final images"
+    }
+  ]
+};
+
 export const aiFlowDefinitions = [
   {
     flowId: "customer-chat",
@@ -73,7 +110,7 @@ export const aiFlowDefinitions = [
     perRequestBudgetCents: 5,
     maxRetries: 1,
     contextWindowTokens: 8192,
-    maxTokens: 2200,
+    maxTokens: 3200,
     temperature: 0.62,
     promptInstructions:
       "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan, panel-specific visual cues, and safe text-layout plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, visual_cue composition notes, text_layout enum choices, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
@@ -82,7 +119,7 @@ export const aiFlowDefinitions = [
     flowId: "card-image",
     label: "Card image",
     capability: "image-generation",
-    defaultPrimaryAdapterId: "runcomfy-model-api-image",
+    defaultPrimaryAdapterId: "local-comfyui-api-image",
     defaultFallbackAdapterId: "cloudflare-workers-ai-image",
     allowedAdapterIds: imageProviderAdapterIds,
     liveDefault: true,
@@ -95,6 +132,9 @@ export const aiFlowDefinitions = [
     contextWindowTokens: 0,
     maxTokens: 0,
     temperature: 0,
+    renderingMode: "final-text-composited",
+    workflowId: "customcard-production-text-overlay",
+    workflowPath: "comfyui-workflows/customcard-production-text-overlay.json",
     promptInstructions:
       "Create one portrait 5x7 print panel at a time from the card-copy flow's literal image_prompt. Do not use internal form labels as art direction, do not make a collage or folded mockup, and reserve exact typography for app-rendered overlays."
   }
@@ -172,7 +212,7 @@ const defaultModelsByAdapter = {
   "xai-chat": "grok-3-mini",
   "self-hosted-openai-compatible-chat": "local-default",
   "local-openai-compatible-chat": "local-default",
-  "local-comfyui-api-image": "DreamShaper_8_pruned.safetensors",
+  "local-comfyui-api-image": "sd_xl_turbo_1.0_fp16.safetensors",
   "stability-stable-image": "stable-image-core",
   "replicate-image": "black-forest-labs/flux-schnell",
   "fal-image": "fal-ai/flux/schnell",
@@ -187,6 +227,11 @@ export const aiProviderModelPresets = {
     { id: "qwen3-8b-instruct-q4", label: "Qwen3 8B Instruct Q4 local" }
   ],
   "local-comfyui-api-image": [
+    {
+      id: "sd_xl_turbo_1.0_fp16.safetensors",
+      label: "SDXL Turbo production text composer proof",
+      detail: "Used by the Cloudflare Qwen3 30B local-production-text benchmark evidence"
+    },
     { id: "DreamShaper_8_pruned.safetensors", label: "Local ComfyUI DreamShaper 8" }
   ],
   "runcomfy-model-api-image": [
@@ -336,6 +381,37 @@ export function summarizeAiFlowConfigs(env = {}, adminOverrides = []) {
   };
 }
 
+export function summarizeBenchmarkBestAiWorkflowParity(adminOverrides = [], env = {}) {
+  const configs = normalizeAiFlowAdminConfigs(adminOverrides, env);
+  const rows = benchmarkBestAiWorkflow.flowExpectations.map((expectation) => {
+    const config = configs.find((candidate) => candidate.flowId === expectation.flowId);
+    const definition = getAiFlowDefinition(expectation.flowId);
+    const checks = benchmarkParityChecks(expectation, config);
+    const missing = checks.flatMap((check) => (check.matched ? [] : [check.label]));
+    return {
+      flowId: expectation.flowId,
+      label: definition.label,
+      matched: missing.length === 0,
+      missing,
+      checks,
+      evidenceLabel: expectation.evidenceLabel
+    };
+  });
+
+  return {
+    workflowId: benchmarkBestAiWorkflow.id,
+    label: benchmarkBestAiWorkflow.label,
+    status: rows.every((row) => row.matched) ? "matched" : "drift",
+    matched: rows.filter((row) => row.matched).length,
+    total: rows.length,
+    evidencePath: benchmarkBestAiWorkflow.evidencePath,
+    summaryPath: benchmarkBestAiWorkflow.summaryPath,
+    rationale: benchmarkBestAiWorkflow.rationale,
+    blockers: [...benchmarkBestAiWorkflow.blockers],
+    rows
+  };
+}
+
 export function normalizeAiFlowAdminConfigs(input, env = {}) {
   const overrides = Array.isArray(input) ? input : [];
   return aiFlowDefinitions.map((definition) => normalizeAiFlowOverride(findFlowOverride(definition.flowId, overrides), definition, env));
@@ -408,10 +484,10 @@ function normalizeAiFlowOverride(input, definition, env) {
     maxTokens: normalizeNumber(input.maxTokens, fallback.maxTokens, 0, 4000),
     temperature: normalizeNumber(input.temperature, fallback.temperature, 0, 2),
     renderingMode: normalizeRenderingMode(input.renderingMode, fallback.renderingMode),
-    workflowId: normalizeString(input.workflowId, fallback.workflowId, 160),
-    workflowPath: normalizeString(input.workflowPath, fallback.workflowPath, 500),
-    workflowJson: normalizeString(input.workflowJson, fallback.workflowJson, 100_000),
-    workflowInputsJson: normalizeString(input.workflowInputsJson, fallback.workflowInputsJson, 50_000)
+    workflowId: normalizeOptionalString(input.workflowId, fallback.workflowId, 160),
+    workflowPath: normalizeOptionalString(input.workflowPath, fallback.workflowPath, 500),
+    workflowJson: normalizeOptionalString(input.workflowJson, fallback.workflowJson, 100_000),
+    workflowInputsJson: normalizeOptionalString(input.workflowInputsJson, fallback.workflowInputsJson, 50_000)
   };
 }
 
@@ -433,11 +509,36 @@ function buildFallbackOverride(definition, env) {
     contextWindowTokens: definition.contextWindowTokens,
     maxTokens: definition.maxTokens,
     temperature: definition.temperature,
-    renderingMode: "",
-    workflowId: "",
-    workflowPath: "",
+    renderingMode: definition.renderingMode ?? "",
+    workflowId: definition.workflowId ?? "",
+    workflowPath: definition.workflowPath ?? "",
     workflowJson: "",
     workflowInputsJson: ""
+  };
+}
+
+function benchmarkParityChecks(expectation, config) {
+  if (!config) return [{ label: `${expectation.flowId} config missing`, matched: false }];
+  const checks = [
+    parityCheck("Provider", config.primaryAdapterId, expectation.primaryAdapterId),
+    parityCheck("Model", config.model, expectation.model),
+    parityCheck("Fallback", config.fallbackAdapterId, expectation.fallbackAdapterId),
+    parityCheck("Context", config.contextWindowTokens, expectation.contextWindowTokens),
+    parityCheck("Max output", config.maxTokens, expectation.maxTokens),
+    parityCheck("Temperature", config.temperature, expectation.temperature),
+    parityCheck("Rendering", config.renderingMode, expectation.renderingMode),
+    parityCheck("Workflow ID", config.workflowId, expectation.workflowId),
+    parityCheck("Workflow path", config.workflowPath, expectation.workflowPath)
+  ];
+  return checks.filter((check) => check.expected !== undefined && check.expected !== "");
+}
+
+function parityCheck(label, actual, expected) {
+  return {
+    label,
+    actual: actual ?? "",
+    expected,
+    matched: expected === undefined || expected === "" || actual === expected
   };
 }
 
@@ -447,6 +548,12 @@ function normalizeAdapter(adapterId, allowedAdapterIds, fallback) {
 
 function normalizeString(value, fallback, maxLength) {
   return typeof value === "string" && value.trim() ? value.trim().slice(0, maxLength) : fallback;
+}
+
+function normalizeOptionalString(value, fallback, maxLength) {
+  if (typeof value !== "string") return fallback;
+  const normalized = value.trim();
+  return normalized ? normalized.slice(0, maxLength) : "";
 }
 
 function normalizeNumber(value, fallback, min, max) {

@@ -4,8 +4,10 @@ import {
   normalizeAiFlowAdminConfigs,
   resolveAiFlowConfig,
   resolveAiFlowConfigs,
+  summarizeBenchmarkBestAiWorkflowParity,
   summarizeAiFlowConfigs,
   type AiFlowAdminConfig,
+  type AiFlowBenchmarkParitySummary,
   type AiFlowConfigSummary,
   type AiFlowDefinition,
   type AiFlowId,
@@ -18,6 +20,7 @@ export {
   aiFlowDefinitions,
   aiProviderEnvRequirements,
   aiProviderModelPresets,
+  benchmarkBestAiWorkflow,
   buildDefaultAiFlowAdminConfigs,
   flowEnvKey,
   getAiFlowDefinition,
@@ -27,11 +30,15 @@ export {
   normalizeAiFlowAdminConfigs,
   resolveAiFlowConfig,
   resolveAiFlowConfigs,
+  summarizeBenchmarkBestAiWorkflowParity,
   summarizeAiFlowConfigs
 } from "./aiFlowConfigData.mjs";
 
 export type {
   AiFlowAdminConfig,
+  AiFlowBenchmarkParityCheck,
+  AiFlowBenchmarkParityRow,
+  AiFlowBenchmarkParitySummary,
   AiFlowCapability,
   AiFlowConfigSummary,
   AiFlowDefinition,
@@ -65,6 +72,10 @@ export function resetBrowserAiFlowAdminConfigs(): AiFlowAdminConfig[] {
 
 export function buildBrowserAiFlowSummary(configs: AiFlowAdminConfig[]): AiFlowConfigSummary {
   return summarizeAiFlowConfigs({}, configs);
+}
+
+export function buildBrowserBenchmarkBestAiWorkflowParity(configs: AiFlowAdminConfig[]): AiFlowBenchmarkParitySummary {
+  return summarizeBenchmarkBestAiWorkflowParity(configs);
 }
 
 export function updateAiFlowAdminConfig(
