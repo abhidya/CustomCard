@@ -1735,6 +1735,102 @@ describe("AI card generator service", () => {
     expect(payload.card_copy.panels[2].image_prompt).toContain("Golden sunrise through a hospital window");
   });
 
+  it("does not let a doctor memory turn a birthday card into a medical graduation card", async () => {
+    const medicalBirthdayResponse = {
+      theme_guide: {
+        theme_title: "From Dream to Doctor",
+        palette: ["deep navy", "white", "soft gold"],
+        motifs: ["white coat", "stethoscope", "ECG line"],
+        border_style: "thin gold medical stationery border",
+        front_back_pairing: "front and back share the stethoscope motif",
+        interior_pairing: "inside panels share hospital-shift cues"
+      },
+      panels: [
+        {
+          id: "front",
+          headline: "Happy Birthday, Papa",
+          body: "Wishing you a day as vibrant as your spirit.",
+          art_direction: "Medical birthday cover.",
+          visual_cue:
+            "White doctor's coat hanging beside a graduation stole in soft hospital hallway sunrise light.",
+          image_prompt:
+            "White doctor's coat hanging beside a graduation stole in a hospital hallway with stethoscope and no readable writing.",
+          image_negative_prompt: "readable text"
+        },
+        {
+          id: "inside-left",
+          headline: "Years In The Making",
+          body:
+            "You kept going through exams, late nights, long shifts, and the sacrifices most people never saw. Today honors the discipline behind the white coat as much as the degree itself.",
+          art_direction: "Medical interior.",
+          visual_cue: "Quiet desk after a long hospital shift with stethoscope and graduation cap.",
+          image_prompt: "Quiet desk after a long hospital shift with stethoscope and graduation cap.",
+          image_negative_prompt: "readable text"
+        },
+        {
+          id: "inside-right",
+          headline: "With So Much Pride",
+          body:
+            "We are proud not only of the doctor you are becoming, but of the patience, heart, and dedication that brought you here. With love, Mann.",
+          art_direction: "Medical message panel.",
+          visual_cue: "Golden sunrise through a hospital window and white coat draped over a chair.",
+          image_prompt: "Golden sunrise through a hospital window and white coat draped over a chair.",
+          image_negative_prompt: "readable text"
+        },
+        {
+          id: "back",
+          headline: "From Dream to Doctor",
+          body: "With pride for the doctor you worked so hard to become.",
+          art_direction: "Medical back.",
+          visual_cue: "Small stethoscope and graduation cap mark.",
+          image_prompt: "Small stethoscope and graduation cap mark.",
+          image_negative_prompt: "readable text"
+        }
+      ],
+      memory_citations: ["doctor"]
+    };
+    const fetchImpl = vi.fn(async () =>
+      new Response(JSON.stringify({ result: { response: medicalBirthdayResponse } }), {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      })
+    );
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+      },
+      fetchImpl,
+      aiFlowAdminConfig: cloudflareTextAiFlowConfig()
+    });
+
+    const result = await service.generateCard(
+      {
+        ...cardRequest,
+        sender: "Mann",
+        recipient: "Papa",
+        relationship: "Son",
+        occasion: "birthday",
+        tone: "Sentimental",
+        style: "Botanical",
+        personal_note: "Warm birthday card for Papa.",
+        memory_notes: ["fishes", "horses", "kids", "doctor", "love", "traveling"]
+      },
+      { rateKey: "test-doctor-memory-birthday-not-medical" }
+    );
+    const serialized = JSON.stringify(result.payload);
+    const payload = result.payload as {
+      card_copy: { panels: Array<{ id: string; headline: string; body: string }> };
+    };
+
+    expect(result.statusCode).toBe(200);
+    expect(payload.card_copy.panels[0].headline).toMatch(/^Happy Birthday,? Papa$/);
+    expect(payload.card_copy.panels[1].headline).toBe("A Little Sunshine");
+    expect(payload.card_copy.panels[2].body).toContain("Wishing you a year");
+    expect(serialized).toContain("Botanical birthday");
+    expect(serialized).not.toMatch(/white coat|stethoscope|hospital|graduation cap|doctor you are becoming|degree itself|long shifts/i);
+  });
+
   it("repairs benchmark copy misses for dad and small-business cards", async () => {
     const weakDadResponse = {
       ...cardCopyResponse,

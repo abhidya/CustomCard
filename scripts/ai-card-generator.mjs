@@ -2046,6 +2046,23 @@ function isSympathyInput(input) {
   return /\b(sympathy|condolence|loss|grieving|grief|quiet support|losing (?:a|his|her|their) father|father'?s loss)\b/.test(source);
 }
 
+function isMedicalMilestoneInput(input) {
+  const intent = `${input?.occasion || ""} ${input?.tone || ""} ${input?.style || ""} ${input?.personal_note || ""}`.toLowerCase();
+  const allSource = `${intent} ${(input?.memory_notes || []).join(" ")}`.toLowerCase();
+  const medicalIntent =
+    /\b(?:medical school|medical graduation|med school|doctor|physician|md|white[- ]coat|stethoscope|residen(?:cy|t))\b/.test(intent) ||
+    (/\b(?:graduat|degree|diploma|class year)\b/.test(intent) &&
+      /\b(?:medical|med school|doctor|physician|md|white[- ]coat|stethoscope|residen(?:cy|t))\b/.test(allSource));
+  const milestoneIntent = /\b(?:graduat|congrat|becoming|became|degree|diploma|residen(?:cy|t)|white[- ]coat|medical school|med school)\b/.test(intent);
+  return medicalIntent && milestoneIntent;
+}
+
+function textConflictsWithNonMedicalBirthday(value, input) {
+  const occasionIntent = `${input?.occasion || ""} ${input?.tone || ""} ${input?.style || ""} ${input?.personal_note || ""}`.toLowerCase();
+  if (!/\bbirthday\b/.test(occasionIntent) || isMedicalMilestoneInput(input)) return false;
+  return /\b(?:from dream to doctor|years in the making|with so much pride|medical school|medical graduation|white[- ]coat|stethoscope|hospital|residen(?:cy|t)|graduation cap|graduation stole|degree itself|exams?|long shifts?|late nights?|doctor you (?:are|were|worked)|doctor you'?re becoming|doctor you are becoming)\b/i.test(value);
+}
+
 function buildPanelImagePrompt(input, panelId, panel) {
   const isSympathy = isSympathyInput(input);
   const panelInstruction = (isSympathy
@@ -2173,6 +2190,7 @@ function imagePromptNeedsRepair(prompt, panelId, input, panel) {
   return imagePromptHasUnsafeSubject(prompt) ||
     imagePromptLeaksAppCopy(prompt) ||
     imagePromptHasUnsafeTextFieldOrnament(prompt) ||
+    textConflictsWithNonMedicalBirthday(prompt, input) ||
     sympathyImagePromptNeedsRepair(prompt, input) ||
     imagePromptConflictsWithPanelRole(prompt, panelId) ||
     imagePromptIsUnderspecified(prompt, panelId, input, panel);
@@ -2422,7 +2440,7 @@ function buildVisualBrief(input, panel) {
   if (/\b(dog|dogs|dog-loving|dog lover|dog-trust|leash|good neighbor)\b/.test(contract)) {
     return "Dog-lover thank-you stationery: one abstract leash curve, small dog-tag mark, neighborly doorstep or sidewalk line, warm cream field, clean message space, no dog portrait, no paw-print wallpaper, no plant-watering story.";
   }
-  if (/\b(med|medical|doctor|physician|md|white[- ]coat|stethoscope)\b/.test(source)) {
+  if (isMedicalMilestoneInput(input)) {
     return "Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons.";
   }
   if (/\b(get well|surgery|recover|recovery|hospital socks|tiny walks|basil|soup)\b/.test(source)) {
@@ -2527,6 +2545,19 @@ function normalizeThemeGuide(rawThemeGuide, input) {
     };
   }
   const raw = rawThemeGuide && typeof rawThemeGuide === "object" ? rawThemeGuide : {};
+  const rawThemeText = [
+    raw.theme_title,
+    raw.themeTitle,
+    ...(Array.isArray(raw.palette) ? raw.palette : []),
+    ...(Array.isArray(raw.motifs) ? raw.motifs : []),
+    raw.border_style,
+    raw.borderStyle,
+    raw.front_back_pairing,
+    raw.frontBackPairing,
+    raw.interior_pairing,
+    raw.interiorPairing
+  ].join(" ");
+  if (textConflictsWithNonMedicalBirthday(rawThemeText, input)) return fallback;
   const palette = Array.isArray(raw.palette)
     ? raw.palette.map(cleanText).filter(isSafeThemePaletteValue).slice(0, 6)
     : [];
@@ -2581,7 +2612,7 @@ function buildThemeGuide(input) {
       border: "minimal neighborly border with one leash curve and no paw-print wallpaper"
     });
   }
-  if (/\b(med|medical|doctor|physician|md|white[- ]coat|stethoscope)\b/.test(source)) {
+  if (isMedicalMilestoneInput(input)) {
     return themeGuide({
       title: "From Dream to Doctor",
       palette: ["deep navy", "white coat ivory", "soft gold"],
@@ -2698,7 +2729,8 @@ function normalizeVisualCue(value, panelId, input, themeGuide = buildThemeGuide(
 function visualCueTooGenericForSource(value, input) {
   const source = `${input.occasion} ${input.tone} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")}`.toLowerCase();
   const text = String(value || "").toLowerCase();
-  if (/\b(med|medical|doctor|physician|md|residen(?:cy|t)|white[- ]coat|stethoscope)\b/.test(source)) {
+  if (textConflictsWithNonMedicalBirthday(value, input)) return true;
+  if (isMedicalMilestoneInput(input)) {
     return !/\b(?:doctor|medical|hospital|white[- ]coat|stethoscope|graduation|residen(?:cy|t))\b/.test(text);
   }
   return false;
@@ -2748,7 +2780,7 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
     };
     return cues[panelId];
   }
-  if (/\b(med|medical|doctor|physician|md|residen(?:cy|t)|white[- ]coat|stethoscope)\b/.test(source)) {
+  if (isMedicalMilestoneInput(input)) {
     const cues = {
       front:
         "White doctor's coat hanging beside a graduation stole in soft hospital hallway sunrise light; stethoscope and folded residency notes with no readable writing; subtle gold accents; clean upper-third text-safe area; no people or faces.",
@@ -3193,7 +3225,7 @@ function repairCardCopyPanels(panels, input, themeGuide) {
 function panelHeadlineNeedsRepair(headline, panelId, input) {
   const value = cleanText(headline);
   const source = `${input.occasion} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")}`.toLowerCase();
-  const isMedical = /\b(med|medical|doctor|physician|md|white[- ]coat|stethoscope)\b/.test(source);
+  const isMedical = isMedicalMilestoneInput(input);
   const isGetWell = /\b(get well|surgery|recover|recovery|hospital socks|tiny walks|basil|soup)\b/.test(source);
   const isB2B = /\b(warranty|renewal|account manager|qr|clinic|dental|sterilizer|customer success|purchase anniversary)\b/.test(source);
   const isWedding = /\b(wedding|marriage|fianc|fiance|blessing|handwrite|handwritten|distant cousin)\b/.test(source);
@@ -3201,6 +3233,7 @@ function panelHeadlineNeedsRepair(headline, panelId, input) {
   const isSmallBusiness = /\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source);
   const isDad = /\b(father|dad|fix|repair|tool|workshop|handy)\b/.test(source);
   if (!value) return true;
+  if (textConflictsWithNonMedicalBirthday(value, input)) return true;
   if (panelId === "inside-left" && /^for this moment$/i.test(value)) return true;
   if (panelId === "back" && /^customcard$/i.test(value)) return true;
   if (panelId === "front" && new RegExp(`^for ${escapeRegExp(input.recipient)}$`, "i").test(value)) return true;
@@ -3237,7 +3270,7 @@ function panelHeadlineNeedsRepair(headline, panelId, input) {
 function panelBodyNeedsRepair(body, panelId, input) {
   const value = cleanText(body);
   const source = `${input.occasion} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")}`.toLowerCase();
-  const isMedical = /\b(med|medical|doctor|physician|md|white[- ]coat|stethoscope)\b/.test(source);
+  const isMedical = isMedicalMilestoneInput(input);
   const isGetWell = /\b(get well|surgery|recover|recovery|hospital socks|tiny walks|basil|soup)\b/.test(source);
   const isB2B = /\b(warranty|renewal|account manager|qr|clinic|dental|sterilizer|customer success|purchase anniversary)\b/.test(source);
   const isWedding = /\b(wedding|marriage|fianc|fiance|blessing|handwrite|handwritten|distant cousin)\b/.test(source);
@@ -3245,6 +3278,7 @@ function panelBodyNeedsRepair(body, panelId, input) {
   const isSmallBusiness = /\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source);
   const isDad = /\b(father|dad|fix|repair|tool|workshop|handy)\b/.test(source);
   if (!value) return true;
+  if (textConflictsWithNonMedicalBirthday(value, input)) return true;
   const metaCopy = /\b(?:with a .* feeling|i wanted this card to feel|design language|the heart of it is simple|it should carry this approved detail|make this feel|design a theme called|customcard needs|approved detail|a card made with care|made for .* with customcard|made with customcard|not salesy feeling|not cheesy feeling)\b/i;
   if (metaCopy.test(value)) return true;
   const genericMilestoneCopy = /\b(?:congratulations on achieving your dream|congratulations on this amazing achievement|congratulations on your medical school graduation|you are now a doctor|as you begin this new chapter|may your dreams continue to flourish|compassion and kindness|filled with compassion|lifetime of healing and service|lifetime of happiness|fulfillment in your medical career)\b/i;
@@ -3356,7 +3390,7 @@ function buildCopyRepairPlan(input, themeGuide) {
       }
     };
   }
-  if (/\b(med|medical|doctor|physician|md|white[- ]coat|stethoscope)\b/.test(source)) {
+  if (isMedicalMilestoneInput(input)) {
     const title = themeGuide.theme_title || "From Dream to Doctor";
     return {
       front: {
