@@ -565,25 +565,22 @@ function localComfyArtworkGuard({ panelId, lightInk, width, height, headlineBox,
   if (boxes.length === 0) return { x: 0, y: 0, width: 1, height: 1, color: "", opacity: 0, radius: 0, style: "none" };
 
   const insetX = Math.max(24, Math.round(imageWidth * 0.08));
-  const padY = Math.max(32, Math.round(imageHeight * 0.08));
+  const padY = Math.max(24, Math.round(imageHeight * 0.04));
   const top = Math.min(...boxes.map((box) => box.y));
   const bottom = Math.max(...boxes.map((box) => box.y + box.height));
   const x = Math.max(0, insetX);
-  const y = panelId === "back"
-    ? Math.min(Math.max(0, top - padY), Math.round(imageHeight * 0.16))
-    : Math.max(0, top - padY);
+  const y = Math.max(0, top - padY);
   const right = Math.min(imageWidth, imageWidth - insetX);
-  const minimumBottom = panelId === "back" || panelId.startsWith("inside-")
-    ? Math.round(imageHeight * 0.94)
-    : bottom + Math.round(padY * 0.5);
-  const bottomWithPadding = Math.min(imageHeight, Math.max(bottom + Math.round(padY * 0.5), minimumBottom));
+  const paddedBottom = bottom + Math.round(padY * 0.5);
+  const maxGuardBottom = Math.min(imageHeight, y + Math.round(imageHeight * 0.7));
+  const bottomWithPadding = Math.min(maxGuardBottom, paddedBottom);
   return {
     x,
     y,
     width: Math.max(1, right - x),
     height: Math.max(1, bottomWithPadding - y),
     color: lightInk ? "#111715" : "#fff6df",
-    opacity: 1,
+    opacity: 0.74,
     radius: Math.max(20, Math.round(imageWidth * 0.035)),
     style: panelId === "back" ? "box" : "panel"
   };

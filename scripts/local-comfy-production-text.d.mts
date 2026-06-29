@@ -29,3 +29,14 @@ export function localComfyConfiguredWorkflowInputs(
 export function interpolateLocalComfyTemplate<T>(value: T, variables: Record<string, unknown>): T;
 
 export function localComfyTemplateVariable(key: string, variables: Record<string, unknown>): unknown;
+
+export function localComfySafeArtworkGuard(variables?: Record<string, unknown>): {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color: unknown;
+  opacity: number;
+  radius: number;
+  style: unknown;
+};

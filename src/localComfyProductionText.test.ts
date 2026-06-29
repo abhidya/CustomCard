@@ -10,6 +10,7 @@ import {
 import { describeLocalComfyWorkerReadiness } from "../scripts/local-comfy-worker.mjs";
 import {
   interpolateLocalComfyTemplate,
+  localComfySafeArtworkGuard,
   localComfyTypographyVariables,
   localComfyWorkflowInputSummary,
   localComfyWorkflowInputsForMetadata
@@ -39,7 +40,7 @@ describe("local Comfy production text contract", () => {
     expect(variables.headlineFont).toBe("arialbd.ttf");
     expect(variables.bodyFont).toBe("arial.ttf");
     expect(variables.artworkGuardStyle).toBe("panel");
-    expect(variables.artworkGuardOpacity).toBe(1);
+    expect(variables.artworkGuardOpacity).toBe(0.74);
     expect(variables.artworkGuardX).toBeGreaterThan(0);
     expect(variables.artworkGuardY).toBeGreaterThan(0);
     expect(variables.artworkGuardWidth).toBeLessThan(960);
@@ -82,12 +83,51 @@ describe("local Comfy production text contract", () => {
 
     expect(summary.workflow_id).toBe("customcard-production-text-overlay");
     expect(summary.artwork_guard_style).toBe("panel");
-    expect(summary.artwork_guard_opacity).toBe(1);
+    expect(summary.artwork_guard_opacity).toBe(0.74);
     expect(summary.headline_box_background_style).toBe("text-hug");
     expect(merged.panel_id).toBe("inside-right");
     expect(merged.width).toBe(960);
     expect(merged.body_text).toBe("For the moments that ask for courage.");
     expect(merged.custom_marker).toBe("customcard-production-text-overlay");
+  });
+
+  it("recovers stale full-canvas artwork guards before workflow interpolation", () => {
+    const staleVariables = {
+      width: 960,
+      height: 1344,
+      artworkGuardX: 0,
+      artworkGuardY: 0,
+      artworkGuardWidth: 960,
+      artworkGuardHeight: 1344,
+      artworkGuardOpacity: 1,
+      artworkGuardStyle: "panel",
+      headlineText: "Happy Birthday",
+      headlineBoxX: 86,
+      headlineBoxY: 94,
+      headlineBoxWidth: 788,
+      headlineBoxHeight: 242,
+      bodyText: "A birthday tribute",
+      bodyBoxX: 106,
+      bodyBoxY: 780,
+      bodyBoxWidth: 748,
+      bodyBoxHeight: 403
+    };
+
+    const safeGuard = localComfySafeArtworkGuard(staleVariables);
+    const rendered = interpolateLocalComfyTemplate(
+      {
+        x: "{{artwork_guard_x}}",
+        y: "{{artwork_guard_y}}",
+        width: "{{artwork_guard_width}}",
+        height: "{{artwork_guard_height}}",
+        opacity: "{{artwork_guard_opacity}}"
+      },
+      staleVariables
+    );
+
+    expect(safeGuard).toMatchObject({ x: 77, width: 806, opacity: 0.74 });
+    expect(safeGuard.height).toBeLessThan(1344);
+    expect(rendered).toMatchObject({ x: 77, width: 806, opacity: 0.74 });
   });
 
   it("interpolates nested workflow templates while preserving exact placeholder types", () => {

@@ -335,7 +335,21 @@ def _draw_artwork_guard(canvas, box, fill, opacity, radius, style):
     if color is None:
         return canvas
     rect = _box_rect(canvas.size, box, padding=0)
+    if _is_full_canvas_guard(canvas.size, rect, opacity):
+        return canvas
     return _draw_safe_surface(canvas, rect, color, radius, opacity, style)
+
+
+def _is_full_canvas_guard(image_size, rect, opacity):
+    if _bounded_opacity(opacity) < 0.5:
+        return False
+    left, top, right, bottom = rect
+    image_width, image_height = image_size
+    if image_width <= 0 or image_height <= 0:
+        return False
+    area_ratio = ((right - left) * (bottom - top)) / float(image_width * image_height)
+    touches_all_edges = left <= 0 and top <= 0 and right >= image_width and bottom >= image_height
+    return touches_all_edges or area_ratio >= 0.9
 
 
 def _draw_safe_surface(canvas, rect, color, radius, opacity, style):
