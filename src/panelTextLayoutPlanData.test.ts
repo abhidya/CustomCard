@@ -22,6 +22,21 @@ describe("panel text layout plan", () => {
     });
   });
 
+  it("keeps normal birthday interiors on light stationery instead of black panels", () => {
+    const layout = normalizePanelTextLayout(
+      {
+        ...panelTextLayoutDefaults["inside-left"],
+        color_mode: "light-ink"
+      },
+      {
+        panelId: "inside-left",
+        sourceText: "sentimental botanical birthday for papa with flowers, trails, coffee, and horses"
+      }
+    );
+
+    expect(layout.color_mode).toBe("dark-ink");
+  });
+
   it("projects normalized layout into render text coordinates", () => {
     const plan = buildPanelTextLayoutPlan({
       panelId: "front",
@@ -80,5 +95,29 @@ describe("panel text layout plan", () => {
     expect(variables.artworkGuardWidth).toBeLessThan(960);
     expect(variables.artworkGuardHeight).toBeLessThan(1344);
     expect(variables.headlineBoxY).toBe(376);
+  });
+
+  it("uses a stronger center guard on the back panel to hide model fake text", () => {
+    const variables = buildLocalComfyTypographyPlan({
+      panelId: "back",
+      width: 960,
+      height: 1344,
+      panelCopy: {
+        headline: "With Love",
+        body: "Mann",
+        text_layout: {
+          headline_zone: "lower",
+          body_zone: "bottom",
+          color_mode: "dark-ink",
+          font_pairing: "minimal-sans"
+        }
+      }
+    });
+
+    expect(variables.artworkGuardStyle).toBe("box");
+    expect(variables.artworkGuardOpacity).toBe(0.9);
+    expect(variables.artworkGuardY).toBeLessThan(260);
+    expect(variables.artworkGuardHeight).toBeGreaterThan(900);
+    expect(variables.artworkGuardWidth).toBeLessThan(960);
   });
 });

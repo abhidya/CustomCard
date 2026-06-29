@@ -182,6 +182,9 @@ export function normalizePanelTextLayout(value, { panelId = "front", sourceText 
     }
     if (panelId === "back") return { ...selectedFallback, scale: "large" };
   }
+  if (usesLightStationeryPanel(panelId) && layout.color_mode === "light-ink" && shouldForceLightStationeryInk(source)) {
+    return { ...layout, color_mode: "dark-ink" };
+  }
   return layout;
 }
 
@@ -566,19 +569,32 @@ function localComfyArtworkGuard({ panelId, lightInk, width, height, headlineBox,
   const top = Math.min(...boxes.map((box) => box.y));
   const bottom = Math.max(...boxes.map((box) => box.y + box.height));
   const x = Math.max(0, insetX);
-  const y = Math.max(0, top - padY);
+  const y = panelId === "back"
+    ? Math.min(Math.max(0, top - padY), Math.round(imageHeight * 0.16))
+    : Math.max(0, top - padY);
   const right = Math.min(imageWidth, imageWidth - insetX);
-  const bottomWithPadding = Math.min(imageHeight, bottom + Math.round(padY * 0.5));
+  const minimumBottom = panelId === "back" || panelId.startsWith("inside-")
+    ? Math.round(imageHeight * 0.94)
+    : bottom + Math.round(padY * 0.5);
+  const bottomWithPadding = Math.min(imageHeight, Math.max(bottom + Math.round(padY * 0.5), minimumBottom));
   return {
     x,
     y,
     width: Math.max(1, right - x),
     height: Math.max(1, bottomWithPadding - y),
     color: lightInk ? "#111715" : "#fff6df",
-    opacity: 0.74,
+    opacity: panelId === "back" ? 0.9 : 0.74,
     radius: Math.max(20, Math.round(imageWidth * 0.035)),
     style: panelId === "back" ? "box" : "panel"
   };
+}
+
+function usesLightStationeryPanel(panelId) {
+  return panelId === "inside-left" || panelId === "inside-right" || panelId === "back";
+}
+
+function shouldForceLightStationeryInk(source) {
+  return !sourceMatchers.sympathy.test(source) && !sourceMatchers.medical.test(source) && !sourceMatchers.boldType.test(source);
 }
 
 function localComfyFontForPairing(pairing, role) {
