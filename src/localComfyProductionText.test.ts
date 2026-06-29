@@ -39,11 +39,11 @@ describe("local Comfy production text contract", () => {
     expect(variables.headlineFont).toBe("arialbd.ttf");
     expect(variables.bodyFont).toBe("arial.ttf");
     expect(variables.artworkGuardStyle).toBe("panel");
-    expect(variables.artworkGuardOpacity).toBe(1);
-    expect(variables.artworkGuardX).toBe(0);
-    expect(variables.artworkGuardY).toBe(0);
-    expect(variables.artworkGuardWidth).toBe(960);
-    expect(variables.artworkGuardHeight).toBe(1344);
+    expect(variables.artworkGuardOpacity).toBe(0.74);
+    expect(variables.artworkGuardX).toBeGreaterThan(0);
+    expect(variables.artworkGuardY).toBeGreaterThan(0);
+    expect(variables.artworkGuardWidth).toBeLessThan(960);
+    expect(variables.artworkGuardHeight).toBeLessThan(1344);
     expect(variables.headlineBoxBackgroundStyle).toBe("text-hug");
     expect(variables.headlineBoxBackgroundOpacity).toBe(0.96);
   });
@@ -82,7 +82,7 @@ describe("local Comfy production text contract", () => {
 
     expect(summary.workflow_id).toBe("customcard-production-text-overlay");
     expect(summary.artwork_guard_style).toBe("panel");
-    expect(summary.artwork_guard_opacity).toBe(1);
+    expect(summary.artwork_guard_opacity).toBe(0.74);
     expect(summary.headline_box_background_style).toBe("text-hug");
     expect(merged.panel_id).toBe("inside-right");
     expect(merged.width).toBe(960);

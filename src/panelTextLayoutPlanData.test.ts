@@ -74,11 +74,11 @@ describe("panel text layout plan", () => {
     expect(variables.headlineText).toBe("A Bright Start");
     expect(variables.headlineFont).toBe("arialbd.ttf");
     expect(variables.artworkGuardStyle).toBe("panel");
-    expect(variables.artworkGuardOpacity).toBe(1);
-    expect(variables.artworkGuardX).toBe(0);
-    expect(variables.artworkGuardY).toBe(0);
-    expect(variables.artworkGuardWidth).toBe(960);
-    expect(variables.artworkGuardHeight).toBe(1344);
+    expect(variables.artworkGuardOpacity).toBe(0.74);
+    expect(variables.artworkGuardX).toBeGreaterThan(0);
+    expect(variables.artworkGuardY).toBeGreaterThan(0);
+    expect(variables.artworkGuardWidth).toBeLessThan(960);
+    expect(variables.artworkGuardHeight).toBeLessThan(1344);
     expect(variables.headlineBoxY).toBe(376);
   });
 });

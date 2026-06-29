@@ -382,7 +382,16 @@ export function buildLocalComfyTypographyPlan({ panelId = "front", panelCopy = {
   const textBoxBackgroundColor = localComfyTextBoxBackgroundColor({ panelId, lightInk });
   const textBoxBackgroundPadding = Math.max(16, Math.round(imageWidth * 0.025));
   const textBoxBackgroundRadius = Math.max(24, Math.round(imageWidth * 0.035));
-  const artworkGuard = localComfyArtworkGuard({ panelId, lightInk, width: imageWidth, height: imageHeight });
+  const artworkGuard = localComfyArtworkGuard({
+    panelId,
+    lightInk,
+    width: imageWidth,
+    height: imageHeight,
+    headlineBox,
+    bodyBox,
+    hasHeadline: Boolean(panelCopy.headline),
+    hasBody: Boolean(panelCopy.body)
+  });
   return {
     artworkGuardColor: artworkGuard.color,
     artworkGuardHeight: artworkGuard.height,
@@ -543,21 +552,32 @@ function localComfyTextBoxBackgroundColor({ panelId, lightInk }) {
   return lightInk ? "#111715" : "#fff6df";
 }
 
-function localComfyArtworkGuard({ panelId, lightInk, width, height }) {
+function localComfyArtworkGuard({ panelId, lightInk, width, height, headlineBox, bodyBox, hasHeadline, hasBody }) {
   const imageWidth = Math.max(1, Number(width || 960));
   const imageHeight = Math.max(1, Number(height || 1344));
-  if (panelId === "back") {
-    return { x: 0, y: 0, width: imageWidth, height: imageHeight, color: "#111715", opacity: 1, radius: 0, style: "box" };
-  }
+  const boxes = [
+    hasHeadline ? headlineBox : undefined,
+    hasBody ? bodyBox : undefined
+  ].filter(Boolean);
+  if (boxes.length === 0) return { x: 0, y: 0, width: 1, height: 1, color: "", opacity: 0, radius: 0, style: "none" };
+
+  const insetX = Math.max(24, Math.round(imageWidth * 0.08));
+  const padY = Math.max(32, Math.round(imageHeight * 0.08));
+  const top = Math.min(...boxes.map((box) => box.y));
+  const bottom = Math.max(...boxes.map((box) => box.y + box.height));
+  const x = Math.max(0, insetX);
+  const y = Math.max(0, top - padY);
+  const right = Math.min(imageWidth, imageWidth - insetX);
+  const bottomWithPadding = Math.min(imageHeight, bottom + Math.round(padY * 0.5));
   return {
-    x: 0,
-    y: 0,
-    width: imageWidth,
-    height: imageHeight,
+    x,
+    y,
+    width: Math.max(1, right - x),
+    height: Math.max(1, bottomWithPadding - y),
     color: lightInk ? "#111715" : "#fff6df",
-    opacity: 1,
-    radius: 0,
-    style: "panel"
+    opacity: 0.74,
+    radius: Math.max(20, Math.round(imageWidth * 0.035)),
+    style: panelId === "back" ? "box" : "panel"
   };
 }
 
