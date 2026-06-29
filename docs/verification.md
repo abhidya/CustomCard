@@ -299,13 +299,13 @@ npm run payment:doctor
 npm run mobile:render:doctor
 npm run hosted:api:doctor
 npm run hosted:rollback:plan:doctor
-CUSTOMCARD_HOSTED_ENV_INVENTORY=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:env:inventory
-CUSTOMCARD_HOSTED_ENV_REPAIR=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:env:repair
-CUSTOMCARD_HOSTED_CLERK_PUBLIC_CONFIG_PROBE=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:clerk:public-config
-CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:clerk:repair
-CUSTOMCARD_HOSTED_AUTH_PROBE=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app CUSTOMCARD_HOSTED_CUSTOMER_JWT=... CUSTOMCARD_HOSTED_ADMIN_JWT=... npm run hosted:auth:probe
-CUSTOMCARD_HOSTED_MUTATION_PROBE=enabled CUSTOMCARD_HOSTED_MUTATION_PROBE_ACKNOWLEDGE_LIVE_WRITES=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app CUSTOMCARD_HOSTED_CUSTOMER_JWT=... CUSTOMCARD_HOSTED_ADMIN_JWT=... npm run hosted:mutation:probe
-CUSTOMCARD_HOSTED_DB_RESTORE_DRILL=enabled CUSTOMCARD_RESTORE_DATABASE_URL=postgres://... CUSTOMCARD_RESTORE_SOURCE=neon-branch CUSTOMCARD_RESTORE_POINT_IN_TIME=2026-06-15T14:00:00.000Z CUSTOMCARD_BACKUP_RETENTION_DAYS=14 CUSTOMCARD_BACKUP_RPO_MINUTES=15 CUSTOMCARD_BACKUP_RTO_MINUTES=60 npm run hosted:db:restore:drill
+CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:env:inventory -- --confirm-hosted-env-inventory
+CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:env:repair -- --confirm-hosted-env-repair
+CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:clerk:public-config -- --confirm-hosted-clerk-public-config-probe
+CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:clerk:repair -- --confirm-hosted-clerk-config-repair
+CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app CUSTOMCARD_HOSTED_CUSTOMER_JWT=... CUSTOMCARD_HOSTED_ADMIN_JWT=... npm run hosted:auth:probe -- --confirm-hosted-auth-probe
+CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app CUSTOMCARD_HOSTED_CUSTOMER_JWT=... CUSTOMCARD_HOSTED_ADMIN_JWT=... npm run hosted:mutation:probe -- --confirm-hosted-mutation-probe --acknowledge-live-writes
+CUSTOMCARD_RESTORE_DATABASE_URL=postgres://... CUSTOMCARD_RESTORE_SOURCE=neon-branch CUSTOMCARD_RESTORE_POINT_IN_TIME=2026-06-15T14:00:00.000Z CUSTOMCARD_BACKUP_RETENTION_DAYS=14 CUSTOMCARD_BACKUP_RPO_MINUTES=15 CUSTOMCARD_BACKUP_RTO_MINUTES=60 npm run hosted:db:restore:drill -- --confirm-hosted-db-restore-drill
 npm run reviewer:db:seed:doctor
 npm run business:engagement:doctor
 npm run admin:operations:doctor
@@ -315,15 +315,15 @@ npm run printer:pricing:doctor
 npm run localization:doctor
 npm run api:doctor:memory
 npm run api:doctor:postgres
-CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
-CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http
-CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
+DATABASE_URL=postgres://... npm run api:doctor:postgres:live
+DATABASE_URL=postgres://... npm run api:doctor:postgres:http
+DATABASE_URL=postgres://... npm run account:doctor:live
 npm run artifact:doctor
-CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 OBJECT_STORE_BUCKET=customcard-ci-artifacts OBJECT_STORE_ACCESS_KEY_ID=customcard OBJECT_STORE_SECRET_ACCESS_KEY=customcard-dev-only OBJECT_STORE_REGION=us-east-1 OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 npm run artifact:doctor:s3:live
+OBJECT_STORE_URL=http://127.0.0.1:9000 OBJECT_STORE_BUCKET=customcard-ci-artifacts OBJECT_STORE_ACCESS_KEY_ID=customcard OBJECT_STORE_SECRET_ACCESS_KEY=customcard-dev-only OBJECT_STORE_REGION=us-east-1 OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 npm run artifact:doctor:s3:live
 npm run persistence:doctor
 npm run demo:doctor
-CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 REAL_ORDER_KILL_SWITCH=disabled npm run worker
-CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run doctor
+CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 npm run worker
+CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 npm --prefix apps/mobile run doctor
 npm run mobile:release:doctor
 ```
 
@@ -636,7 +636,7 @@ project, 1 render packet, 1 order, 1 order event, 2 consent records, 1 data
 request, and no blockers.
 
 ```text
-CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
+DATABASE_URL=postgres://... npm run api:doctor:postgres:live
 ```
 
 Result: passed. Live Postgres integration doctor created an isolated temporary
@@ -654,7 +654,7 @@ provider connection, 1 imported event, 1 card opportunity, 1 relationship memory
 1 data request before dropping the temporary database.
 
 ```text
-CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http
+DATABASE_URL=postgres://... npm run api:doctor:postgres:http
 ```
 
 Result: passed. Postgres API HTTP doctor created an isolated temporary database,
@@ -671,7 +671,7 @@ consent records, and 1 data request before shutting down the server and dropping
 the temporary database.
 
 ```text
-CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
+DATABASE_URL=postgres://... npm run account:doctor:live
 ```
 
 Result: passed. Account auth doctor created an isolated temporary database,
@@ -693,7 +693,7 @@ real orders disabled. The S3-compatible path recorded 7 put-object operations
 including the manifest and reported `cloudWritesVerified: false`.
 
 ```text
-CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live
+OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live
 ```
 
 Result: passed in CI against a MinIO service. Live S3-compatible artifact doctor
@@ -730,7 +730,7 @@ artifact URLs present, no raw content storage, no live external calls, and no
 real orders.
 
 ```text
-CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 REAL_ORDER_KILL_SWITCH=disabled npm run worker
+CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 npm run worker
 ```
 
 Result: passed. Worker reported queue readiness for `provider-sync`,
@@ -738,7 +738,7 @@ Result: passed. Worker reported queue readiness for `provider-sync`,
 required.
 
 ```text
-CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run doctor
+CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 npm --prefix apps/mobile run doctor
 ```
 
 Result: passed. Mobile shell configuration resolved from environment and the
@@ -751,7 +751,7 @@ npm run mobile:release:doctor
 
 Result: passed. Mobile release doctor reported iOS and Android platforms,
 development/preview/production native build profiles, environment-sourced API
-URL handling, `REAL_ORDER_KILL_SWITCH=disabled`, no live provider calls, no real
+URL handling, disabled order safety, no live provider calls, no real
 orders, and no signed artifact built.
 
 ```text

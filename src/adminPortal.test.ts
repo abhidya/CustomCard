@@ -18,10 +18,17 @@ import { productionLaunchGates, summarizeProductionReadiness } from "./productio
 const cloudflareEnv = {
   CLOUDFLARE_ACCOUNT_ID: "acct_123",
   CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
-  CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
-  CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "token_image",
-  CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning"
+  CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "token_image"
 };
+const cloudflareAiFlowAdminConfig = [
+  {
+    flowId: "card-image",
+    primaryAdapterId: "cloudflare-workers-ai-image",
+    fallbackAdapterId: "cloudflare-workers-ai-image",
+    model: "@cf/bytedance/stable-diffusion-xl-lightning",
+    liveProviderCallsEnabled: true
+  }
+];
 const nowIso = "2026-06-12T04:00:00.000Z";
 
 function buildRuntimeReadiness(env: Record<string, string | undefined> = {}) {
@@ -31,11 +38,13 @@ function buildRuntimeReadiness(env: Record<string, string | undefined> = {}) {
 function buildPortal({
   env = {},
   usageEvents = [],
-  nowIso: usageNowIso
+  nowIso: usageNowIso,
+  aiFlowAdminConfig = []
 }: {
   env?: Record<string, string | undefined>;
   usageEvents?: ProviderCallEvent[];
   nowIso?: string;
+  aiFlowAdminConfig?: Array<Record<string, unknown>>;
 } = {}): AdminPortalModel {
   const model = buildAdminPanelModel();
   const readiness = buildReadinessSummary();
@@ -61,7 +70,7 @@ function buildPortal({
       providerGovernance,
       runtimeReadiness,
       aiFlowSummary: Object.keys(env).length > 0
-        ? summarizeAiFlowConfigs(env)
+        ? summarizeAiFlowConfigs(env, aiFlowAdminConfig)
         : {
             total: 0,
             liveEnabled: 0,
@@ -121,7 +130,7 @@ describe("admin portal", () => {
       expect.arrayContaining(["User management gates", "Usage cost ledger", "ORR latency and alert gates"])
     );
     expect(portal.areas.providers.metrics.map((metric) => metric.label)).toEqual(
-      expect.arrayContaining(["Available", "Env configured", "Fallback queues", "Cost flows", "Budget month", "Spend est.", "Req capacity", "Provider sources", "Ledger-only", "Latency gates", "User env"])
+      expect.arrayContaining(["Available", "Credentials ready", "Admin gated", "Fallback queues", "Cost flows", "Budget month", "Spend est.", "Req capacity", "Provider sources", "Ledger-only", "Latency gates", "User credentials"])
     );
     expect(portal.areas["ai-loop"].records.map((record) => record.label)).toEqual(
       expect.arrayContaining(["Local AI human review queue", "Production local Comfy worker", "Benchmark aggregate and rankings"])
@@ -137,11 +146,12 @@ describe("admin portal", () => {
     );
   });
 
-  it("surfaces env-configured provider usage cost metrics without secrets", () => {
+  it("surfaces credential-configured provider usage cost metrics without secrets", () => {
     const cloudflareChat = getProviderAdapter("cloudflare-workers-ai-chat");
     expect(cloudflareChat).toBeDefined();
     const portal = buildPortal({
       env: cloudflareEnv,
+      aiFlowAdminConfig: cloudflareAiFlowAdminConfig,
       nowIso,
       usageEvents: [
         buildProviderCallEvent({

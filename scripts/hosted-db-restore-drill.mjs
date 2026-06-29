@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import pg from "pg";
 
-const guardRequirement = "CUSTOMCARD_HOSTED_DB_RESTORE_DRILL=enabled";
+const guardRequirement = "--confirm-hosted-db-restore-drill";
 const restoreUrlEnvName = "CUSTOMCARD_RESTORE_DATABASE_URL";
 const productionUrlEnvName = "DATABASE_URL";
 const retentionDaysEnvName = "CUSTOMCARD_BACKUP_RETENTION_DAYS";
@@ -45,11 +45,12 @@ const requiredIndexes = Object.freeze([
 
 export async function runHostedDbRestoreDrill({
   env = process.env,
+  enabled = false,
   pgModule = pg,
   now = new Date()
 } = {}) {
   const metadata = resolveRestoreMetadata(env);
-  const blockers = validateRestoreDrillEnv(env, metadata);
+  const blockers = validateRestoreDrillEnv(env, metadata, enabled);
   if (typeof pgModule?.Pool !== "function") blockers.push("A pg Pool implementation is required for hosted DB restore drills.");
   if (blockers.length > 0) {
     return buildReport({ metadata, checks: [], schema: emptySchemaSummary(), blockers, now });
@@ -123,9 +124,9 @@ function resolveRestoreMetadata(env) {
   };
 }
 
-function validateRestoreDrillEnv(env, metadata) {
+function validateRestoreDrillEnv(env, metadata, enabled) {
   const blockers = [];
-  if (env.CUSTOMCARD_HOSTED_DB_RESTORE_DRILL !== "enabled") {
+  if (!enabled) {
     blockers.push(`${guardRequirement} is required before hosted restore drills run.`);
   }
   if (!metadata.restoreDatabaseUrl) blockers.push(`${restoreUrlEnvName} is required.`);
@@ -264,8 +265,8 @@ function numberOrNull(value) {
   return Number.isFinite(number) ? number : null;
 }
 
-function writeEvidenceIfRequested(report, env = process.env) {
-  const outputPath = String(env.CUSTOMCARD_HOSTED_DB_RESTORE_DRILL_EVIDENCE_OUT ?? "").trim();
+function writeEvidenceIfRequested(report, outputPath = "") {
+  outputPath = String(outputPath ?? "").trim();
   if (!outputPath) return report;
   const absolutePath = resolve(outputPath);
   mkdirSync(dirname(absolutePath), { recursive: true });
@@ -278,7 +279,30 @@ function isCliEntrypoint() {
 }
 
 if (isCliEntrypoint()) {
-  const report = writeEvidenceIfRequested(await runHostedDbRestoreDrill());
+  const args = parseArgs(process.argv.slice(2));
+  const report = writeEvidenceIfRequested(await runHostedDbRestoreDrill({
+    enabled: args["confirm-hosted-db-restore-drill"] === true
+  }), args["evidence-out"]);
   console.log(JSON.stringify(report, null, 2));
   if (report.status !== "ready") process.exit(1);
+}
+
+function parseArgs(values) {
+  const parsed = {};
+  for (let index = 0; index < values.length; index += 1) {
+    const value = values[index];
+    if (!value.startsWith("--")) continue;
+    const [rawKey, inlineValue] = value.slice(2).split("=");
+    if (inlineValue !== undefined) {
+      parsed[rawKey] = inlineValue;
+      continue;
+    }
+    if (values[index + 1] && !values[index + 1].startsWith("--")) {
+      parsed[rawKey] = values[index + 1];
+      index += 1;
+    } else {
+      parsed[rawKey] = true;
+    }
+  }
+  return parsed;
 }

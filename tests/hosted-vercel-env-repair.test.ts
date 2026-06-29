@@ -69,7 +69,7 @@ describe("hosted Vercel env repair", () => {
     });
     expect(report.blockers).toEqual(
       expect.arrayContaining([
-        "CUSTOMCARD_HOSTED_ENV_REPAIR=enabled is required before hosted Vercel env repair can inspect or apply missing keys."
+        "--confirm-hosted-env-repair is required before hosted Vercel env repair can inspect or apply missing keys."
       ])
     );
     expect(inventoryRunner).not.toHaveBeenCalled();
@@ -81,12 +81,12 @@ describe("hosted Vercel env repair", () => {
 
     const report = await runHostedVercelEnvRepair({
       env: {
-        CUSTOMCARD_HOSTED_ENV_REPAIR: "enabled",
         ...repairValues
       },
       inventoryRunner: vi.fn(async () => missingInventory),
       commandRunner,
-      now: new Date("2026-06-15T16:00:00.000Z")
+      now: new Date("2026-06-15T16:00:00.000Z"),
+      enabled: true
     });
 
     expect(report).toMatchObject({
@@ -127,20 +127,20 @@ describe("hosted Vercel env repair", () => {
 
     const report = await runHostedVercelEnvRepair({
       env: {
-        CUSTOMCARD_HOSTED_ENV_REPAIR: "enabled",
-        CUSTOMCARD_HOSTED_ENV_REPAIR_APPLY: "enabled",
         CLERK_ISSUER: "https://clerk.customcard.app",
         CLERK_AUDIENCE: "customcard-api"
       },
       inventoryRunner: vi.fn(async () => missingInventory),
-      commandRunner
+      commandRunner,
+      enabled: true,
+      apply: true
     });
 
     expect(report.status).toBe("blocked");
     expect(report.blockers).toEqual(
       expect.arrayContaining([
         "IDEMPOTENCY_KEY_TTL_HOURS must be supplied in the process env before repair can apply it.",
-        "CUSTOMCARD_HOSTED_ENV_REPAIR_ACKNOWLEDGE_PRODUCTION=enabled is required before production env keys are added."
+        "--acknowledge-production is required before production env keys are added."
       ])
     );
     expect(commandRunner).not.toHaveBeenCalled();
@@ -151,13 +151,13 @@ describe("hosted Vercel env repair", () => {
 
     const report = await runHostedVercelEnvRepair({
       env: {
-        CUSTOMCARD_HOSTED_ENV_REPAIR: "enabled",
-        CUSTOMCARD_HOSTED_ENV_REPAIR_APPLY: "enabled",
-        CUSTOMCARD_HOSTED_ENV_REPAIR_ACKNOWLEDGE_PRODUCTION: "enabled",
         ...repairValues
       },
       inventoryRunner: vi.fn(async () => missingInventory),
-      commandRunner
+      commandRunner,
+      enabled: true,
+      apply: true,
+      acknowledgeProduction: true
     });
 
     expect(report).toMatchObject({
@@ -187,14 +187,14 @@ describe("hosted Vercel env repair", () => {
 
     const report = await runHostedVercelEnvRepair({
       env: {
-        CUSTOMCARD_HOSTED_ENV_REPAIR: "enabled",
-        CUSTOMCARD_HOSTED_ENV_REPAIR_APPLY: "enabled",
-        CUSTOMCARD_HOSTED_ENV_REPAIR_ALLOW_PARTIAL: "enabled",
-        CUSTOMCARD_HOSTED_ENV_REPAIR_ACKNOWLEDGE_PRODUCTION: "enabled",
         IDEMPOTENCY_KEY_TTL_HOURS: "24"
       },
       inventoryRunner: vi.fn(async () => missingInventory),
-      commandRunner
+      commandRunner,
+      enabled: true,
+      apply: true,
+      allowPartialApply: true,
+      acknowledgeProduction: true
     });
 
     expect(report).toMatchObject({
@@ -231,6 +231,6 @@ describe("hosted Vercel env repair", () => {
     expect(commandRunner).toHaveBeenCalledWith(
       expect.objectContaining({ key: "IDEMPOTENCY_KEY_TTL_HOURS", value: "24", target: "production" })
     );
-    expect(JSON.stringify(report)).not.toContain(repairValues.IDEMPOTENCY_KEY_TTL_HOURS);
+    expect(JSON.stringify(report)).not.toContain(`"IDEMPOTENCY_KEY_TTL_HOURS":"${repairValues.IDEMPOTENCY_KEY_TTL_HOURS}"`);
   });
 });

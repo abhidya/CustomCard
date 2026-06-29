@@ -74,8 +74,7 @@ const checks = [
     "OBJECT_STORE_BUCKET             = aws_s3_bucket.artifacts.bucket",
     "OBJECT_STORE_REGION             = data.aws_region.current.name",
     'OBJECT_STORE_SIGNING_SECRET     = "set-in-secret-manager"',
-    'ARTIFACT_SIGNED_URL_TTL_MINUTES = "15"',
-    'REAL_ORDER_KILL_SWITCH          = "disabled"'
+    'ARTIFACT_SIGNED_URL_TTL_MINUTES = "15"'
   ]),
   checkAbsent("safety", "no-public-or-destructive-defaults", `${contents.main}\n${contents.variables}\n${contents.outputs}`, [
     "public-read",

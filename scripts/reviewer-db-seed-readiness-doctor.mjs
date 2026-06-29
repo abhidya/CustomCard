@@ -71,7 +71,7 @@ const checks = [
   checkExact("register", "sql-preview-only-count", summary.sqlPreviewOnly, 8),
   checkExact("register", "table-contract-count", summary.tableContracts, 15),
   checkExact("register", "route-contract-count", summary.routeContracts, 5),
-  checkExact("register", "required-env-var-count", summary.requiredEnvVars, 7),
+  checkExact("register", "required-env-var-count", summary.requiredEnvVars, 6),
   checkExact("register", "no-hosted-seed-proof-claim", summary.hostedSeedProofs, 0),
   checkExact("register", "no-hosted-token-probe-claim", summary.hostedTokenProbeProofs, 0),
   checkExact("register", "no-vercel-env-sync-claim", summary.vercelEnvSyncProofs, 0),

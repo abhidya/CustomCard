@@ -134,7 +134,7 @@ at 320–390px and ≥40px touch targets. To make it genuinely mobile-first:
   the honest substitute.
 - **Physical print certification** — requires real print runs and color-proof evidence.
 - **Payments** (Stripe etc.) — keys are obtainable, but charging is correctly kept off until
-  ordering exists; kill switch (`REAL_ORDER_KILL_SWITCH`) already in place.
+  ordering exists; admin safety controls already keep live orders closed.
 
 ### Underbuilt vs. best practice (no keys required — just building)
 

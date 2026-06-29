@@ -369,7 +369,7 @@ Reason: a production worker command should process queued work, not merely print
 readiness. Readiness-only behavior is still useful, but it belongs behind an
 explicit flag so deployment process managers can run the package script directly.
 
-Rejected: requiring `CUSTOMCARD_WORKER_PROCESS_ON_START=true` in production. That
+Rejected: requiring a production worker run-on-start env switch. That
 made queue pickup depend on an easy-to-miss env var and did not give the process
 a normal long-running poll loop.
 

@@ -185,8 +185,9 @@ describe("clerk to api session bridge (memory runtime)", () => {
   it("authorizes signed-in local Clerk customers for AI generation when memory runtime has no Clerk verification key", async () => {
     const { CLERK_JWT_KEY: _clerkJwtKey, ...localMemoryEnv } = runtimeEnv;
     const runtime = createApiRuntime({
-      env: { ...localMemoryEnv, CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS: "enabled" },
-      routes: apiRouteContracts
+      env: localMemoryEnv,
+      routes: apiRouteContracts,
+      localAuthFallbacksEnabled: true
     });
     const token = signClerkJwt(clerkClaims());
     const aiCardRoute = getApiRouteById("ai-card-generate");

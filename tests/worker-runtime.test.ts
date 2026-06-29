@@ -96,28 +96,34 @@ describe("worker runtime", () => {
     const env = resolveLocalComfyWorkerEnv({
       ...baseEnv,
       CUSTOMCARD_API_RUNTIME: "postgres",
-      CUSTOMCARD_LOCAL_LLM_BASE_URL: "http://127.0.0.1:1234/v1",
-      CUSTOMCARD_COMFYUI_WORKFLOW_ID: "birthday-card-v2",
-      CUSTOMCARD_COMFYUI_WORKFLOW_PATH: "D:/workflows/birthday-card-v2.json"
+      CUSTOMCARD_LOCAL_LLM_BASE_URL: "http://127.0.0.1:1234/v1"
     });
+    const aiFlowAdminConfig = [
+      {
+        flowId: "card-image",
+        primaryAdapterId: "local-comfyui-api-image",
+        fallbackAdapterId: "local-comfyui-api-image",
+        liveProviderCallsEnabled: true,
+        workflowId: "birthday-card-v2",
+        workflowPath: "D:/workflows/birthday-card-v2.json"
+      }
+    ];
     const runtime = createLocalComfyWorkerRuntime({
       env,
+      aiFlowAdminConfig,
       postgresPoolFactory: () => createWorkerPool([])
     });
 
     expect(env).toMatchObject({
-      CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "local-openai-compatible-chat",
-      CUSTOMCARD_AI_CARD_COPY_FALLBACK_ADAPTER_ID: "local-openai-compatible-chat",
-      CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "local-comfyui-api-image",
-      CUSTOMCARD_AI_CARD_IMAGE_FALLBACK_ADAPTER_ID: "local-comfyui-api-image",
       CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188"
     });
+    expect(Object.keys(env).some((key) => key.startsWith("CUSTOMCARD_AI_"))).toBe(false);
     expect(runtime.describe()).toMatchObject({
       service: "customcard-worker",
       queueBackedRoutes: ["ai-card-generate"],
       workerId: expect.stringContaining("local-comfy:")
     });
-    expect(describeLocalComfyWorkerReadiness({ env })).toMatchObject({
+    expect(describeLocalComfyWorkerReadiness({ env, aiFlowAdminConfig })).toMatchObject({
       routeScope: "ai-card-generate",
       imageAdapter: "local-comfyui-api-image",
       workflowId: "birthday-card-v2",
@@ -247,9 +253,15 @@ describe("worker runtime", () => {
         CUSTOMCARD_API_RUNTIME: "postgres",
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
-        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
-        CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "cloudflare-workers-ai-chat",
       },
+      aiFlowAdminConfig: [
+        {
+          flowId: "card-copy",
+          primaryAdapterId: "cloudflare-workers-ai-chat",
+          fallbackAdapterId: "cloudflare-workers-ai-chat",
+          liveProviderCallsEnabled: true
+        }
+      ],
       routes: [{ id: "ai-card-generate", runtimeMode: "queue-backed" }],
       postgresPoolFactory: () => pool,
       fetchImpl,
@@ -357,11 +369,22 @@ describe("worker runtime", () => {
         CUSTOMCARD_API_RUNTIME: "postgres",
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
-        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
         CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "test_image_token",
-        CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "cloudflare-workers-ai-chat",
-        CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "cloudflare-workers-ai-image",
       },
+      aiFlowAdminConfig: [
+        {
+          flowId: "card-copy",
+          primaryAdapterId: "cloudflare-workers-ai-chat",
+          fallbackAdapterId: "cloudflare-workers-ai-chat",
+          liveProviderCallsEnabled: true
+        },
+        {
+          flowId: "card-image",
+          primaryAdapterId: "cloudflare-workers-ai-image",
+          fallbackAdapterId: "cloudflare-workers-ai-image",
+          liveProviderCallsEnabled: true
+        }
+      ],
       routes: [{ id: "ai-card-generate", runtimeMode: "queue-backed" }],
       postgresPoolFactory: () => pool,
       fetchImpl,

@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const defaultProductionBaseUrl = "https://customcard-three.vercel.app";
-const guardEnvName = "CUSTOMCARD_HOSTED_AUTH_PROBE";
+const guardRequirement = "--confirm-hosted-auth-probe";
 const customerJwtEnvName = "CUSTOMCARD_HOSTED_CUSTOMER_JWT";
 const adminJwtEnvName = "CUSTOMCARD_HOSTED_ADMIN_JWT";
 
@@ -67,13 +67,14 @@ const probeChecks = Object.freeze([
 
 export async function runHostedClerkRouteProbe({
   env = process.env,
+  enabled = false,
   fetchImpl = globalThis.fetch,
   now = new Date()
 } = {}) {
   const target = resolveHostedTarget(env);
   const blockers = [...target.blockers, ...validateProbeAuthEnv(env)];
-  if (env[guardEnvName] !== "enabled") {
-    blockers.unshift(`${guardEnvName}=enabled is required before live hosted Clerk route probes run.`);
+  if (!enabled) {
+    blockers.unshift(`${guardRequirement} is required before live hosted Clerk route probes run.`);
   }
   if (typeof fetchImpl !== "function") {
     blockers.push("A fetch implementation is required for hosted Clerk route probes.");
@@ -282,8 +283,8 @@ function checkPassed(checks, id) {
   return checks.some((check) => check.id === id && check.passed);
 }
 
-function writeEvidenceIfRequested(report, env = process.env) {
-  const outputPath = String(env.CUSTOMCARD_HOSTED_AUTH_PROBE_EVIDENCE_OUT ?? "").trim();
+function writeEvidenceIfRequested(report, outputPath = "") {
+  outputPath = String(outputPath ?? "").trim();
   if (!outputPath) return report;
   const absolutePath = resolve(outputPath);
   mkdirSync(dirname(absolutePath), { recursive: true });
@@ -296,7 +297,30 @@ function isCliEntrypoint() {
 }
 
 if (isCliEntrypoint()) {
-  const report = writeEvidenceIfRequested(await runHostedClerkRouteProbe());
+  const args = parseArgs(process.argv.slice(2));
+  const report = writeEvidenceIfRequested(await runHostedClerkRouteProbe({
+    enabled: args["confirm-hosted-auth-probe"] === true
+  }), args["evidence-out"]);
   console.log(JSON.stringify(report, null, 2));
   if (report.status !== "ready") process.exit(1);
+}
+
+function parseArgs(values) {
+  const parsed = {};
+  for (let index = 0; index < values.length; index += 1) {
+    const value = values[index];
+    if (!value.startsWith("--")) continue;
+    const [rawKey, inlineValue] = value.slice(2).split("=");
+    if (inlineValue !== undefined) {
+      parsed[rawKey] = inlineValue;
+      continue;
+    }
+    if (values[index + 1] && !values[index + 1].startsWith("--")) {
+      parsed[rawKey] = values[index + 1];
+      index += 1;
+    } else {
+      parsed[rawKey] = true;
+    }
+  }
+  return parsed;
 }

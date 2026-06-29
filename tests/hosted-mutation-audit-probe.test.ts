@@ -29,8 +29,8 @@ describe("hosted mutation audit probe", () => {
     });
     expect(report.blockers).toEqual(
       expect.arrayContaining([
-        "CUSTOMCARD_HOSTED_MUTATION_PROBE=enabled is required before hosted mutation probes run.",
-        "CUSTOMCARD_HOSTED_MUTATION_PROBE_ACKNOWLEDGE_LIVE_WRITES=enabled is required because this probe writes a harmless render-packet row."
+        "--confirm-hosted-mutation-probe is required before hosted mutation probes run.",
+        "--acknowledge-live-writes is required because this probe writes a harmless render-packet row."
       ])
     );
     expect(fetchImpl).not.toHaveBeenCalled();
@@ -82,16 +82,16 @@ describe("hosted mutation audit probe", () => {
 
     const report = await runHostedMutationAuditProbe({
       env: {
-        CUSTOMCARD_HOSTED_MUTATION_PROBE: "enabled",
-        CUSTOMCARD_HOSTED_MUTATION_PROBE_ACKNOWLEDGE_LIVE_WRITES: "enabled",
         CUSTOMCARD_HOSTED_API_ENV: "production",
         CUSTOMCARD_HOSTED_API_BASE_URL: "https://customcard-three.vercel.app",
         CUSTOMCARD_HOSTED_CUSTOMER_JWT: customerJwt,
-        CUSTOMCARD_HOSTED_ADMIN_JWT: adminJwt,
-        CUSTOMCARD_HOSTED_MUTATION_PROBE_ID: "smoke-2026-06-15"
+        CUSTOMCARD_HOSTED_ADMIN_JWT: adminJwt
       },
       fetchImpl,
-      now: new Date("2026-06-15T13:45:00.000Z")
+      now: new Date("2026-06-15T13:45:00.000Z"),
+      enabled: true,
+      acknowledgeLiveWrites: true,
+      probeId: "smoke-2026-06-15"
     });
 
     expect(report).toMatchObject({

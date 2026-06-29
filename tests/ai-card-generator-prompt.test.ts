@@ -74,7 +74,6 @@ describe("AI card generator image prompts", () => {
       env: {
         CLOUDFLARE_ACCOUNT_ID: "account",
         CLOUDFLARE_API_TOKEN: "token",
-        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
         DEEPAI_API_KEY: "deepai"
       },
       fetchImpl
@@ -185,7 +184,6 @@ describe("AI card generator image prompts", () => {
       env: {
         CLOUDFLARE_ACCOUNT_ID: "account",
         CLOUDFLARE_API_TOKEN: "token",
-        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
         DEEPAI_API_KEY: "deepai"
       },
       fetchImpl

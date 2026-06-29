@@ -27,7 +27,7 @@ describe("hosted Clerk public config probe", () => {
       publishableKeys: []
     });
     expect(report.blockers).toContain(
-      "CUSTOMCARD_HOSTED_CLERK_PUBLIC_CONFIG_PROBE=enabled is required before hosted Clerk public config probes run."
+      "--confirm-hosted-clerk-public-config-probe is required before hosted Clerk public config probes run."
     );
     expect(fetchImpl).not.toHaveBeenCalled();
   });
@@ -43,10 +43,10 @@ describe("hosted Clerk public config probe", () => {
 
     const report = await runHostedClerkPublicConfigProbe({
       env: {
-        CUSTOMCARD_HOSTED_CLERK_PUBLIC_CONFIG_PROBE: "enabled",
         CUSTOMCARD_HOSTED_API_ENV: "production",
         CUSTOMCARD_HOSTED_API_BASE_URL: "https://customcard-three.vercel.app"
       },
+      enabled: true,
       fetchImpl,
       now: new Date("2026-06-15T17:00:00.000Z")
     });
@@ -86,10 +86,10 @@ describe("hosted Clerk public config probe", () => {
 
     const report = await runHostedClerkPublicConfigProbe({
       env: {
-        CUSTOMCARD_HOSTED_CLERK_PUBLIC_CONFIG_PROBE: "enabled",
         CUSTOMCARD_HOSTED_API_ENV: "production",
         CUSTOMCARD_HOSTED_API_BASE_URL: "https://customcard-three.vercel.app"
       },
+      enabled: true,
       fetchImpl
     });
 

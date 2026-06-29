@@ -48,8 +48,6 @@ const readyEnv: ProviderRuntimeEnv = {
   AZURE_OPENAI_CHAT_DEPLOYMENT: "customcard-chat",
   AZURE_OPENAI_ENDPOINT: "https://customcard-test.openai.azure.com",
   AZURE_OPENAI_IMAGE_DEPLOYMENT: "customcard-image",
-  BEDROCK_IMAGE_MODEL_ID: "amazon.titan-image-generator-v2:0",
-  BEDROCK_TEXT_MODEL_ID: "anthropic.claude-3-5-haiku-20241022-v1:0",
   BFL_API_KEY: "configured-bfl-key",
   BIGCOMMERCE_ACCESS_TOKEN: "configured-bigcommerce-access-token",
   BIGCOMMERCE_STORE_HASH: "configured-bigcommerce-store-hash",
@@ -69,11 +67,8 @@ const readyEnv: ProviderRuntimeEnv = {
   CLERK_SECRET_KEY: "configured-clerk-secret-key",
   CLOUDFLARE_ACCOUNT_ID: "configured-cloudflare-account-id",
   CLOUDFLARE_API_TOKEN: "configured-cloudflare-api-token",
-  CUSTOMCARD_AI_CARD_COPY_MODEL: productionCardCopyModel,
   CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "configured-cloudflare-image-token",
-  CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning",
   CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "configured-cloudflare-text-token",
-  CLOUDFLARE_WORKERS_AI_TEXT_MODEL: productionCardCopyModel,
   COHERE_API_KEY: "configured-cohere-key",
   COGNITO_APP_CLIENT_ID: "configured-cognito-client-id",
   COGNITO_DOMAIN: "customcard-auth",
@@ -546,7 +541,7 @@ describe("provider runtime contracts", () => {
       "api-key": "{AZURE_OPENAI_API_KEY}"
     });
     expect(buildTextChatRuntime("aws-bedrock-converse-chat", textInput, readyEnv, openGates).request?.url).toBe(
-      "https://bedrock-runtime.{AWS_REGION}.amazonaws.com/model/{BEDROCK_TEXT_MODEL_ID}/converse"
+      "https://bedrock-runtime.{AWS_REGION}.amazonaws.com/model/%40cf%2Fqwen%2Fqwen3-30b-a3b-fp8/converse"
     );
     expect(buildTextChatRuntime("google-gemini-chat", textInput, readyEnv, openGates).request?.headers).toMatchObject({
       "x-goog-api-key": "{GOOGLE_GENERATIVE_AI_API_KEY}"
@@ -567,14 +562,11 @@ describe("provider runtime contracts", () => {
       buildTextChatRuntime(
         "cloudflare-workers-ai-chat",
         { ...textInput, model: productionCardCopyModel },
-        {
-          ...readyEnv,
-          CUSTOMCARD_CLOUDFLARE_TEXT_MODEL: productionCardCopyModel
-        },
+        readyEnv,
         openGates
       ).request
     ).toMatchObject({
-      credentialRefs: expect.arrayContaining(["CUSTOMCARD_CLOUDFLARE_TEXT_MODEL"]),
+      credentialRefs: expect.arrayContaining(["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN"]),
       body: expect.objectContaining({ model: productionCardCopyModel })
     });
     expect(buildTextChatRuntime("cohere-chat", textInput, readyEnv, openGates).request?.url).toBe(
@@ -600,19 +592,14 @@ describe("provider runtime contracts", () => {
     );
   });
 
-  it("keeps the card-copy model pin out of generic Cloudflare chat runtime contracts", () => {
-    const request = buildTextChatRuntime("cloudflare-workers-ai-chat", textInput, {
-      ...readyEnv,
-      CUSTOMCARD_AI_CARD_COPY_MODEL: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
-      CUSTOMCARD_CLOUDFLARE_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
-      CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast"
-    }, openGates).request;
+  it("uses the default Cloudflare chat model without model env credential refs", () => {
+    const request = buildTextChatRuntime("cloudflare-workers-ai-chat", textInput, readyEnv, openGates).request;
 
     expect(request).toMatchObject({
-      credentialRefs: expect.arrayContaining(["CUSTOMCARD_CLOUDFLARE_TEXT_MODEL"]),
-      body: expect.objectContaining({ model: "@cf/meta/llama-3.1-8b-instruct-fast" })
+      credentialRefs: expect.arrayContaining(["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN"]),
+      body: expect.objectContaining({ model: productionCardCopyModel })
     });
-    expect(request?.credentialRefs).not.toContain("CUSTOMCARD_AI_CARD_COPY_MODEL");
+    expect(request?.credentialRefs).toEqual(["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN"]);
   });
 
   it("builds redacted live-network image request contracts for enabled image providers", () => {
@@ -676,19 +663,11 @@ describe("provider runtime contracts", () => {
       "api-key": "{AZURE_OPENAI_API_KEY}"
     });
     expect(buildImageGenerationRuntime("aws-bedrock-image", imageInput, readyEnv, openGates).request?.url).toBe(
-      "https://bedrock-runtime.{AWS_REGION}.amazonaws.com/model/{BEDROCK_IMAGE_MODEL_ID}/invoke"
+      "https://bedrock-runtime.{AWS_REGION}.amazonaws.com/model/gpt-image-2/invoke"
     );
     expect(buildImageGenerationRuntime("cloudflare-workers-ai-image", imageInput, readyEnv, openGates).request).toMatchObject({
-      url: "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      url: "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/black-forest-labs/flux-1-schnell",
       headers: expect.objectContaining({ authorization: "Bearer {CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN}" })
-    });
-    expect(
-      buildImageGenerationRuntime("cloudflare-workers-ai-image", imageInput, {
-        ...readyEnv,
-        CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: undefined
-      }, openGates).request
-    ).toMatchObject({
-      url: "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/black-forest-labs/flux-1-schnell"
     });
     expect(
       buildImageGenerationRuntime("cloudflare-workers-ai-image", imageInput, {

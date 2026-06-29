@@ -201,7 +201,7 @@ export const mobileRenderReadinessItems = [
     screenSectionIds: ["preview-build", "development-build", "production-build"],
     viewportProfiles: ["standard-phone"],
     nativeBuildProfileIds: requiredNativeBuildProfileIds,
-    requiredSourceSignals: ["developmentClient", "ios.simulator", "android.buildType", "autoIncrement", "REAL_ORDER_KILL_SWITCH"],
+    requiredSourceSignals: ["developmentClient", "ios.simulator", "android.buildType", "autoIncrement", "realOrderKillSwitch"],
     deterministicProofBoundary: "repo-local-eas-profile-contract",
     blockedLiveProofs: ["native-emulator-render", "signed-native-artifact", "app-store-review"],
     evidenceArtifactRefs: [],
@@ -229,7 +229,7 @@ export const mobileRenderReadinessItems = [
       "CUSTOMCARD_QA_API_BASE_URL",
       "CUSTOMCARD_PRODUCTION_API_BASE_URL",
       "CUSTOMCARD_API_BASE_URL",
-      "REAL_ORDER_KILL_SWITCH",
+      "realOrderKillSwitch",
       "expo",
       "react-native"
     ],

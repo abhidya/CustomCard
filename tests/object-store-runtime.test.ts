@@ -4,7 +4,6 @@ import { createApiRuntime } from "../scripts/api-runtime.mjs";
 import { createObjectStoreRuntime } from "../scripts/object-store-runtime.mjs";
 
 const objectStoreEnv = {
-  CUSTOMCARD_ARTIFACT_PERSISTENCE: "enabled",
   OBJECT_STORE_URL: "memory://cloudflare-r2",
   OBJECT_STORE_BUCKET: "customcard-prod",
   OBJECT_STORE_ACCESS_KEY_ID: "write-key",

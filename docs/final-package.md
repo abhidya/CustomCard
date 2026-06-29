@@ -234,24 +234,24 @@
 16. Run `npm run localization:doctor`.
 17. Run `npm run api:doctor:memory`.
 18. Run `npm run api:doctor:postgres`.
-19. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
-20. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
-21. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
+19. Run `DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
+20. Run `DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
+21. Run `DATABASE_URL=postgres://... npm run account:doctor:live`.
 22. Run `npm run artifact:doctor`.
-23. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live`.
+23. Run `OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live`.
 24. Run `npm run persistence:doctor`.
 25. Run `npm run demo:doctor`.
 26. Run the worker and mobile doctor commands in `docs/verification.md`.
 27. Run `npm run mobile:render:doctor`.
 28. Run `npm run hosted:api:doctor`.
 29. Run `npm run hosted:rollback:plan:doctor`.
-30. With Vercel access, run `CUSTOMCARD_HOSTED_ENV_INVENTORY=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:env:inventory`.
-31. After obtaining a production `pk_live` Clerk publishable key and `CLERK_AUDIENCE`, run the redacted repair plan: `CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app VITE_CLERK_PUBLISHABLE_KEY=pk_live_... CLERK_AUDIENCE=... npm run hosted:clerk:repair`.
-32. To apply that Clerk config to Vercel, run `CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR=enabled CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_APPLY=enabled CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_ACKNOWLEDGE_PRODUCTION=enabled CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_ACKNOWLEDGE_PUBLIC_KEY_REPLACE=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app VITE_CLERK_PUBLISHABLE_KEY=pk_live_... CLERK_AUDIENCE=... npm run hosted:clerk:repair`, redeploy, then run `CUSTOMCARD_HOSTED_CLERK_PUBLIC_CONFIG_PROBE=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:clerk:public-config`.
-33. With the remaining Clerk verifier values present in the process env and production approval, run `CUSTOMCARD_HOSTED_ENV_REPAIR=enabled CUSTOMCARD_HOSTED_ENV_REPAIR_APPLY=enabled CUSTOMCARD_HOSTED_ENV_REPAIR_ACKNOWLEDGE_PRODUCTION=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app CLERK_ISSUER=... CLERK_AUDIENCE=... npm run hosted:env:repair`.
-34. With real hosted Clerk JWTs, run `CUSTOMCARD_HOSTED_AUTH_PROBE=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app CUSTOMCARD_HOSTED_CUSTOMER_JWT=... CUSTOMCARD_HOSTED_ADMIN_JWT=... npm run hosted:auth:probe`.
-35. With real hosted Clerk JWTs and approval for a harmless live render-packet probe row, run `CUSTOMCARD_HOSTED_MUTATION_PROBE=enabled CUSTOMCARD_HOSTED_MUTATION_PROBE_ACKNOWLEDGE_LIVE_WRITES=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app CUSTOMCARD_HOSTED_CUSTOMER_JWT=... CUSTOMCARD_HOSTED_ADMIN_JWT=... npm run hosted:mutation:probe`.
-36. Against a restored hosted DB clone, run `CUSTOMCARD_HOSTED_DB_RESTORE_DRILL=enabled CUSTOMCARD_RESTORE_DATABASE_URL=postgres://... CUSTOMCARD_RESTORE_SOURCE=neon-branch CUSTOMCARD_RESTORE_POINT_IN_TIME=2026-06-15T14:00:00.000Z CUSTOMCARD_BACKUP_RETENTION_DAYS=14 CUSTOMCARD_BACKUP_RPO_MINUTES=15 CUSTOMCARD_BACKUP_RTO_MINUTES=60 npm run hosted:db:restore:drill`.
+30. With Vercel access, run `CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:env:inventory -- --confirm-hosted-env-inventory`.
+31. After obtaining a production `pk_live` Clerk publishable key and `CLERK_AUDIENCE`, run the redacted repair plan: `CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app VITE_CLERK_PUBLISHABLE_KEY=pk_live_... CLERK_AUDIENCE=... npm run hosted:clerk:repair -- --confirm-hosted-clerk-config-repair`.
+32. To apply that Clerk config to Vercel, run `CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app VITE_CLERK_PUBLISHABLE_KEY=pk_live_... CLERK_AUDIENCE=... npm run hosted:clerk:repair -- --confirm-hosted-clerk-config-repair --apply --acknowledge-production --acknowledge-public-key-replace`, redeploy, then run `CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:clerk:public-config -- --confirm-hosted-clerk-public-config-probe`.
+33. With the remaining Clerk verifier values present in the process env and production approval, run `CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app CLERK_ISSUER=... CLERK_AUDIENCE=... npm run hosted:env:repair -- --confirm-hosted-env-repair --apply --acknowledge-production`.
+34. With real hosted Clerk JWTs, run `CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app CUSTOMCARD_HOSTED_CUSTOMER_JWT=... CUSTOMCARD_HOSTED_ADMIN_JWT=... npm run hosted:auth:probe -- --confirm-hosted-auth-probe`.
+35. With real hosted Clerk JWTs and approval for a harmless live render-packet probe row, run `CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app CUSTOMCARD_HOSTED_CUSTOMER_JWT=... CUSTOMCARD_HOSTED_ADMIN_JWT=... npm run hosted:mutation:probe -- --confirm-hosted-mutation-probe --acknowledge-live-writes`.
+36. Against a restored hosted DB clone, run `CUSTOMCARD_RESTORE_DATABASE_URL=postgres://... CUSTOMCARD_RESTORE_SOURCE=neon-branch CUSTOMCARD_RESTORE_POINT_IN_TIME=2026-06-15T14:00:00.000Z CUSTOMCARD_BACKUP_RETENTION_DAYS=14 CUSTOMCARD_BACKUP_RPO_MINUTES=15 CUSTOMCARD_BACKUP_RTO_MINUTES=60 npm run hosted:db:restore:drill -- --confirm-hosted-db-restore-drill`.
 37. Run `npm run reviewer:db:seed:doctor`.
 38. Run `npm run business:engagement:doctor`.
 39. Run `npm run mobile:release:doctor`.

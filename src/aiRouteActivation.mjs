@@ -1,7 +1,6 @@
 import {
   aiFlowDefinitions,
   aiProviderEnvRequirements,
-  flowEnvKey,
   hasUsableAiEnvValue,
   normalizeAiFlowAdminConfigs,
   resolveAiFlowConfig
@@ -17,7 +16,6 @@ export function createAiRouteActivationContext({
 } = {}) {
   const mergedAiFlowAdminConfig = mergeAiFlowAdminConfigs(
     normalizeOptionalAiFlowAdminConfigs(serviceAiFlowAdminConfig, env),
-    serverScopedAiFlowConfig(env),
     normalizeOptionalAiFlowAdminConfigs(extractLoadedAiFlowAdminConfigs(loadedAiFlowAdminConfig), env),
     normalizeOptionalAiFlowAdminConfigs(requestContext?.aiFlowAdminConfig, env),
     trustedRequestScopedAiFlowConfig(body, env, requestContext)
@@ -93,19 +91,7 @@ export function mergeAiFlowAdminConfigs(...groups) {
 }
 
 export function serverScopedAiFlowConfig(env = process.env) {
-  if (!env || typeof env !== "object") return [];
-
-  const raw = env.CUSTOMCARD_AI_FLOW_CONFIG_JSON ?? env.CUSTOMCARD_AI_FLOW_ADMIN_CONFIG_JSON ?? "";
-  let parsedConfigs = [];
-  if (raw) {
-    try {
-      parsedConfigs = normalizeOptionalAiFlowAdminConfigs(extractLoadedAiFlowAdminConfigs(JSON.parse(String(raw))), env);
-    } catch {
-      parsedConfigs = [];
-    }
-  }
-
-  return parsedConfigs;
+  return [];
 }
 
 function isAiRouteActivationContext(input) {
@@ -191,31 +177,9 @@ function explicitAiFlowAdminConfigs(input) {
 }
 
 function configuredEnvKeysForFlow(flow, env = {}) {
-  const key = flowEnvKey(flow.flowId);
-  const flowScopedKeys = [
-    `CUSTOMCARD_AI_${key}_ADAPTER_ID`,
-    `CUSTOMCARD_AI_${key}_PROVIDER`,
-    `CUSTOMCARD_AI_${key}_FALLBACK_ADAPTER_ID`,
-    `CUSTOMCARD_AI_${key}_MODEL`,
-    `CUSTOMCARD_AI_${key}_PROMPT_INSTRUCTIONS`,
-    `CUSTOMCARD_AI_${key}_RATE_LIMIT_PER_MINUTE`,
-    `CUSTOMCARD_AI_${key}_MONTHLY_BUDGET_CENTS`,
-    `CUSTOMCARD_AI_${key}_PER_REQUEST_BUDGET_CENTS`,
-    `CUSTOMCARD_AI_${key}_QUEUE_ENABLED`,
-    `CUSTOMCARD_AI_${key}_FALLBACK_QUEUE_ENABLED`,
-    `CUSTOMCARD_AI_${key}_MAX_RETRIES`,
-    `CUSTOMCARD_AI_${key}_MAX_TOKENS`,
-    `CUSTOMCARD_AI_${key}_TEMPERATURE`
-  ];
   const adapterKeys = (aiProviderEnvRequirements[flow.primaryAdapterId] ?? []).flat();
-  const matchingModelKeys = Object.keys(env).filter(
-    (envKey) =>
-      /(?:MODEL|CHECKPOINT)$/.test(envKey) &&
-      hasConfiguredEnvValue(env[envKey]) &&
-      String(env[envKey]).trim() === flow.model
-  );
 
-  return Array.from(new Set([...flowScopedKeys, ...adapterKeys, ...matchingModelKeys])).filter((envKey) =>
+  return Array.from(new Set(adapterKeys)).filter((envKey) =>
     hasConfiguredEnvValue(env[envKey])
   );
 }

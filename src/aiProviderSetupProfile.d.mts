@@ -1,10 +1,7 @@
 export const productionCardCopyProviderId: "cloudflare-workers-ai-chat";
 export const productionCardCopyModel: "@cf/qwen/qwen3-30b-a3b-fp8";
-export const productionCardCopyModelOverrideEnvKey: "CUSTOMCARD_AI_CARD_COPY_MODEL";
-export const cloudflareTextModelEnvKeys: readonly [
-  "CUSTOMCARD_CLOUDFLARE_TEXT_MODEL",
-  "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"
-];
+export const productionCardCopyModelOverrideEnvKey: "";
+export const cloudflareTextModelEnvKeys: readonly [];
 export const cloudflareCardCopyTextModelEnvKeys: readonly string[];
 export const cloudflareTextRequiredCredentialGroups: readonly (readonly string[])[];
 export const hostedAiCardCopySetupKeys: readonly string[];

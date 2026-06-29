@@ -48,14 +48,14 @@ npm run cloud:doctor
 npm run api:doctor
 npm run api:doctor:memory
 npm run api:doctor:postgres
-CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
-CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http
-CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
+DATABASE_URL=postgres://... npm run api:doctor:postgres:live
+DATABASE_URL=postgres://... npm run api:doctor:postgres:http
+DATABASE_URL=postgres://... npm run account:doctor:live
 npm run artifact:doctor
 CLOUDFLARE_ACCOUNT_ID=... CLOUDFLARE_API_TOKEN=... npm run r2:bucket:create:prod
 CLOUDFLARE_ACCOUNT_ID=... CLOUDFLARE_API_TOKEN=... npm run r2:bucket:list
-CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 OBJECT_STORE_BUCKET=customcard-ci-artifacts OBJECT_STORE_ACCESS_KEY_ID=customcard OBJECT_STORE_SECRET_ACCESS_KEY=customcard-dev-only OBJECT_STORE_REGION=us-east-1 OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 npm run artifact:doctor:s3:live
-CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled CUSTOMCARD_S3_ARTIFACT_DOCTOR_BUCKET_MODE=existing OBJECT_STORE_URL=https://<account-id>.r2.cloudflarestorage.com OBJECT_STORE_BUCKET=customcard-prod OBJECT_STORE_REGION=auto OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 npm run artifact:doctor:s3:live
+OBJECT_STORE_URL=http://127.0.0.1:9000 OBJECT_STORE_BUCKET=customcard-ci-artifacts OBJECT_STORE_ACCESS_KEY_ID=customcard OBJECT_STORE_SECRET_ACCESS_KEY=customcard-dev-only OBJECT_STORE_REGION=us-east-1 OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 npm run artifact:doctor:s3:live
+OBJECT_STORE_URL=https://<account-id>.r2.cloudflarestorage.com OBJECT_STORE_BUCKET=customcard-prod OBJECT_STORE_REGION=auto OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 npm run artifact:doctor:s3:live -- --bucket-mode existing
 npm run persistence:doctor
 npm run demo:doctor
 ```
@@ -79,9 +79,9 @@ The API runtime defaults to `CUSTOMCARD_API_RUNTIME=contract` only for local
 reviewer/static serving. Production-shaped environments must set
 `CUSTOMCARD_API_RUNTIME=postgres`; `runtime:doctor` rejects contract or memory
 there so auth sessions and idempotency records are durable. `npm run
-api:doctor:memory` sets `CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS=enabled` with
-test customer/admin session tokens and validates Bearer auth plus
-`X-Idempotency-Key` replay without a live database.
+api:doctor:memory` passes `--local-auth-fallbacks` with test customer/admin
+session tokens and validates Bearer auth plus `X-Idempotency-Key` replay without
+a live database.
 `npm run api:doctor:postgres` injects a fake Postgres pool into the same runtime
 path and validates session lookup, wrong-role blocking, idempotency replay,
 conflict handling, repository-backed relationship-memory inserts,
@@ -89,14 +89,14 @@ repository-backed render-packet inserts, repository-backed import-preview
 inserts, repository-backed card-project inserts, manual handoff
 order/consent/event inserts, data-request privacy/consent inserts, audit inserts,
 and queue-job inserts without external credentials.
-`CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled npm run
+`npm run
 api:doctor:postgres:live` creates an isolated temporary database on the configured
 Postgres server, applies the committed migration, seeds customer/admin sessions,
 verifies all repository-backed customer routes plus admin readiness through the
 real `pg` runtime, exercises relationship-memory, render-packet, import-preview,
 card-project, manual handoff, and data-request persistence, and drops the
 temporary database before exiting.
-`CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled npm run
+`npm run
 api:doctor:postgres:http` starts `scripts/api-server.mjs` against the same
 isolated migrated database shape and verifies public health/routes,
 admin/customer Bearer auth, missing/wrong-role auth blocking, missing
@@ -106,7 +106,7 @@ before shutting the server down and dropping the temporary database.
 CI runs both live Postgres doctors against a Postgres service; deployed
 production account auth remains unclaimed.
 
-`CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled npm run account:doctor:live` uses the
+`npm run account:doctor:live` uses the
 same isolated-database pattern to verify hosted account identity rows,
 provider-subject uniqueness, hashed recovery challenges, durable sessions, and
 account-recovery audit rows. CI runs it against the Postgres service; live hosted
@@ -116,7 +116,7 @@ token verification remains unclaimed.
 temporary local filesystem object-store path and an injected S3-compatible client
 contract, reads every artifact back, verifies checksums and byte lengths, stores
 both handoff manifests, and keeps network calls plus real orders disabled.
-`CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled npm run artifact:doctor:s3:live` writes
+`npm run artifact:doctor:s3:live` writes
 the same package to a live S3-compatible endpoint such as MinIO using path-style
 SigV4 requests, reads every object back, verifies checksums and byte lengths,
 stores the handoff manifest, reports `cloudWritesVerified: true`, cleans up the
@@ -127,7 +127,7 @@ Access Analyzer review, and account-specific IAM validation remain separate from
 this repo-local proof.
 
 The hosted API can persist render-packet image artifacts through
-`scripts/object-store-runtime.mjs` when `CUSTOMCARD_ARTIFACT_PERSISTENCE=enabled`
+`scripts/object-store-runtime.mjs` when object-store credentials are configured
 and `CUSTOMCARD_API_RUNTIME` is `memory` or `postgres`. For Cloudflare R2, set
 `OBJECT_STORE_URL` to the account S3 endpoint, `OBJECT_STORE_BUCKET` to the R2
 bucket, `OBJECT_STORE_REGION=auto`, `OBJECT_STORE_PUBLIC_BASE_URL` to the hosted
@@ -142,7 +142,7 @@ Run `npm run r2:bucket:create:prod` or `npm run r2:bucket:create --
 <bucket-name>` with a short-lived Cloudflare R2 account token when the bucket
 needs to be provisioned through [Wrangler](https://developers.cloudflare.com/r2/buckets/create-buckets/).
 For live R2 verification with object-scoped S3 credentials, set
-`CUSTOMCARD_S3_ARTIFACT_DOCTOR_BUCKET_MODE=existing` so the doctor writes under
+`--bucket-mode existing` so the doctor writes under
 a temporary project prefix inside the configured bucket and only deletes the
 objects it created.
 
@@ -173,7 +173,7 @@ at least 32 characters. The committed manifests also keep
 `ARTIFACT_SIGNED_URL_TTL_MINUTES=15` explicit so download links remain
 short-lived.
 
-Real external ordering stays disabled with `REAL_ORDER_KILL_SWITCH=disabled` until vendor sandbox tests and physical print certification are recorded.
+Real external ordering stays disabled by admin safety controls until vendor sandbox tests and physical print certification are recorded.
 
 ## Provider Adapter Secrets
 
@@ -203,12 +203,9 @@ Real external ordering stays disabled with `REAL_ORDER_KILL_SWITCH=disabled` unt
   `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_KEY`,
   `AZURE_OPENAI_CHAT_DEPLOYMENT`, `AZURE_OPENAI_IMAGE_DEPLOYMENT`,
   `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`,
-  `BEDROCK_TEXT_MODEL_ID`, `BEDROCK_IMAGE_MODEL_ID`,
   `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`,
   `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN`,
   `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`,
-  `CUSTOMCARD_AI_CARD_COPY_MODEL`, `CUSTOMCARD_CLOUDFLARE_TEXT_MODEL`,
-  `CLOUDFLARE_WORKERS_AI_TEXT_MODEL`, `CLOUDFLARE_WORKERS_AI_IMAGE_MODEL`,
   `GOOGLE_GENERATIVE_AI_API_KEY`, `MISTRAL_API_KEY`, `COHERE_API_KEY`,
   `PERPLEXITY_API_KEY`, `XAI_API_KEY`, `TOGETHER_API_KEY`, `GROQ_API_KEY`,
   `DEEPSEEK_API_KEY`, `FIREWORKS_API_KEY`, `STABILITY_API_KEY`,
@@ -220,17 +217,14 @@ Real external ordering stays disabled with `REAL_ORDER_KILL_SWITCH=disabled` unt
 Cloudflare Workers AI can use one shared `CLOUDFLARE_API_TOKEN` for both
 chat and image generation, or separate lane-specific tokens through
 `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN` and
-`CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`. Set
-`CUSTOMCARD_AI_CARD_COPY_MODEL=@cf/qwen/qwen3-30b-a3b-fp8` to pin the hosted
-production card-copy route, and mirror that same 30B model into
-`CUSTOMCARD_CLOUDFLARE_TEXT_MODEL` / `CLOUDFLARE_WORKERS_AI_TEXT_MODEL` when you
-want the generic Cloudflare text lane to match. Use
+`CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`. Set provider, model, budget, queue, and
+workflow policy in Admin Providers. Use
 `@cf/bytedance/stable-diffusion-xl-lightning` as the current Cloudflare image
 default, and keep `@cf/black-forest-labs/flux-1-schnell` as the higher-quality
 image fallback when prompt adherence matters more than the absolute lowest cost.
 The production-text local Comfy path does not require hosted Cloudflare image
-tokens or image model keys; those hosted image keys are only needed when you
-intend to validate the live Cloudflare image lane.
+tokens; those hosted image keys are only needed when you intend to validate the
+live Cloudflare image lane.
 - Notification providers: `RESEND_API_KEY`, `SENDGRID_API_KEY`,
   `POSTMARK_SERVER_TOKEN`, `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`,
   `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`,
@@ -258,7 +252,7 @@ intend to validate the live Cloudflare image lane.
   `GRAFANA_OTLP_API_KEY`, `DATADOG_API_KEY`, `DATADOG_SITE`,
   `BETTERSTACK_SOURCE_TOKEN`, `BETTERSTACK_INGESTING_HOST`.
 - Object-store artifact signer and live S3-compatible doctor:
-  `CUSTOMCARD_ARTIFACT_PERSISTENCE`, `OBJECT_STORE_URL`,
+  `OBJECT_STORE_URL`,
   `OBJECT_STORE_BUCKET`, `OBJECT_STORE_ACCESS_KEY_ID`,
   `OBJECT_STORE_SECRET_ACCESS_KEY`, `OBJECT_STORE_READ_ACCESS_KEY_ID`,
   `OBJECT_STORE_READ_SECRET_ACCESS_KEY`, `OBJECT_STORE_REGION`,
@@ -275,4 +269,4 @@ intend to validate the live Cloudflare image lane.
 
 These keys are documented for deployment readiness only. The current repo state
 does not make live provider calls, and vendor modes remain
-`disabled_until_certified` while `REAL_ORDER_KILL_SWITCH=disabled`.
+`disabled_until_certified` while admin safety controls keep live orders closed.

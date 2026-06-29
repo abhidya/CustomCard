@@ -23,7 +23,7 @@ describe("cloud artifact proof readiness", () => {
       secretSyncRequired: 3,
       restoreDrillRequired: 1,
       terraformFileContracts: 3,
-      envOutputContracts: 6,
+      envOutputContracts: 5,
       terraformApplyExecutions: 0,
       appliedBucketArnProofs: 0,
       iamPolicyOutputProofs: 0,
@@ -69,8 +69,7 @@ describe("cloud artifact proof readiness", () => {
         "OBJECT_STORE_BUCKET",
         "OBJECT_STORE_REGION",
         "OBJECT_STORE_SIGNING_SECRET",
-        "ARTIFACT_SIGNED_URL_TTL_MINUTES",
-        "REAL_ORDER_KILL_SWITCH"
+        "ARTIFACT_SIGNED_URL_TTL_MINUTES"
       ])
     );
     expect(bucket).toMatchObject({ requiresAppliedCloud: true, requiresBucketArnProof: true, appliedBucketArnAttached: false });

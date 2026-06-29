@@ -8,7 +8,7 @@ export function postgresPoolConfig(env = process.env) {
     max: safeIntegerEnv(env.CUSTOMCARD_POSTGRES_POOL_MAX, 5, 1, 20),
     connectionTimeoutMillis: safeIntegerEnv(env.CUSTOMCARD_POSTGRES_POOL_CONNECTION_TIMEOUT_MS, 5000, 1000, 30_000),
     idleTimeoutMillis: safeIntegerEnv(env.CUSTOMCARD_POSTGRES_POOL_IDLE_TIMEOUT_MS, 10_000, 1000, 120_000),
-    allowExitOnIdle: env.CUSTOMCARD_POSTGRES_POOL_ALLOW_EXIT_ON_IDLE !== "false",
+    allowExitOnIdle: true,
     ssl: env.DATABASE_SSL === "require" ? { rejectUnauthorized: true } : undefined
   };
 }

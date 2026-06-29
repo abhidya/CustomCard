@@ -6,10 +6,10 @@ import { pathToFileURL } from "node:url";
 import { runHostedClerkPublicConfigProbe, deriveClerkIssuerCandidate } from "./hosted-clerk-public-config-probe.mjs";
 import { runHostedVercelEnvInventory } from "./hosted-vercel-env-inventory.mjs";
 
-const guardRequirement = "CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR=enabled";
-const applyRequirement = "CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_APPLY=enabled";
-const productionAckRequirement = "CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_ACKNOWLEDGE_PRODUCTION=enabled";
-const publicKeyReplaceRequirement = "CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_ACKNOWLEDGE_PUBLIC_KEY_REPLACE=enabled";
+const guardRequirement = "--confirm-hosted-clerk-config-repair";
+const applyRequirement = "--apply";
+const productionAckRequirement = "--acknowledge-production";
+const publicKeyReplaceRequirement = "--acknowledge-public-key-replace";
 const publicKeyName = "VITE_CLERK_PUBLISHABLE_KEY";
 const serverVerifierKeys = Object.freeze(["CLERK_ISSUER", "CLERK_AUDIENCE"]);
 
@@ -18,10 +18,14 @@ export async function runHostedClerkConfigRepair({
   inventoryRunner = runHostedVercelEnvInventory,
   publicConfigRunner = runHostedClerkPublicConfigProbe,
   commandRunner = runVercelEnvMutation,
-  now = new Date()
+  now = new Date(),
+  enabled = false,
+  apply = false,
+  acknowledgeProduction = false,
+  acknowledgePublicKeyReplace = false
 } = {}) {
   const guardBlockers = [];
-  if (env.CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR !== "enabled") {
+  if (!enabled) {
     guardBlockers.push(`${guardRequirement} is required before hosted Clerk config repair can inspect or apply changes.`);
   }
   if (typeof inventoryRunner !== "function") guardBlockers.push("A hosted Vercel env inventory runner is required.");
@@ -43,28 +47,23 @@ export async function runHostedClerkConfigRepair({
   }
 
   const inventory = await inventoryRunner({
-    env: {
-      ...env,
-      CUSTOMCARD_HOSTED_ENV_INVENTORY: "enabled"
-    }
+    env,
+    enabled: true
   });
   const publicConfig = await publicConfigRunner({
-    env: {
-      ...env,
-      CUSTOMCARD_HOSTED_CLERK_PUBLIC_CONFIG_PROBE: "enabled"
-    }
+    env,
+    enabled: true
   });
   const desired = readDesiredConfig(env);
   const targetEnvironment = inventory?.targetEnvironment ?? publicConfig?.targetEnvironment ?? "production";
   const vercelTarget = inventory?.vercelTarget ?? (targetEnvironment === "qa" ? "preview" : "production");
-  const apply = env.CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_APPLY === "enabled";
-  const replacePublicKeyAcknowledged = env.CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_ACKNOWLEDGE_PUBLIC_KEY_REPLACE === "enabled";
+  const replacePublicKeyAcknowledged = Boolean(acknowledgePublicKeyReplace);
 
   const blockers = [
     ...validatePrerequisites(inventory, publicConfig),
     ...validateDesiredConfig(desired, targetEnvironment)
   ];
-  if (apply && targetEnvironment === "production" && env.CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_ACKNOWLEDGE_PRODUCTION !== "enabled") {
+  if (apply && targetEnvironment === "production" && !acknowledgeProduction) {
     blockers.push(`${productionAckRequirement} is required before production Clerk config is repaired.`);
   }
 
@@ -337,8 +336,8 @@ function fingerprint(value) {
   return createHash("sha256").update(value).digest("hex").slice(0, 12);
 }
 
-function writeEvidenceIfRequested(report, env = process.env) {
-  const outputPath = String(env.CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_EVIDENCE_OUT ?? "").trim();
+function writeEvidenceIfRequested(report, outputPath = "") {
+  outputPath = String(outputPath ?? "").trim();
   if (!outputPath) return report;
   const absolutePath = resolve(outputPath);
   mkdirSync(dirname(absolutePath), { recursive: true });
@@ -351,7 +350,33 @@ function isCliEntrypoint() {
 }
 
 if (isCliEntrypoint()) {
-  const report = writeEvidenceIfRequested(await runHostedClerkConfigRepair());
+  const args = parseArgs(process.argv.slice(2));
+  const report = writeEvidenceIfRequested(await runHostedClerkConfigRepair({
+    enabled: args["confirm-hosted-clerk-config-repair"] === true,
+    apply: args.apply === true,
+    acknowledgeProduction: args["acknowledge-production"] === true,
+    acknowledgePublicKeyReplace: args["acknowledge-public-key-replace"] === true
+  }), args["evidence-out"]);
   console.log(JSON.stringify(report, null, 2));
   if (report.status !== "ready") process.exit(1);
+}
+
+function parseArgs(values) {
+  const parsed = {};
+  for (let index = 0; index < values.length; index += 1) {
+    const value = values[index];
+    if (!value.startsWith("--")) continue;
+    const [rawKey, inlineValue] = value.slice(2).split("=");
+    if (inlineValue !== undefined) {
+      parsed[rawKey] = inlineValue;
+      continue;
+    }
+    if (values[index + 1] && !values[index + 1].startsWith("--")) {
+      parsed[rawKey] = values[index + 1];
+      index += 1;
+    } else {
+      parsed[rawKey] = true;
+    }
+  }
+  return parsed;
 }

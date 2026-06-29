@@ -2,7 +2,7 @@ const appEnv = normalizeAppEnv(process.env.CUSTOMCARD_APP_ENV);
 const { apiBaseUrl, apiBaseUrlSourceName } = resolveApiBaseUrl(appEnv, process.env);
 const clerkPublishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 const oauthRedirectUrl = process.env.CUSTOMCARD_OAUTH_REDIRECT_URL;
-const realOrderKillSwitch = process.env.REAL_ORDER_KILL_SWITCH ?? "disabled";
+const realOrderKillSwitch = "disabled";
 
 if (!apiBaseUrl) {
   throw new Error(`${apiBaseUrlSourceName} is required for the mobile app shell.`);
@@ -28,10 +28,6 @@ if (!oauthRedirectUrl) {
 if (!/^customcard:\/\/sso-callback\/?$/.test(oauthRedirectUrl)) {
   throw new Error("CUSTOMCARD_OAUTH_REDIRECT_URL must be customcard://sso-callback.");
 }
-if (realOrderKillSwitch !== "disabled") {
-  throw new Error("REAL_ORDER_KILL_SWITCH must stay disabled until retail certification is recorded.");
-}
-
 // Non-secret, public client configuration only. Secrets (Clerk secret key,
 // provider credentials, object-store keys) stay server-side and must never be
 // referenced here.

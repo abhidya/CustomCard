@@ -250,13 +250,12 @@ describe("provider catalog", () => {
     expect(admin.coverage.requiredEnv).toContain("AWS_ACCESS_KEY_ID");
     expect(admin.coverage.requiredEnv).toContain("AWS_SECRET_ACCESS_KEY");
     expect(admin.coverage.requiredEnv).toContain("AWS_REGION");
-    expect(admin.coverage.requiredEnv).toContain("BEDROCK_TEXT_MODEL_ID");
-    expect(admin.coverage.requiredEnv).toContain("BEDROCK_IMAGE_MODEL_ID");
+    expect(admin.coverage.requiredEnv.some((key) => /^BEDROCK_.*MODEL_ID$/.test(key))).toBe(false);
     expect(admin.coverage.requiredEnv).toContain("ANTHROPIC_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("GOOGLE_GENERATIVE_AI_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("CLOUDFLARE_ACCOUNT_ID");
     expect(admin.coverage.requiredEnv).toContain("CLOUDFLARE_API_TOKEN");
-    expect(admin.coverage.requiredEnv).toContain("CLOUDFLARE_WORKERS_AI_TEXT_MODEL");
+    expect(admin.coverage.requiredEnv.some((key) => /^CLOUDFLARE_WORKERS_AI_.*MODEL$/.test(key))).toBe(false);
     expect(admin.coverage.requiredEnv).toContain("STABILITY_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("HUGGINGFACE_API_TOKEN");
     expect(admin.coverage.requiredEnv).toContain("DEEPAI_API_KEY");

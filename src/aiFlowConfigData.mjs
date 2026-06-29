@@ -1,6 +1,5 @@
 import {
   cloudflareTextRequiredCredentialGroups,
-  cloudflareTextModelEnvKeys,
   productionCardCopyModel
 } from "./aiProviderSetupProfile.mjs";
 
@@ -53,6 +52,7 @@ export const aiFlowDefinitions = [
     monthlyBudgetCents: 2500,
     perRequestBudgetCents: 10,
     maxRetries: 1,
+    contextWindowTokens: 0,
     maxTokens: 700,
     temperature: 0.4,
     promptInstructions:
@@ -72,6 +72,7 @@ export const aiFlowDefinitions = [
     monthlyBudgetCents: 5000,
     perRequestBudgetCents: 5,
     maxRetries: 1,
+    contextWindowTokens: 8192,
     maxTokens: 2200,
     temperature: 0.62,
     promptInstructions:
@@ -91,6 +92,7 @@ export const aiFlowDefinitions = [
     monthlyBudgetCents: 4000,
     perRequestBudgetCents: 1,
     maxRetries: 1,
+    contextWindowTokens: 0,
     maxTokens: 0,
     temperature: 0,
     promptInstructions:
@@ -147,40 +149,6 @@ export const aiProviderEnvRequirements = {
   "fal-image": [["FAL_KEY"]],
   "bfl-flux-image": [["BFL_API_KEY"]],
   "runcomfy-model-api-image": [["RUNCOMFY_API_TOKEN"]]
-};
-
-const aiProviderModelEnvKeys = {
-  "cloudflare-workers-ai-chat": [...cloudflareTextModelEnvKeys],
-  "cloudflare-workers-ai-image": ["CUSTOMCARD_CLOUDFLARE_IMAGE_MODEL", "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL"],
-  "openai-responses-chat": ["CUSTOMCARD_OPENAI_TEXT_MODEL", "OPENAI_TEXT_MODEL", "CARD_TEXT_MODEL"],
-  "openai-images": ["CUSTOMCARD_OPENAI_IMAGE_MODEL", "OPENAI_IMAGE_MODEL", "CARD_IMAGE_MODEL"],
-  "anthropic-messages-chat": ["CUSTOMCARD_ANTHROPIC_TEXT_MODEL", "ANTHROPIC_MODEL", "CARD_TEXT_MODEL"],
-  "google-gemini-chat": ["CUSTOMCARD_GEMINI_TEXT_MODEL", "GEMINI_TEXT_MODEL", "GOOGLE_GENERATIVE_AI_MODEL"],
-  "google-gemini-image": ["CUSTOMCARD_GEMINI_IMAGE_MODEL", "GEMINI_IMAGE_MODEL", "CARD_IMAGE_MODEL"],
-  "deepai-text2img-image": ["CUSTOMCARD_DEEPAI_IMAGE_MODEL", "DEEPAI_IMAGE_MODEL"],
-  "huggingface-chat": ["CUSTOMCARD_HUGGINGFACE_TEXT_MODEL", "HUGGINGFACE_TEXT_MODEL"],
-  "huggingface-image": ["CUSTOMCARD_HUGGINGFACE_IMAGE_MODEL", "HUGGINGFACE_IMAGE_MODEL"],
-  "mistral-chat": ["CUSTOMCARD_MISTRAL_TEXT_MODEL", "MISTRAL_MODEL"],
-  "groq-chat": ["CUSTOMCARD_GROQ_TEXT_MODEL", "GROQ_MODEL"],
-  "together-chat": ["CUSTOMCARD_TOGETHER_TEXT_MODEL", "TOGETHER_TEXT_MODEL"],
-  "together-image": ["CUSTOMCARD_TOGETHER_IMAGE_MODEL", "TOGETHER_IMAGE_MODEL"],
-  "deepseek-chat": ["CUSTOMCARD_DEEPSEEK_TEXT_MODEL", "DEEPSEEK_MODEL"],
-  "fireworks-chat": ["CUSTOMCARD_FIREWORKS_TEXT_MODEL", "FIREWORKS_TEXT_MODEL"],
-  "perplexity-sonar-chat": ["CUSTOMCARD_PERPLEXITY_TEXT_MODEL", "PERPLEXITY_MODEL"],
-  "xai-chat": ["CUSTOMCARD_XAI_TEXT_MODEL", "XAI_MODEL"],
-  "self-hosted-openai-compatible-chat": ["CUSTOMCARD_SELF_HOSTED_TEXT_MODEL", "SELF_HOSTED_LLM_MODEL"],
-  "local-openai-compatible-chat": [
-    "CUSTOMCARD_LOCAL_LLM_MODEL",
-    "LMSTUDIO_MODEL",
-    "KOBOLDCPP_MODEL",
-    "SELF_HOSTED_LLM_MODEL"
-  ],
-  "local-comfyui-api-image": ["CUSTOMCARD_COMFYUI_CHECKPOINT", "CUSTOMCARD_LOCAL_COMFYUI_CHECKPOINT", "COMFYUI_CHECKPOINT"],
-  "stability-stable-image": ["CUSTOMCARD_STABILITY_IMAGE_MODEL", "STABILITY_IMAGE_MODEL"],
-  "replicate-image": ["CUSTOMCARD_REPLICATE_IMAGE_MODEL", "REPLICATE_IMAGE_MODEL"],
-  "fal-image": ["CUSTOMCARD_FAL_IMAGE_MODEL", "FAL_IMAGE_MODEL"],
-  "bfl-flux-image": ["CUSTOMCARD_BFL_IMAGE_MODEL", "BFL_IMAGE_MODEL"],
-  "runcomfy-model-api-image": []
 };
 
 const defaultModelsByAdapter = {
@@ -273,9 +241,6 @@ export function isAiAdapterConfigured(adapterId, env = {}) {
 
 export function modelForAiAdapter(adapterId, env = {}, overrideModel = "") {
   if (hasUsableAiEnvValue(overrideModel)) return String(overrideModel).trim();
-  for (const envKey of aiProviderModelEnvKeys[adapterId] ?? []) {
-    if (hasUsableAiEnvValue(env[envKey])) return String(env[envKey]).trim();
-  }
   return defaultModelsByAdapter[adapterId] ?? "";
 }
 
@@ -288,71 +253,35 @@ export function resolveAiFlowConfig(flowId, env = {}, adminOverrides = []) {
   const rawOverride = findFlowOverride(flowId, adminOverrides);
   const hasAdminOverride = Boolean(rawOverride && typeof rawOverride === "object");
   const override = normalizeAiFlowOverride(rawOverride, definition, env);
-  const key = flowEnvKey(flowId);
-  const primaryAdapterId =
-    (hasAdminOverride
-      ? override.primaryAdapterId ||
-        readEnvString(env, `CUSTOMCARD_AI_${key}_ADAPTER_ID`) ||
-        readEnvString(env, `CUSTOMCARD_AI_${key}_PROVIDER`)
-      : readEnvString(env, `CUSTOMCARD_AI_${key}_ADAPTER_ID`) ||
-        readEnvString(env, `CUSTOMCARD_AI_${key}_PROVIDER`) ||
-        override.primaryAdapterId) ||
-    pickConfiguredAiAdapter(definition, env) ||
-    definition.defaultPrimaryAdapterId;
+  const primaryAdapterId = override.primaryAdapterId || definition.defaultPrimaryAdapterId;
   const fallbackAdapterId =
-    (hasAdminOverride
-      ? override.fallbackAdapterId || readEnvString(env, `CUSTOMCARD_AI_${key}_FALLBACK_ADAPTER_ID`)
-      : readEnvString(env, `CUSTOMCARD_AI_${key}_FALLBACK_ADAPTER_ID`) || override.fallbackAdapterId) ||
-    definition.defaultFallbackAdapterId;
-  const promptInstructions =
-    (hasAdminOverride
-      ? override.promptInstructions || readEnvString(env, `CUSTOMCARD_AI_${key}_PROMPT_INSTRUCTIONS`)
-      : readEnvString(env, `CUSTOMCARD_AI_${key}_PROMPT_INSTRUCTIONS`) || override.promptInstructions) ||
-    definition.promptInstructions;
-  const modelOverride = readEnvString(env, `CUSTOMCARD_AI_${key}_MODEL`) || override.model;
+    override.fallbackAdapterId || definition.defaultFallbackAdapterId;
+  const promptInstructions = override.promptInstructions || definition.promptInstructions;
+  const modelOverride = override.model;
   const model = modelForAiAdapter(
     primaryAdapterId,
     env,
     modelOverride
   );
-  const envRateLimitPerMinute = readEnvNumber(
-    env,
-    `CUSTOMCARD_AI_${key}_RATE_LIMIT_PER_MINUTE`,
-    definition.rateLimitPerMinute
-  );
-  const envMonthlyBudgetCents = readEnvNumber(
-    env,
-    `CUSTOMCARD_AI_${key}_MONTHLY_BUDGET_CENTS`,
-    definition.monthlyBudgetCents
-  );
-  const envPerRequestBudgetCents = readEnvNumber(
-    env,
-    `CUSTOMCARD_AI_${key}_PER_REQUEST_BUDGET_CENTS`,
-    definition.perRequestBudgetCents
-  );
-  const envQueueEnabled = readEnvBoolean(
-    env,
-    `CUSTOMCARD_AI_${key}_QUEUE_ENABLED`,
-    definition.queueDefault
-  );
-  const envFallbackQueueEnabled = readEnvBoolean(
-    env,
-    `CUSTOMCARD_AI_${key}_FALLBACK_QUEUE_ENABLED`,
-    definition.fallbackQueueDefault
-  );
-  const rateLimitPerMinute = hasAdminOverride ? override.rateLimitPerMinute : envRateLimitPerMinute;
-  const monthlyBudgetCents = hasAdminOverride ? override.monthlyBudgetCents : envMonthlyBudgetCents;
-  const perRequestBudgetCents = hasAdminOverride ? override.perRequestBudgetCents : envPerRequestBudgetCents;
-  const queueEnabled = hasAdminOverride ? override.queueEnabled : envQueueEnabled;
-  const fallbackQueueEnabled = hasAdminOverride ? override.fallbackQueueEnabled : envFallbackQueueEnabled;
+  const rateLimitPerMinute = override.rateLimitPerMinute;
+  const monthlyBudgetCents = override.monthlyBudgetCents;
+  const perRequestBudgetCents = override.perRequestBudgetCents;
+  const queueEnabled = override.queueEnabled;
+  const fallbackQueueEnabled = override.fallbackQueueEnabled;
   const liveDefault =
     definition.liveDefault === "auto"
-      ? isAiAdapterConfigured(primaryAdapterId, env)
+      ? true
       : Boolean(definition.liveDefault);
-  const liveProviderCallsEnabled = hasAdminOverride ? Boolean(override.liveProviderCallsEnabled) : Boolean(override.liveProviderCallsEnabled ?? liveDefault);
-  const maxRetries = hasAdminOverride ? override.maxRetries : readEnvNumber(env, `CUSTOMCARD_AI_${key}_MAX_RETRIES`, definition.maxRetries);
-  const maxTokens = hasAdminOverride ? override.maxTokens : readEnvNumber(env, `CUSTOMCARD_AI_${key}_MAX_TOKENS`, definition.maxTokens);
-  const temperature = hasAdminOverride ? override.temperature : readEnvNumber(env, `CUSTOMCARD_AI_${key}_TEMPERATURE`, definition.temperature);
+  const liveProviderCallsEnabled = hasAdminOverride ? Boolean(override.liveProviderCallsEnabled) : Boolean(liveDefault);
+  const maxRetries = override.maxRetries;
+  const contextWindowTokens = override.contextWindowTokens;
+  const maxTokens = override.maxTokens;
+  const temperature = override.temperature;
+  const renderingMode = override.renderingMode;
+  const workflowId = override.workflowId;
+  const workflowPath = override.workflowPath;
+  const workflowJson = override.workflowJson;
+  const workflowInputsJson = override.workflowInputsJson;
   const configuredAdapterIds = definition.allowedAdapterIds.filter((adapterId) => isAiAdapterConfigured(adapterId, env));
   const primaryMissingEnv = adapterMissingEnv(primaryAdapterId, env);
   const blockedReasons = [
@@ -380,8 +309,14 @@ export function resolveAiFlowConfig(flowId, env = {}, adminOverrides = []) {
     fallbackQueueEnabled,
     liveProviderCallsEnabled,
     maxRetries,
+    contextWindowTokens,
     maxTokens,
     temperature,
+    renderingMode,
+    workflowId,
+    workflowPath,
+    workflowJson,
+    workflowInputsJson,
     blockedReasons,
     readyForLiveCalls: blockedReasons.length === 0
   };
@@ -422,8 +357,14 @@ export function buildDefaultAiFlowAdminConfigs(env = {}) {
       fallbackQueueEnabled: resolved.fallbackQueueEnabled,
       liveProviderCallsEnabled: resolved.liveProviderCallsEnabled,
       maxRetries: resolved.maxRetries,
+      contextWindowTokens: resolved.contextWindowTokens,
       maxTokens: resolved.maxTokens,
-      temperature: resolved.temperature
+      temperature: resolved.temperature,
+      renderingMode: resolved.renderingMode,
+      workflowId: resolved.workflowId,
+      workflowPath: resolved.workflowPath,
+      workflowJson: resolved.workflowJson,
+      workflowInputsJson: resolved.workflowInputsJson
     };
   });
 }
@@ -454,7 +395,7 @@ function normalizeAiFlowOverride(input, definition, env) {
     flowId: definition.flowId,
     primaryAdapterId,
     fallbackAdapterId,
-    model: normalizeString(input.model, fallback.model, 120),
+    model: normalizeString(input.model, modelForAiAdapter(primaryAdapterId, env), 120),
     promptInstructions: normalizeString(input.promptInstructions, fallback.promptInstructions, 2000),
     rateLimitPerMinute: normalizeNumber(input.rateLimitPerMinute, fallback.rateLimitPerMinute, 1, 120),
     monthlyBudgetCents: normalizeNumber(input.monthlyBudgetCents, fallback.monthlyBudgetCents, 0, 500_000),
@@ -463,13 +404,19 @@ function normalizeAiFlowOverride(input, definition, env) {
     fallbackQueueEnabled: normalizeBoolean(input.fallbackQueueEnabled, fallback.fallbackQueueEnabled),
     liveProviderCallsEnabled: normalizeBoolean(input.liveProviderCallsEnabled, fallback.liveProviderCallsEnabled),
     maxRetries: normalizeNumber(input.maxRetries, fallback.maxRetries, 0, 3),
+    contextWindowTokens: normalizeNumber(input.contextWindowTokens, fallback.contextWindowTokens, 0, 1_000_000),
     maxTokens: normalizeNumber(input.maxTokens, fallback.maxTokens, 0, 4000),
-    temperature: normalizeNumber(input.temperature, fallback.temperature, 0, 2)
+    temperature: normalizeNumber(input.temperature, fallback.temperature, 0, 2),
+    renderingMode: normalizeRenderingMode(input.renderingMode, fallback.renderingMode),
+    workflowId: normalizeString(input.workflowId, fallback.workflowId, 160),
+    workflowPath: normalizeString(input.workflowPath, fallback.workflowPath, 500),
+    workflowJson: normalizeString(input.workflowJson, fallback.workflowJson, 100_000),
+    workflowInputsJson: normalizeString(input.workflowInputsJson, fallback.workflowInputsJson, 50_000)
   };
 }
 
 function buildFallbackOverride(definition, env) {
-  const primaryAdapterId = pickConfiguredAiAdapter(definition, env) || definition.defaultPrimaryAdapterId;
+  const primaryAdapterId = definition.defaultPrimaryAdapterId;
   return {
     flowId: definition.flowId,
     primaryAdapterId,
@@ -483,15 +430,15 @@ function buildFallbackOverride(definition, env) {
     fallbackQueueEnabled: definition.fallbackQueueDefault,
     liveProviderCallsEnabled: definition.liveDefault === "auto" ? true : Boolean(definition.liveDefault),
     maxRetries: definition.maxRetries,
+    contextWindowTokens: definition.contextWindowTokens,
     maxTokens: definition.maxTokens,
-    temperature: definition.temperature
+    temperature: definition.temperature,
+    renderingMode: "",
+    workflowId: "",
+    workflowPath: "",
+    workflowJson: "",
+    workflowInputsJson: ""
   };
-}
-
-function pickConfiguredAiAdapter(definition, env) {
-  if (isAiAdapterConfigured(definition.defaultPrimaryAdapterId, env)) return definition.defaultPrimaryAdapterId;
-  const configuredAdapterIds = definition.allowedAdapterIds.filter((adapterId) => isAiAdapterConfigured(adapterId, env));
-  return configuredAdapterIds.find((adapterId) => adapterId !== definition.defaultFallbackAdapterId) ?? configuredAdapterIds[0];
 }
 
 function normalizeAdapter(adapterId, allowedAdapterIds, fallback) {
@@ -518,14 +465,8 @@ function normalizeBoolean(value, fallback) {
   return fallback;
 }
 
-function readEnvString(env, key) {
-  return hasUsableAiEnvValue(env[key]) ? String(env[key]).trim() : "";
-}
-
-function readEnvBoolean(env, key, fallback) {
-  return normalizeBoolean(env[key], fallback);
-}
-
-function readEnvNumber(env, key, fallback) {
-  return normalizeNumber(env[key], fallback, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY);
+function normalizeRenderingMode(value, fallback) {
+  const normalized = typeof value === "string" ? value.trim() : "";
+  if (["", "final-text-composited"].includes(normalized)) return normalized;
+  return fallback || "";
 }

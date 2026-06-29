@@ -25,6 +25,7 @@ export function createWorkerRuntime({
   jobHandlers,
   generatedImageArtifactPersister,
   fetchImpl = globalThis.fetch,
+  aiFlowAdminConfig = [],
   workerId = defaultWorkerId(env),
   now = () => new Date()
 } = {}) {
@@ -40,6 +41,7 @@ export function createWorkerRuntime({
       env,
       postgresRuntime,
       fetchImpl,
+      aiFlowAdminConfig,
       persistGeneratedImageArtifacts: effectiveGeneratedImageArtifactPersister
     });
   const queueBackedRouteIds = routes.filter((route) => route.runtimeMode === "queue-backed").map((route) => route.id);
@@ -202,8 +204,8 @@ export function createWorkerRuntime({
   };
 }
 
-export function describeWorkerReadiness({ env = process.env, routes = defaultRoutes } = {}) {
-  const runtime = createWorkerRuntime({ env, routes });
+export function describeWorkerReadiness({ env = process.env, routes = defaultRoutes, aiFlowAdminConfig = [] } = {}) {
+  const runtime = createWorkerRuntime({ env, routes, aiFlowAdminConfig });
   const blockers = runtime.validate({ requirePostgres: false });
   return {
     ...runtime.describe(),
@@ -398,10 +400,11 @@ async function runJobAdapter(job, jobHandlers) {
   return handler({ job });
 }
 
-function createDefaultJobHandlers({ env, postgresRuntime, fetchImpl, persistGeneratedImageArtifacts }) {
+function createDefaultJobHandlers({ env, postgresRuntime, fetchImpl, aiFlowAdminConfig, persistGeneratedImageArtifacts }) {
   const aiService = createAiCardGenerationService({
     env,
     fetchImpl,
+    aiFlowAdminConfig,
     loadAiFlowAdminConfig: () => readWorkerAdminAiFlowConfig(postgresRuntime, env),
     costGate: createAiFlowCostGate({
       store: createPostgresAiFlowCostStore({ getPool: () => postgresRuntime.getPool() })

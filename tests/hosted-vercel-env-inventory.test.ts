@@ -2,10 +2,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import {
-  productionCardCopyModel,
-  productionCardCopyModelOverrideEnvKey
-} from "../src/aiProviderSetupProfile.mjs";
+import { productionCardCopyModel } from "../src/aiProviderSetupProfile.mjs";
 import {
   parseVercelEnvJson,
   resolveVercelEnvTarget,
@@ -38,7 +35,7 @@ describe("hosted Vercel env inventory", () => {
     expect(cloudflareDoc).toContain("hosted Cloudflare image keys are not");
   });
 
-  it("fails closed until the guarded env inventory is explicitly enabled", async () => {
+  it("fails closed until the guarded env inventory is explicitly confirmed", async () => {
     const commandRunner = vi.fn();
 
     const report = await runHostedVercelEnvInventory({
@@ -66,7 +63,7 @@ describe("hosted Vercel env inventory", () => {
     });
     expect(report.blockers).toEqual(
       expect.arrayContaining([
-        "CUSTOMCARD_HOSTED_ENV_INVENTORY=enabled is required before hosted Vercel env inventory runs.",
+        "--confirm-hosted-env-inventory is required before hosted Vercel env inventory runs.",
         "Hosted API base URL must not be a placeholder URL."
       ])
     );
@@ -137,8 +134,6 @@ describe("hosted Vercel env inventory", () => {
           })),
           { key: "CLOUDFLARE_ACCOUNT_ID", target: ["production"], value: "account-secret" },
           { key: "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", target: ["production"], value: "cloudflare-text-secret" },
-          { key: productionCardCopyModelOverrideEnvKey, target: ["production"], value: productionCardCopyModel },
-          { key: "CUSTOMCARD_CLOUDFLARE_TEXT_MODEL", target: ["production"], value: productionCardCopyModel },
           { key: "CUSTOMCARD_API_RUNTIME", target: ["preview"], value: "postgres" }
         ]
       }),
@@ -147,10 +142,10 @@ describe("hosted Vercel env inventory", () => {
 
     const report = await runHostedVercelEnvInventory({
       env: {
-        CUSTOMCARD_HOSTED_ENV_INVENTORY: "enabled",
         CUSTOMCARD_HOSTED_API_ENV: "production",
         CUSTOMCARD_HOSTED_API_BASE_URL: "https://customcard-three.vercel.app"
       },
+      enabled: true,
       commandRunner,
       now: new Date("2026-06-15T15:10:00.000Z")
     });
@@ -188,11 +183,11 @@ describe("hosted Vercel env inventory", () => {
     expect(report.aiCardCopySetup).toMatchObject({
       providerId: "cloudflare-workers-ai-chat",
       defaultModel: productionCardCopyModel,
-      productionModelOverridePresent: true,
+      productionModelOverridePresent: false,
       localProductionTextComfyRequiresHostedImageKeys: false,
       productionModelOverrideEnvKey: {
-        name: productionCardCopyModelOverrideEnvKey,
-        present: true
+        name: "",
+        present: false
       }
     });
     const serialized = JSON.stringify(report);
@@ -220,10 +215,10 @@ describe("hosted Vercel env inventory", () => {
 
     const report = await runHostedVercelEnvInventory({
       env: {
-        CUSTOMCARD_HOSTED_ENV_INVENTORY: "enabled",
         CUSTOMCARD_HOSTED_API_ENV: "production",
         CUSTOMCARD_HOSTED_API_BASE_URL: "https://customcard-three.vercel.app"
       },
+      enabled: true,
       commandRunner
     });
 
@@ -237,12 +232,12 @@ describe("hosted Vercel env inventory", () => {
       requiredKeysPresent: false,
       clerkJwtVerifierConfigured: false,
       aiCardCopySetupConfigured: true,
-      aiCardCopyProductionModelPinned: false,
+      aiCardCopyProductionModelPinned: true,
       environmentSynced: false
     });
   });
 
-  it("reports an unpinned card-copy override without blocking hosted setup by itself", async () => {
+  it("reports credential-only card-copy setup without requiring model env", async () => {
     const commandRunner = vi.fn(async () => ({
       exitCode: 0,
       stdout: JSON.stringify({
@@ -256,10 +251,10 @@ describe("hosted Vercel env inventory", () => {
 
     const report = await runHostedVercelEnvInventory({
       env: {
-        CUSTOMCARD_HOSTED_ENV_INVENTORY: "enabled",
         CUSTOMCARD_HOSTED_API_ENV: "production",
         CUSTOMCARD_HOSTED_API_BASE_URL: "https://customcard-three.vercel.app"
       },
+      enabled: true,
       commandRunner
     });
 
@@ -273,7 +268,7 @@ describe("hosted Vercel env inventory", () => {
       },
       envSync: {
         aiCardCopySetupConfigured: true,
-        aiCardCopyProductionModelPinned: false,
+        aiCardCopyProductionModelPinned: true,
         environmentSynced: true
       },
       blockers: []
@@ -282,7 +277,7 @@ describe("hosted Vercel env inventory", () => {
       passed: true
     });
     expect(report.checks.find((check) => check.id === "ai-card-copy-setup")?.detail).toContain(
-      `${productionCardCopyModelOverrideEnvKey} is not set`
+      `Admin provider default ${productionCardCopyModel}`
     );
     expect(report.aiCardCopySetup.blockers).toEqual([]);
     expect(report.aiCardCopySetup.expectedRequiredSetupKeys).toEqual([

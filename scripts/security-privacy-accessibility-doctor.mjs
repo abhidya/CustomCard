@@ -68,7 +68,7 @@ const checks = [
     "Artifact handoff must require external share approval.",
     "signatureVersion: \"hmac-sha256-v1\"",
     "OBJECT_STORE_SIGNING_SECRET",
-    "REAL_ORDER_KILL_SWITCH=disabled"
+    "externalShareApprovalRequired: true"
   ]),
   checkIncludes("accessibility", "semantic-app-shell", `${contents.app}\n${contents.webappApp}\n${contents.webappPrint}`, [
     'className="skipLink"',

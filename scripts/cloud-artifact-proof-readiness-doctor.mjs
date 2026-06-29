@@ -59,7 +59,7 @@ const checks = [
   checkExact("register", "secret-sync-required-count", summary.secretSyncRequired, 3),
   checkExact("register", "restore-drill-required-count", summary.restoreDrillRequired, 1),
   checkExact("register", "terraform-file-contract-count", summary.terraformFileContracts, 3),
-  checkExact("register", "env-output-contract-count", summary.envOutputContracts, 6),
+  checkExact("register", "env-output-contract-count", summary.envOutputContracts, 5),
   checkExact("register", "no-terraform-apply-claim", summary.terraformApplyExecutions, 0),
   checkExact("register", "no-applied-bucket-proof-claim", summary.appliedBucketArnProofs, 0),
   checkExact("register", "no-iam-output-proof-claim", summary.iamPolicyOutputProofs, 0),
@@ -136,7 +136,7 @@ const checks = [
     "runtime_environment"
   ]),
   checkIncludes("object-store", "local-minio-object-store-doctor-signals", localObjectStoreSource, [
-    "CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled",
+    "--confirm-live-s3-artifact-doctor",
     "OBJECT_STORE_URL",
     "writeS3CompatibleArtifactStore",
     "readback verification",

@@ -1,6 +1,6 @@
 import { validateDurableRuntimeEnv } from "./runtime-env-contract.mjs";
 
-export const runtimeEnvSourceSignals = Object.freeze(["OBJECT_STORE_SIGNING_SECRET", "REAL_ORDER_KILL_SWITCH=disabled"]);
+export const runtimeEnvSourceSignals = Object.freeze(["OBJECT_STORE_SIGNING_SECRET", "externalShareApprovalRequired: true"]);
 
 const report = validateDurableRuntimeEnv(process.env);
 

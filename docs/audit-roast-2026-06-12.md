@@ -55,7 +55,7 @@ Severity / Area / Title / Status. Evidence and fixes are in the sections below o
 ### Medium (selected)
 | # | Area | Title | Status |
 |---|------|-------|--------|
-| M1 | Security | Prod gating keyed on `NODE_ENV`/`CUSTOMCARD_ENV` only; misconfig falls back to static shared admin token (memory mode) | **Fixed** (production still requires Postgres, and memory static tokens require `CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS=enabled`) |
+| M1 | Security | Prod gating keyed on `NODE_ENV`/`CUSTOMCARD_ENV` only; misconfig falls back to static shared admin token (memory mode) | **Fixed** (production still requires Postgres, and memory static tokens require the local `--local-auth-fallbacks` runtime switch) |
 | M2 | Security | Rate-limit key was the proxy IP (one global bucket) or spoofable XFF | **Fixed** (Vercel client-IP headers preferred) |
 | M3 | Security | Vercel-served static assets had zero security headers (api-server headers don't apply on Vercel CDN) | **Fixed** (non-CSP headers in vercel.json; COOP `same-origin-allow-popups` to keep Walgreens popup callback). CSP for the SPA still open — needs Clerk domain allowlist testing |
 | M4 | Privacy | DSAR `status`/`dueAt` were client-supplied (requester could self-complete) | **Fixed** in both runtimes, tests updated |

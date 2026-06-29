@@ -2,7 +2,7 @@
 
 Environment variables:
   ANTHROPIC_API_KEY      required — text generation model
-  CARD_GEN_API_TOKEN     required for /generate unless local unauth opt-in is enabled
+  CARD_GEN_API_TOKEN     required for /generate
   CARD_GEN_ALLOWED_ORIGINS optional comma-separated browser origins for CORS
   CARD_GEN_RATE_LIMIT_PER_MINUTE optional — defaults to 12
   CARD_GEN_MONTHLY_BUDGET_CENTS optional — defaults to 3000
@@ -16,7 +16,6 @@ Environment variables:
   CARD_TEXT_REQUEST_LIMIT optional — defaults to 1
   CARD_IMAGE_MODEL       optional — defaults to dall-e-3
   CARD_IMAGE_QUALITY     optional — defaults to standard
-  CARD_IMAGE_ENABLED     optional — set to "true" to enable image gen
 
 Run locally:
   cd card_gen
@@ -53,11 +52,6 @@ def _env_int(name: str, default: int) -> int:
 
 def _allowed_origins() -> list[str]:
     return [origin.strip() for origin in os.environ.get("CARD_GEN_ALLOWED_ORIGINS", "").split(",") if origin.strip()]
-
-
-def _is_local_request(request: Request) -> bool:
-    host = request.client.host if request.client else ""
-    return host in {"127.0.0.1", "::1", "localhost", "testclient"}
 
 
 def _rate_limit_key(request: Request, token: str | None) -> str:
@@ -116,11 +110,6 @@ def require_card_gen_auth(
     authorization: str | None = Header(default=None),
 ) -> str:
     expected_token = os.environ.get("CARD_GEN_API_TOKEN", "")
-    allow_local_unauthenticated = os.environ.get("CARD_GEN_ALLOW_UNAUTHENTICATED_LOCAL", "false").lower() == "true"
-
-    if allow_local_unauthenticated and _is_local_request(request):
-        _enforce_rate_limit(request, None)
-        return _rate_limit_key(request, None)
 
     if len(expected_token) < 32:
         raise HTTPException(status_code=503, detail="CARD_GEN_API_TOKEN must be configured with at least 32 characters")
@@ -154,8 +143,7 @@ async def lifespan(app: FastAPI):
 
     image_factory: CardImageAgentFactory | None = None
     openai_key = os.environ.get("OPENAI_API_KEY", "")
-    image_enabled = os.environ.get("CARD_IMAGE_ENABLED", "false").lower() == "true"
-    if openai_key and image_enabled:
+    if openai_key:
         image_factory = CardImageAgentFactory(
             api_key=openai_key,
             model=os.environ.get("CARD_IMAGE_MODEL", "dall-e-3"),

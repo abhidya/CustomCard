@@ -55,16 +55,16 @@ Environment:
 Provider fallback configuration:
 
 - Flow config lives in `src/aiFlowConfigData.mjs` and is resolved server-side from provider credentials plus trusted Admin provider controls.
-- The local Comfy worker forces `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=local-comfyui-api-image`, defaults `CUSTOMCARD_COMFYUI_URL` to `http://127.0.0.1:8188`, and keeps customer queue payloads free of Comfy credentials or workflow JSON.
-- Local Comfy workflows can be supplied with `CUSTOMCARD_COMFYUI_WORKFLOW_PATH` or `CUSTOMCARD_COMFYUI_WORKFLOW_JSON`; `CUSTOMCARD_COMFYUI_WORKFLOW_ID` and `CUSTOMCARD_COMFYUI_WORKFLOW_INPUTS_JSON` are attached as trusted worker-side metadata.
+- The local Comfy worker defaults `CUSTOMCARD_COMFYUI_URL` to `http://127.0.0.1:8188`, passes an explicit admin flow config to the worker runtime, and keeps customer queue payloads free of Comfy credentials or workflow JSON.
+- Local Comfy workflow id/path/json/input JSON is saved in Admin Providers or supplied as benchmark CLI arguments such as `--workflow-path`, `--workflow-id`, `--workflow-json`, and `--workflow-inputs-json`.
 - Workflow templates may use `{{prompt}}`, `{{negative_prompt}}`, `{{panel_id}}`, `{{seed}}`, `{{width}}`, `{{height}}`, `{{steps}}`, `{{cfg}}`, `{{sampler}}`, `{{scheduler}}`, `{{checkpoint}}`, and `{{workflow_id}}`.
 - Checked-in Comfy API workflows live under `comfyui-workflows/`. Run `npm run comfy:models:setup` to hydrate the practical SDXL, Z-Image, and FLUX.2 Klein assets into the configured ComfyUI `models/` folder. Add `-- --include-qwen` only for the Qwen Image/Edit research branch, and `-- --include-gated` only after accepting FLUX.1 Schnell terms and setting `HF_TOKEN`.
 - Current local benchmark candidates:
-  - SDXL base: `CUSTOMCARD_COMFYUI_WORKFLOW_PATH=comfyui-workflows/customcard-sdxl-checkpoint.json`, `CUSTOMCARD_COMFYUI_CHECKPOINT=sd_xl_base_1.0.safetensors`, `CUSTOMCARD_COMFYUI_STEPS=25`, `CUSTOMCARD_COMFYUI_CFG=6`, `CUSTOMCARD_COMFYUI_SAMPLER=dpmpp_2m`, `CUSTOMCARD_COMFYUI_SCHEDULER=karras`.
+  - SDXL base: `--workflow-path comfyui-workflows/customcard-sdxl-checkpoint.json --checkpoint sd_xl_base_1.0.safetensors`.
   - SDXL Turbo: same checkpoint workflow with `CUSTOMCARD_COMFYUI_CHECKPOINT=sd_xl_turbo_1.0_fp16.safetensors`, `CUSTOMCARD_COMFYUI_STEPS=2`, `CUSTOMCARD_COMFYUI_CFG=0`, `CUSTOMCARD_COMFYUI_SAMPLER=euler_ancestral`, `CUSTOMCARD_COMFYUI_SCHEDULER=sgm_uniform`.
-  - SDXL Lightning LoRA: `CUSTOMCARD_COMFYUI_WORKFLOW_PATH=comfyui-workflows/customcard-sdxl-lightning-lora.json`, `CUSTOMCARD_COMFYUI_CHECKPOINT=sd_xl_base_1.0.safetensors`, `CUSTOMCARD_COMFYUI_STEPS=4`, `CUSTOMCARD_COMFYUI_CFG=1`, `CUSTOMCARD_COMFYUI_SAMPLER=euler`, `CUSTOMCARD_COMFYUI_SCHEDULER=sgm_uniform`.
-  - Z-Image Turbo research: `CUSTOMCARD_COMFYUI_WORKFLOW_PATH=comfyui-workflows/customcard-z-image-turbo.json`, `CUSTOMCARD_COMFYUI_STEPS=8`, `CUSTOMCARD_COMFYUI_CFG=1`, `CUSTOMCARD_COMFYUI_SAMPLER=res_multistep`, `CUSTOMCARD_COMFYUI_SCHEDULER=simple`.
-  - FLUX.2 Klein 4B quality target: `CUSTOMCARD_COMFYUI_WORKFLOW_PATH=comfyui-workflows/customcard-flux2-klein-4b.json`, `CUSTOMCARD_COMFYUI_STEPS=4`, `CUSTOMCARD_COMFYUI_CFG=1`, `CUSTOMCARD_COMFYUI_SAMPLER=euler`. Run this on a 16GB+ GPU or cloud ComfyUI runner for fair scoring.
+  - SDXL Lightning LoRA: `--workflow-path comfyui-workflows/customcard-sdxl-lightning-lora.json --checkpoint sd_xl_base_1.0.safetensors`.
+  - Z-Image Turbo research: `--workflow-path comfyui-workflows/customcard-z-image-turbo.json`.
+  - FLUX.2 Klein 4B quality target: `--workflow-path comfyui-workflows/customcard-flux2-klein-4b.json`. Run this on a 16GB+ GPU or cloud ComfyUI runner for fair scoring.
 - A direct Postgres local worker process needs an object store shared with the API process, such as local MinIO over `http://127.0.0.1:9000`; `memory://` is process-local and is suitable only for single-process tests or inline execution. The provider HTTP worker instead sends generated image results to the hosted API, and the hosted API persists artifacts to R2/object storage.
 - Live calls require an Admin-enabled flow, allowed adapter, required credentials, positive rate limit, and non-negative budget.
 - If card-copy provider config is missing, disabled, rate-limited, over budget, or fails during execution, the service returns user-content-only card fields and no images.

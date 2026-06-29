@@ -86,14 +86,13 @@ export const reviewerDbSeedReadinessItems = [
     proofScope: "repo-local-contract",
     tableNames: ["users", "auth_sessions"],
     envVarNames: [
-      "CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS",
       "CUSTOMCARD_CUSTOMER_SESSION_TOKEN",
       "CUSTOMCARD_ADMIN_SESSION_TOKEN",
       "AUTH_SESSION_SECRET"
     ],
     routeIds: ["/api/admin/readiness", "/api/customer/bootstrap"],
     requiredSourceSignals: [
-      "CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS",
+      "--local-auth-fallbacks",
       "hashSessionToken",
       "session-demo-customer",
       "session-demo-admin",
@@ -365,7 +364,7 @@ const reviewerDbSeedReadinessRegister = defineReadinessRegister({
     if (tokenContract) {
       assertCoversEnvVars(
         tokenContract,
-        ["CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS", "CUSTOMCARD_CUSTOMER_SESSION_TOKEN", "CUSTOMCARD_ADMIN_SESSION_TOKEN"],
+        ["CUSTOMCARD_CUSTOMER_SESSION_TOKEN", "CUSTOMCARD_ADMIN_SESSION_TOKEN"],
         issues,
         "Reviewer session token contract"
       );

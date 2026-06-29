@@ -3,7 +3,11 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { loadLocalAiEnvFiles } from "./ai-card-generator.mjs";
-import { createLocalComfyWorkerRuntime, resolveLocalComfyWorkerEnv } from "./local-comfy-worker.mjs";
+import {
+  buildLocalComfyWorkerAiFlowConfig,
+  createLocalComfyWorkerRuntime,
+  resolveLocalComfyWorkerEnv
+} from "./local-comfy-worker.mjs";
 import { stories } from "./model-benchmark-loop.mjs";
 import { createPostgresRuntime } from "./postgres-runtime.mjs";
 
@@ -38,7 +42,8 @@ export function buildLocalAiQueuePlan({ args = {}, env = process.env, now = () =
   const write = enabled(args.write) || enabled(args.live);
   const dryRun = args.dryRun === undefined ? !write : enabled(args.dryRun);
   const selectedStories = selectStories(args);
-  const localEndpoints = resolveLocalEndpoints(workerEnv);
+  const localEndpoints = resolveLocalEndpoints(workerEnv, args);
+  const aiFlowAdminConfig = localOnlyAiFlowConfig(workerEnv, localEndpoints);
   const blockers = validateLocalOnly(localEndpoints);
   const outputDir = resolve(
     repoRoot,
@@ -77,6 +82,7 @@ export function buildLocalAiQueuePlan({ args = {}, env = process.env, now = () =
     write,
     runWorker: enabled(args.runWorker),
     ensureUser: enabled(args.ensureUser),
+    aiFlowAdminConfig,
     outputDir,
     queuedAtIso: timestamp,
     user: {
@@ -180,7 +186,9 @@ export async function queueLocalAiJobs({ plan, env = process.env, postgresPoolFa
 
 export async function runQueuedLocalAiJobs({ plan, env = process.env } = {}) {
   if (!plan?.runWorker) return { status: "skipped", reason: "runWorker disabled", reports: [] };
-  const runtime = createLocalComfyWorkerRuntime({ env: localOnlyWorkerEnv(env) });
+  const workerEnv = localOnlyWorkerEnv(env);
+  const aiFlowAdminConfig = plan.aiFlowAdminConfig ?? localOnlyAiFlowConfig(workerEnv, resolveLocalEndpoints(workerEnv));
+  const runtime = createLocalComfyWorkerRuntime({ env: workerEnv, aiFlowAdminConfig });
   try {
     const reports = [];
     for (const job of plan.jobs) {
@@ -277,36 +285,52 @@ function buildLocalAiQueueJob({ story, userId, sessionId, runId, timestamp, prov
 }
 
 function localOnlyWorkerEnv(env) {
-  return resolveLocalComfyWorkerEnv({
-    ...env,
-    CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "local-openai-compatible-chat",
-    CUSTOMCARD_AI_CARD_COPY_FALLBACK_ADAPTER_ID: "local-openai-compatible-chat",
-    CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "local-comfyui-api-image",
-    CUSTOMCARD_AI_CARD_IMAGE_FALLBACK_ADAPTER_ID: "local-comfyui-api-image"
-  });
+  return resolveLocalComfyWorkerEnv({ ...env });
 }
 
-function resolveLocalEndpoints(env) {
+function resolveLocalEndpoints(env, args = {}) {
   return {
     llmBaseUrl: firstNonEmpty(env.CUSTOMCARD_LOCAL_LLM_BASE_URL, env.LMSTUDIO_BASE_URL, env.KOBOLDCPP_BASE_URL),
-    llmModel: firstNonEmpty(
-      env.CUSTOMCARD_LOCAL_LLM_MODEL,
-      env.LMSTUDIO_MODEL,
-      env.KOBOLDCPP_MODEL,
-      env.CUSTOMCARD_AI_CARD_COPY_MODEL,
-      "local-default"
-    ),
+    llmModel: firstNonEmpty(args.llmModel, args.model, "local-default"),
+    llmContextTokens: boundedInteger(args.contextTokens, 0, 1_000_000, 8192),
+    llmMaxTokens: boundedInteger(args.maxTokens, 0, 4000, 3200),
     comfyUrl: firstNonEmpty(env.CUSTOMCARD_COMFYUI_URL, env.COMFYUI_URL, "http://127.0.0.1:8188"),
-    comfyCheckpoint: firstNonEmpty(
-      env.CUSTOMCARD_COMFYUI_CHECKPOINT,
-      env.COMFYUI_CHECKPOINT,
-      env.CUSTOMCARD_COMFYUI_MODEL_CHECKPOINT,
-      "DreamShaper_8_pruned.safetensors"
-    ),
-    comfyWorkflowId: firstNonEmpty(env.CUSTOMCARD_COMFYUI_WORKFLOW_ID, env.COMFYUI_WORKFLOW_ID, "api-sdxl-checkpoint-card-v1"),
-    comfyWorkflowPath: firstNonEmpty(env.CUSTOMCARD_COMFYUI_WORKFLOW_PATH, env.COMFYUI_WORKFLOW_PATH, ""),
+    comfyCheckpoint: firstNonEmpty(args.comfyCheckpoint, args.checkpoint, "DreamShaper_8_pruned.safetensors"),
+    comfyWorkflowId: firstNonEmpty(args.workflowId, "api-sdxl-checkpoint-card-v1"),
+    comfyWorkflowPath: firstNonEmpty(args.workflowPath, ""),
     codeVersion: firstNonEmpty(env.CUSTOMCARD_CODE_VERSION, env.VERCEL_GIT_COMMIT_SHA, "local-worktree")
   };
+}
+
+function localOnlyAiFlowConfig(env, localEndpoints) {
+  return buildLocalComfyWorkerAiFlowConfig(env).map((config) => {
+    if (config.flowId === "card-copy") {
+      return {
+        ...config,
+        primaryAdapterId: "local-openai-compatible-chat",
+        fallbackAdapterId: "local-openai-compatible-chat",
+        model: localEndpoints.llmModel,
+        contextWindowTokens: localEndpoints.llmContextTokens,
+        maxTokens: localEndpoints.llmMaxTokens,
+        liveProviderCallsEnabled: true,
+        fallbackQueueEnabled: false
+      };
+    }
+    if (config.flowId === "card-image") {
+      return {
+        ...config,
+        model: localEndpoints.comfyCheckpoint,
+        workflowId: localEndpoints.comfyWorkflowId,
+        workflowPath: localEndpoints.comfyWorkflowPath,
+        renderingMode: /customcard-production-text-overlay|production-text-overlay/i.test(
+          `${localEndpoints.comfyWorkflowId} ${localEndpoints.comfyWorkflowPath}`
+        )
+          ? "final-text-composited"
+          : ""
+      };
+    }
+    return config;
+  });
 }
 
 function validateLocalOnly(localEndpoints) {
@@ -431,6 +455,12 @@ function firstNonEmpty(...values) {
     if (text) return text;
   }
   return "";
+}
+
+function boundedInteger(value, min, max, fallback) {
+  const parsed = Number.parseInt(String(value ?? ""), 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, parsed));
 }
 
 function enabled(value) {

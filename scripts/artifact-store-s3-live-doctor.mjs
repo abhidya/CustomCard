@@ -2,8 +2,8 @@ import { createHash, createHmac } from "node:crypto";
 import { createServer } from "node:http";
 import { createServer as createViteServer } from "vite";
 
-const requiredGate = "enabled";
-const guardValue = process.env.CUSTOMCARD_S3_ARTIFACT_DOCTOR;
+const cliArgs = parseArgs(process.argv.slice(2));
+const confirmLive = cliArgs["confirm-live-s3-artifact-doctor"] === true;
 const endpoint = trimTrailingSlash(process.env.OBJECT_STORE_URL ?? "");
 const configuredBucket = process.env.OBJECT_STORE_BUCKET ?? "customcard-ci-artifacts";
 const accessKeyId = process.env.OBJECT_STORE_ACCESS_KEY_ID ?? process.env.AWS_ACCESS_KEY_ID ?? "";
@@ -11,11 +11,11 @@ const secretAccessKey = process.env.OBJECT_STORE_SECRET_ACCESS_KEY ?? process.en
 const region = process.env.OBJECT_STORE_REGION ?? process.env.AWS_REGION ?? "us-east-1";
 const signingSecret = process.env.OBJECT_STORE_SIGNING_SECRET ?? "";
 const expiresInMinutes = Number(process.env.ARTIFACT_SIGNED_URL_TTL_MINUTES ?? 15);
-const bucketMode = process.env.CUSTOMCARD_S3_ARTIFACT_DOCTOR_BUCKET_MODE ?? "isolated";
+const bucketMode = String(cliArgs["bucket-mode"] ?? "isolated");
 const useExistingBucket = bucketMode === "existing";
 
-if (guardValue !== requiredGate) {
-  console.error("Set CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled to run the live S3-compatible artifact doctor.");
+if (!confirmLive) {
+  console.error("Pass --confirm-live-s3-artifact-doctor to run the live S3-compatible artifact doctor.");
   process.exit(1);
 }
 
@@ -292,7 +292,7 @@ function validateStartupConfig() {
   if (endpoint.startsWith("file://")) blockers.push("Live S3-compatible artifact doctor cannot use a file:// object store URL.");
   if (endpoint && !/^https?:\/\//.test(endpoint)) blockers.push("Live S3-compatible artifact doctor requires an http(s) endpoint URL.");
   if (!configuredBucket) blockers.push("OBJECT_STORE_BUCKET is required for the live S3-compatible artifact doctor.");
-  if (!["isolated", "existing"].includes(bucketMode)) blockers.push("CUSTOMCARD_S3_ARTIFACT_DOCTOR_BUCKET_MODE must be isolated or existing.");
+  if (!["isolated", "existing"].includes(bucketMode)) blockers.push("--bucket-mode must be isolated or existing.");
   if (!accessKeyId) blockers.push("OBJECT_STORE_ACCESS_KEY_ID or AWS_ACCESS_KEY_ID is required.");
   if (!secretAccessKey) blockers.push("OBJECT_STORE_SECRET_ACCESS_KEY or AWS_SECRET_ACCESS_KEY is required.");
   if (!region) blockers.push("OBJECT_STORE_REGION or AWS_REGION is required.");
@@ -319,6 +319,26 @@ function buildPathStyleBucketUrl(endpoint, bucket) {
 
 function trimTrailingSlash(value) {
   return value.replace(/\/+$/g, "");
+}
+
+function parseArgs(values) {
+  const parsed = {};
+  for (let index = 0; index < values.length; index += 1) {
+    const value = values[index];
+    if (!value.startsWith("--")) continue;
+    const [rawKey, inlineValue] = value.slice(2).split("=");
+    if (inlineValue !== undefined) {
+      parsed[rawKey] = inlineValue;
+      continue;
+    }
+    if (values[index + 1] && !values[index + 1].startsWith("--")) {
+      parsed[rawKey] = values[index + 1];
+      index += 1;
+    } else {
+      parsed[rawKey] = true;
+    }
+  }
+  return parsed;
 }
 
 function printReport(status) {

@@ -39,8 +39,7 @@ const validMobileDoctorEnv = {
   CUSTOMCARD_PRODUCTION_API_BASE_URL: "https://api.customcard.test",
   CUSTOMCARD_APP_ENV: "qa",
   CUSTOMCARD_OAUTH_REDIRECT_URL: "customcard://sso-callback",
-  EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_customcard",
-  REAL_ORDER_KILL_SWITCH: "disabled"
+  EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_customcard"
 };
 
 describe("mobile customer experience contract", () => {
@@ -439,7 +438,7 @@ describe("mobile customer experience contract", () => {
     expect(JSON.stringify(mobileRenderSnapshot)).toContain("Review calendar options");
   });
 
-  it("passes the mobile doctor with env configuration and fails if real orders are enabled", () => {
+  it("passes the mobile doctor with env configuration and fixed disabled order state", () => {
     const validOutput = execFileSync("node", ["apps/mobile/scripts/doctor.mjs"], {
       encoding: "utf8",
       env: { ...process.env, ...validMobileDoctorEnv },
@@ -448,18 +447,6 @@ describe("mobile customer experience contract", () => {
     expect(validOutput).toContain("customer experience contract");
 
     let stderr = "";
-    try {
-      execFileSync("node", ["apps/mobile/scripts/doctor.mjs"], {
-        encoding: "utf8",
-        env: { ...process.env, ...validMobileDoctorEnv, REAL_ORDER_KILL_SWITCH: "enabled" },
-        stdio: ["ignore", "pipe", "pipe"]
-      });
-    } catch (error) {
-      stderr = String((error as { stderr?: string }).stderr);
-    }
-    expect(stderr).toContain("REAL_ORDER_KILL_SWITCH must stay disabled until retail certification is recorded.");
-
-    stderr = "";
     try {
       execFileSync("node", ["apps/mobile/scripts/doctor.mjs"], {
         encoding: "utf8",
@@ -508,8 +495,7 @@ describe("mobile customer experience contract", () => {
     expect(eas.build.development).toMatchObject({
       developmentClient: true,
       distribution: "internal",
-      channel: "qa",
-      env: { REAL_ORDER_KILL_SWITCH: "disabled" }
+      channel: "qa"
     });
     expect(eas.build.preview).toMatchObject({
       extends: "qa",
@@ -517,8 +503,7 @@ describe("mobile customer experience contract", () => {
     });
     expect(eas.build.production).toMatchObject({
       channel: "production",
-      autoIncrement: true,
-      env: { REAL_ORDER_KILL_SWITCH: "disabled" }
+      autoIncrement: true
     });
     expect(JSON.stringify(eas)).not.toContain("CUSTOMCARD_API_BASE_URL");
     expect(JSON.stringify(eas)).not.toContain("CUSTOMCARD_QA_API_BASE_URL");

@@ -15,7 +15,6 @@ CUSTOMCARD_QA_API_BASE_URL=https://api.qa.customcard.test \
 CUSTOMCARD_PRODUCTION_API_BASE_URL=https://api.customcard.test \
 EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_... \
 CUSTOMCARD_OAUTH_REDIRECT_URL=customcard://sso-callback \
-REAL_ORDER_KILL_SWITCH=disabled \
 xcodebuild -workspace ios/CustomCard.xcworkspace \
   -scheme CustomCard \
   -configuration Release \

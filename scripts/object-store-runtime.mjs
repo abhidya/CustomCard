@@ -321,7 +321,7 @@ function resolveObjectStoreConfig(env) {
     90
   );
   const writeConcurrency = safeIntegerEnv(env.CUSTOMCARD_ARTIFACT_WRITE_CONCURRENCY, 4, 1, 8);
-  const required = env.CUSTOMCARD_ARTIFACT_PERSISTENCE === "enabled" || Boolean(endpoint || bucket || accessKeyId || secretAccessKey);
+  const required = Boolean(endpoint || bucket || accessKeyId || secretAccessKey);
   const productionRuntime = isProductionRuntime(env);
   const provider = providerForEndpoint(endpoint);
   const publicBaseUrl = resolvePublicBaseUrl(env, { productionRuntime });

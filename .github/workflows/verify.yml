@@ -37,7 +37,6 @@ jobs:
       CLERK_AUTHORIZED_PARTIES: https://customcard.test
       CLERK_ISSUER: https://clerk.customcard.test
       CLERK_AUDIENCE: customcard-api
-      REAL_ORDER_KILL_SWITCH: disabled
       CUSTOMCARD_API_BASE_URL: http://127.0.0.1:5173
     steps:
       - name: Check out repository
@@ -220,7 +219,6 @@ jobs:
           CUSTOMCARD_APP_ENV: qa
           CUSTOMCARD_OAUTH_REDIRECT_URL: customcard://sso-callback
           EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_customcard_mobile_ci
-          REAL_ORDER_KILL_SWITCH: disabled
         run: npm --prefix apps/mobile run doctor
 
       - name: Validate mobile native release contract

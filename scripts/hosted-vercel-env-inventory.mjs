@@ -9,8 +9,7 @@ import {
   productionCardCopyModelOverrideEnvKey
 } from "../src/aiProviderSetupProfile.mjs";
 
-const guardEnvName = "CUSTOMCARD_HOSTED_ENV_INVENTORY";
-const guardRequirement = "CUSTOMCARD_HOSTED_ENV_INVENTORY=enabled";
+const guardRequirement = "--confirm-hosted-env-inventory";
 const defaultProductionBaseUrl = "https://customcard-three.vercel.app";
 
 const requiredHostedEnvVars = Object.freeze([
@@ -27,12 +26,13 @@ const aiSetupProfile = Object.freeze(buildAiProviderSetupProfile());
 
 export async function runHostedVercelEnvInventory({
   env = process.env,
+  enabled = false,
   commandRunner = runVercelEnvLs,
   now = new Date()
 } = {}) {
   const target = resolveVercelEnvTarget(env);
   const blockers = [...target.blockers];
-  if (env[guardEnvName] !== "enabled") {
+  if (!enabled) {
     blockers.unshift(`${guardRequirement} is required before hosted Vercel env inventory runs.`);
   }
   if (typeof commandRunner !== "function") {
@@ -159,9 +159,7 @@ function buildReport({ target, entries, blockers, now, command }) {
           id: "ai-card-copy-setup",
           passed: inventory.aiCardCopySetup.ready,
           detail: inventory.aiCardCopySetup.ready
-            ? inventory.aiCardCopySetup.productionModelOverridePresent
-              ? `Cloudflare card-copy setup is present, and ${productionCardCopyModelOverrideEnvKey} pins the production ${productionCardCopyModel} model.`
-              : `Cloudflare card-copy setup is present. ${productionCardCopyModelOverrideEnvKey} is not set, so hosted card-copy uses the shared production default ${productionCardCopyModel}.`
+            ? `Cloudflare card-copy credentials are present; hosted card-copy uses the Admin provider default ${productionCardCopyModel} model.`
             : inventory.aiCardCopySetup.blockers.join(" ")
         }
       ];
@@ -195,7 +193,7 @@ function buildReport({ target, entries, blockers, now, command }) {
       clerkJwtVerifierConfigured: inventory.clerkJwtVerifierConfigured,
       idempotencyConfigured: inventory.idempotencyConfigured,
       aiCardCopySetupConfigured: inventory.aiCardCopySetup.baseConfigured,
-      aiCardCopyProductionModelPinned: inventory.aiCardCopySetup.productionModelOverridePresent,
+      aiCardCopyProductionModelPinned: inventory.aiCardCopySetup.defaultModel === productionCardCopyModel,
       environmentSynced: ready
     },
     checks,
@@ -240,7 +238,7 @@ function buildAiCardCopySetup(scopedNames) {
   }));
   const tokenConfigured = tokenEnvKeys.some((entry) => entry.present);
   const modelConfigured = modelEnvKeys.some((entry) => entry.present);
-  const productionModelOverridePresent = scopedNames.has(productionCardCopyModelOverrideEnvKey);
+  const productionModelOverridePresent = Boolean(productionCardCopyModelOverrideEnvKey && scopedNames.has(productionCardCopyModelOverrideEnvKey));
   const blockers = [];
 
   if (!scopedNames.has(aiSetupProfile.cardCopy.accountEnvKey)) {
@@ -393,8 +391,8 @@ function runVercelEnvLs() {
   });
 }
 
-function writeEvidenceIfRequested(report, env = process.env) {
-  const outputPath = String(env.CUSTOMCARD_HOSTED_ENV_INVENTORY_EVIDENCE_OUT ?? "").trim();
+function writeEvidenceIfRequested(report, outputPath = "") {
+  outputPath = String(outputPath ?? "").trim();
   if (!outputPath) return report;
   const absolutePath = resolve(outputPath);
   mkdirSync(dirname(absolutePath), { recursive: true });
@@ -407,7 +405,30 @@ function isCliEntrypoint() {
 }
 
 if (isCliEntrypoint()) {
-  const report = writeEvidenceIfRequested(await runHostedVercelEnvInventory());
+  const args = parseArgs(process.argv.slice(2));
+  const report = writeEvidenceIfRequested(await runHostedVercelEnvInventory({
+    enabled: args["confirm-hosted-env-inventory"] === true
+  }), args["evidence-out"]);
   console.log(JSON.stringify(report, null, 2));
   if (report.status !== "ready") process.exit(1);
+}
+
+function parseArgs(values) {
+  const parsed = {};
+  for (let index = 0; index < values.length; index += 1) {
+    const value = values[index];
+    if (!value.startsWith("--")) continue;
+    const [rawKey, inlineValue] = value.slice(2).split("=");
+    if (inlineValue !== undefined) {
+      parsed[rawKey] = inlineValue;
+      continue;
+    }
+    if (values[index + 1] && !values[index + 1].startsWith("--")) {
+      parsed[rawKey] = values[index + 1];
+      index += 1;
+    } else {
+      parsed[rawKey] = true;
+    }
+  }
+  return parsed;
 }

@@ -42,8 +42,8 @@ Verification:
   stored only in Vercel env / ignored local env, not in tracked docs.
 - On 2026-06-15, redacted `npm run hosted:env:repair` plan evidence was attached
   at `docs/evidence/hosted-api/2026-06-15-vercel-env-repair-plan.json`. It did
-  not mutate Vercel because `CUSTOMCARD_HOSTED_ENV_REPAIR_APPLY` was not
-  enabled and no operator-supplied values were present for the three missing
+  not mutate Vercel because `--apply` was not passed and no operator-supplied
+  values were present for the three missing
   keys.
 - On 2026-06-15, guarded partial repair evidence was attached at
   `docs/evidence/hosted-api/2026-06-15-vercel-env-repair-partial-ttl.json`.
@@ -78,9 +78,8 @@ Verification:
 - On 2026-06-11, Cloudflare Workers AI env vars were added to Production,
   Preview, and Development scopes: `CLOUDFLARE_ACCOUNT_ID`,
   `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN`,
-  `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`,
-  `CLOUDFLARE_WORKERS_AI_TEXT_MODEL`, and
-  `CLOUDFLARE_WORKERS_AI_IMAGE_MODEL`.
+  and `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`. Model selection is now stored in
+  Admin Providers configuration, not env.
 - Local live Cloudflare smoke checks using ignored `.env.local` returned HTTP
   200 for `@cf/meta/llama-3.2-3b-instruct` chat completions and HTTP 200 with a
   512x512 JPEG response for

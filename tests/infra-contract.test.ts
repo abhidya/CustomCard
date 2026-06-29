@@ -31,8 +31,7 @@ const validMobileDoctorEnv = {
   CUSTOMCARD_API_BASE_URL: "https://api.customcard.test",
   CUSTOMCARD_APP_ENV: "qa",
   CUSTOMCARD_OAUTH_REDIRECT_URL: "customcard://sso-callback",
-  EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_customcard",
-  REAL_ORDER_KILL_SWITCH: "disabled"
+  EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_customcard"
 };
 
 describe("production infrastructure contract", () => {
@@ -109,7 +108,7 @@ describe("production infrastructure contract", () => {
       expect(manifest).toContain("worker:");
       expect(manifest).toContain("postgres:");
       expect(manifest).toContain("redis:");
-      expect(manifest).toContain("REAL_ORDER_KILL_SWITCH");
+      expect(manifest).toContain("WALGREENS_VENDOR_MODE: disabled_until_certified");
     }
     expect(devCompose).toContain("minio:");
     expect(devCompose).toContain("MINIO_ROOT_USER: customcard");
@@ -158,7 +157,7 @@ describe("production infrastructure contract", () => {
     expect(k8s).toContain("name: customcard-worker");
     expect(k8s).toContain("secretRef:");
     expect(k8s).toContain("configMapRef:");
-    expect(k8s).toContain("REAL_ORDER_KILL_SWITCH");
+    expect(k8s).toContain("CUSTOMCARD_API_RUNTIME");
     expect(k8s).toContain('CUSTOMCARD_API_RUNTIME: "postgres"');
     expect(k8s).toContain("AUTH_SESSION_SECRET");
     expect(k8s).toContain("OBJECT_STORE_BUCKET");
@@ -220,7 +219,7 @@ describe("production infrastructure contract", () => {
     expect(outputs).toContain("OBJECT_STORE_BUCKET             = aws_s3_bucket.artifacts.bucket");
     expect(outputs).toContain("OBJECT_STORE_REGION             = data.aws_region.current.name");
     expect(outputs).toContain('OBJECT_STORE_SIGNING_SECRET     = "set-in-secret-manager"');
-    expect(outputs).toContain('REAL_ORDER_KILL_SWITCH          = "disabled"');
+    expect(outputs).toContain('OBJECT_STORE_SIGNING_SECRET     = "set-in-secret-manager"');
   });
 
   it("ships a cloud artifact proof readiness doctor without claiming applied cloud proof", () => {
@@ -258,7 +257,7 @@ describe("production infrastructure contract", () => {
       evidenceMissing: 6,
       appliedCloudRequired: 6,
       terraformFileContracts: 3,
-      envOutputContracts: 6,
+      envOutputContracts: 5,
       terraformApplyExecutions: 0,
       appliedBucketArnProofs: 0,
       iamPolicyOutputProofs: 0,
@@ -293,7 +292,6 @@ describe("production infrastructure contract", () => {
     expect(env).toContain("OBJECT_STORE_SIGNING_SECRET=");
     expect(env).toContain("ARTIFACT_SIGNED_URL_TTL_MINUTES=");
     expect(env).toContain("AUTH_SESSION_SECRET=");
-    expect(env).toContain("CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS=disabled");
     expect(env).toContain("CUSTOMCARD_CUSTOMER_SESSION_TOKEN=");
     expect(env).toContain("CUSTOMCARD_ADMIN_SESSION_TOKEN=");
     expect(env).toContain("CUSTOMCARD_AUTH_CALLBACK_URL=");
@@ -333,14 +331,14 @@ describe("production infrastructure contract", () => {
     expect(env).toContain("AWS_ACCESS_KEY_ID=");
     expect(env).toContain("AWS_SECRET_ACCESS_KEY=");
     expect(env).toContain("AWS_REGION=");
-    expect(env).toContain("BEDROCK_TEXT_MODEL_ID=");
-    expect(env).toContain("BEDROCK_IMAGE_MODEL_ID=");
+    expect(env).not.toMatch(/BEDROCK_.*MODEL_ID=/);
     expect(env).toContain("ANTHROPIC_API_KEY=");
     expect(env).toContain("GOOGLE_GENERATIVE_AI_API_KEY=");
     expect(env).toContain("CLOUDFLARE_ACCOUNT_ID=");
     expect(env).toContain("CLOUDFLARE_API_TOKEN=");
-    expect(env).toContain("CLOUDFLARE_WORKERS_AI_TEXT_MODEL=");
-    expect(env).toContain("CLOUDFLARE_WORKERS_AI_IMAGE_MODEL=");
+    expect(env).toContain("CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN=");
+    expect(env).toContain("CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN=");
+    expect(env).not.toMatch(/CLOUDFLARE_WORKERS_AI_.*MODEL=/);
     expect(env).toContain("MISTRAL_API_KEY=");
     expect(env).toContain("COHERE_API_KEY=");
     expect(env).toContain("PERPLEXITY_API_KEY=");
@@ -397,7 +395,7 @@ describe("production infrastructure contract", () => {
     expect(env).toContain("BETTERSTACK_SOURCE_TOKEN=");
     expect(env).toContain("BETTERSTACK_INGESTING_HOST=");
     expect(env).toContain("TRANSACTIONAL_EMAIL_API_KEY=");
-    expect(env).toContain("REAL_ORDER_KILL_SWITCH=disabled");
+    expect(env).toContain("Live order gates are owned by admin safety controls.");
     expect(env).toContain("WALGREENS_VENDOR_MODE=disabled_until_certified");
     expect(env).toContain("CVS_VENDOR_MODE=disabled_until_certified");
     expect(env).toContain("FEDEX_VENDOR_MODE=disabled_until_certified");
@@ -415,8 +413,8 @@ describe("production infrastructure contract", () => {
     expect(packageJson).toContain("\"mobile:web:preview\": \"vite --host 127.0.0.1 --open /?view=mobile\"");
     expect(packageJson).not.toContain("mobile:web:demo");
     expect(packageJson).toContain("\"demo:doctor\": \"node scripts/demo-reset.mjs\"");
-    expect(packageJson).toContain("\"api:doctor:postgres:http\": \"CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled node scripts/postgres-api-http-doctor.mjs\"");
-    expect(packageJson).toContain("\"artifact:doctor:s3:live\": \"CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled node scripts/artifact-store-s3-live-doctor.mjs\"");
+    expect(packageJson).toContain("\"api:doctor:postgres:http\": \"node scripts/postgres-api-http-doctor.mjs --confirm-live-postgres-api-http-doctor\"");
+    expect(packageJson).toContain("\"artifact:doctor:s3:live\": \"node scripts/artifact-store-s3-live-doctor.mjs --confirm-live-s3-artifact-doctor\"");
     expect(packageJson).toContain("\"cloud:doctor\": \"node scripts/cloud-artifact-iac-doctor.mjs\"");
     expect(packageJson).toContain("\"cloud:artifact:proof:doctor\": \"node scripts/cloud-artifact-proof-readiness-doctor.mjs\"");
     expect(packageJson).toContain("\"localization:doctor\": \"node scripts/localization-doctor.mjs\"");
@@ -569,7 +567,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run worker");
     expect(workflow).toContain("npm --prefix apps/mobile run doctor");
     expect(workflow).toContain("npm run mobile:release:doctor");
-    expect(workflow).toContain("REAL_ORDER_KILL_SWITCH: disabled");
+    expect(workflow).toContain("npm run retail:doctor");
     expect(workflow).toContain("OBJECT_STORE_SIGNING_SECRET: test-object-store-signing-secret-32");
     expect(workflow).toContain("ARTIFACT_SIGNED_URL_TTL_MINUTES: 15");
     expect(workflow).toContain("CUSTOMCARD_API_BASE_URL: http://127.0.0.1:5173");
@@ -799,7 +797,7 @@ describe("production infrastructure contract", () => {
     const doctor = read("scripts/postgres-api-http-doctor.mjs");
 
     expect(doctor).toContain("customcard-postgres-api-http-doctor");
-    expect(doctor).toContain("CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR");
+    expect(doctor).toContain("--confirm-live-postgres-api-http-doctor");
     expect(doctor).toContain("spawn(\"node\", [\"scripts/api-server.mjs\"]");
     expect(doctor).toContain("serves public Postgres health and route catalog over HTTP");
     expect(doctor).toContain("enforces Postgres HTTP auth on admin and customer routes");
@@ -823,7 +821,7 @@ describe("production infrastructure contract", () => {
     const doctor = read("scripts/artifact-store-s3-live-doctor.mjs");
 
     expect(doctor).toContain("customcard-artifact-store-s3-live-doctor");
-    expect(doctor).toContain("CUSTOMCARD_S3_ARTIFACT_DOCTOR");
+    expect(doctor).toContain("--confirm-live-s3-artifact-doctor");
     expect(doctor).toContain("OBJECT_STORE_ACCESS_KEY_ID");
     expect(doctor).toContain("OBJECT_STORE_SECRET_ACCESS_KEY");
     expect(doctor).toContain("AWS4-HMAC-SHA256");
@@ -1299,7 +1297,7 @@ describe("production infrastructure contract", () => {
       vercelEnvSyncRequired: 5,
       tableContracts: 15,
       routeContracts: 5,
-      requiredEnvVars: 7,
+      requiredEnvVars: 6,
       hostedSeedProofs: 0,
       hostedTokenProbeProofs: 0,
       vercelEnvSyncProofs: 0,
@@ -1603,7 +1601,7 @@ describe("production infrastructure contract", () => {
     expect(easConfig).toContain("\"developmentClient\": true");
     expect(easConfig).toContain("\"channel\": \"production\"");
     expect(easConfig).toContain("\"autoIncrement\": true");
-    expect(easConfig).toContain("\"REAL_ORDER_KILL_SWITCH\": \"disabled\"");
+    expect(easConfig).not.toContain("KILL_SWITCH");
     expect(easConfig).not.toContain("CUSTOMCARD_API_BASE_URL");
     expect(easConfig).not.toContain("CUSTOMCARD_QA_API_BASE_URL");
     expect(easConfig).not.toContain("CUSTOMCARD_PRODUCTION_API_BASE_URL");

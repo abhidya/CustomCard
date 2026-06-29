@@ -5,7 +5,7 @@ loadLocalAiEnvFiles();
 
 const args = new Set(process.argv.slice(2));
 const describeOnly = args.has("--describe");
-const runOnce = args.has("--once") || process.env.CUSTOMCARD_WORKER_PROCESS_ON_START === "true";
+const runOnce = args.has("--once");
 
 if (describeOnly) {
   const readiness = describeWorkerReadiness();

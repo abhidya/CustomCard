@@ -5,12 +5,12 @@ import pg from "pg";
 import { hashSessionToken } from "./api-runtime.mjs";
 import { apiRoutePathById, repositoryBackedCustomerRouteIds } from "../src/apiRouteContractsData.mjs";
 
-const requiredGate = "enabled";
-const guardValue = process.env.CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR;
+const cliArgs = parseArgs(process.argv.slice(2));
+const confirmLive = cliArgs["confirm-live-postgres-api-http-doctor"] === true;
 const databaseUrl = process.env.DATABASE_URL;
 
-if (guardValue !== requiredGate) {
-  console.error("Set CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled to run the Postgres API HTTP doctor.");
+if (!confirmLive) {
+  console.error("Pass --confirm-live-postgres-api-http-doctor to run the Postgres API HTTP doctor.");
   process.exit(1);
 }
 
@@ -683,4 +683,24 @@ function buildDatabaseUrl(connectionString, databaseName) {
 
 function quoteIdentifier(identifier) {
   return `"${identifier.replace(/"/g, '""')}"`;
+}
+
+function parseArgs(values) {
+  const parsed = {};
+  for (let index = 0; index < values.length; index += 1) {
+    const value = values[index];
+    if (!value.startsWith("--")) continue;
+    const [rawKey, inlineValue] = value.slice(2).split("=");
+    if (inlineValue !== undefined) {
+      parsed[rawKey] = inlineValue;
+      continue;
+    }
+    if (values[index + 1] && !values[index + 1].startsWith("--")) {
+      parsed[rawKey] = values[index + 1];
+      index += 1;
+    } else {
+      parsed[rawKey] = true;
+    }
+  }
+  return parsed;
 }

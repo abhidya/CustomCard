@@ -70,7 +70,7 @@ describe("hosted Clerk config repair", () => {
     });
     expect(report.blockers).toEqual(
       expect.arrayContaining([
-        "CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR=enabled is required before hosted Clerk config repair can inspect or apply changes."
+        "--confirm-hosted-clerk-config-repair is required before hosted Clerk config repair can inspect or apply changes."
       ])
     );
     expect(inventoryRunner).not.toHaveBeenCalled();
@@ -83,14 +83,14 @@ describe("hosted Clerk config repair", () => {
 
     const report = await runHostedClerkConfigRepair({
       env: {
-        CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR: "enabled",
         VITE_CLERK_PUBLISHABLE_KEY: livePublishableKey,
         CLERK_AUDIENCE: "customcard-api"
       },
       inventoryRunner: vi.fn(async () => inventory),
       publicConfigRunner: vi.fn(async () => publicConfig),
       commandRunner,
-      now: new Date("2026-06-15T17:00:00.000Z")
+      now: new Date("2026-06-15T17:00:00.000Z"),
+      enabled: true
     });
 
     expect(report).toMatchObject({
@@ -158,13 +158,13 @@ describe("hosted Clerk config repair", () => {
   it("blocks production repair with a test key, missing audience, or issuer mismatch", async () => {
     const report = await runHostedClerkConfigRepair({
       env: {
-        CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR: "enabled",
         VITE_CLERK_PUBLISHABLE_KEY: testPublishableKey,
         CLERK_ISSUER: "https://different.clerk.accounts.dev"
       },
       inventoryRunner: vi.fn(async () => inventory),
       publicConfigRunner: vi.fn(async () => publicConfig),
-      commandRunner: vi.fn()
+      commandRunner: vi.fn(),
+      enabled: true
     });
 
     expect(report.status).toBe("blocked");
@@ -182,16 +182,16 @@ describe("hosted Clerk config repair", () => {
 
     const report = await runHostedClerkConfigRepair({
       env: {
-        CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR: "enabled",
-        CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_APPLY: "enabled",
-        CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_ACKNOWLEDGE_PRODUCTION: "enabled",
-        CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_ACKNOWLEDGE_PUBLIC_KEY_REPLACE: "enabled",
         VITE_CLERK_PUBLISHABLE_KEY: livePublishableKey,
         CLERK_AUDIENCE: "customcard-api"
       },
       inventoryRunner: vi.fn(async () => inventory),
       publicConfigRunner: vi.fn(async () => publicConfig),
-      commandRunner
+      commandRunner,
+      enabled: true,
+      apply: true,
+      acknowledgeProduction: true,
+      acknowledgePublicKeyReplace: true
     });
 
     expect(report).toMatchObject({

@@ -92,19 +92,17 @@ production keys are:
 
 Hosted card-copy uses Cloudflare text/account keys. The local production-text
 Comfy path does not require Cloudflare image keys unless you are explicitly
-proving the live Cloudflare image lane.
+proving the live Cloudflare image lane. Provider, model, budget, queue, and
+workflow choices are admin configuration, not Vercel env.
 
 - `CLOUDFLARE_ACCOUNT_ID`
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`
-- `CLOUDFLARE_WORKERS_AI_IMAGE_MODEL`
 - `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN`
-- `CLOUDFLARE_WORKERS_AI_TEXT_MODEL`
 
 ### Object Store
 
 - `ARTIFACT_SIGNED_URL_TTL_MINUTES`
-- `CUSTOMCARD_ARTIFACT_PERSISTENCE`
 - `OBJECT_STORE_ACCESS_KEY_ID`
 - `OBJECT_STORE_BUCKET`
 - `OBJECT_STORE_PUBLIC_BASE_URL`
@@ -132,7 +130,6 @@ Preview API routes.
 - `CLOUDFLARE_ACCOUNT_ID`
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`
-- `CLOUDFLARE_WORKERS_AI_IMAGE_MODEL`
 - `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN`
 - `VITE_CLERK_PUBLISHABLE_KEY`
 
@@ -151,12 +148,9 @@ resource.
 - `CLOUDFLARE_ACCOUNT_ID`
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`
-- `CLOUDFLARE_WORKERS_AI_IMAGE_MODEL`
 - `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN`
-- `CLOUDFLARE_WORKERS_AI_TEXT_MODEL`
 - `CUSTOMCARD_ADMIN_SESSION_TOKEN`
 - `CUSTOMCARD_API_RUNTIME`
-- `CUSTOMCARD_ARTIFACT_PERSISTENCE`
 - `CUSTOMCARD_CUSTOMER_SESSION_TOKEN`
 - `GOOGLE_OAUTH_CLIENT_ID`
 - `GOOGLE_OAUTH_CLIENT_SECRET`
@@ -179,27 +173,23 @@ resource.
 - Vercel env changes apply to new deployments. Redeploy after changing runtime
   or provider env.
 - Use `vercel env ls --format=json` for scoped key inventory.
-- Use `CUSTOMCARD_HOSTED_ENV_INVENTORY=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:env:inventory`
+- Use `CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:env:inventory -- --confirm-hosted-env-inventory`
   to produce a redacted key-coverage report. The report must not include env
   values, only key names and target scopes. Treat these inventory artifacts as
   setup proof, not a place to copy or store secrets.
-- Use `CUSTOMCARD_HOSTED_ENV_REPAIR=enabled npm run hosted:env:repair` for a
-  redacted repair plan. To apply missing production keys, also set
-  `CUSTOMCARD_HOSTED_ENV_REPAIR_APPLY=enabled`,
-  `CUSTOMCARD_HOSTED_ENV_REPAIR_ACKNOWLEDGE_PRODUCTION=enabled`, and provide the
-  remaining missing keys in the process env. Use
-  `CUSTOMCARD_HOSTED_ENV_REPAIR_ALLOW_PARTIAL=enabled` only when intentionally
-  applying a valid subset while keeping the report blocked on remaining keys.
+- Use `npm run hosted:env:repair -- --confirm-hosted-env-repair` for a
+  redacted repair plan. To apply missing production keys, also pass
+  `--apply --acknowledge-production` and provide the remaining missing keys in
+  the process env. Pass `--allow-partial` only when intentionally applying a
+  valid subset while keeping the report blocked on remaining keys.
   The repair report must not include the values.
-- Use `CUSTOMCARD_HOSTED_CLERK_PUBLIC_CONFIG_PROBE=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:clerk:public-config`
+- Use `CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app npm run hosted:clerk:public-config -- --confirm-hosted-clerk-public-config-probe`
   to fetch the deployed public app shell and JavaScript assets, redact Clerk
   publishable-key values, and fail Production when a `pk_test` key is present or
   no `pk_live` key is present.
-- Use `CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR=enabled CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app VITE_CLERK_PUBLISHABLE_KEY=pk_live_... CLERK_AUDIENCE=... npm run hosted:clerk:repair`
+- Use `CUSTOMCARD_HOSTED_API_ENV=production CUSTOMCARD_VERCEL_ENV_TARGET=production CUSTOMCARD_HOSTED_API_BASE_URL=https://customcard-three.vercel.app VITE_CLERK_PUBLISHABLE_KEY=pk_live_... CLERK_AUDIENCE=... npm run hosted:clerk:repair -- --confirm-hosted-clerk-config-repair`
   to produce a redacted Clerk config repair plan. To apply the repair, also set
-  `CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_APPLY=enabled`,
-  `CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_ACKNOWLEDGE_PRODUCTION=enabled`, and
-  `CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_ACKNOWLEDGE_PUBLIC_KEY_REPLACE=enabled`.
+  `--apply --acknowledge-production --acknowledge-public-key-replace`.
   Redeploy after applying, then rerun `npm run hosted:clerk:public-config`.
 - Use `vercel env pull <tmpfile> --environment=production` only for local
   migration/doctor runs, then delete the temp file immediately.

@@ -145,9 +145,9 @@ npm run api:doctor:memory
 npm run api:doctor:postgres
 ```
 
-`api:doctor:memory` enables `CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS=enabled`
-inside the script so static customer/admin tokens stay limited to local reviewer
-drills. QA and production should use Clerk JWT verification with Postgres.
+`api:doctor:memory` passes `--local-auth-fallbacks` so static customer/admin
+tokens stay limited to local reviewer drills. QA and production should use Clerk
+JWT verification with Postgres.
 
 Common local commands:
 

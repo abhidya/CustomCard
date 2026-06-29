@@ -3,12 +3,12 @@ import { readFile } from "node:fs/promises";
 import pg from "pg";
 import { hashSessionToken } from "./api-runtime.mjs";
 
-const requiredGate = "enabled";
-const guardValue = process.env.CUSTOMCARD_ACCOUNT_AUTH_DOCTOR;
+const cliArgs = parseArgs(process.argv.slice(2));
+const confirmLive = cliArgs["confirm-live-account-auth-doctor"] === true;
 const databaseUrl = process.env.DATABASE_URL;
 
-if (guardValue !== requiredGate) {
-  console.error("Set CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled to run the live account auth doctor.");
+if (!confirmLive) {
+  console.error("Pass --confirm-live-account-auth-doctor to run the live account auth doctor.");
   process.exit(1);
 }
 
@@ -270,4 +270,24 @@ function buildDatabaseUrl(connectionString, databaseName) {
 
 function quoteIdentifier(identifier) {
   return `"${identifier.replace(/"/g, '""')}"`;
+}
+
+function parseArgs(values) {
+  const parsed = {};
+  for (let index = 0; index < values.length; index += 1) {
+    const value = values[index];
+    if (!value.startsWith("--")) continue;
+    const [rawKey, inlineValue] = value.slice(2).split("=");
+    if (inlineValue !== undefined) {
+      parsed[rawKey] = inlineValue;
+      continue;
+    }
+    if (values[index + 1] && !values[index + 1].startsWith("--")) {
+      parsed[rawKey] = values[index + 1];
+      index += 1;
+    } else {
+      parsed[rawKey] = true;
+    }
+  }
+  return parsed;
 }

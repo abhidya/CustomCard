@@ -184,7 +184,7 @@ const checks = [
     sourceKeys: ["mobileNativeInstallProof", "iosNativeInstallStaleEvidence"],
     signals: [
       "customcard-mobile-native-install-proof",
-      "CUSTOMCARD_MOBILE_NATIVE_INSTALL_PROOF=enabled",
+      "--confirm-mobile-native-install-proof",
       "CUSTOMCARD_MOBILE_APP_BUNDLE_PATH",
       "CUSTOMCARD_MOBILE_SIMULATOR_UDID",
       "print through your preferred print shop",

@@ -103,12 +103,12 @@ export const retailFulfillmentReadinessItems = [
   },
   {
     id: "order-mutation-kill-switch",
-    label: "Order mutation kill switch",
+    label: "Order mutation safety gate",
     lane: "order-safety",
     status: "repo-local-ready",
     vendorAdapterIds: requiredLiveVendorAdapterIds,
     fallbackAdapterIds: requiredFallbackAdapterIds,
-    recoveryEventNames: ["kill_switch_enabled", "idempotency_conflict", "order_mutation_blocked"],
+    recoveryEventNames: ["admin_safety_gate_enabled", "idempotency_conflict", "order_mutation_blocked"],
     manualConfirmationRequired: true,
     humanApprovalRequired: true,
     liveQuoteEnabled: false,
@@ -116,9 +116,9 @@ export const retailFulfillmentReadinessItems = [
     externalNetworkCalls: false,
     realPaymentsEnabled: false,
     physicalCertificationAttached: false,
-    currentEvidence: ["REAL_ORDER_KILL_SWITCH=disabled", "providerRuntime blocked live order tests", "idempotent manual handoff API"],
-    requiredEvidence: ["Kill-switch release approval", "Real-order dry-run transcript", "Idempotent order mutation proof"],
-    blocker: "The kill switch is enforced locally; no approved release to order mutations exists."
+    currentEvidence: ["Admin safety controls default live orders off", "providerRuntime blocked live order tests", "idempotent manual handoff API"],
+    requiredEvidence: ["Admin safety-control release approval", "Real-order dry-run transcript", "Idempotent order mutation proof"],
+    blocker: "Admin safety controls are enforced locally; no approved release to order mutations exists."
   },
   {
     id: "pickup-cancel-recovery-drills",

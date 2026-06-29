@@ -60,7 +60,7 @@ async function main() {
   }
 
   const comfyUrl = normalizeComfyUrl(args["comfy-url"] || process.env.CUSTOMCARD_COMFYUI_URL || process.env.COMFYUI_URL || "http://127.0.0.1:8188");
-  const workflowPath = resolve(repoRoot, String(args["workflow-path"] || process.env.CUSTOMCARD_COMFYUI_WORKFLOW_PATH || defaultWorkflowPath));
+  const workflowPath = resolve(repoRoot, String(args["workflow-path"] || defaultWorkflowPath));
   const workflowTemplate = readText(workflowPath);
   const checkpoint = String(args.checkpoint || process.env.CUSTOMCARD_COMFYUI_CHECKPOINT || "sd_xl_turbo_1.0_fp16.safetensors");
   const steps = boundedInteger(args.steps, 1, 80, 2);

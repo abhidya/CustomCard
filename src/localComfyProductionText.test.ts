@@ -75,11 +75,9 @@ describe("local Comfy production text contract", () => {
     };
     const summary = localComfyWorkflowInputSummary(variables);
     const merged = localComfyWorkflowInputsForMetadata(
-      {
-        CUSTOMCARD_COMFYUI_WORKFLOW_INPUTS_JSON:
-          '{"panel_id":"{{panel_id}}","width":"{{width}}","body_text":"{{body_text}}","custom_marker":"{{workflow_id}}"}'
-      },
-      variables
+      {},
+      variables,
+      '{"panel_id":"{{panel_id}}","width":"{{width}}","body_text":"{{body_text}}","custom_marker":"{{workflow_id}}"}'
     );
 
     expect(summary.workflow_id).toBe("customcard-production-text-overlay");
@@ -129,10 +127,19 @@ test-clerk-jwt-key
 -----END PUBLIC KEY-----`,
         CLERK_AUTHORIZED_PARTIES: "https://customcard.test",
         CLERK_ISSUER: "https://clerk.customcard.test",
-        CLERK_AUDIENCE: "customcard-api",
-        CUSTOMCARD_COMFYUI_WORKFLOW_ID: productionTextWorkflowId,
-        CUSTOMCARD_COMFYUI_WORKFLOW_PATH: defaultProductionTextWorkflowPath()
-      }
+        CLERK_AUDIENCE: "customcard-api"
+      },
+      aiFlowAdminConfig: [
+        {
+          flowId: "card-image",
+          primaryAdapterId: "local-comfyui-api-image",
+          fallbackAdapterId: "local-comfyui-api-image",
+          liveProviderCallsEnabled: true,
+          renderingMode: "final-text-composited",
+          workflowId: productionTextWorkflowId,
+          workflowPath: defaultProductionTextWorkflowPath()
+        }
+      ]
     });
 
     expect(readiness.comfyUrl).toBe("http://127.0.0.1:8188");

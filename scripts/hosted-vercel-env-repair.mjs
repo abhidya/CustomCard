@@ -4,10 +4,10 @@ import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { runHostedVercelEnvInventory } from "./hosted-vercel-env-inventory.mjs";
 
-const guardRequirement = "CUSTOMCARD_HOSTED_ENV_REPAIR=enabled";
-const applyRequirement = "CUSTOMCARD_HOSTED_ENV_REPAIR_APPLY=enabled";
-const productionAckRequirement = "CUSTOMCARD_HOSTED_ENV_REPAIR_ACKNOWLEDGE_PRODUCTION=enabled";
-const partialApplyRequirement = "CUSTOMCARD_HOSTED_ENV_REPAIR_ALLOW_PARTIAL=enabled";
+const guardRequirement = "--confirm-hosted-env-repair";
+const applyRequirement = "--apply";
+const productionAckRequirement = "--acknowledge-production";
+const partialApplyRequirement = "--allow-partial";
 
 const repairKeys = Object.freeze([
   "CLERK_ISSUER",
@@ -19,10 +19,14 @@ export async function runHostedVercelEnvRepair({
   env = process.env,
   inventoryRunner = runHostedVercelEnvInventory,
   commandRunner = runVercelEnvAdd,
-  now = new Date()
+  now = new Date(),
+  enabled = false,
+  apply = false,
+  allowPartialApply = false,
+  acknowledgeProduction = false
 } = {}) {
   const blockers = [];
-  if (env.CUSTOMCARD_HOSTED_ENV_REPAIR !== "enabled") {
+  if (!enabled) {
     blockers.push(`${guardRequirement} is required before hosted Vercel env repair can inspect or apply missing keys.`);
   }
   if (typeof inventoryRunner !== "function") blockers.push("A hosted Vercel env inventory runner is required.");
@@ -32,11 +36,7 @@ export async function runHostedVercelEnvRepair({
     return buildReport({ inventory: null, values: {}, repairPlan: [], applyResults: [], blockers, now, apply: false });
   }
 
-  const inventoryEnv = {
-    ...env,
-    CUSTOMCARD_HOSTED_ENV_INVENTORY: "enabled"
-  };
-  const inventory = await inventoryRunner({ env: inventoryEnv });
+  const inventory = await inventoryRunner({ env, enabled: true });
   const inventoryParsed = inventory?.command?.stdoutParsed === true;
   if (!inventoryParsed) {
     return buildReport({
@@ -56,13 +56,11 @@ export async function runHostedVercelEnvRepair({
     return !key?.present;
   });
   const values = readRepairValues(env);
-  const apply = env.CUSTOMCARD_HOSTED_ENV_REPAIR_APPLY === "enabled";
-  const allowPartialApply = env.CUSTOMCARD_HOSTED_ENV_REPAIR_ALLOW_PARTIAL === "enabled";
   const valueIssues = missingKeys.flatMap((key) => validateRepairValue(key, values[key]));
   const applyingProduction = target === "production" && apply;
   const applyBlockers = [];
 
-  if (applyingProduction && env.CUSTOMCARD_HOSTED_ENV_REPAIR_ACKNOWLEDGE_PRODUCTION !== "enabled") {
+  if (applyingProduction && !acknowledgeProduction) {
     applyBlockers.push(`${productionAckRequirement} is required before production env keys are added.`);
   }
 
@@ -232,8 +230,8 @@ function runVercelEnvAdd({ key, value, target, env }) {
   });
 }
 
-function writeEvidenceIfRequested(report, env = process.env) {
-  const outputPath = String(env.CUSTOMCARD_HOSTED_ENV_REPAIR_EVIDENCE_OUT ?? "").trim();
+function writeEvidenceIfRequested(report, outputPath = "") {
+  outputPath = String(outputPath ?? "").trim();
   if (!outputPath) return report;
   const absolutePath = resolve(outputPath);
   mkdirSync(dirname(absolutePath), { recursive: true });
@@ -246,7 +244,33 @@ function isCliEntrypoint() {
 }
 
 if (isCliEntrypoint()) {
-  const report = writeEvidenceIfRequested(await runHostedVercelEnvRepair());
+  const args = parseArgs(process.argv.slice(2));
+  const report = writeEvidenceIfRequested(await runHostedVercelEnvRepair({
+    enabled: args["confirm-hosted-env-repair"] === true,
+    apply: args.apply === true,
+    allowPartialApply: args["allow-partial"] === true,
+    acknowledgeProduction: args["acknowledge-production"] === true
+  }), args["evidence-out"]);
   console.log(JSON.stringify(report, null, 2));
   if (report.status !== "ready") process.exit(1);
+}
+
+function parseArgs(values) {
+  const parsed = {};
+  for (let index = 0; index < values.length; index += 1) {
+    const value = values[index];
+    if (!value.startsWith("--")) continue;
+    const [rawKey, inlineValue] = value.slice(2).split("=");
+    if (inlineValue !== undefined) {
+      parsed[rawKey] = inlineValue;
+      continue;
+    }
+    if (values[index + 1] && !values[index + 1].startsWith("--")) {
+      parsed[rawKey] = values[index + 1];
+      index += 1;
+    } else {
+      parsed[rawKey] = true;
+    }
+  }
+  return parsed;
 }

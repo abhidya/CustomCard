@@ -24,7 +24,7 @@ await client.query("COMMIT")
 INSERT INTO schema_migrations
 `,
   restoreDrill: `
-CUSTOMCARD_HOSTED_DB_RESTORE_DRILL=enabled
+--confirm-hosted-db-restore-drill
 CUSTOMCARD_RESTORE_DATABASE_URL
 must point at a restored clone
 requiredTablesPresent
@@ -34,7 +34,7 @@ realOrdersEnabled: false
 externalVendorCalls: false
 `,
   envInventory: `
-CUSTOMCARD_HOSTED_ENV_INVENTORY=enabled
+--confirm-hosted-env-inventory
 vercel env ls --format=json
 valuesRedacted: true
 environmentSynced: ready

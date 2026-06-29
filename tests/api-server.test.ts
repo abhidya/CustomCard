@@ -483,7 +483,7 @@ describe("api server wrapper", () => {
       vercelEnvSyncRequired: 5,
       tableContracts: 15,
       routeContracts: 5,
-      requiredEnvVars: 7,
+      requiredEnvVars: 6,
       hostedSeedProofs: 0,
       hostedTokenProbeProofs: 0,
       vercelEnvSyncProofs: 0,
@@ -505,7 +505,7 @@ describe("api server wrapper", () => {
       secretSyncRequired: 3,
       restoreDrillRequired: 1,
       terraformFileContracts: 3,
-      envOutputContracts: 6,
+      envOutputContracts: 5,
       terraformApplyExecutions: 0,
       appliedBucketArnProofs: 0,
       iamPolicyOutputProofs: 0,
@@ -933,7 +933,7 @@ describe("api server wrapper", () => {
         evidenceMissing: 6,
         appliedCloudRequired: 6,
         terraformFileContracts: 3,
-        envOutputContracts: 6,
+        envOutputContracts: 5,
         appliedBucketArnProofs: 0,
         iamPolicyOutputProofs: 0,
         signedUrlProbeProofs: 0,
@@ -1611,18 +1611,15 @@ describe("api server wrapper", () => {
     const port = 7100 + Math.floor(Math.random() * 1000);
     const customerToken = "customer-session-token-for-api-test";
     const adminToken = "admin-session-token-for-api-test";
-    const server = spawn(nodeBinary, ["scripts/api-server.mjs"], {
+    const server = spawn(nodeBinary, ["scripts/api-server.mjs", "--local-auth-fallbacks"], {
       env: {
         ...process.env,
         CUSTOMCARD_API_RUNTIME: "memory",
-        CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS: "enabled",
         AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
         CUSTOMCARD_CUSTOMER_SESSION_TOKEN: customerToken,
         CUSTOMCARD_ADMIN_SESSION_TOKEN: adminToken,
         CUSTOMCARD_LOCAL_LLM_BASE_URL: "http://127.0.0.1:1234/v1",
-        CUSTOMCARD_LOCAL_LLM_MODEL: "qwen3-8b-q4_k_m",
         CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188",
-        CUSTOMCARD_ADMIN_LOCAL_AI_LOOP_WRITE_REPORT: "disabled",
         HOST: "127.0.0.1",
         PORT: String(port)
       },
@@ -2521,13 +2518,12 @@ describe("api server wrapper", () => {
     const google = await startFakeGoogleCalendarServer();
     const port = 6250 + Math.floor(Math.random() * 500);
     const customerToken = "google-calendar-customer-token";
-    const server = spawn(nodeBinary, ["scripts/api-server.mjs"], {
+    const server = spawn(nodeBinary, ["scripts/api-server.mjs", "--local-auth-fallbacks"], {
       env: {
         ...process.env,
         HOST: "127.0.0.1",
         PORT: String(port),
         CUSTOMCARD_API_RUNTIME: "memory",
-        CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS: "enabled",
         AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
         CUSTOMCARD_CUSTOMER_SESSION_TOKEN: customerToken,
         CUSTOMCARD_ADMIN_SESSION_TOKEN: "google-calendar-admin-token",
@@ -2632,13 +2628,12 @@ describe("api server wrapper", () => {
     const clerk = await startFakeClerkOAuthServer();
     const port = 6250 + Math.floor(Math.random() * 500);
     const customerToken = localClerkPreviewJwt("user_2clerkCalendar", "sess_2calendar");
-    const server = spawn(nodeBinary, ["scripts/api-server.mjs"], {
+    const server = spawn(nodeBinary, ["scripts/api-server.mjs", "--local-auth-fallbacks"], {
       env: {
         ...process.env,
         HOST: "127.0.0.1",
         PORT: String(port),
         CUSTOMCARD_API_RUNTIME: "memory",
-        CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS: "enabled",
         AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
         CUSTOMCARD_CUSTOMER_SESSION_TOKEN: "seeded-customer-token",
         CUSTOMCARD_ADMIN_SESSION_TOKEN: "seeded-admin-token",
@@ -2707,17 +2702,15 @@ describe("api server wrapper", () => {
     const port = 6300 + Math.floor(Math.random() * 1000);
     const customerToken = "test-customer-session-token";
     const adminToken = "test-admin-session-token";
-    const server = spawn(nodeBinary, ["scripts/api-server.mjs"], {
+    const server = spawn(nodeBinary, ["scripts/api-server.mjs", "--local-auth-fallbacks"], {
       env: {
         ...process.env,
         HOST: "127.0.0.1",
         PORT: String(port),
         CUSTOMCARD_API_RUNTIME: "memory",
-        CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS: "enabled",
         AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
         CUSTOMCARD_CUSTOMER_SESSION_TOKEN: customerToken,
         CUSTOMCARD_ADMIN_SESSION_TOKEN: adminToken,
-        CUSTOMCARD_ARTIFACT_PERSISTENCE: "enabled",
         OBJECT_STORE_URL: "memory://cloudflare-r2",
         OBJECT_STORE_BUCKET: "customcard-prod",
         OBJECT_STORE_ACCESS_KEY_ID: "write-key",

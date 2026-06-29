@@ -48,7 +48,8 @@ loadLocalAiEnvFiles();
 
 export const routes = apiRouteContracts;
 
-const apiRuntime = createApiRuntime({ env: process.env, routes });
+const localAuthFallbacksEnabled = process.argv.includes("--local-auth-fallbacks");
+const apiRuntime = createApiRuntime({ env: process.env, routes, localAuthFallbacksEnabled });
 const walgreensCheckout = createWalgreensHostedCheckoutService({
   env: process.env,
   fetchImpl: (...args) => globalThis.fetch(...args),

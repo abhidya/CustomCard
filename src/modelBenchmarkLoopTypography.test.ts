@@ -248,28 +248,16 @@ describe("model benchmark typography experiment", () => {
     const outputDir = mkdtempSync(join(tmpdir(), "customcard-production-text-dry-run-"));
     const previousEnv = {
       CUSTOMCARD_LOCAL_LLM_BASE_URL: process.env.CUSTOMCARD_LOCAL_LLM_BASE_URL,
-      CUSTOMCARD_LOCAL_LLM_MODEL: process.env.CUSTOMCARD_LOCAL_LLM_MODEL,
       CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS: process.env.CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS,
-      CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS: process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS,
-      CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS: process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS,
-      CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER: process.env.CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER,
-      CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER: process.env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER,
       CUSTOMCARD_COMFYUI_URL: process.env.CUSTOMCARD_COMFYUI_URL,
-      CUSTOMCARD_COMFYUI_CHECKPOINT: process.env.CUSTOMCARD_COMFYUI_CHECKPOINT,
       CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
       CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: process.env.CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN,
       CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN
     };
     try {
       process.env.CUSTOMCARD_LOCAL_LLM_BASE_URL = "http://127.0.0.1:5003/v1";
-      process.env.CUSTOMCARD_LOCAL_LLM_MODEL = "koboldcpp/gemma-4-31B-it-Q4_K_M";
       process.env.CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS = "1200000";
-      process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS = "8192";
-      process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS = "3200";
-      process.env.CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER = "false";
-      process.env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER = "false";
       process.env.CUSTOMCARD_COMFYUI_URL = "http://127.0.0.1:8188";
-      process.env.CUSTOMCARD_COMFYUI_CHECKPOINT = "sd_xl_turbo_1.0_fp16.safetensors";
       process.env.CLOUDFLARE_ACCOUNT_ID = "disabled";
       process.env.CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN = "disabled";
       process.env.CLOUDFLARE_API_TOKEN = "disabled";
@@ -278,7 +266,11 @@ describe("model benchmark typography experiment", () => {
         phase: "local-production-text",
         "local-only": "true",
         "phase-dir": "production-text-workflow",
-        "output-dir": outputDir
+        "output-dir": outputDir,
+        plannerModel: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+        contextTokens: "8192",
+        maxTokens: "3200",
+        checkpoint: "sd_xl_turbo_1.0_fp16.safetensors"
       });
       const dryRun = JSON.parse(readFileSync(join(outputDir, "production-text-workflow-dry-run.json"), "utf8"));
 
@@ -318,28 +310,16 @@ describe("model benchmark typography experiment", () => {
     const outputDir = mkdtempSync(join(tmpdir(), "customcard-production-text-bad-planner-"));
     const previousEnv = {
       CUSTOMCARD_LOCAL_LLM_BASE_URL: process.env.CUSTOMCARD_LOCAL_LLM_BASE_URL,
-      CUSTOMCARD_LOCAL_LLM_MODEL: process.env.CUSTOMCARD_LOCAL_LLM_MODEL,
       CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS: process.env.CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS,
-      CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS: process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS,
-      CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS: process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS,
-      CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER: process.env.CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER,
-      CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER: process.env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER,
       CUSTOMCARD_COMFYUI_URL: process.env.CUSTOMCARD_COMFYUI_URL,
-      CUSTOMCARD_COMFYUI_CHECKPOINT: process.env.CUSTOMCARD_COMFYUI_CHECKPOINT,
       CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
       CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: process.env.CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN,
       CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN
     };
     try {
       process.env.CUSTOMCARD_LOCAL_LLM_BASE_URL = "http://127.0.0.1:5001/v1";
-      process.env.CUSTOMCARD_LOCAL_LLM_MODEL = "koboldcpp/Qwen3-8B-Q4_K_M";
       process.env.CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS = "1200000";
-      process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS = "4096";
-      process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS = "3200";
-      process.env.CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER = "false";
-      process.env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER = "false";
       process.env.CUSTOMCARD_COMFYUI_URL = "http://127.0.0.1:8188";
-      process.env.CUSTOMCARD_COMFYUI_CHECKPOINT = "sd_xl_turbo_1.0_fp16.safetensors";
       process.env.CLOUDFLARE_ACCOUNT_ID = "disabled";
       process.env.CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN = "disabled";
       process.env.CLOUDFLARE_API_TOKEN = "disabled";
@@ -350,7 +330,11 @@ describe("model benchmark typography experiment", () => {
           "local-only": "true",
           "phase-dir": "production-text-workflow",
           "output-dir": outputDir,
-          live: "true"
+          live: "true",
+          plannerModel: "koboldcpp/Qwen3-8B-Q4_K_M",
+          contextTokens: "4096",
+          maxTokens: "3200",
+          checkpoint: "sd_xl_turbo_1.0_fp16.safetensors"
         })
       ).rejects.toThrow(/correct production planner/);
     } finally {
@@ -366,28 +350,16 @@ describe("model benchmark typography experiment", () => {
     const outputDir = mkdtempSync(join(tmpdir(), "customcard-production-text-cpu-planner-"));
     const previousEnv = {
       CUSTOMCARD_LOCAL_LLM_BASE_URL: process.env.CUSTOMCARD_LOCAL_LLM_BASE_URL,
-      CUSTOMCARD_LOCAL_LLM_MODEL: process.env.CUSTOMCARD_LOCAL_LLM_MODEL,
       CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS: process.env.CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS,
-      CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS: process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS,
-      CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS: process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS,
-      CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER: process.env.CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER,
-      CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER: process.env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER,
       CUSTOMCARD_COMFYUI_URL: process.env.CUSTOMCARD_COMFYUI_URL,
-      CUSTOMCARD_COMFYUI_CHECKPOINT: process.env.CUSTOMCARD_COMFYUI_CHECKPOINT,
       CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
       CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: process.env.CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN,
       CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN
     };
     try {
       process.env.CUSTOMCARD_LOCAL_LLM_BASE_URL = "http://127.0.0.1:5013/v1";
-      process.env.CUSTOMCARD_LOCAL_LLM_MODEL = "koboldcpp/gemma-4-31B-it-Q4_K_M";
       process.env.CUSTOMCARD_LOCAL_LLM_REQUEST_TIMEOUT_MS = "1200000";
-      process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS = "8192";
-      process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS = "3200";
-      process.env.CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER = "false";
-      process.env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER = "false";
       process.env.CUSTOMCARD_COMFYUI_URL = "http://127.0.0.1:8188";
-      process.env.CUSTOMCARD_COMFYUI_CHECKPOINT = "sd_xl_turbo_1.0_fp16.safetensors";
       process.env.CLOUDFLARE_ACCOUNT_ID = "disabled";
       process.env.CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN = "disabled";
       process.env.CLOUDFLARE_API_TOKEN = "disabled";
@@ -399,7 +371,11 @@ describe("model benchmark typography experiment", () => {
             "local-only": "true",
             "phase-dir": "production-text-workflow",
             "output-dir": outputDir,
-            live: "true"
+            live: "true",
+            plannerModel: "koboldcpp/gemma-4-31B-it-Q4_K_M",
+            contextTokens: "8192",
+            maxTokens: "3200",
+            checkpoint: "sd_xl_turbo_1.0_fp16.safetensors"
           },
           {
             gpuResidencyProbe: () => ({

@@ -39,7 +39,6 @@ services:
       AUTH_SESSION_SECRET: ${AUTH_SESSION_SECRET:?set AUTH_SESSION_SECRET}
       ARTIFACT_SIGNED_URL_TTL_MINUTES: 15
       SECRET_PROVIDER: managed_secret_store
-      REAL_ORDER_KILL_SWITCH: disabled
       WALGREENS_VENDOR_MODE: disabled_until_certified
       CVS_VENDOR_MODE: disabled_until_certified
       FEDEX_VENDOR_MODE: disabled_until_certified
@@ -73,7 +72,6 @@ services:
       AUTH_SESSION_SECRET: ${AUTH_SESSION_SECRET:?set AUTH_SESSION_SECRET}
       ARTIFACT_SIGNED_URL_TTL_MINUTES: 15
       SECRET_PROVIDER: managed_secret_store
-      REAL_ORDER_KILL_SWITCH: disabled
       WALGREENS_VENDOR_MODE: disabled_until_certified
       CVS_VENDOR_MODE: disabled_until_certified
       FEDEX_VENDOR_MODE: disabled_until_certified

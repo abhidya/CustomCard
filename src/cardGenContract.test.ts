@@ -128,12 +128,12 @@ describe("buildCardGenSidecarContract", () => {
     expect(contract.blockedReasons.join(" ")).toContain("VITE_CARD_GEN_URL");
   });
 
-  it("reports image gen blocker when imageGenEnabled is false", () => {
+  it("reports image gen blocker when sidecar health says images are unavailable", () => {
     const contract = buildCardGenSidecarContract({
       cardGenUrl: "http://localhost:8001",
       imageGenEnabled: false
     });
-    expect(contract.blockedReasons.join(" ")).toContain("OPENAI_API_KEY");
+    expect(contract.blockedReasons.join(" ")).toContain("Sidecar health reports image generation disabled");
   });
 
   it("reports no blockers when url is set and image gen is enabled", () => {

@@ -9,7 +9,6 @@ CUSTOMCARD_APP_ENV=qa \
 CUSTOMCARD_API_BASE_URL=https://api.qa.customcard.test \
 EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_... \
 CUSTOMCARD_OAUTH_REDIRECT_URL=customcard://sso-callback \
-REAL_ORDER_KILL_SWITCH=disabled \
 EXPO_UNSTABLE_HEADLESS=1 \
 npm exec expo start -- --localhost --ios --no-dev --minify --port 8082 --clear
 ```

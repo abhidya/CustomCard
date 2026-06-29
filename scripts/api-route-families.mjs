@@ -825,9 +825,6 @@ export function createApiRouteFamilies(deps) {
   }
 
   function shouldWriteAdminLocalAiLoopReport() {
-    const configured = String(process.env.CUSTOMCARD_ADMIN_LOCAL_AI_LOOP_WRITE_REPORT ?? "").trim().toLowerCase();
-    if (["1", "true", "yes", "enabled", "on"].includes(configured)) return true;
-    if (["0", "false", "no", "disabled", "off"].includes(configured)) return false;
     return !process.env.VERCEL;
   }
 }

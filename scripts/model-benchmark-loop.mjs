@@ -3,6 +3,7 @@ import { basename, dirname, extname, resolve } from "node:path";
 import sharp from "sharp";
 import { createAiCardGenerationService, fetchLocalHttpProvider, loadLocalAiEnvFiles } from "./ai-card-generator.mjs";
 import { hasUsableAiEnvValue, resolveAiFlowConfigs } from "../src/aiFlowConfigData.mjs";
+import { productionCardCopyModel } from "../src/aiProviderSetupProfile.mjs";
 import {
   interpolateLocalComfyTemplate,
   localComfyTypographyVariables,
@@ -587,14 +588,13 @@ const textCandidates = [
     label: "Local LM Studio/KoboldCPP OpenAI-compatible card-copy",
     adapterId: "local-openai-compatible-chat",
     model: "local-default",
-    modelFromEnv: "CUSTOMCARD_LOCAL_LLM_MODEL",
     requiredEnv: [["CUSTOMCARD_LOCAL_LLM_BASE_URL", "LMSTUDIO_BASE_URL", "KOBOLDCPP_BASE_URL"]]
   },
   {
     id: "text-cloudflare-baseline",
     label: "Current Cloudflare text baseline",
     adapterId: "cloudflare-workers-ai-chat",
-    modelFromEnv: "CLOUDFLARE_WORKERS_AI_TEXT_MODEL",
+    model: productionCardCopyModel,
     requiredEnv: ["CLOUDFLARE_ACCOUNT_ID", ["CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", "CLOUDFLARE_API_TOKEN"]]
   },
   {
@@ -654,14 +654,13 @@ const imageCandidates = [
     label: "Local ComfyUI checkpoint",
     adapterId: "local-comfyui-api-image",
     model: "DreamShaper_8_pruned.safetensors",
-    modelFromEnv: "CUSTOMCARD_COMFYUI_CHECKPOINT",
     requiredEnv: [["CUSTOMCARD_COMFYUI_URL", "COMFYUI_URL"]]
   },
   {
     id: "image-cloudflare-sdxl-lightning",
     label: "Current Cloudflare SDXL Lightning baseline",
     adapterId: "cloudflare-workers-ai-image",
-    modelFromEnv: "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL",
+    model: "@cf/bytedance/stable-diffusion-xl-lightning",
     requiredEnv: ["CLOUDFLARE_ACCOUNT_ID", ["CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN", "CLOUDFLARE_API_TOKEN"]]
   },
   {
@@ -775,11 +774,11 @@ export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false, gp
   const outputDir = resolve(args["output-dir"] || defaultOutputDir);
   const phase = args.phase || "smoke";
   const phaseDirName = args["phase-dir"] || phase;
-  const live = args.live === true || args.live === "true" || String(process.env.CUSTOMCARD_BENCHMARK_LIVE || "").toLowerCase() === "enabled";
+  const live = args.live === true || String(args.live || "").toLowerCase() === "true";
   const env = loadBenchmarkEnv();
   mkdirSync(outputDir, { recursive: true });
 
-  const candidates = buildCandidateCatalog(env);
+  const candidates = buildCandidateCatalog(env, args);
   writeJson(resolve(outputDir, "candidate-catalog.json"), candidates);
   writeMarkdown(resolve(outputDir, "candidate-catalog.md"), buildCandidateCatalogMarkdown(candidates));
   writeJson(resolve(outputDir, "resolved-flows-before-benchmark.json"), sanitize(resolveAiFlowConfigs(env), env));
@@ -792,7 +791,7 @@ export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false, gp
       outputDir: relativePath(outputDir),
       dryRun: true,
       liveProviderCallsEnabled: false,
-      productionTextPlannerRuntime: productionTextPlannerRuntimeSummary(env),
+      productionTextPlannerRuntime: productionTextPlannerRuntimeSummary(env, productionTextPlannerConfigForRuns(plannedRuns, args)),
       plannedRuns: plannedRuns.map(plannedRunSummary)
     };
     writeJson(resolve(outputDir, `${phaseDirName}-dry-run.json`), dryRunPayload);
@@ -807,7 +806,8 @@ export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false, gp
   const networkGuard = benchmarkNetworkGuardForRuns({ args, phase, plannedRuns });
   const fetchImpl = createLoggingFetch(providerHttp, env, networkGuard);
   const service = createAiCardGenerationService({ env, fetchImpl });
-  assertProductionTextPlannerRuntime({ phase, plannedRuns, env });
+  const productionTextPlannerRuntime = productionTextPlannerRuntimeSummary(env, productionTextPlannerConfigForRuns(plannedRuns, args));
+  assertProductionTextPlannerRuntime({ phase, plannedRuns, runtime: productionTextPlannerRuntime });
   const productionTextPlannerGpuResidency = assertProductionTextPlannerGpuResidency({
     phase,
     plannedRuns,
@@ -825,7 +825,7 @@ export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false, gp
     envRouting: {
       aiEnvSources: [".env.local", "infra/env/.env"].filter((filePath) => existsSync(resolve(repoRoot, filePath))),
       configuredProviderKeys: Object.keys(env).filter(isSafeConfiguredKey).sort(),
-      productionTextPlannerRuntime: productionTextPlannerRuntimeSummary(env),
+      productionTextPlannerRuntime,
       productionTextPlannerGpuResidency,
       secretsRedacted: true
     },
@@ -862,9 +862,9 @@ export async function runModelBenchmarkLoopFromArgs(args = {}, { log = false, gp
   return result;
 }
 
-function buildCandidateCatalog(env) {
-  const text = textCandidates.map((candidate) => withAvailability(candidate, env));
-  const image = imageCandidates.map((candidate) => withAvailability(candidate, env));
+function buildCandidateCatalog(env, args = {}) {
+  const text = textCandidates.map((candidate) => withAvailability(candidate, env, args));
+  const image = imageCandidates.map((candidate) => withAvailability(candidate, env, args));
   return {
     text,
     image,
@@ -876,14 +876,40 @@ function buildCandidateCatalog(env) {
   };
 }
 
-function withAvailability(candidate, env) {
+function withAvailability(candidate, env, args = {}) {
   const missingEnv = missingEnvGroups(candidate.requiredEnv || [], env);
-  return {
+  const configuredCandidate = {
     ...candidate,
-    model: candidate.modelFromEnv && env[candidate.modelFromEnv] ? env[candidate.modelFromEnv] : candidate.model || "",
+    model: candidateModelFromAdminInput(candidate, args),
     configured: missingEnv.length === 0,
     missingEnv
   };
+  if (candidate.adapterId === "local-comfyui-api-image") {
+    configuredCandidate.workflowId = firstNonEmpty(args.workflowId, "customcard-hybrid-reserved-layout");
+    configuredCandidate.workflowPath = firstNonEmpty(args.workflowPath, "");
+    configuredCandidate.workflowJson = firstNonEmpty(args.workflowJson, "");
+    configuredCandidate.workflowInputsJson = firstNonEmpty(args.workflowInputsJson, "");
+  }
+  if (candidate.adapterId === "local-openai-compatible-chat") {
+    configuredCandidate.contextWindowTokens = boundedIntegerEnv(args.contextTokens, 0, 1_000_000, 0);
+    configuredCandidate.maxTokens = boundedIntegerEnv(
+      args.maxTokens,
+      productionTextPlannerPolicy.minOutputTokens,
+      4000,
+      productionTextPlannerPolicy.recommendedOutputTokens
+    );
+  }
+  return configuredCandidate;
+}
+
+function candidateModelFromAdminInput(candidate, args = {}) {
+  if (candidate.adapterId === "local-openai-compatible-chat") {
+    return firstNonEmpty(args.plannerModel, args.localLlmModel, args.model, candidate.model);
+  }
+  if (candidate.adapterId === "local-comfyui-api-image") {
+    return firstNonEmpty(args.comfyCheckpoint, args.checkpoint, candidate.model);
+  }
+  return candidate.model || "";
 }
 
 function missingEnvGroups(groups, env) {
@@ -897,17 +923,41 @@ function hasUsableEnvValue(value) {
   return hasUsableAiEnvValue(value);
 }
 
-function productionTextPlannerRuntimeSummary(env) {
-  const model = firstUsableEnv(env, ["CUSTOMCARD_LOCAL_LLM_MODEL", "LMSTUDIO_MODEL", "KOBOLDCPP_MODEL"]);
-  const contextTokens = boundedIntegerEnv(env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS, 0, 1_000_000, 0);
+function firstNonEmpty(...values) {
+  for (const value of values) {
+    const text = String(value ?? "").trim();
+    if (text) return text;
+  }
+  return "";
+}
+
+function productionTextPlannerConfigForRuns(plannedRuns = [], args = {}) {
+  const localPlannerRun = plannedRuns.find(
+    (run) => run.productionTextMode === "llm-generated-copy" && run.text?.adapterId === "local-openai-compatible-chat"
+  );
+  return {
+    model: firstNonEmpty(args.plannerModel, args.localLlmModel, args.model, localPlannerRun?.text?.model, "local-default"),
+    contextTokens: boundedIntegerEnv(args.contextTokens, 0, 1_000_000, 0),
+    maxOutputTokens: boundedIntegerEnv(
+      args.maxTokens,
+      productionTextPlannerPolicy.minOutputTokens,
+      4000,
+      productionTextPlannerPolicy.recommendedOutputTokens
+    )
+  };
+}
+
+function productionTextPlannerRuntimeSummary(env, config = {}) {
+  const model = String(config.model || "local-default").trim();
+  const contextTokens = boundedIntegerEnv(config.contextTokens, 0, 1_000_000, 0);
   const maxOutputTokens = boundedIntegerEnv(
-    env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS,
+    config.maxOutputTokens,
     productionTextPlannerPolicy.minOutputTokens,
     4000,
     productionTextPlannerPolicy.recommendedOutputTokens
   );
-  const allowSmallPlanner = truthyEnv(env.CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER);
-  const allowUnknownProductionModel = truthyEnv(env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER);
+  const allowSmallPlanner = false;
+  const allowUnknownProductionModel = false;
   const classification = classifyProductionTextPlanner(model, {
     allowSmall: allowSmallPlanner,
     allowUnknownProductionModel,
@@ -915,7 +965,7 @@ function productionTextPlannerRuntimeSummary(env) {
     maxOutputTokens,
     requireRuntimeBudget: true
   });
-  const runAllowed = classification.blockers.length === 0 && (classification.productionSuitable || allowSmallPlanner);
+  const runAllowed = classification.blockers.length === 0 && classification.productionSuitable;
   return {
     adapterId: "local-openai-compatible-chat",
     baseUrl: redactValue(firstUsableEnv(env, ["CUSTOMCARD_LOCAL_LLM_BASE_URL", "LMSTUDIO_BASE_URL", "KOBOLDCPP_BASE_URL"]), env),
@@ -949,11 +999,10 @@ function productionTextPlannerRuntimeSummary(env) {
   };
 }
 
-function assertProductionTextPlannerRuntime({ phase, plannedRuns, env }) {
+function assertProductionTextPlannerRuntime({ phase, plannedRuns, runtime }) {
   if (phase !== "local-production-text") return;
   if (!plannedRuns.some((run) => run.productionTextMode === "llm-generated-copy" && run.text?.adapterId === "local-openai-compatible-chat")) return;
-  const runtime = productionTextPlannerRuntimeSummary(env);
-  if (runtime.productionSuitable || (runtime.allowSmallPlanner && runtime.runAllowed)) return;
+  if (runtime.productionSuitable) return;
   const detail = runtime.blockers.length
     ? runtime.blockers.join(" ")
     : `Planner classification '${runtime.classification}' is not production-suitable.`;
@@ -974,10 +1023,6 @@ function assertProductionTextPlannerGpuResidency({ phase, plannedRuns, env, gpuR
     );
   }
   return localGpuResidency;
-}
-
-function truthyEnv(value) {
-  return ["1", "true", "yes", "enabled"].includes(String(value || "").trim().toLowerCase());
 }
 
 function plannedRunsForPhase(phase, candidates) {
@@ -1778,12 +1823,8 @@ function buildRunAiFlowConfig(run) {
       monthlyBudgetCents: 5000,
       perRequestBudgetCents: 5,
       maxRetries: 1,
-      maxTokens: boundedIntegerEnv(
-        process.env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS,
-        productionTextPlannerPolicy.minOutputTokens,
-        4000,
-        productionTextPlannerPolicy.recommendedOutputTokens
-      ),
+      contextWindowTokens: run.text.contextWindowTokens || 0,
+      maxTokens: run.text.maxTokens || productionTextPlannerPolicy.recommendedOutputTokens,
       temperature: 0.62
     },
     {
@@ -1798,8 +1839,14 @@ function buildRunAiFlowConfig(run) {
       monthlyBudgetCents: 4000,
       perRequestBudgetCents: 1,
       maxRetries: 1,
+      contextWindowTokens: 0,
       maxTokens: 0,
-      temperature: 0
+      temperature: 0,
+      renderingMode: runUsesFinalComfyTextOutput(run) ? "final-text-composited" : "",
+      workflowId: run.image.workflowId || "",
+      workflowPath: run.image.workflowPath || "",
+      workflowJson: run.image.workflowJson || "",
+      workflowInputsJson: run.image.workflowInputsJson || ""
     }
   ];
 }
@@ -2181,10 +2228,7 @@ async function executeLocalComfyTypographyImage({ image, panelId, prompt, negati
   const cfg = boundedNumberEnv(env.CUSTOMCARD_COMFYUI_CFG || env.COMFYUI_CFG, 0, 30, 6.5);
   const sampler = String(env.CUSTOMCARD_COMFYUI_SAMPLER || env.COMFYUI_SAMPLER || "euler").trim() || "euler";
   const scheduler = String(env.CUSTOMCARD_COMFYUI_SCHEDULER || env.COMFYUI_SCHEDULER || "normal").trim() || "normal";
-  const checkpoint =
-    firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_CHECKPOINT", "CUSTOMCARD_LOCAL_COMFYUI_CHECKPOINT", "COMFYUI_CHECKPOINT"]) ||
-    image.model ||
-    "DreamShaper_8_pruned.safetensors";
+  const checkpoint = image.model || "DreamShaper_8_pruned.safetensors";
   const deterministicSeed = numericSeed(`${checkpoint}:${panelId}:${prompt}`);
   const seed = boundedIntegerEnv(
     env.CUSTOMCARD_COMFYUI_SEED || env.COMFYUI_SEED || deterministicSeed,
@@ -2204,12 +2248,12 @@ async function executeLocalComfyTypographyImage({ image, panelId, prompt, negati
     seed,
     steps,
     width,
-    workflowId: localComfyWorkflowId(env),
+    workflowId: localComfyWorkflowId(image),
     ...localComfyTypographyVariables({ panelId, panelCopy, width, height })
   };
-  const workflow = buildLocalComfyWorkflow({ env, variables });
+  const workflow = buildLocalComfyWorkflow({ image, variables });
   const promptResponse = await postJson(fetchImpl, localComfyUiApiUrl(comfyUrl, "/prompt"), {
-    body: buildLocalComfyPromptBody({ env, workflow, variables })
+    body: buildLocalComfyPromptBody({ env, image, workflow, variables })
   });
   const promptId = String(promptResponse.prompt_id || "").trim();
   if (!promptId) throw new Error("Local ComfyUI did not return a prompt_id.");
@@ -2228,9 +2272,9 @@ async function executeLocalComfyTypographyImage({ image, panelId, prompt, negati
   return `data:${contentType};base64,${buffer.toString("base64")}`;
 }
 
-function buildLocalComfyWorkflow({ env, variables }) {
-  const workflowSource = firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_WORKFLOW_JSON", "COMFYUI_WORKFLOW_JSON"]);
-  const workflowPath = firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_WORKFLOW_PATH", "COMFYUI_WORKFLOW_PATH"]);
+function buildLocalComfyWorkflow({ image, variables }) {
+  const workflowSource = String(image.workflowJson || "").trim();
+  const workflowPath = String(image.workflowPath || "").trim();
   if (workflowSource || workflowPath) {
     const rawWorkflow = workflowSource || readLocalComfyWorkflowFile(workflowPath);
     try {
@@ -2248,8 +2292,8 @@ function readLocalComfyWorkflowFile(workflowPath) {
   return readFileSync(resolvedPath, "utf8");
 }
 
-function buildLocalComfyPromptBody({ env, workflow, variables }) {
-  const workflowInputs = localComfyWorkflowInputsForMetadata(env, variables);
+function buildLocalComfyPromptBody({ env, image, workflow, variables }) {
+  const workflowInputs = localComfyWorkflowInputsForMetadata(env, variables, image.workflowInputsJson);
   return {
     prompt: workflow,
     client_id: firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_CLIENT_ID", "COMFYUI_CLIENT_ID"]) || "customcard-local-typography-benchmark",
@@ -2264,8 +2308,8 @@ function buildLocalComfyPromptBody({ env, workflow, variables }) {
   };
 }
 
-function localComfyWorkflowId(env) {
-  return firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_WORKFLOW_ID", "COMFYUI_WORKFLOW_ID"]) || "customcard-hybrid-reserved-layout";
+function localComfyWorkflowId(image) {
+  return String(image.workflowId || "").trim() || "customcard-hybrid-reserved-layout";
 }
 
 function buildLocalComfyTxt2ImgWorkflow({ cfg, checkpoint, height, negativePrompt, panelId, prompt, sampler, scheduler, seed, steps, width, workflowId }) {
@@ -3572,7 +3616,7 @@ function isRedactableEnvValue(value) {
 
 
 function isSafeConfiguredKey(key) {
-  return /^(CUSTOMCARD_AI_|CUSTOMCARD_LOCAL_LLM_|CUSTOMCARD_COMFYUI_|CLOUDFLARE_|COMFYUI_|GOOGLE_|GEMINI_|HUGGINGFACE_|DEEPAI_|OPENAI_|ANTHROPIC_|LMSTUDIO_|KOBOLDCPP_)/.test(key);
+  return /^(CUSTOMCARD_AI_IMAGE_DOWNLOAD_ALLOWED_HOSTS|CUSTOMCARD_LOCAL_LLM_|CUSTOMCARD_COMFYUI_|CLOUDFLARE_|COMFYUI_|GOOGLE_|GEMINI_|HUGGINGFACE_|DEEPAI_|OPENAI_|ANTHROPIC_|LMSTUDIO_|KOBOLDCPP_)/.test(key);
 }
 
 function textContains(value, term) {

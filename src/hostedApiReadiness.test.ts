@@ -88,11 +88,11 @@ describe("hosted API readiness", () => {
       expect.arrayContaining([
         "hosted:env:inventory",
         "hosted:env:repair",
-        "CUSTOMCARD_HOSTED_ENV_INVENTORY=enabled",
-        "CUSTOMCARD_HOSTED_ENV_REPAIR=enabled",
-        "CUSTOMCARD_HOSTED_ENV_REPAIR_APPLY=enabled",
-        "CUSTOMCARD_HOSTED_ENV_REPAIR_ALLOW_PARTIAL=enabled",
-        "CUSTOMCARD_HOSTED_ENV_REPAIR_ACKNOWLEDGE_PRODUCTION=enabled",
+        "npm run hosted:env:inventory -- --confirm-hosted-env-inventory",
+        "npm run hosted:env:repair -- --confirm-hosted-env-repair",
+        "npm run hosted:env:repair -- --confirm-hosted-env-repair --apply",
+        "npm run hosted:env:repair -- --confirm-hosted-env-repair --apply --allow-partial",
+        "npm run hosted:env:repair -- --confirm-hosted-env-repair --apply --acknowledge-production",
         "CUSTOMCARD_HOSTED_API_ENV",
         "CUSTOMCARD_VERCEL_ENV_TARGET"
       ])
@@ -155,16 +155,16 @@ describe("hosted API readiness", () => {
       expect.arrayContaining([
         "hosted:clerk:public-config",
         "hosted:clerk:repair",
-        "CUSTOMCARD_HOSTED_CLERK_PUBLIC_CONFIG_PROBE=enabled",
-        "CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR=enabled",
-        "CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_APPLY=enabled",
-        "CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_ACKNOWLEDGE_PRODUCTION=enabled",
-        "CUSTOMCARD_HOSTED_CLERK_CONFIG_REPAIR_ACKNOWLEDGE_PUBLIC_KEY_REPLACE=enabled",
+        "npm run hosted:clerk:public-config -- --confirm-hosted-clerk-public-config-probe",
+        "npm run hosted:clerk:repair -- --confirm-hosted-clerk-config-repair",
+        "npm run hosted:clerk:repair -- --confirm-hosted-clerk-config-repair --apply",
+        "npm run hosted:clerk:repair -- --confirm-hosted-clerk-config-repair --apply --acknowledge-production",
+        "npm run hosted:clerk:repair -- --confirm-hosted-clerk-config-repair --apply --acknowledge-public-key-replace",
         "VITE_CLERK_PUBLISHABLE_KEY",
         "pk_test",
         "pk_live",
         "hosted:auth:probe",
-        "CUSTOMCARD_HOSTED_AUTH_PROBE=enabled",
+        "npm run hosted:auth:probe -- --confirm-hosted-auth-probe",
         "CUSTOMCARD_HOSTED_CUSTOMER_JWT",
         "CUSTOMCARD_HOSTED_ADMIN_JWT",
         "wrong-role blocking"
@@ -207,7 +207,7 @@ describe("hosted API readiness", () => {
         "hosted:rollback:plan:doctor",
         "docs/hosted-migration-rollback-plan.md",
         "hosted:db:restore:drill",
-        "CUSTOMCARD_HOSTED_DB_RESTORE_DRILL=enabled"
+        "npm run hosted:db:restore:drill -- --confirm-hosted-db-restore-drill"
       ])
     );
     expect(backup?.currentEvidence).toEqual(

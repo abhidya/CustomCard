@@ -12,8 +12,8 @@ import { summarizeProviderUsage, type ProviderCallEvent } from "./providerOperat
 import type { RuntimeReadiness } from "./providerRuntime";
 import type { ReadinessSummary } from "./readinessSummary";
 
-export type ProviderOpsAvailability = "ready-local" | "env-configured" | "env-missing" | "contract-only" | "blocked";
-export type ProviderOpsLiveGate = "local-ready" | "live-ready" | "feature-gated" | "env-missing" | "contract-only" | "blocked";
+export type ProviderOpsAvailability = "ready-local" | "credential-configured" | "credentials-missing" | "contract-only" | "blocked";
+export type ProviderOpsLiveGate = "local-ready" | "live-ready" | "admin-gated" | "credentials-missing" | "contract-only" | "blocked";
 export type ProviderOpsMetricSourceKind = "provider-api" | "provider-dashboard" | "response-metadata" | "local-ledger";
 
 export interface ProviderOpsMetricSource {
@@ -167,7 +167,7 @@ export function buildProviderOpsModel(input: ProviderOpsModelInput): ProviderOps
     })
   );
   const availableProviders = providers.filter((provider) =>
-    provider.availability === "ready-local" || provider.availability === "env-configured"
+    provider.availability === "ready-local" || provider.availability === "credential-configured"
   );
   const selectedProviders = providers.filter((provider) => provider.selectedForFlow);
   const fallbackQueues = input.aiFlowSummary.flows.map((flow) => ({
@@ -186,11 +186,11 @@ export function buildProviderOpsModel(input: ProviderOpsModelInput): ProviderOps
     summary: {
       totalProviders: providers.length,
       availableProviders: availableProviders.length,
-      envConfiguredProviders: providers.filter((provider) => provider.availability === "env-configured").length,
+      envConfiguredProviders: providers.filter((provider) => provider.availability === "credential-configured").length,
       selectedProviders: selectedProviders.length,
       readyForLiveCalls: input.aiFlowSummary.readyForLiveCalls,
       liveReadyProviders: providers.filter((provider) => provider.liveGate === "live-ready").length,
-      liveGatedProviders: providers.filter((provider) => provider.liveGate === "feature-gated").length,
+      liveGatedProviders: providers.filter((provider) => provider.liveGate === "admin-gated").length,
       fallbackQueues: fallbackQueues.filter((queue) => queue.fallbackQueueEnabled).length,
       missingSelectedEnv: env.missingForSelectedProviders.length
     },
@@ -378,7 +378,7 @@ function providerOpsAvailability(
   if (adapter.status === "ready-local") return "ready-local";
   if (adapter.status === "blocked") return "blocked";
   if (adapter.status === "contract-only") return "contract-only";
-  return aiConfigured || missingEnv.length === 0 ? "env-configured" : "env-missing";
+  return aiConfigured || missingEnv.length === 0 ? "credential-configured" : "credentials-missing";
 }
 
 function providerOpsLiveGate(
@@ -389,8 +389,8 @@ function providerOpsLiveGate(
   if (availability === "ready-local") return "local-ready";
   if (availability === "blocked") return "blocked";
   if (availability === "contract-only") return "contract-only";
-  if (availability === "env-missing") return "env-missing";
-  return blockedReasons.length === 0 ? "live-ready" : "feature-gated";
+  if (availability === "credentials-missing") return "credentials-missing";
+  return blockedReasons.length === 0 ? "live-ready" : "admin-gated";
 }
 
 function selectedProviderAdapterIds(aiFlowSummary: AiFlowConfigSummary): Set<string> {
@@ -408,7 +408,7 @@ function buildProviderOpsEnvSummary(
   return {
     configuredProviders: uniqueSorted(
       availableProviders
-        .filter((provider) => provider.availability === "env-configured")
+        .filter((provider) => provider.availability === "credential-configured")
         .map((provider) => provider.adapterId)
     ),
     selectedProviders: uniqueSorted(selectedRows.map((provider) => provider.adapterId)),

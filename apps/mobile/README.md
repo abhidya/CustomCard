@@ -43,7 +43,6 @@ surfaced to the app via `expo-constants`.
 | `CUSTOMCARD_API_BASE_URL`           | optional override | Explicit HTTPS API URL; must match the selected env-specific URL if both are set. |
 | `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` | yes               | Clerk **publishable** key (`pk_test_` for QA, `pk_live_` for prod). |
 | `CUSTOMCARD_OAUTH_REDIRECT_URL`     | yes               | Native Clerk SSO callback. Must be `customcard://sso-callback`.     |
-| `REAL_ORDER_KILL_SWITCH`            | no                | Mirrors the backend safety gate; keep `disabled`.                  |
 | `EAS_PROJECT_ID`                    | for EAS builds    | Set by `eas init`, or via EAS environment variables.               |
 
 The mobile app uses Clerk for Google/Apple OAuth and email-code auth. It does
@@ -80,7 +79,7 @@ CUSTOMCARD_QA_API_BASE_URL=https://api.qa.customcard.test \
 CUSTOMCARD_PRODUCTION_API_BASE_URL=https://api.customcard.test \
 EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_... \
 CUSTOMCARD_OAUTH_REDIRECT_URL=customcard://sso-callback \
-REAL_ORDER_KILL_SWITCH=disabled npm run start
+npm run start
 # or: npm run ios   /   npm run android
 ```
 
@@ -92,7 +91,7 @@ CUSTOMCARD_QA_API_BASE_URL=https://api.qa.customcard.test \
 CUSTOMCARD_PRODUCTION_API_BASE_URL=https://api.customcard.test \
 EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_... \
 CUSTOMCARD_OAUTH_REDIRECT_URL=customcard://sso-callback \
-REAL_ORDER_KILL_SWITCH=disabled npm run ios:review
+npm run ios:review
 ```
 
 The review scripts run Expo with `EXPO_UNSTABLE_HEADLESS=1` on localhost. Expo

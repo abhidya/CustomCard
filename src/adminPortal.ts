@@ -613,12 +613,12 @@ function buildProvidersArea(input: AdminPortalModelInput, runtimeBlocked: number
     id: "providers",
     label: "Providers",
     eyebrow: "Provider operations",
-    summary: "Env-available providers, live feature gates, fallback queues, limits, ORR latency, and user-management gates.",
+    summary: "Credential-ready providers, admin live gates, fallback queues, limits, ORR latency, and user-management gates.",
     metrics: [
       { label: "Available", value: `${providerOps.summary.availableProviders}` },
-      { label: "Env configured", value: `${providerOps.summary.envConfiguredProviders}` },
+      { label: "Credentials ready", value: `${providerOps.summary.envConfiguredProviders}` },
       { label: "Live ready", value: `${providerOps.summary.liveReadyProviders}` },
-      { label: "Feature gated", value: `${providerOps.summary.liveGatedProviders}` },
+      { label: "Admin gated", value: `${providerOps.summary.liveGatedProviders}` },
       { label: "Fallback queues", value: `${providerOps.summary.fallbackQueues}` },
       { label: "Cost flows", value: `${providerOps.usage.configuredFlows}` },
       { label: "Budget month", value: formatCents(providerOps.usage.monthlyBudgetCents) },
@@ -629,7 +629,7 @@ function buildProvidersArea(input: AdminPortalModelInput, runtimeBlocked: number
       { label: "Latency gates", value: `${providerOps.orr.latencyGateRequired}` },
       { label: "Runtime blocked", value: `${runtimeBlocked}` },
       { label: "Runtime ready", value: `${runtimeReady}` },
-      { label: "User env", value: `${providerOps.users.userManagementRequiredEnv.length}` }
+      { label: "User credentials", value: `${providerOps.users.userManagementRequiredEnv.length}` }
     ],
     controls: [
       offControl("provider-live-calls", "Live provider calls", "Requires credentials, network allowlist, spend cap, and fallback coverage."),
@@ -662,7 +662,7 @@ function buildProvidersArea(input: AdminPortalModelInput, runtimeBlocked: number
             ? "attention"
             : "ready",
         risk: providerOps.usage.liveEnabledConfiguredFlows > 0 ? "high" : "medium",
-        detail: `${formatCents(providerOps.usage.monthlyBudgetCents)} configured monthly budget across ${providerOps.usage.configuredFlows} env-configured flow policies; ${formatCents(providerOps.usage.reservedOrSpentCents)} reserved/spent in ${providerOps.usage.monthBucket}; ${providerOps.usage.providerSourcedMetricAdapters} provider-sourced metric adapters and ${providerOps.usage.localLedgerMetricAdapters} ledger-only adapters.`,
+        detail: `${formatCents(providerOps.usage.monthlyBudgetCents)} configured monthly budget across ${providerOps.usage.configuredFlows} admin-configured flow policies; ${formatCents(providerOps.usage.reservedOrSpentCents)} reserved/spent in ${providerOps.usage.monthBucket}; ${providerOps.usage.providerSourcedMetricAdapters} provider-sourced metric adapters and ${providerOps.usage.localLedgerMetricAdapters} ledger-only adapters.`,
         action: "Review provider_call_events, provider usage dashboards/APIs, monthly budget caps, per-request ceilings, and rate windows before enabling paid provider traffic.",
         evidence: ["provider_call_events", ...providerMetricSourceLabels, "monthlyBudgetCents", "perRequestBudgetCents"].slice(0, 6)
       }),
@@ -702,7 +702,7 @@ function providerOpsRecord(provider: ProviderOpsProvider): AdminPortalRecord {
     detail: `${provider.availability}; ${provider.liveGate}; fallback ${provider.fallbackAdapterId}; ${provider.rateLimitPerMinute}/min; ${formatCents(provider.monthlyBudgetCents)} monthly cap; ${formatCents(provider.perRequestBudgetCents)} request cap; metrics from ${provider.metricSource.label} (${provider.metricSource.usageUnit}).`,
     action: provider.liveGate === "live-ready"
       ? "Keep spend, queue, and ORR evidence attached while live use is enabled."
-      : "Attach missing env, safety gates, fallback queue, and ORR evidence before live use.",
+      : "Attach missing credentials, admin gates, fallback queue, and ORR evidence before live use.",
     evidence: [...evidence, provider.metricSource.label].slice(0, 4)
   });
 }
@@ -803,7 +803,7 @@ function buildAiLoopArea(input: AdminPortalModelInput, runtimeBlocked: number, r
         risk: "medium",
         detail: "LM Studio or KoboldCPP can provide the OpenAI-compatible chat endpoint used for copy, prompts, and benchmark improvement turns.",
         action: "Point CUSTOMCARD_LOCAL_LLM_BASE_URL, LMSTUDIO_BASE_URL, or KOBOLDCPP_BASE_URL at localhost before queue writes.",
-        evidence: ["D:/models", "local-openai-compatible-chat", "CUSTOMCARD_LOCAL_LLM_MODEL"]
+        evidence: ["D:/models", "local-openai-compatible-chat", "Admin model profile"]
       }),
       record({
         id: "ai-loop-benchmark-rankings",

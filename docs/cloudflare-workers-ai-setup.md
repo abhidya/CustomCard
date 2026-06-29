@@ -3,18 +3,15 @@
 Cloudflare Workers AI is the preferred low-cost AI provider for this app's
 first live hosted model path. Keep real values in ignored local env files and in
 Vercel's encrypted environment store; tracked files should only contain
-placeholders and model IDs.
+placeholders.
 
 ## Environment
 
-Required hosted card-copy text configuration:
+Required hosted Cloudflare credentials:
 
 ```bash
 CLOUDFLARE_ACCOUNT_ID=replace-me
 CLOUDFLARE_API_TOKEN=replace-me
-CUSTOMCARD_AI_CARD_COPY_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
-CUSTOMCARD_CLOUDFLARE_TEXT_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
-CLOUDFLARE_WORKERS_AI_TEXT_MODEL=@cf/qwen/qwen3-30b-a3b-fp8
 ```
 
 Optional split-token overrides:
@@ -30,15 +27,13 @@ generation.
 
 For the production-text local Comfy path, hosted Cloudflare image keys are not
 required. Keep the Cloudflare text/account setup for card copy, but only add
-`CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN` or
-`CLOUDFLARE_WORKERS_AI_IMAGE_MODEL` when you are explicitly validating the live
+`CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN` when you are explicitly validating the live
 Cloudflare image adapter instead of the local Comfy workflow.
 
 Optional live Cloudflare image lane configuration:
 
 ```bash
 CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN=replace-me
-CLOUDFLARE_WORKERS_AI_IMAGE_MODEL=@cf/bytedance/stable-diffusion-xl-lightning
 ```
 
 ## Recommended Models
@@ -46,7 +41,7 @@ CLOUDFLARE_WORKERS_AI_IMAGE_MODEL=@cf/bytedance/stable-diffusion-xl-lightning
 Use `@cf/qwen/qwen3-30b-a3b-fp8` as the default LLM for production card copy.
 It is the current Cloudflare text model for the full card-copy JSON contract,
 and card-copy requests send a JSON Schema through `response_format` so panel
-copy is not prompt-only JSON.
+copy is not prompt-only JSON. Configure that model in Admin Providers, not env.
 
 Use `cloudflare-workers-ai-image` as the preferred live card-image adapter right
 now. The app still keeps `browser-svg-renderer` as the deterministic fallback and
@@ -64,17 +59,16 @@ prompt adherence matters more than the absolute lowest cost. Use
 `@cf/runwayml/stable-diffusion-v1-5-inpainting` only when an edit or mask-based
 inpainting workflow is explicitly needed.
 
-Set `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=cloudflare-workers-ai-image` for the
-preferred live image path. Set it to `browser-svg-renderer` for deterministic
-RCA, no-network debugging, or a print-safe fallback when provider output needs a
-pause.
+Configure `cloudflare-workers-ai-image` as the preferred live image path in
+Admin Providers. Use `browser-svg-renderer` there for deterministic RCA,
+no-network debugging, or a print-safe fallback when provider output needs a pause.
 
 ## Fallback Order
 
 1. Cloudflare LLM JSON Mode default: `@cf/qwen/qwen3-30b-a3b-fp8`.
 2. Cloudflare LLM low-cost fallback: `@cf/meta/llama-3.1-8b-instruct-fast`.
-3. Preferred live image adapter: `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=cloudflare-workers-ai-image`.
-4. Deterministic image fallback/debug adapter: `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=browser-svg-renderer`.
+3. Preferred live image adapter: `cloudflare-workers-ai-image` in Admin Providers.
+4. Deterministic image fallback/debug adapter: `browser-svg-renderer` in Admin Providers.
 5. Cloudflare image quality experiment: `@cf/black-forest-labs/flux-1-schnell`.
 6. Hugging Face specialty image fallback for non-commercial typography/layout experiments, especially Ideogram 4.
 7. DeepAI `text2img` as a simple last-resort image API fallback.
@@ -125,6 +119,6 @@ evidence.
 
 Set the same Cloudflare env vars in Vercel for Production, Preview, and
 Development before promoting a live AI path. For the preferred live card-image
-route, set `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=cloudflare-workers-ai-image`
-and enable the card-image flow from the Admin provider controls. Do not commit
+route, set `cloudflare-workers-ai-image` in Admin Providers and enable the
+card-image flow from the Admin provider controls. Do not commit
 `.env`, `.env.local`, or copied Cloudflare API tokens.

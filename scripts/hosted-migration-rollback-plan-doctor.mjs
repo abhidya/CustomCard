@@ -42,7 +42,7 @@ const requiredMigrateSignals = Object.freeze([
 ]);
 
 const requiredRestoreSignals = Object.freeze([
-  "CUSTOMCARD_HOSTED_DB_RESTORE_DRILL=enabled",
+  "--confirm-hosted-db-restore-drill",
   "CUSTOMCARD_RESTORE_DATABASE_URL",
   "must point at a restored clone",
   "requiredTablesPresent",
@@ -53,7 +53,7 @@ const requiredRestoreSignals = Object.freeze([
 ]);
 
 const requiredEnvInventorySignals = Object.freeze([
-  "CUSTOMCARD_HOSTED_ENV_INVENTORY=enabled",
+  "--confirm-hosted-env-inventory",
   "vercel env ls --format=json",
   "valuesRedacted: true",
   "environmentSynced: ready"

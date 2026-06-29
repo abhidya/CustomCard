@@ -179,13 +179,13 @@ skeleton for the production path. It includes:
 12. Run `npm run localization:doctor`.
 13. Run `npm run api:doctor:memory`.
 14. Run `npm run api:doctor:postgres`.
-15. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
-16. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
-17. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
+15. Run `DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
+16. Run `DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
+17. Run `DATABASE_URL=postgres://... npm run account:doctor:live`.
 18. Run `npm run cloud:doctor`.
 19. Run `npm run cloud:artifact:proof:doctor`.
 20. Run `npm run artifact:doctor`.
-21. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live` against MinIO when Docker or a compatible endpoint is available.
+21. Run `OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live` against MinIO when Docker or a compatible endpoint is available.
 22. Run `npm run persistence:doctor`.
 23. Run `npm run demo:doctor`.
 24. Run the worker and mobile doctor commands in `docs/verification.md`.

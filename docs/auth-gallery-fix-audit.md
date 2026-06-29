@@ -16,11 +16,11 @@ Audited at HEAD `fadce0c` ("Include readiness summary data in readiness checks")
 - Route contracts (`src/apiRouteContractsData.mjs`) mark customer routes `auth: "customer-session"`.
 - `scripts/api-runtime.mjs`:
   - Postgres runtime hashes bearer tokens via `hashSessionToken(token, AUTH_SESSION_SECRET)`, looks them up in **`auth_sessions`**, and mints durable sessions after offline Clerk JWT verification.
-  - Memory runtime accepts Clerk JWT verification config directly. Static `CUSTOMCARD_CUSTOMER_SESSION_TOKEN` / `CUSTOMCARD_ADMIN_SESSION_TOKEN` sessions are seeded only when `CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS=enabled`.
+  - Memory runtime accepts Clerk JWT verification config directly. Static `CUSTOMCARD_CUSTOMER_SESSION_TOKEN` / `CUSTOMCARD_ADMIN_SESSION_TOKEN` sessions are seeded only when the local server is started with `--local-auth-fallbacks`.
 
 ## 3. Previous Clerk 401 / invalid-session issue
 
-Fixed in the API runtime: signed-in Clerk users now send the Clerk session JWT, the API verifies it offline using `CLERK_JWT_KEY` plus issuer/audience/authorized-party checks, then creates a runtime session. Local static reviewer tokens remain available only behind the explicit local fallback flag and are not a production auth path.
+Fixed in the API runtime: signed-in Clerk users now send the Clerk session JWT, the API verifies it offline using `CLERK_JWT_KEY` plus issuer/audience/authorized-party checks, then creates a runtime session. Local static reviewer tokens remain available only behind the explicit local fallback runtime switch and are not a production auth path.
 
 ## 4. Current Google Calendar connection flow
 

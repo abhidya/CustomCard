@@ -54,7 +54,6 @@ class FakeCardGenService:
 def sidecar_env(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-anthropic-key")
     monkeypatch.delenv("CARD_GEN_API_TOKEN", raising=False)
-    monkeypatch.delenv("CARD_GEN_ALLOW_UNAUTHENTICATED_LOCAL", raising=False)
     monkeypatch.delenv("CARD_GEN_RATE_LIMIT_PER_MINUTE", raising=False)
     monkeypatch.delenv("CARD_GEN_MONTHLY_BUDGET_CENTS", raising=False)
     monkeypatch.delenv("CARD_GEN_PER_REQUEST_BUDGET_CENTS", raising=False)
@@ -153,14 +152,13 @@ def test_generate_rejects_oversized_payload_without_content_length(monkeypatch: 
     assert response.status_code == 413
 
 
-def test_local_unauthenticated_mode_is_explicit_opt_in(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("CARD_GEN_ALLOW_UNAUTHENTICATED_LOCAL", "true")
-
+def test_local_requests_still_require_bearer_token() -> None:
     with TestClient(app_module.app) as client:
         app_module._service = FakeCardGenService()
         response = client.post("/generate", json=_payload())
 
-    assert response.status_code == 200
+    assert response.status_code == 503
+    assert "CARD_GEN_API_TOKEN" in response.json()["detail"]
 
 
 def _payload(**overrides: str) -> dict[str, object]:

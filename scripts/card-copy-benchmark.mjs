@@ -293,9 +293,12 @@ async function main() {
   const selectedFixtureIds = (args.fixtures || defaultFixtureIds.join(",")).split(",").map((value) => value.trim()).filter(Boolean);
   const env = loadBenchmarkEnv();
   const live = isLiveBenchmarkEnabled(args, env);
-  if (args["copy-adapter"]) env.CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID = args["copy-adapter"];
-  if (args.model) env.CUSTOMCARD_AI_CARD_COPY_MODEL = args.model;
-  const aiFlowAdminConfig = buildBenchmarkAiFlowConfig(env, { copyLive: live, imageLive: false });
+  const aiFlowAdminConfig = buildBenchmarkAiFlowConfig(env, {
+    copyAdapterId: args["copy-adapter"],
+    copyModel: args.model,
+    copyLive: live,
+    imageLive: false
+  });
 
   const runStamp = new Date().toISOString().replace(/[:.]/g, "-");
   const runId = `card-copy-benchmark-${runStamp}`;
@@ -644,12 +647,12 @@ function summarizeFlows(flows) {
   }));
 }
 
-function buildBenchmarkAiFlowConfig(env, { copyLive, imageLive }) {
+function buildBenchmarkAiFlowConfig(env, { copyAdapterId = "", copyModel = "", copyLive, imageLive }) {
   return resolveAiFlowConfigs(env).map((flow) => ({
     flowId: flow.flowId,
-    primaryAdapterId: flow.primaryAdapterId,
+    primaryAdapterId: flow.flowId === "card-copy" && copyAdapterId ? copyAdapterId : flow.primaryAdapterId,
     fallbackAdapterId: flow.fallbackAdapterId,
-    model: flow.model,
+    model: flow.flowId === "card-copy" && copyModel ? copyModel : flow.model,
     promptInstructions: flow.promptInstructions,
     rateLimitPerMinute: flow.rateLimitPerMinute,
     monthlyBudgetCents: flow.monthlyBudgetCents,
@@ -658,8 +661,14 @@ function buildBenchmarkAiFlowConfig(env, { copyLive, imageLive }) {
     fallbackQueueEnabled: flow.fallbackQueueEnabled,
     liveProviderCallsEnabled: flow.flowId === "card-copy" ? copyLive : flow.flowId === "card-image" ? imageLive : flow.liveProviderCallsEnabled,
     maxRetries: flow.maxRetries,
+    contextWindowTokens: flow.contextWindowTokens,
     maxTokens: flow.maxTokens,
-    temperature: flow.temperature
+    temperature: flow.temperature,
+    renderingMode: flow.renderingMode,
+    workflowId: flow.workflowId,
+    workflowPath: flow.workflowPath,
+    workflowJson: flow.workflowJson,
+    workflowInputsJson: flow.workflowInputsJson
   }));
 }
 
@@ -763,7 +772,7 @@ function isSecretKey(key) {
 }
 
 function isSafeConfiguredKey(key) {
-  return /^(CUSTOMCARD_AI_|CLOUDFLARE_)/.test(key);
+  return /^(CUSTOMCARD_AI_IMAGE_DOWNLOAD_ALLOWED_HOSTS|CLOUDFLARE_)/.test(key);
 }
 
 function writeJson(filePath, value) {

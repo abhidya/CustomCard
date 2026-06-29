@@ -29,7 +29,7 @@ describe("hosted Clerk route probe", () => {
     });
     expect(report.blockers).toEqual(
       expect.arrayContaining([
-        "CUSTOMCARD_HOSTED_AUTH_PROBE=enabled is required before live hosted Clerk route probes run.",
+        "--confirm-hosted-auth-probe is required before live hosted Clerk route probes run.",
         "Hosted API base URL must not be a placeholder URL.",
         "CUSTOMCARD_HOSTED_CUSTOMER_JWT is required.",
         "CUSTOMCARD_HOSTED_ADMIN_JWT is required."
@@ -102,12 +102,12 @@ describe("hosted Clerk route probe", () => {
 
     const report = await runHostedClerkRouteProbe({
       env: {
-        CUSTOMCARD_HOSTED_AUTH_PROBE: "enabled",
         CUSTOMCARD_HOSTED_API_ENV: "production",
         CUSTOMCARD_HOSTED_API_BASE_URL: "https://customcard-three.vercel.app",
         CUSTOMCARD_HOSTED_CUSTOMER_JWT: customerJwt,
         CUSTOMCARD_HOSTED_ADMIN_JWT: adminJwt
       },
+      enabled: true,
       fetchImpl,
       now: new Date("2026-06-15T12:00:00.000Z")
     });

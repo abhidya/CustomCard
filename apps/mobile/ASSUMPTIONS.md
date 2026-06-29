@@ -64,7 +64,7 @@ open. Each is the safest reasonable default for the existing backend.
 - **Proof-first ordering.** Print options, manual handoff, and checkout are
   locked until the customer approves the rendered proof, matching the backend
   `proofBoundary` contract and the "confirm before checkout" safety banner.
-- **No automatic orders.** Mirroring `REAL_ORDER_KILL_SWITCH=disabled`, the app
+- **No automatic orders.** Mirroring admin safety controls, the app
   never finalizes a purchase; it hands off to the print shop.
 - **Card languages** offered: English (US), Spanish (US), Urdu, Arabic — the
   same set the API/web contract exposes. RTL copy review remains gated; the app

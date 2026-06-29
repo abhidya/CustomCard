@@ -6,7 +6,7 @@ import {
   resolveAiRouteActivation
 } from "../src/aiRouteActivation.mjs";
 import { createAiCardGenerationService, loadLocalAiEnvFiles } from "./ai-card-generator.mjs";
-import { resolveLocalComfyWorkerEnv } from "./local-comfy-worker.mjs";
+import { buildLocalComfyWorkerAiFlowConfig, resolveLocalComfyWorkerEnv } from "./local-comfy-worker.mjs";
 import {
   buildProviderWorkerResult,
   hasLiveProviderNetworkCall
@@ -28,16 +28,18 @@ export function resolveProviderHttpWorkerEnv(env = process.env) {
 export function createProviderHttpWorkerRuntime({
   env = process.env,
   fetchImpl = (...args) => globalThis.fetch(...args),
+  aiFlowAdminConfig,
   routes,
   now = () => new Date()
 } = {}) {
   const resolvedEnv = resolveProviderHttpWorkerEnv(env);
+  const workerAiFlowAdminConfig = aiFlowAdminConfig ?? buildLocalComfyWorkerAiFlowConfig(resolvedEnv);
   const baseUrl = trimTrailingSlash(resolvedEnv.CUSTOMCARD_PROVIDER_API_BASE_URL);
   const workerId = resolvedEnv.CUSTOMCARD_WORKER_ID;
   const token = String(resolvedEnv.CUSTOMCARD_PROVIDER_WORKER_TOKEN ?? "").trim();
   const routeScope = providerRouteScope(routes, resolvedEnv);
-  const aiFlowReadiness = providerAiFlowReadiness(resolvedEnv);
-  const aiService = createAiCardGenerationService({ env: resolvedEnv, fetchImpl });
+  const aiFlowReadiness = providerAiFlowReadiness(resolvedEnv, workerAiFlowAdminConfig);
+  const aiService = createAiCardGenerationService({ env: resolvedEnv, fetchImpl, aiFlowAdminConfig: workerAiFlowAdminConfig });
 
   return {
     describe() {
@@ -287,12 +289,12 @@ function parseDotenv(text) {
 }
 
 function isProviderWorkerEnvKey(key) {
-  return /^(CUSTOMCARD_PROVIDER_.+|CUSTOMCARD_HOSTED_API_BASE_URL|PUBLIC_APP_ORIGIN|CUSTOMCARD_AI_|CUSTOMCARD_RUNCOMFY_|CUSTOMCARD_COMFYUI_|COMFYUI_|CLOUDFLARE_|RUNCOMFY_)/
+  return /^(CUSTOMCARD_PROVIDER_.+|CUSTOMCARD_HOSTED_API_BASE_URL|PUBLIC_APP_ORIGIN|CUSTOMCARD_RUNCOMFY_|CUSTOMCARD_COMFYUI_|COMFYUI_|CLOUDFLARE_|RUNCOMFY_)/
     .test(key);
 }
 
-function providerAiFlowReadiness(env) {
-  const activationContext = createAiRouteActivationContext({ env });
+function providerAiFlowReadiness(env, aiFlowAdminConfig = []) {
+  const activationContext = createAiRouteActivationContext({ env, serviceAiFlowAdminConfig: aiFlowAdminConfig });
   const cardCopy = resolveAiRouteActivation("card-copy", activationContext).flow;
   const cardImage = resolveAiRouteActivation("card-image", activationContext).flow;
   return {

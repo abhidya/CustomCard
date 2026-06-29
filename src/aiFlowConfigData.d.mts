@@ -16,6 +16,7 @@ export interface AiFlowDefinition {
   monthlyBudgetCents: number;
   perRequestBudgetCents: number;
   maxRetries: number;
+  contextWindowTokens: number;
   maxTokens: number;
   temperature: number;
   promptInstructions: string;
@@ -34,8 +35,14 @@ export interface AiFlowAdminConfig {
   fallbackQueueEnabled: boolean;
   liveProviderCallsEnabled: boolean;
   maxRetries: number;
+  contextWindowTokens: number;
   maxTokens: number;
   temperature: number;
+  renderingMode: "" | "final-text-composited";
+  workflowId: string;
+  workflowPath: string;
+  workflowJson: string;
+  workflowInputsJson: string;
 }
 
 export interface ResolvedAiFlowConfig extends AiFlowAdminConfig {

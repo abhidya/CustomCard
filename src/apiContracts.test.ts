@@ -534,7 +534,7 @@ describe("api contracts", () => {
       vercelEnvSyncRequired: 5,
       tableContracts: 15,
       routeContracts: 5,
-      requiredEnvVars: 7,
+      requiredEnvVars: 6,
       hostedSeedProofs: 0,
       hostedTokenProbeProofs: 0,
       vercelEnvSyncProofs: 0,
@@ -556,7 +556,7 @@ describe("api contracts", () => {
       secretSyncRequired: 3,
       restoreDrillRequired: 1,
       terraformFileContracts: 3,
-      envOutputContracts: 6,
+      envOutputContracts: 5,
       terraformApplyExecutions: 0,
       appliedBucketArnProofs: 0,
       iamPolicyOutputProofs: 0,
@@ -855,7 +855,7 @@ describe("api contracts", () => {
     expect(payload.reviewerDbSeedReadiness.summary).toMatchObject({
       total: 8,
       tableContracts: 15,
-      requiredEnvVars: 7,
+      requiredEnvVars: 6,
       hostedSeedProofs: 0,
       hostedTokenProbeProofs: 0
     });
@@ -866,7 +866,7 @@ describe("api contracts", () => {
       total: 8,
       appliedCloudRequired: 6,
       terraformFileContracts: 3,
-      envOutputContracts: 6,
+      envOutputContracts: 5,
       appliedBucketArnProofs: 0,
       iamPolicyOutputProofs: 0,
       signedUrlProbeProofs: 0

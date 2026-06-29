@@ -4,8 +4,7 @@ import { execFileSync } from "node:child_process";
 import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-const guardEnvName = "CUSTOMCARD_MOBILE_NATIVE_INSTALL_PROOF";
-const guardEnabledRequirement = "CUSTOMCARD_MOBILE_NATIVE_INSTALL_PROOF=enabled";
+const guardEnabledRequirement = "--confirm-mobile-native-install-proof";
 const defaultBundleId = "com.customcard.app";
 
 const requiredCurrentSignals = Object.freeze([
@@ -29,11 +28,12 @@ const forbiddenStaleSignals = Object.freeze([
 
 export function runMobileNativeInstallProof({
   env = process.env,
+  enabled = false,
   execFileSyncImpl = execFileSync,
   now = new Date()
 } = {}) {
   const blockers = [];
-  if (env[guardEnvName] !== "enabled") {
+  if (!enabled) {
     blockers.push(`${guardEnabledRequirement} is required before scanning installed native app bundles.`);
   }
 
@@ -79,7 +79,7 @@ export function runMobileNativeInstallProof({
     blockers.push("Installed native bundle must include an OAuth redirect URL.");
   }
   if (appConfig.realOrderKillSwitch !== "disabled") {
-    blockers.push("Installed native bundle must keep REAL_ORDER_KILL_SWITCH disabled for proof capture.");
+    blockers.push("Installed native bundle must keep the disabled order safety state for proof capture.");
   }
 
   return {
@@ -230,8 +230,8 @@ function fingerprint(value) {
   return createHash("sha256").update(String(value)).digest("hex").slice(0, 12);
 }
 
-function writeEvidenceIfRequested(report, env = process.env) {
-  const outputPath = String(env.CUSTOMCARD_MOBILE_NATIVE_INSTALL_PROOF_EVIDENCE_OUT ?? "").trim();
+function writeEvidenceIfRequested(report, outputPath = "") {
+  outputPath = String(outputPath ?? "").trim();
   if (!outputPath) return report;
   const absolutePath = resolve(outputPath);
   mkdirSync(dirname(absolutePath), { recursive: true });
@@ -244,7 +244,30 @@ function isCliEntrypoint() {
 }
 
 if (isCliEntrypoint()) {
-  const report = writeEvidenceIfRequested(runMobileNativeInstallProof());
+  const args = parseArgs(process.argv.slice(2));
+  const report = writeEvidenceIfRequested(runMobileNativeInstallProof({
+    enabled: args["confirm-mobile-native-install-proof"] === true
+  }), args["evidence-out"]);
   console.log(JSON.stringify(report, null, 2));
   if (report.status !== "ready") process.exit(1);
+}
+
+function parseArgs(values) {
+  const parsed = {};
+  for (let index = 0; index < values.length; index += 1) {
+    const value = values[index];
+    if (!value.startsWith("--")) continue;
+    const [rawKey, inlineValue] = value.slice(2).split("=");
+    if (inlineValue !== undefined) {
+      parsed[rawKey] = inlineValue;
+      continue;
+    }
+    if (values[index + 1] && !values[index + 1].startsWith("--")) {
+      parsed[rawKey] = values[index + 1];
+      index += 1;
+    } else {
+      parsed[rawKey] = true;
+    }
+  }
+  return parsed;
 }

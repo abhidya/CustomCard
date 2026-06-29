@@ -515,7 +515,7 @@ report still has to be attached before any production capacity claim is made.
 
 The runtime remains fail-closed:
 
-- `REAL_ORDER_KILL_SWITCH=disabled` keeps live orders off.
+- Admin safety controls keep live orders off.
 - Provider keys are named in `infra/env/.env.example` but not committed.
 - `npm run deployment:doctor` verifies the committed local-dev, cheap-droplet,
   cloud-native, runtime, and data lanes and fails if required deployment signals
@@ -693,7 +693,7 @@ Implemented checks:
   filesystem object-store writes, injected S3-compatible client writes, readback
   verification, checksum/byte-length matching, stored handoff manifests, no
   network calls, and no real orders.
-- `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled npm run artifact:doctor:s3:live`
+- `npm run artifact:doctor:s3:live`
   validates live S3-compatible object-store writes against MinIO or another
   compatible endpoint using path-style SigV4 requests, isolated buckets,
   readback verification, manifest storage, cleanup, no external vendor calls,
@@ -702,18 +702,18 @@ Implemented checks:
   including repository-backed relationship-memory, render-packet, import-preview,
   card-project, manual vendor handoff, and data-request mutation persistence,
   through an injected fake pool without requiring external database credentials.
-- `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled npm run api:doctor:postgres:live`
+- `npm run api:doctor:postgres:live`
   validates route-scoped customer/admin auth, idempotency,
   relationship-memory, render-packet, import-preview, card-project,
   manual-handoff, data-request, audit, and queue paths against an isolated live
   Postgres database after applying the committed migration.
-- `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled npm run api:doctor:postgres:http`
+- `npm run api:doctor:postgres:http`
   starts `scripts/api-server.mjs` in Postgres mode against an isolated migrated
   database and validates public health/routes, admin/customer Bearer auth,
   missing/wrong-role auth blocks, missing idempotency blocking, all 6
   repository-backed customer HTTP mutations, replay/conflict, audit rows, queue
   jobs, and repository table counts.
-- `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled npm run account:doctor:live` validates
+- `npm run account:doctor:live` validates
   hosted account identity storage, hashed recovery challenges, durable sessions,
   uniqueness, and audit logging against an isolated live Postgres database.
 - UI smoke tests cover customer/admin panels, runtime dry-run readiness, the

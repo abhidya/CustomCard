@@ -79,7 +79,6 @@ async function setupProvider({ env, flags }) {
     CUSTOMCARD_WORKER_ID: workerId
   };
   if (!env.CUSTOMCARD_COMFYUI_URL && !env.COMFYUI_URL) localUpdates.CUSTOMCARD_COMFYUI_URL = "http://127.0.0.1:8188";
-  if (!env.CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID) localUpdates.CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID = "local-comfyui-api-image";
 
   if (blockers.length === 0 && !flags["dry-run"]) {
     upsertEnvFile(resolve(process.cwd(), providerEnvFile), localUpdates);

@@ -11,10 +11,26 @@ const providerBaseEnv = {
   CUSTOMCARD_PROVIDER_API_BASE_URL: "https://customcard.example",
   CUSTOMCARD_PROVIDER_WORKER_TOKEN: "test-provider-worker-token-32-chars",
   CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS: "ai-card-generate",
-  CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "local-comfyui-api-image",
-  CUSTOMCARD_AI_CARD_IMAGE_FALLBACK_ADAPTER_ID: "local-comfyui-api-image",
   CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188"
 };
+const localImageAdminConfig = [
+  {
+    flowId: "card-image",
+    primaryAdapterId: "local-comfyui-api-image",
+    fallbackAdapterId: "local-comfyui-api-image",
+    liveProviderCallsEnabled: true
+  }
+];
+const cloudflareCopyLocalImageAdminConfig = [
+  {
+    flowId: "card-copy",
+    primaryAdapterId: "cloudflare-workers-ai-chat",
+    fallbackAdapterId: "cloudflare-workers-ai-chat",
+    model: "@cf/qwen/qwen3-30b-a3b-fp8",
+    liveProviderCallsEnabled: true
+  },
+  ...localImageAdminConfig
+];
 
 const cardCopyResponse = {
   theme_guide: "warm botanical birthday",
@@ -35,33 +51,31 @@ afterEach(() => {
 });
 
 describe("provider HTTP worker", () => {
-  it("loads provider-specific AI overrides after ambient local AI env", () => {
+  it("loads provider credentials while provider selection stays in admin config", () => {
     const cwd = mkdtempSync(join(tmpdir(), "customcard-provider-http-worker-"));
     tempDirs.push(cwd);
     writeFileSync(
       join(cwd, ".env.local"),
       [
-        "CUSTOMCARD_LOCAL_LLM_BASE_URL=http://127.0.0.1:5003/v1",
-        "CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID=local-openai-compatible-chat"
+        "CUSTOMCARD_LOCAL_LLM_BASE_URL=http://127.0.0.1:5003/v1"
       ].join("\n")
     );
     writeFileSync(
       join(cwd, ".env.provider.local"),
       [
-        "CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID=cloudflare-workers-ai-chat",
-        "CUSTOMCARD_AI_CARD_COPY_FALLBACK_ADAPTER_ID=cloudflare-workers-ai-chat",
-        "CUSTOMCARD_AI_CARD_COPY_MODEL=@cf/qwen/qwen3-30b-a3b-fp8",
-        "CLOUDFLARE_WORKERS_AI_TEXT_MODEL=@cf/qwen/qwen3-30b-a3b-fp8",
         "CLOUDFLARE_ACCOUNT_ID=acct_123",
         "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN=cf_text_token",
-        "CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=local-comfyui-api-image",
         "CUSTOMCARD_COMFYUI_URL=http://127.0.0.1:8188"
       ].join("\n")
     );
 
     const target = loadProviderWorkerEnvFiles({ cwd, target: {} });
-    const runtime = createProviderHttpWorkerRuntime({ env: { ...providerBaseEnv, ...target } });
+    const runtime = createProviderHttpWorkerRuntime({
+      env: { ...providerBaseEnv, ...target },
+      aiFlowAdminConfig: cloudflareCopyLocalImageAdminConfig
+    });
 
+    expect(Object.keys(target).some((key) => key.startsWith("CUSTOMCARD_AI_"))).toBe(false);
     expect(runtime.describe()).toMatchObject({
       copyAdapter: "cloudflare-workers-ai-chat",
       copyModel: "@cf/qwen/qwen3-30b-a3b-fp8",
@@ -75,10 +89,9 @@ describe("provider HTTP worker", () => {
     const fetchImpl = vi.fn(async () => new Response(JSON.stringify({ jobs: [] }), { status: 200 }));
     const runtime = createProviderHttpWorkerRuntime({
       env: {
-        ...providerBaseEnv,
-        CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "cloudflare-workers-ai-chat",
-        CUSTOMCARD_AI_CARD_COPY_FALLBACK_ADAPTER_ID: "cloudflare-workers-ai-chat"
+        ...providerBaseEnv
       },
+      aiFlowAdminConfig: cloudflareCopyLocalImageAdminConfig,
       fetchImpl
     });
 
@@ -94,32 +107,30 @@ describe("provider HTTP worker", () => {
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
-  it("uses the same server-scoped route config for readiness and leased generator execution", async () => {
+  it("uses the same admin route config for readiness and leased generator execution", async () => {
     const completionBodies = [];
     const env = {
       CUSTOMCARD_PROVIDER_API_BASE_URL: "https://customcard.example",
       CUSTOMCARD_PROVIDER_WORKER_TOKEN: "test-provider-worker-token-32-chars",
       CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS: "ai-card-generate",
-      OPENAI_API_KEY: "openai_token",
-      CUSTOMCARD_AI_FLOW_CONFIG_JSON: JSON.stringify({
-        flows: [
-          {
-            flowId: "card-copy",
-            primaryAdapterId: "openai-responses-chat",
-            fallbackAdapterId: "openai-responses-chat",
-            model: "gpt-4.1-mini",
-            liveProviderCallsEnabled: true
-          },
-          {
-            flowId: "card-image",
-            primaryAdapterId: "openai-images",
-            fallbackAdapterId: "openai-images",
-            model: "gpt-image-2",
-            liveProviderCallsEnabled: true
-          }
-        ]
-      })
+      OPENAI_API_KEY: "openai_token"
     };
+    const aiFlowAdminConfig = [
+      {
+        flowId: "card-copy",
+        primaryAdapterId: "openai-responses-chat",
+        fallbackAdapterId: "openai-responses-chat",
+        model: "gpt-4.1-mini",
+        liveProviderCallsEnabled: true
+      },
+      {
+        flowId: "card-image",
+        primaryAdapterId: "openai-images",
+        fallbackAdapterId: "openai-images",
+        model: "gpt-image-2",
+        liveProviderCallsEnabled: true
+      }
+    ];
     const fetchImpl = vi.fn(async (url, init) => {
       const requestUrl = String(url);
       if (requestUrl === "https://customcard.example/api/provider/jobs/lease") {
@@ -175,7 +186,7 @@ describe("provider HTTP worker", () => {
       }
       throw new Error(`Unexpected fetch ${requestUrl}`);
     });
-    const runtime = createProviderHttpWorkerRuntime({ env, fetchImpl });
+    const runtime = createProviderHttpWorkerRuntime({ env, aiFlowAdminConfig, fetchImpl });
 
     const report = await runtime.runOnce();
     const completion = completionBodies[0];

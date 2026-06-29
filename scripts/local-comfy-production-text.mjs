@@ -61,9 +61,9 @@ export function localComfyWorkflowInputSummary(variables) {
   };
 }
 
-export function localComfyWorkflowInputsForMetadata(env, variables) {
+export function localComfyWorkflowInputsForMetadata(env, variables, configuredInputsJson = "") {
   const defaults = localComfyWorkflowInputSummary(variables);
-  const configured = localComfyConfiguredWorkflowInputs(env, variables);
+  const configured = localComfyConfiguredWorkflowInputs(env, variables, configuredInputsJson);
   if (!configured || Array.isArray(configured) || typeof configured !== "object") return defaults;
   return {
     ...defaults,
@@ -71,8 +71,8 @@ export function localComfyWorkflowInputsForMetadata(env, variables) {
   };
 }
 
-export function localComfyConfiguredWorkflowInputs(env, variables) {
-  const rawInputs = firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_WORKFLOW_INPUTS_JSON", "COMFYUI_WORKFLOW_INPUTS_JSON"]);
+export function localComfyConfiguredWorkflowInputs(env, variables, configuredInputsJson = "") {
+  const rawInputs = firstUsableConfigValue(configuredInputsJson);
   if (!rawInputs) return undefined;
   try {
     return interpolateLocalComfyTemplate(JSON.parse(rawInputs), variables);
@@ -176,13 +176,9 @@ export function localComfyTemplateVariable(key, variables) {
   return values[key];
 }
 
-function firstUsableEnv(env, keys) {
-  for (const key of keys) {
-    const value = env[key];
-    if (!value) continue;
-    const normalized = String(value).trim();
-    if (!normalized || unusableEnvValues.has(normalized.toLowerCase())) continue;
-    return normalized;
-  }
-  return "";
+function firstUsableConfigValue(value) {
+  if (!value) return "";
+  const normalized = String(value).trim();
+  if (!normalized || unusableEnvValues.has(normalized.toLowerCase())) return "";
+  return normalized;
 }

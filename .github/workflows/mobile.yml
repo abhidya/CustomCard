@@ -54,7 +54,6 @@ jobs:
           CUSTOMCARD_APP_ENV: qa
           CUSTOMCARD_OAUTH_REDIRECT_URL: customcard://sso-callback
           EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_customcard_mobile_ci
-          REAL_ORDER_KILL_SWITCH: disabled
         run: npm run doctor
 
       - name: Native release-readiness doctor
@@ -66,20 +65,18 @@ jobs:
           CUSTOMCARD_APP_ENV: qa
           CUSTOMCARD_OAUTH_REDIRECT_URL: customcard://sso-callback
           EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_customcard_mobile_ci
-          REAL_ORDER_KILL_SWITCH: disabled
         run: npx expo config --type public > /dev/null
 
       - name: Live API contract test (in-memory runtime)
         working-directory: .
         env:
           CUSTOMCARD_API_RUNTIME: memory
-          CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS: enabled
           AUTH_SESSION_SECRET: test-auth-session-secret-32-chars
           CUSTOMCARD_CUSTOMER_SESSION_TOKEN: test-customer-session-token
           CUSTOMCARD_ADMIN_SESSION_TOKEN: test-admin-session-token
         run: |
           npm ci --no-audit --no-fund
-          PORT=8787 node scripts/api-server.mjs &
+          PORT=8787 node scripts/api-server.mjs --local-auth-fallbacks &
           API_PID=$!
           for attempt in $(seq 1 30); do
             if curl -fsS http://127.0.0.1:8787/api/health > /dev/null; then break; fi

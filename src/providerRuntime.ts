@@ -1,8 +1,5 @@
 import { buildVendorHandoff, parseFreeImport, type VendorId } from "./customerWorkflow";
-import {
-  cloudflareTextModelEnvKeys,
-  productionCardCopyModel
-} from "./aiProviderSetupProfile.mjs";
+import { productionCardCopyModel } from "./aiProviderSetupProfile.mjs";
 import {
   getProviderAdapter,
   providerCatalog,
@@ -959,9 +956,8 @@ function configuredModel(
   fallbackModel: string
 ): string {
   if (requestedModel?.trim()) return requestedModel.trim();
-  for (const envKey of envKeys) {
-    if (hasUsableEnvValue(env[envKey])) return String(env[envKey]).trim();
-  }
+  void envKeys;
+  void env;
   return fallbackModel;
 }
 
@@ -970,45 +966,13 @@ function configuredNumber(value: number | undefined, fallback: number): number {
 }
 
 function textModelEnvKeys(adapterId: string): string[] {
-  const envKeysByAdapter: Record<string, string[]> = {
-    "cloudflare-workers-ai-chat": [...cloudflareTextModelEnvKeys],
-    "openai-responses-chat": ["CUSTOMCARD_OPENAI_TEXT_MODEL", "OPENAI_TEXT_MODEL", "CARD_TEXT_MODEL"],
-    "anthropic-messages-chat": ["CUSTOMCARD_ANTHROPIC_TEXT_MODEL", "ANTHROPIC_MODEL", "CARD_TEXT_MODEL"],
-    "google-gemini-chat": ["CUSTOMCARD_GEMINI_TEXT_MODEL", "GEMINI_TEXT_MODEL", "GOOGLE_GENERATIVE_AI_MODEL"],
-    "huggingface-chat": ["CUSTOMCARD_HUGGINGFACE_TEXT_MODEL", "HUGGINGFACE_TEXT_MODEL"],
-    "mistral-chat": ["CUSTOMCARD_MISTRAL_TEXT_MODEL", "MISTRAL_MODEL"],
-    "cohere-chat": ["CUSTOMCARD_COHERE_TEXT_MODEL", "COHERE_MODEL"],
-    "perplexity-sonar-chat": ["CUSTOMCARD_PERPLEXITY_TEXT_MODEL", "PERPLEXITY_MODEL"],
-    "xai-chat": ["CUSTOMCARD_XAI_TEXT_MODEL", "XAI_MODEL"],
-    "together-chat": ["CUSTOMCARD_TOGETHER_TEXT_MODEL", "TOGETHER_TEXT_MODEL"],
-    "groq-chat": ["CUSTOMCARD_GROQ_TEXT_MODEL", "GROQ_MODEL"],
-    "deepseek-chat": ["CUSTOMCARD_DEEPSEEK_TEXT_MODEL", "DEEPSEEK_MODEL"],
-    "fireworks-chat": ["CUSTOMCARD_FIREWORKS_TEXT_MODEL", "FIREWORKS_TEXT_MODEL"],
-    "local-openai-compatible-chat": ["CUSTOMCARD_LOCAL_LLM_MODEL", "LMSTUDIO_MODEL", "KOBOLDCPP_MODEL"],
-    "self-hosted-openai-compatible-chat": ["CUSTOMCARD_SELF_HOSTED_TEXT_MODEL", "SELF_HOSTED_LLM_MODEL"]
-  };
-  return envKeysByAdapter[adapterId] ?? [];
+  void adapterId;
+  return [];
 }
 
 function imageModelEnvKeys(adapterId: string): string[] {
-  const envKeysByAdapter: Record<string, string[]> = {
-    "cloudflare-workers-ai-image": ["CUSTOMCARD_CLOUDFLARE_IMAGE_MODEL", "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL"],
-    "openai-images": ["CUSTOMCARD_OPENAI_IMAGE_MODEL", "OPENAI_IMAGE_MODEL", "CARD_IMAGE_MODEL"],
-    "azure-openai-image": ["CUSTOMCARD_AZURE_OPENAI_IMAGE_MODEL", "AZURE_OPENAI_IMAGE_DEPLOYMENT", "CARD_IMAGE_MODEL"],
-    "aws-bedrock-image": ["CUSTOMCARD_BEDROCK_IMAGE_MODEL", "BEDROCK_IMAGE_MODEL_ID"],
-    "google-gemini-image": ["CUSTOMCARD_GEMINI_IMAGE_MODEL", "GEMINI_IMAGE_MODEL", "CARD_IMAGE_MODEL"],
-    "deepai-text2img-image": ["CUSTOMCARD_DEEPAI_IMAGE_MODEL", "DEEPAI_IMAGE_MODEL"],
-    "huggingface-image": ["CUSTOMCARD_HUGGINGFACE_IMAGE_MODEL", "HUGGINGFACE_IMAGE_MODEL"],
-    "stability-stable-image": ["CUSTOMCARD_STABILITY_IMAGE_MODEL", "STABILITY_IMAGE_MODEL"],
-    "together-image": ["CUSTOMCARD_TOGETHER_IMAGE_MODEL", "TOGETHER_IMAGE_MODEL"],
-    "fal-image": ["CUSTOMCARD_FAL_IMAGE_MODEL", "FAL_IMAGE_MODEL"],
-    "bfl-flux-image": ["CUSTOMCARD_BFL_IMAGE_MODEL", "BFL_IMAGE_MODEL"],
-    "local-comfyui-api-image": ["CUSTOMCARD_COMFYUI_CHECKPOINT", "CUSTOMCARD_LOCAL_COMFYUI_CHECKPOINT", "COMFYUI_CHECKPOINT"],
-    "runcomfy-model-api-image": [],
-    "luma-image": ["CUSTOMCARD_LUMA_IMAGE_MODEL", "LUMA_IMAGE_MODEL"],
-    "replicate-image": ["CUSTOMCARD_REPLICATE_IMAGE_MODEL", "REPLICATE_IMAGE_MODEL"]
-  };
-  return envKeysByAdapter[adapterId] ?? [];
+  void adapterId;
+  return [];
 }
 
 function defaultTextModel(adapterId: string): string {
@@ -1029,20 +993,7 @@ function defaultTextModel(adapterId: string): string {
     "local-openai-compatible-chat": "local-default",
     "self-hosted-openai-compatible-chat": "local-default"
   };
-  return defaults[adapterId] ?? "{CLOUDFLARE_WORKERS_AI_TEXT_MODEL}";
-}
-
-function configuredModelRef(
-  requestedModel: string | undefined,
-  envKeys: string[],
-  env: ProviderRuntimeEnv,
-  fallbackRef: string
-): string {
-  if (requestedModel?.trim()) return envKeys[0] ?? fallbackRef;
-  for (const envKey of envKeys) {
-    if (hasUsableEnvValue(env[envKey])) return envKey;
-  }
-  return fallbackRef;
+  return defaults[adapterId] ?? productionCardCopyModel;
 }
 
 function defaultImageModel(adapterId: string): string {
@@ -1060,7 +1011,7 @@ function defaultImageModel(adapterId: string): string {
     "luma-image": "photon-1",
     "replicate-image": "black-forest-labs/flux-schnell"
   };
-  return defaults[adapterId] ?? "{CLOUDFLARE_WORKERS_AI_IMAGE_MODEL}";
+  return defaults[adapterId] ?? "gpt-image-2";
 }
 
 function buildAuthRequest(adapter: ProviderAdapter, input: AuthRuntimeInput): RuntimeRequestContract {
@@ -1215,8 +1166,8 @@ function buildTextChatRequest(
     return request(
       adapter,
       "POST",
-      "https://bedrock-runtime.{AWS_REGION}.amazonaws.com/model/{BEDROCK_TEXT_MODEL_ID}/converse",
-      ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION", "BEDROCK_TEXT_MODEL_ID"],
+      `https://bedrock-runtime.{AWS_REGION}.amazonaws.com/model/${encodeURIComponent(model)}/converse`,
+      ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION"],
       {
         messages: [{ role: "user", content: [{ text: prompt }] }],
         inferenceConfig: { maxTokens, temperature },
@@ -1256,12 +1207,11 @@ function buildTextChatRequest(
 
   if (adapter.id === "cloudflare-workers-ai-chat") {
     const apiTokenRef = cloudflareWorkersAiTokenRef(env, "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN");
-    const modelRef = configuredModelRef(input.model, textModelEnvKeys(adapter.id), env, "CUSTOMCARD_CLOUDFLARE_TEXT_MODEL");
     return request(
       adapter,
       "POST",
       "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/v1/chat/completions",
-      ["CLOUDFLARE_ACCOUNT_ID", apiTokenRef, modelRef],
+      ["CLOUDFLARE_ACCOUNT_ID", apiTokenRef],
       {
         model,
         messages: [{ role: "user", content: prompt }],
@@ -1565,8 +1515,8 @@ function buildSinglePanelImageRequest(
     return request(
       adapter,
       "POST",
-      "https://bedrock-runtime.{AWS_REGION}.amazonaws.com/model/{BEDROCK_IMAGE_MODEL_ID}/invoke",
-      ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION", "BEDROCK_IMAGE_MODEL_ID"],
+      `https://bedrock-runtime.{AWS_REGION}.amazonaws.com/model/${encodeURIComponent(model)}/invoke`,
+      ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION"],
       {
         taskType: "TEXT_IMAGE",
         model,

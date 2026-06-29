@@ -247,24 +247,23 @@ function buildLocalCommands({ recommended, paths }) {
 
 function buildHostedCommands({ recommended, paths }) {
   const hostedBaseUrl = "$env:CUSTOMCARD_LOCAL_LLM_BASE_URL";
-  const hostedModel = "$env:CUSTOMCARD_LOCAL_LLM_MODEL";
   return [
     {
       step: 1,
       title: "Configure hosted or self-hosted production planner",
-      command: `$env:CUSTOMCARD_LOCAL_LLM_BASE_URL="${recommended.plannerBaseUrl}"; $env:CUSTOMCARD_LOCAL_LLM_MODEL="${recommended.plannerModel}"; $env:CUSTOMCARD_LOCAL_LLM_API_KEY="<redacted>"`,
+      command: `$env:CUSTOMCARD_LOCAL_LLM_BASE_URL="${recommended.plannerBaseUrl}"; $env:CUSTOMCARD_LOCAL_LLM_API_KEY="<redacted>"`,
       why: hostedWhy(recommended)
     },
     {
       step: 2,
       title: "Write planner preflight evidence",
-      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-preflight.mjs --base-url ${hostedBaseUrl} --model ${hostedModel} --reported-context-tokens ${recommended.contextTokens} --max-output-tokens ${recommended.maxOutputTokens} --output-dir ${paths.plannerPreflightOutput}`,
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-preflight.mjs --base-url ${hostedBaseUrl} --model ${recommended.plannerModel} --reported-context-tokens ${recommended.contextTokens} --max-output-tokens ${recommended.maxOutputTokens} --output-dir ${paths.plannerPreflightOutput}`,
       why: "Proves the hosted/self-hosted planner model, context budget, and output cap before image work starts."
     },
     {
       step: 3,
       title: "Probe planner throughput",
-      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-throughput-probe.mjs --base-url ${hostedBaseUrl} --model ${hostedModel} --reported-context-tokens ${recommended.contextTokens} --max-output-tokens ${recommended.maxOutputTokens} --request-timeout-ms ${recommended.requestTimeoutMs} --output-dir ${paths.plannerThroughputOutput}`,
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-throughput-probe.mjs --base-url ${hostedBaseUrl} --model ${recommended.plannerModel} --reported-context-tokens ${recommended.contextTokens} --max-output-tokens ${recommended.maxOutputTokens} --request-timeout-ms ${recommended.requestTimeoutMs} --output-dir ${paths.plannerThroughputOutput}`,
       why: "Uses the full card-copy prompt to prove the planner can finish valid JSON before spending Comfy image work."
     },
     {
@@ -282,7 +281,7 @@ function buildHostedCommands({ recommended, paths }) {
     {
       step: 6,
       title: "Run full production-text matrix",
-      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl ${hostedBaseUrl} -LocalLlmModel ${hostedModel} -OutputDir ${paths.benchmarkOutput} -Checkpoint ${recommended.checkpoint} -Steps ${recommended.steps} -Cfg ${recommended.cfg} -Sampler ${recommended.sampler} -Scheduler ${recommended.scheduler} -PlannerMaxTokens ${recommended.maxOutputTokens} -PlannerContextSize ${recommended.contextTokens} -PlannerRequestTimeoutMs ${recommended.requestTimeoutMs} -NoAutoStartPlanner`,
+      command: `rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl ${hostedBaseUrl} -LocalLlmModel ${recommended.plannerModel} -OutputDir ${paths.benchmarkOutput} -Checkpoint ${recommended.checkpoint} -Steps ${recommended.steps} -Cfg ${recommended.cfg} -Sampler ${recommended.sampler} -Scheduler ${recommended.scheduler} -PlannerMaxTokens ${recommended.maxOutputTokens} -PlannerContextSize ${recommended.contextTokens} -PlannerRequestTimeoutMs ${recommended.requestTimeoutMs} -NoAutoStartPlanner`,
       why: "Runs aquarium/koi/dog customer requests through the production Comfy text workflow with LLM-owned theme/copy/layout, while preventing the wrapper from falling back to the known hardware-blocked local planner."
     },
     {
@@ -501,7 +500,7 @@ function hostedWhy(recommended) {
   const hardwareBlocked = recommended.hardwareBlockedCandidateIds?.length
     ? ` Latest hardware-blocked local candidates: ${recommended.hardwareBlockedCandidateIds.join(", ")}.`
     : "";
-  return `Configures a production-class OpenAI-compatible planner without using the local hardware-blocked KoboldCPP path. Keep these environment variables in the shell used for the remaining commands.${hardwareBlocked}`;
+  return `Configures a production-class OpenAI-compatible planner without using the local hardware-blocked KoboldCPP path. Keep the endpoint/API-key environment values in the shell used for the remaining commands; pass the model as an explicit command argument.${hardwareBlocked}`;
 }
 
 function defaultPlannerModelPath(modelName) {

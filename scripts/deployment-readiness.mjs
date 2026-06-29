@@ -38,8 +38,7 @@ const checks = [
     "OBJECT_STORE_SECRET_ACCESS_KEY: customcard-dev-only",
     "OBJECT_STORE_REGION: us-east-1"
   ]),
-  checkIncludes("local-dev", "dev-compose-kill-switch", contents.devCompose, [
-    "REAL_ORDER_KILL_SWITCH: disabled",
+  checkIncludes("local-dev", "dev-compose-vendor-domain-types", contents.devCompose, [
     "WALGREENS_VENDOR_MODE: disabled_until_certified",
     "CVS_VENDOR_MODE: disabled_until_certified",
     "FEDEX_VENDOR_MODE: disabled_until_certified",
@@ -65,7 +64,6 @@ const checks = [
   checkIncludes("cheap-droplet", "droplet-managed-secrets", contents.dropletCompose, [
     "SECRET_PROVIDER: managed_secret_store",
     "${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}",
-    "REAL_ORDER_KILL_SWITCH: disabled",
     "WALGREENS_VENDOR_MODE: disabled_until_certified",
     "CVS_VENDOR_MODE: disabled_until_certified",
     "FEDEX_VENDOR_MODE: disabled_until_certified",
@@ -116,7 +114,6 @@ const checks = [
     "OBJECT_STORE_SECRET_ACCESS_KEY",
     "OBJECT_STORE_SIGNING_SECRET",
     "ARTIFACT_SIGNED_URL_TTL_MINUTES",
-    "REAL_ORDER_KILL_SWITCH",
     "WALGREENS_VENDOR_MODE",
     "CVS_VENDOR_MODE",
     "FEDEX_VENDOR_MODE",
@@ -182,8 +179,7 @@ const checks = [
     "OBJECT_STORE_URL",
     "OBJECT_STORE_BUCKET",
     "OBJECT_STORE_REGION",
-    "OBJECT_STORE_SIGNING_SECRET",
-    "REAL_ORDER_KILL_SWITCH"
+    "OBJECT_STORE_SIGNING_SECRET"
   ]),
   checkIncludes("runtime", "dockerfile-production-server", contents.dockerfile, [
     "FROM node:25-slim AS runtime",
@@ -209,7 +205,6 @@ const checks = [
     "ARTIFACT_SIGNED_URL_TTL_MINUTES=",
     "CUSTOMCARD_API_RUNTIME=contract",
     "AUTH_SESSION_SECRET=",
-    "CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS=",
     "CUSTOMCARD_CUSTOMER_SESSION_TOKEN=",
     "CUSTOMCARD_ADMIN_SESSION_TOKEN=",
     "CUSTOMCARD_AUTH_CALLBACK_URL=",
@@ -255,7 +250,7 @@ const checks = [
     "DYNAMICS_CLIENT_SECRET=",
     "SHOPIFY_SHOP_DOMAIN=",
     "SHOPIFY_ADMIN_ACCESS_TOKEN=",
-    "REAL_ORDER_KILL_SWITCH=disabled",
+    "Live order gates are owned by admin safety controls.",
     "WALGREENS_VENDOR_MODE=disabled_until_certified",
     "CVS_VENDOR_MODE=disabled_until_certified",
     "FEDEX_VENDOR_MODE=disabled_until_certified",
@@ -270,14 +265,10 @@ const checks = [
     "AWS_ACCESS_KEY_ID=",
     "AWS_SECRET_ACCESS_KEY=",
     "AWS_REGION=",
-    "BEDROCK_TEXT_MODEL_ID=",
-    "BEDROCK_IMAGE_MODEL_ID=",
     "CLOUDFLARE_ACCOUNT_ID=",
     "CLOUDFLARE_API_TOKEN=",
     "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN=",
     "CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN=",
-    "CLOUDFLARE_WORKERS_AI_TEXT_MODEL=",
-    "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL=",
     "MISTRAL_API_KEY=",
     "TOGETHER_API_KEY=",
     "GROQ_API_KEY=",

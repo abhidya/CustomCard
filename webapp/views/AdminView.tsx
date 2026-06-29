@@ -543,7 +543,13 @@ export function AdminView({
     flowId: AiFlowAdminConfig["flowId"],
     key: keyof Pick<
       AiFlowAdminConfig,
-      "maxRetries" | "maxTokens" | "monthlyBudgetCents" | "perRequestBudgetCents" | "rateLimitPerMinute" | "temperature"
+      | "contextWindowTokens"
+      | "maxRetries"
+      | "maxTokens"
+      | "monthlyBudgetCents"
+      | "perRequestBudgetCents"
+      | "rateLimitPerMinute"
+      | "temperature"
     >,
     rawValue: string,
     options: { min?: number; scale?: number } = {}
@@ -1415,6 +1421,34 @@ export function AdminView({
                         value={config.model}
                       />
                     </label>
+                    {flow.capability === "text-chat" ? (
+                      <label>
+                        Context tokens
+                        <input
+                          inputMode="numeric"
+                          min={0}
+                          onChange={(event) => updateFlowNumber(flow.flowId, "contextWindowTokens", event.target.value)}
+                          type="number"
+                          value={config.contextWindowTokens ?? 0}
+                        />
+                      </label>
+                    ) : null}
+                    {flow.capability === "image-generation" ? (
+                      <label>
+                        Rendering
+                        <select
+                          onChange={(event) =>
+                            updateFlow(flow.flowId, {
+                              renderingMode: event.target.value as AiFlowAdminConfig["renderingMode"]
+                            })
+                          }
+                          value={config.renderingMode ?? ""}
+                        >
+                          <option value="">Standard artwork</option>
+                          <option value="final-text-composited">Final text composited</option>
+                        </select>
+                      </label>
+                    ) : null}
                     <label>
                       Fallback
                       <select
@@ -1460,6 +1494,24 @@ export function AdminView({
                         type="number"
                       />
                     </label>
+                    {flow.capability === "image-generation" ? (
+                      <>
+                        <label>
+                          Workflow ID
+                          <input
+                            onChange={(event) => updateFlow(flow.flowId, { workflowId: event.target.value })}
+                            value={config.workflowId ?? ""}
+                          />
+                        </label>
+                        <label>
+                          Workflow path
+                          <input
+                            onChange={(event) => updateFlow(flow.flowId, { workflowPath: event.target.value })}
+                            value={config.workflowPath ?? ""}
+                          />
+                        </label>
+                      </>
+                    ) : null}
                   </div>
                   <div className="flowToggleRow" aria-label={`${flow.label} safety gates`}>
                     <label>
@@ -1530,6 +1582,24 @@ export function AdminView({
                         value={config.promptInstructions}
                       />
                     </label>
+                    {flow.capability === "image-generation" ? (
+                      <>
+                        <label className="flowPromptField">
+                          Workflow JSON
+                          <textarea
+                            onChange={(event) => updateFlow(flow.flowId, { workflowJson: event.target.value })}
+                            value={config.workflowJson ?? ""}
+                          />
+                        </label>
+                        <label className="flowPromptField">
+                          Workflow inputs JSON
+                          <textarea
+                            onChange={(event) => updateFlow(flow.flowId, { workflowInputsJson: event.target.value })}
+                            value={config.workflowInputsJson ?? ""}
+                          />
+                        </label>
+                      </>
+                    ) : null}
                   </details>
                   <div className="flowMeta" aria-label={`${flow.label} effective provider policy`}>
                     <span>{formatCents(config.perRequestBudgetCents)} max/request</span>

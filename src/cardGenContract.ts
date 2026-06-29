@@ -110,9 +110,7 @@ export interface CardGenSidecarContract {
     "CARD_GEN_MONTHLY_BUDGET_CENTS",
     "CARD_GEN_PER_REQUEST_BUDGET_CENTS",
     "CARD_GEN_MAX_BODY_BYTES",
-    "CARD_GEN_ALLOW_UNAUTHENTICATED_LOCAL",
     "OPENAI_API_KEY",
-    "CARD_IMAGE_ENABLED",
     "CARD_TEXT_MODEL",
     "CARD_TEXT_MAX_TOKENS",
     "CARD_TEXT_REQUEST_LIMIT",
@@ -147,9 +145,7 @@ export function buildCardGenSidecarContract(env: {
       "CARD_GEN_MONTHLY_BUDGET_CENTS",
       "CARD_GEN_PER_REQUEST_BUDGET_CENTS",
       "CARD_GEN_MAX_BODY_BYTES",
-      "CARD_GEN_ALLOW_UNAUTHENTICATED_LOCAL",
       "OPENAI_API_KEY",
-      "CARD_IMAGE_ENABLED",
       "CARD_TEXT_MODEL",
       "CARD_TEXT_MAX_TOKENS",
       "CARD_TEXT_REQUEST_LIMIT",
@@ -159,7 +155,7 @@ export function buildCardGenSidecarContract(env: {
     ],
     blockedReasons: [
       ...(env.cardGenUrl ? [] : ["VITE_CARD_GEN_URL is not set — sidecar URL required to enable AI generation."]),
-      ...(env.imageGenEnabled ? [] : ["Image generation disabled — set OPENAI_API_KEY and CARD_IMAGE_ENABLED=true on the sidecar."])
+      ...(env.imageGenEnabled ? [] : ["Sidecar health reports image generation disabled; configure an image provider credential before expecting image panels."])
     ]
   };
 }

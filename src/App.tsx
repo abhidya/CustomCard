@@ -207,19 +207,19 @@ export function AdminPanelView({
           <strong className="heroStat">{providerOps.summary.availableProviders}</strong>
           <span className="heroStatLabel">available here</span>
           <div className="heroSubStats">
-            <span><span className="dot green" />{providerOps.summary.envConfiguredProviders} env configured</span>
+            <span><span className="dot green" />{providerOps.summary.envConfiguredProviders} credentials ready</span>
             <span><span className="dot amber" />{providerOps.summary.selectedProviders} selected</span>
-            <span><span className="dot red" />{providerOps.summary.missingSelectedEnv} env gaps</span>
+            <span><span className="dot red" />{providerOps.summary.missingSelectedEnv} credential gaps</span>
           </div>
         </article>
 
         <article className="adminHeroCard safetyCard">
-          <p className="eyebrow">Feature gates</p>
+          <p className="eyebrow">Admin gates</p>
           <strong className="heroStat">{providerOps.summary.readyForLiveCalls}</strong>
           <span className="heroStatLabel">flow live-ready</span>
           <div className="heroSubStats">
             <span><span className="dot green" />{providerOps.summary.liveReadyProviders} provider live-ready</span>
-            <span><span className="dot amber" />{providerOps.summary.liveGatedProviders} feature-gated</span>
+            <span><span className="dot amber" />{providerOps.summary.liveGatedProviders} admin-gated</span>
             <span><span className="dot blue" />{providerOps.summary.fallbackQueues} fallback queues</span>
           </div>
         </article>
@@ -242,7 +242,7 @@ export function AdminPanelView({
           <div className="heroSubStats">
             <span><span className="dot green" />{providerOps.users.hostedSeedProofs} seed proofs</span>
             <span><span className="dot amber" />{providerOps.users.optInGates} opt-in gates</span>
-            <span><span className="dot blue" />{providerOps.users.userManagementRequiredEnv.length} user env</span>
+            <span><span className="dot blue" />{providerOps.users.userManagementRequiredEnv.length} user credentials</span>
           </div>
         </article>
       </div>
@@ -1206,10 +1206,39 @@ function AiFlowConfigPanel({
                 <label className="fieldStack">
                   <span>Model</span>
                   <input
-                    value={config.model}
+                    value={config.model ?? ""}
                     onChange={(event) => patchFlow(flow.flowId, { model: event.target.value })}
                   />
                 </label>
+
+                {flow.capability === "text-chat" ? (
+                  <label className="fieldStack">
+                    <span>Context tokens</span>
+                    <input
+                      min={0}
+                      type="number"
+                      value={config.contextWindowTokens ?? 0}
+                      onChange={(event) => patchFlow(flow.flowId, { contextWindowTokens: Number(event.target.value) })}
+                    />
+                  </label>
+                ) : null}
+
+                {flow.capability === "image-generation" ? (
+                  <label className="fieldStack">
+                    <span>Rendering</span>
+                    <select
+                      value={config.renderingMode ?? ""}
+                      onChange={(event) =>
+                        patchFlow(flow.flowId, {
+                          renderingMode: event.target.value as AiFlowAdminConfig["renderingMode"]
+                        })
+                      }
+                    >
+                      <option value="">Standard artwork</option>
+                      <option value="final-text-composited">Final text composited</option>
+                    </select>
+                  </label>
+                ) : null}
 
                 <label className="fieldStack">
                   <span>Rate/min</span>
@@ -1240,6 +1269,25 @@ function AiFlowConfigPanel({
                     onChange={(event) => patchFlow(flow.flowId, { monthlyBudgetCents: Number(event.target.value) })}
                   />
                 </label>
+
+                {flow.capability === "image-generation" ? (
+                  <>
+                    <label className="fieldStack">
+                      <span>Workflow ID</span>
+                      <input
+                        value={config.workflowId ?? ""}
+                        onChange={(event) => patchFlow(flow.flowId, { workflowId: event.target.value })}
+                      />
+                    </label>
+                    <label className="fieldStack">
+                      <span>Workflow path</span>
+                      <input
+                        value={config.workflowPath ?? ""}
+                        onChange={(event) => patchFlow(flow.flowId, { workflowPath: event.target.value })}
+                      />
+                    </label>
+                  </>
+                ) : null}
               </div>
 
               <div className="aiFlowToggleRow">
@@ -1272,10 +1320,29 @@ function AiFlowConfigPanel({
               <label className="fieldStack aiPromptField">
                 <span>Prompt instructions</span>
                 <textarea
-                  value={config.promptInstructions}
+                  value={config.promptInstructions ?? ""}
                   onChange={(event) => patchFlow(flow.flowId, { promptInstructions: event.target.value })}
                 />
               </label>
+
+              {flow.capability === "image-generation" ? (
+                <>
+                  <label className="fieldStack aiPromptField">
+                    <span>Workflow JSON</span>
+                    <textarea
+                      value={config.workflowJson ?? ""}
+                      onChange={(event) => patchFlow(flow.flowId, { workflowJson: event.target.value })}
+                    />
+                  </label>
+                  <label className="fieldStack aiPromptField">
+                    <span>Workflow inputs JSON</span>
+                    <textarea
+                      value={config.workflowInputsJson ?? ""}
+                      onChange={(event) => patchFlow(flow.flowId, { workflowInputsJson: event.target.value })}
+                    />
+                  </label>
+                </>
+              ) : null}
 
               <div className="aiFlowMeta">
                 <span>{formatCents(config.perRequestBudgetCents)} max/request</span>

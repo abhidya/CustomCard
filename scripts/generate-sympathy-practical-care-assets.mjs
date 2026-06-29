@@ -6,6 +6,8 @@ const width = 1500;
 const height = 2100;
 const outputDir = resolve("public/generated");
 const sourceAssetDir = resolve("public/generated/source-assets");
+const args = parseArgs(process.argv.slice(2));
+const requestedStyle = String(args.style ?? "default").trim().toLowerCase();
 
 function defs({ dark = false } = {}) {
   return `
@@ -1219,26 +1221,18 @@ function gouachePanelSvg(panelId) {
 }
 
 function panelSvg(panelId) {
-  if (process.env.CUSTOMCARD_LEGACY_PRACTICAL_CARE_ASSETS === "enabled") {
-    return legacyPanelSvg(panelId);
-  }
-  if (process.env.CUSTOMCARD_VECTOR_PRACTICAL_CARE_ASSETS === "enabled") {
-    return bespokeCarePanelSvg(panelId) || premiumPanelSvg(panelId);
-  }
-  if (process.env.CUSTOMCARD_PHOTO_PRACTICAL_CARE_ASSETS === "enabled") {
+  if (requestedStyle === "legacy") return legacyPanelSvg(panelId);
+  if (requestedStyle === "vector") return bespokeCarePanelSvg(panelId) || premiumPanelSvg(panelId);
+  if (requestedStyle === "photo") {
     const photoCare = photoCarePanelSvg(panelId);
     if (photoCare) return photoCare;
   }
-  if (process.env.CUSTOMCARD_LICENSED_PRACTICAL_CARE_ASSETS === "enabled") {
+  if (requestedStyle === "licensed") {
     const licensed = licensedPhotoPanelSvg(panelId);
     if (licensed) return licensed;
   }
-  if (process.env.CUSTOMCARD_BLOCKPRINT_PRACTICAL_CARE_ASSETS === "enabled") {
-    return monotypePanelSvg(panelId);
-  }
-  if (process.env.CUSTOMCARD_GOUACHE_PRACTICAL_CARE_ASSETS === "enabled") {
-    return gouachePanelSvg(panelId);
-  }
+  if (requestedStyle === "blockprint") return monotypePanelSvg(panelId);
+  if (requestedStyle === "gouache") return gouachePanelSvg(panelId);
   const museum = museumCarePanelSvg(panelId);
   if (museum) return museum;
   const gouache = gouachePanelSvg(panelId);
@@ -1246,6 +1240,26 @@ function panelSvg(panelId) {
   const monotype = monotypePanelSvg(panelId);
   if (monotype) return monotype;
   return bespokeCarePanelSvg(panelId) || premiumPanelSvg(panelId);
+}
+
+function parseArgs(values) {
+  const parsed = {};
+  for (let index = 0; index < values.length; index += 1) {
+    const value = values[index];
+    if (!value.startsWith("--")) continue;
+    const [rawKey, inlineValue] = value.slice(2).split("=");
+    if (inlineValue !== undefined) {
+      parsed[rawKey] = inlineValue;
+      continue;
+    }
+    if (values[index + 1] && !values[index + 1].startsWith("--")) {
+      parsed[rawKey] = values[index + 1];
+      index += 1;
+    } else {
+      parsed[rawKey] = true;
+    }
+  }
+  return parsed;
 }
 
 function legacyPanelSvg(panelId) {

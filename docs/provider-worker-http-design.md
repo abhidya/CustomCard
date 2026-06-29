@@ -228,7 +228,7 @@ On Vercel/prod:
 ```bash
 CUSTOMCARD_PROVIDER_WORKER_TOKEN_SHA256=<sha256 token>
 CUSTOMCARD_PROVIDER_WORKER_ROUTE_IDS=ai-card-generate
-CUSTOMCARD_ARTIFACT_PERSISTENCE=enabled
+OBJECT_STORE_URL=memory://customcard-artifacts
 OBJECT_STORE_URL=<r2 s3-compatible endpoint>
 OBJECT_STORE_BUCKET=<bucket>
 OBJECT_STORE_ACCESS_KEY_ID=<server-side writer key>
@@ -244,7 +244,6 @@ CUSTOMCARD_PROVIDER_API_BASE_URL=https://<your-production-vercel-domain>
 CUSTOMCARD_PROVIDER_WORKER_TOKEN=<raw token>
 CUSTOMCARD_WORKER_ID=manny-comfy-01
 CUSTOMCARD_COMFYUI_URL=http://127.0.0.1:8188
-CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID=local-openai-compatible-chat
 CUSTOMCARD_LOCAL_LLM_BASE_URL=http://127.0.0.1:1234/v1
 npm run provider:start
 ```

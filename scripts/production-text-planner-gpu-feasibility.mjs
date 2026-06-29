@@ -53,7 +53,7 @@ export function runProductionTextPlannerGpuFeasibility(args = {}, options = {}) 
   const reportDir = resolve(String(args["output-dir"] || `${outputRoot}/production-text-planner-gpu-feasibility-${timestamp()}`));
   const modelRoot = resolve(String(args["model-root"] || defaultModelRoot));
   const baseUrl = firstUsableValue(args["base-url"], process.env.CUSTOMCARD_LOCAL_LLM_BASE_URL, process.env.LMSTUDIO_BASE_URL, process.env.KOBOLDCPP_BASE_URL);
-  const requestedModel = firstUsableValue(args.model, process.env.CUSTOMCARD_LOCAL_LLM_MODEL, process.env.LMSTUDIO_MODEL, process.env.KOBOLDCPP_MODEL);
+  const requestedModel = firstUsableValue(args.model);
   const explicitModelPath = firstUsableValue(args["model-path"], process.env.CUSTOMCARD_PRODUCTION_PLANNER_MODEL_PATH);
   const overheadMiB = boundedInteger(args["overhead-mib"], 0, 16_384, 1024);
   const endpoint = baseUrl ? localEndpoint(baseUrl) : { local: false, port: 0, baseUrl: "", error: "Planner base URL is missing." };

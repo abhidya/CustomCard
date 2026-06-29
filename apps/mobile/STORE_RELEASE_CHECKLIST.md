@@ -40,7 +40,7 @@ Provide via EAS environment variables / build profile `env`:
 - [ ] `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` = production Clerk publishable key
       (`pk_live_…`).
 - [ ] `CUSTOMCARD_OAUTH_REDIRECT_URL=customcard://sso-callback`.
-- [ ] `REAL_ORDER_KILL_SWITCH=disabled` (already enforced in `eas.json`).
+- [ ] Mobile app config reports the disabled order safety state.
 - [ ] Clerk dashboard: production instance, Google/Apple OAuth providers,
       `customcard://sso-callback` Redirect URL, and the mobile app added;
       backend has the matching `CLERK_JWT_KEY` / authorized parties.

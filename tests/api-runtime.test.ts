@@ -151,7 +151,7 @@ describe("api runtime safety", () => {
 
     expect(runtime.describe()).toMatchObject({ sessionsConfigured: 0 });
     expect(runtime.validate()).toContain(
-      "Memory API runtime requires Clerk JWT verification config or CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS=enabled with CUSTOMCARD_CUSTOMER_SESSION_TOKEN plus CUSTOMCARD_ADMIN_SESSION_TOKEN."
+      "Memory API runtime requires Clerk JWT verification config or explicit local auth fallback runtime config with CUSTOMCARD_CUSTOMER_SESSION_TOKEN plus CUSTOMCARD_ADMIN_SESSION_TOKEN."
     );
     await expect(
       runtime.authorize(renderPacketsRoute, { headers: { authorization: "Bearer test-customer-session-token" } })
@@ -166,12 +166,12 @@ describe("api runtime safety", () => {
     const runtime = createApiRuntime({
       env: {
         CUSTOMCARD_API_RUNTIME: "memory",
-        CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS: "enabled",
         AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
         CUSTOMCARD_CUSTOMER_SESSION_TOKEN: "test-customer-session-token",
         CUSTOMCARD_ADMIN_SESSION_TOKEN: "test-admin-session-token"
       },
-      routes: apiRouteContracts
+      routes: apiRouteContracts,
+      localAuthFallbacksEnabled: true
     });
 
     expect(runtime.describe()).toMatchObject({ sessionsConfigured: 2 });
@@ -189,15 +189,14 @@ describe("api runtime safety", () => {
     const runtime = createApiRuntime({
       env: {
         CUSTOMCARD_API_RUNTIME: "memory",
-        CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS: "enabled",
         AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
         CUSTOMCARD_CUSTOMER_SESSION_TOKEN: "test-customer-session-token",
         CUSTOMCARD_ADMIN_SESSION_TOKEN: "test-admin-session-token",
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
-        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
-        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast"
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token"
       },
-      routes: apiRouteContracts
+      routes: apiRouteContracts,
+      localAuthFallbacksEnabled: true
     });
     const authContext = { ok: true, userId: "admin-demo", role: "admin", sessionId: "session-admin" };
 
@@ -332,11 +331,11 @@ test-clerk-jwt-key
     const runtime = createApiRuntime({
       env: {
         CUSTOMCARD_API_RUNTIME: "memory",
-        CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS: "enabled",
         CUSTOMCARD_CUSTOMER_SESSION_TOKEN: "test-customer-session-token",
         CUSTOMCARD_ADMIN_SESSION_TOKEN: "test-admin-session-token"
       },
-      routes: apiRouteContracts
+      routes: apiRouteContracts,
+      localAuthFallbacksEnabled: true
     });
 
     await expect(

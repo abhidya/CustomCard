@@ -21,7 +21,7 @@ describe("mobile native install proof", () => {
     });
     expect(report.blockers).toEqual(
       expect.arrayContaining([
-        "CUSTOMCARD_MOBILE_NATIVE_INSTALL_PROOF=enabled is required before scanning installed native app bundles.",
+        "--confirm-mobile-native-install-proof is required before scanning installed native app bundles.",
         "CUSTOMCARD_MOBILE_SIMULATOR_UDID, CUSTOMCARD_MOBILE_APP_BUNDLE_PATH, or CUSTOMCARD_MOBILE_MAIN_BUNDLE_PATH is required."
       ])
     );
@@ -47,9 +47,9 @@ describe("mobile native install proof", () => {
 
     const report = runMobileNativeInstallProof({
       env: {
-        CUSTOMCARD_MOBILE_NATIVE_INSTALL_PROOF: "enabled",
         CUSTOMCARD_MOBILE_APP_BUNDLE_PATH: appPath
       },
+      enabled: true,
       now
     });
     const serialized = JSON.stringify(report);
@@ -104,9 +104,9 @@ describe("mobile native install proof", () => {
     expect(
       runMobileNativeInstallProof({
         env: {
-          CUSTOMCARD_MOBILE_NATIVE_INSTALL_PROOF: "enabled",
           CUSTOMCARD_MOBILE_APP_BUNDLE_PATH: appPath
         },
+        enabled: true,
         now
       })
     ).toMatchObject({
@@ -157,10 +157,10 @@ describe("mobile native install proof", () => {
     expect(
       runMobileNativeInstallProof({
         env: {
-          CUSTOMCARD_MOBILE_NATIVE_INSTALL_PROOF: "enabled",
           CUSTOMCARD_MOBILE_MAIN_BUNDLE_PATH: mainBundlePath,
           CUSTOMCARD_MOBILE_APP_CONFIG_PATH: appConfigPath
         },
+        enabled: true,
         now
       })
     ).toMatchObject({
@@ -207,9 +207,9 @@ describe("mobile native install proof", () => {
 
     const report = runMobileNativeInstallProof({
       env: {
-        CUSTOMCARD_MOBILE_NATIVE_INSTALL_PROOF: "enabled",
         CUSTOMCARD_MOBILE_APP_BUNDLE_PATH: appPath
       },
+      enabled: true,
       now
     });
 

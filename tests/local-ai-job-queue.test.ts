@@ -10,10 +10,7 @@ const localEnv = {
   CUSTOMCARD_API_RUNTIME: "postgres",
   DATABASE_URL: "postgres://customcard.local/customcard",
   CUSTOMCARD_LOCAL_LLM_BASE_URL: "http://127.0.0.1:1234/v1",
-  CUSTOMCARD_LOCAL_LLM_MODEL: "qwen3-8b-q4_k_m",
-  CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188",
-  CUSTOMCARD_COMFYUI_CHECKPOINT: "sd_xl_base_1.0.safetensors",
-  CUSTOMCARD_COMFYUI_WORKFLOW_ID: "api-sdxl-checkpoint-card-v1"
+  CUSTOMCARD_COMFYUI_URL: "http://127.0.0.1:8188"
 };
 
 describe("local AI job queue", () => {
@@ -36,7 +33,13 @@ describe("local AI job queue", () => {
 
   it("builds sanitized local-only ai-card-generate queue payloads from benchmark stories", () => {
     const plan = buildLocalAiQueuePlan({
-      args: { stories: "botanical-birthday", runId: "test-run" },
+      args: {
+        stories: "botanical-birthday",
+        runId: "test-run",
+        llmModel: "qwen3-8b-q4_k_m",
+        checkpoint: "sd_xl_base_1.0.safetensors",
+        workflowId: "api-sdxl-checkpoint-card-v1"
+      },
       env: localEnv,
       now: () => new Date("2030-01-01T00:00:00.000Z")
     });

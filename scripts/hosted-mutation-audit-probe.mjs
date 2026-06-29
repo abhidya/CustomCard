@@ -3,25 +3,26 @@ import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { resolveHostedTarget } from "./hosted-clerk-route-probe.mjs";
 
-const guardEnvName = "CUSTOMCARD_HOSTED_MUTATION_PROBE";
-const acknowledgementEnvName = "CUSTOMCARD_HOSTED_MUTATION_PROBE_ACKNOWLEDGE_LIVE_WRITES";
-const guardRequirement = "CUSTOMCARD_HOSTED_MUTATION_PROBE=enabled";
-const acknowledgementRequirement = "CUSTOMCARD_HOSTED_MUTATION_PROBE_ACKNOWLEDGE_LIVE_WRITES=enabled";
+const guardRequirement = "--confirm-hosted-mutation-probe";
+const acknowledgementRequirement = "--acknowledge-live-writes";
 const customerJwtEnvName = "CUSTOMCARD_HOSTED_CUSTOMER_JWT";
 const adminJwtEnvName = "CUSTOMCARD_HOSTED_ADMIN_JWT";
 
 export async function runHostedMutationAuditProbe({
   env = process.env,
   fetchImpl = globalThis.fetch,
-  now = new Date()
+  now = new Date(),
+  enabled = false,
+  acknowledgeLiveWrites = false,
+  probeId: explicitProbeId
 } = {}) {
   const target = resolveHostedTarget(env);
-  const probeId = normalizeProbeId(env.CUSTOMCARD_HOSTED_MUTATION_PROBE_ID, now);
+  const probeId = normalizeProbeId(explicitProbeId, now);
   const blockers = [...target.blockers, ...validateProbeEnv(env)];
-  if (env[guardEnvName] !== "enabled") {
+  if (!enabled) {
     blockers.unshift(`${guardRequirement} is required before hosted mutation probes run.`);
   }
-  if (env[acknowledgementEnvName] !== "enabled") {
+  if (!acknowledgeLiveWrites) {
     blockers.unshift(`${acknowledgementRequirement} is required because this probe writes a harmless render-packet row.`);
   }
   if (typeof fetchImpl !== "function") blockers.push("A fetch implementation is required for hosted mutation probes.");
@@ -359,8 +360,8 @@ function checkPassed(checks, id) {
   return checks.some((check) => check.id === id && check.passed);
 }
 
-function writeEvidenceIfRequested(report, env = process.env) {
-  const outputPath = String(env.CUSTOMCARD_HOSTED_MUTATION_PROBE_EVIDENCE_OUT ?? "").trim();
+function writeEvidenceIfRequested(report, outputPath = "") {
+  outputPath = String(outputPath ?? "").trim();
   if (!outputPath) return report;
   const absolutePath = resolve(outputPath);
   mkdirSync(dirname(absolutePath), { recursive: true });
@@ -373,7 +374,32 @@ function isCliEntrypoint() {
 }
 
 if (isCliEntrypoint()) {
-  const report = writeEvidenceIfRequested(await runHostedMutationAuditProbe());
+  const args = parseArgs(process.argv.slice(2));
+  const report = writeEvidenceIfRequested(await runHostedMutationAuditProbe({
+    enabled: args["confirm-hosted-mutation-probe"] === true,
+    acknowledgeLiveWrites: args["acknowledge-live-writes"] === true,
+    probeId: args["probe-id"]
+  }), args["evidence-out"]);
   console.log(JSON.stringify(report, null, 2));
   if (report.status !== "ready") process.exit(1);
+}
+
+function parseArgs(values) {
+  const parsed = {};
+  for (let index = 0; index < values.length; index += 1) {
+    const value = values[index];
+    if (!value.startsWith("--")) continue;
+    const [rawKey, inlineValue] = value.slice(2).split("=");
+    if (inlineValue !== undefined) {
+      parsed[rawKey] = inlineValue;
+      continue;
+    }
+    if (values[index + 1] && !values[index + 1].startsWith("--")) {
+      parsed[rawKey] = values[index + 1];
+      index += 1;
+    } else {
+      parsed[rawKey] = true;
+    }
+  }
+  return parsed;
 }

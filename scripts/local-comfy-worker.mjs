@@ -7,30 +7,18 @@ import {
   resolveProductionTextComfyUrl
 } from "./comfy-production-text-setup.mjs";
 import { createWorkerRuntime, describeWorkerReadiness } from "./worker-runtime.mjs";
+import {
+  modelForAiAdapter,
+  normalizeAiFlowAdminConfigs,
+  resolveAiFlowConfig
+} from "../src/aiFlowConfigData.mjs";
 
 const localComfyRoutes = [{ id: "ai-card-generate", runtimeMode: "queue-backed" }];
 
 export function resolveLocalComfyWorkerEnv(env = process.env) {
   const resolved = { ...env };
-  resolved.CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID = "local-comfyui-api-image";
-  if (resolved.CUSTOMCARD_LOCAL_COMFY_WORKER_ALLOW_IMAGE_FALLBACK !== "true") {
-    resolved.CUSTOMCARD_AI_CARD_IMAGE_FALLBACK_ADAPTER_ID = "local-comfyui-api-image";
-  }
   if (!resolved.CUSTOMCARD_COMFYUI_URL && !resolved.COMFYUI_URL) {
     resolved.CUSTOMCARD_COMFYUI_URL = resolveProductionTextComfyUrl({ env: resolved });
-  }
-  if (
-    !resolved.CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID &&
-    (resolved.CUSTOMCARD_LOCAL_LLM_BASE_URL || resolved.LMSTUDIO_BASE_URL || resolved.KOBOLDCPP_BASE_URL)
-  ) {
-    resolved.CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID = "local-openai-compatible-chat";
-  }
-  if (
-    resolved.CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID === "local-openai-compatible-chat" &&
-    resolved.CUSTOMCARD_LOCAL_COMFY_WORKER_ALLOW_TEXT_FALLBACK !== "true" &&
-    !resolved.CUSTOMCARD_AI_CARD_COPY_FALLBACK_ADAPTER_ID
-  ) {
-    resolved.CUSTOMCARD_AI_CARD_COPY_FALLBACK_ADAPTER_ID = "local-openai-compatible-chat";
   }
   if (!resolved.CUSTOMCARD_WORKER_ID) {
     resolved.CUSTOMCARD_WORKER_ID = `local-comfy:${resolved.HOSTNAME ?? "machine"}:${process.pid}`;
@@ -38,27 +26,53 @@ export function resolveLocalComfyWorkerEnv(env = process.env) {
   return resolved;
 }
 
+export function buildLocalComfyWorkerAiFlowConfig(env = process.env) {
+  const configs = normalizeAiFlowAdminConfigs([], env).map((config) => {
+    if (config.flowId !== "card-image") return config;
+    return {
+      ...config,
+      primaryAdapterId: "local-comfyui-api-image",
+      fallbackAdapterId: "local-comfyui-api-image",
+      model: modelForAiAdapter("local-comfyui-api-image", env),
+      liveProviderCallsEnabled: true,
+      queueEnabled: true,
+      fallbackQueueEnabled: false
+    };
+  });
+  return normalizeAiFlowAdminConfigs(configs, env);
+}
+
 export function createLocalComfyWorkerRuntime(options = {}) {
   const env = resolveLocalComfyWorkerEnv(options.env ?? process.env);
+  const aiFlowAdminConfig = options.aiFlowAdminConfig ?? buildLocalComfyWorkerAiFlowConfig(env);
   return createWorkerRuntime({
     ...options,
     env,
+    aiFlowAdminConfig,
     routes: options.routes ?? localComfyRoutes,
     workerId: options.workerId ?? env.CUSTOMCARD_WORKER_ID
   });
 }
 
-export function describeLocalComfyWorkerReadiness({ env = process.env } = {}) {
+export function describeLocalComfyWorkerReadiness({ env = process.env, aiFlowAdminConfig } = {}) {
   const resolvedEnv = resolveLocalComfyWorkerEnv(env);
-  const workflowId = resolvedEnv.CUSTOMCARD_COMFYUI_WORKFLOW_ID || resolvedEnv.COMFYUI_WORKFLOW_ID || null;
-  const workflowPath = resolvedEnv.CUSTOMCARD_COMFYUI_WORKFLOW_PATH || resolvedEnv.COMFYUI_WORKFLOW_PATH || null;
+  const workerAiFlowAdminConfig = aiFlowAdminConfig ?? buildLocalComfyWorkerAiFlowConfig(resolvedEnv);
+  const imageFlow = resolveAiFlowConfig("card-image", resolvedEnv, workerAiFlowAdminConfig);
+  const workflowId = imageFlow.workflowId || null;
+  const workflowPath = imageFlow.workflowPath || null;
   const productionTextSetup = isProductionTextWorkflowConfigured({ workflowId, workflowPath })
-    ? describeProductionTextSetup({ env: resolvedEnv })
+    ? describeProductionTextSetup({
+        args: {
+          "workflow-path": workflowPath || undefined,
+          "comfy-url": resolvedEnv.CUSTOMCARD_COMFYUI_URL || resolvedEnv.COMFYUI_URL
+        },
+        env: resolvedEnv
+      })
     : null;
   return {
-    ...describeWorkerReadiness({ env: resolvedEnv, routes: localComfyRoutes }),
+    ...describeWorkerReadiness({ env: resolvedEnv, routes: localComfyRoutes, aiFlowAdminConfig: workerAiFlowAdminConfig }),
     routeScope: "ai-card-generate",
-    imageAdapter: resolvedEnv.CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID,
+    imageAdapter: imageFlow.primaryAdapterId,
     comfyUrl: resolvedEnv.CUSTOMCARD_COMFYUI_URL || resolvedEnv.COMFYUI_URL,
     workflowId,
     workflowPath,
@@ -74,7 +88,7 @@ if (isCliEntrypoint()) {
 async function runCli() {
   const args = new Set(process.argv.slice(2));
   const describeOnly = args.has("--describe");
-  const runOnce = args.has("--once") || process.env.CUSTOMCARD_WORKER_PROCESS_ON_START === "true";
+  const runOnce = args.has("--once");
 
   if (describeOnly) {
     const readiness = describeLocalComfyWorkerReadiness();

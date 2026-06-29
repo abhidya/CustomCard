@@ -22,8 +22,7 @@ const requiredCloudEnvOutputs = [
   "OBJECT_STORE_BUCKET",
   "OBJECT_STORE_REGION",
   "OBJECT_STORE_SIGNING_SECRET",
-  "ARTIFACT_SIGNED_URL_TTL_MINUTES",
-  "REAL_ORDER_KILL_SWITCH"
+  "ARTIFACT_SIGNED_URL_TTL_MINUTES"
 ];
 
 const allowedStatuses = new Set(["repo-local-ready", "evidence-missing"]);

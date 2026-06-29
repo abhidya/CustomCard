@@ -7,13 +7,11 @@ import {
 import { normalizeAiFlowAdminConfigs } from "./aiFlowConfigData.mjs";
 
 describe("AI route activation", () => {
-  it("keeps the card-copy env model override ahead of admin config defaults", () => {
+  it("keeps admin card-copy model config as the model source", () => {
     const activation = resolveAiRouteActivation("card-copy", {
       env: {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
-        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
-        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
-        CUSTOMCARD_AI_CARD_COPY_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8"
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text"
       },
       serviceAiFlowAdminConfig: [
         {
@@ -27,11 +25,10 @@ describe("AI route activation", () => {
     });
 
     expect(activation.selectedAdapterId).toBe("cloudflare-workers-ai-chat");
-    expect(activation.model).toBe("@cf/qwen/qwen3-30b-a3b-fp8");
+    expect(activation.model).toBe("@cf/meta/llama-3.1-8b-instruct-fast");
     expect(activation.flow.readyForLiveCalls).toBe(true);
     expect(activation.configuredEnvKeys).toEqual(
       expect.arrayContaining([
-        "CUSTOMCARD_AI_CARD_COPY_MODEL",
         "CLOUDFLARE_ACCOUNT_ID",
         "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN"
       ])
@@ -42,8 +39,7 @@ describe("AI route activation", () => {
     const activation = resolveAiRouteActivation("card-copy", {
       env: {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
-        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
-        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8"
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text"
       },
       body: {
         aiFlowConfig: [
@@ -67,8 +63,7 @@ describe("AI route activation", () => {
     const activation = resolveAiRouteActivation("card-copy", {
       env: {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
-        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
-        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8"
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text"
       },
       serviceAiFlowAdminConfig: [
         {
@@ -93,7 +88,7 @@ describe("AI route activation", () => {
     expect(activation.readyForLiveCalls).toBe(true);
   });
 
-  it("keeps sparse card-copy overrides aligned with generator env semantics under non-default providers", () => {
+  it("keeps sparse card-copy overrides on the default provider unless admin selects another provider", () => {
     const env = {
       HUGGINGFACE_API_TOKEN: "hf-token"
     };
@@ -109,7 +104,7 @@ describe("AI route activation", () => {
     });
 
     expect(expected).toMatchObject({
-      primaryAdapterId: "huggingface-chat",
+      primaryAdapterId: "cloudflare-workers-ai-chat",
       model: "Qwen/Qwen3-32B-Instruct"
     });
     expect(activation.selectedAdapterId).toBe(expected?.primaryAdapterId);
@@ -121,7 +116,6 @@ describe("AI route activation", () => {
       env: {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
-        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8",
         DEEPAI_API_KEY: "deepai-token"
       },
       serviceAiFlowAdminConfig: [
@@ -191,15 +185,14 @@ describe("AI route activation", () => {
     });
   });
 
-  it("parses server-scoped env JSON once when resolving multiple route activations", () => {
+  it("ignores unrelated server-scoped policy strings when resolving multiple route activations", () => {
     let flowConfigReads = 0;
     const env = {
       CLOUDFLARE_ACCOUNT_ID: "acct_123",
       CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
-      CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8",
       DEEPAI_API_KEY: "deepai-token"
     };
-    Object.defineProperty(env, "CUSTOMCARD_AI_FLOW_CONFIG_JSON", {
+    Object.defineProperty(env, "RETIRED_SERVER_POLICY_JSON", {
       enumerable: true,
       get() {
         flowConfigReads += 1;
@@ -213,32 +206,32 @@ describe("AI route activation", () => {
     const context = createAiRouteActivationContext({ env });
     const activations = resolveAiRouteActivations(context);
 
-    expect(flowConfigReads).toBe(1);
+    expect(flowConfigReads).toBe(0);
     expect(activations).toHaveLength(3);
     expect(activations.find((activation) => activation.flowId === "card-image")?.selectedAdapterId).toBe(
-      "deepai-text2img-image"
+      "runcomfy-model-api-image"
     );
   });
 
-  it("re-reads server-scoped env JSON after the same env object changes", () => {
+  it("does not read unrelated env policy JSON after the same env object changes", () => {
     const env = {
       HUGGINGFACE_API_TOKEN: "hf-token",
-      CUSTOMCARD_AI_FLOW_CONFIG_JSON: JSON.stringify([
+      RETIRED_SERVER_POLICY_JSON: JSON.stringify([
         { flowId: "card-copy", model: "Qwen/Qwen3-32B-Instruct" }
       ])
     };
 
     const firstActivation = resolveAiRouteActivation("card-copy", { env });
 
-    env.CUSTOMCARD_AI_FLOW_CONFIG_JSON = JSON.stringify([
+    env.RETIRED_SERVER_POLICY_JSON = JSON.stringify([
       { flowId: "card-copy", model: "Qwen/Qwen3-235B-A22B-Instruct-2507" }
     ]);
 
     const secondContext = createAiRouteActivationContext({ env });
     const secondActivation = resolveAiRouteActivation("card-copy", secondContext);
 
-    expect(firstActivation.model).toBe("Qwen/Qwen3-32B-Instruct");
-    expect(secondActivation.model).toBe("Qwen/Qwen3-235B-A22B-Instruct-2507");
+    expect(firstActivation.model).toBe("@cf/qwen/qwen3-30b-a3b-fp8");
+    expect(secondActivation.model).toBe("@cf/qwen/qwen3-30b-a3b-fp8");
   });
 
   it("attaches control-plane route policy ids for card-copy and card-image", () => {
@@ -246,7 +239,6 @@ describe("AI route activation", () => {
       env: {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
-        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/qwen/qwen3-30b-a3b-fp8",
         DEEPAI_API_KEY: "deepai-token"
       }
     });

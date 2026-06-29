@@ -16,12 +16,14 @@ export function localComfyWorkflowInputSummary(variables: Record<string, unknown
 
 export function localComfyWorkflowInputsForMetadata(
   env: Record<string, string | undefined>,
-  variables: Record<string, unknown>
+  variables: Record<string, unknown>,
+  configuredInputsJson?: string
 ): Record<string, unknown>;
 
 export function localComfyConfiguredWorkflowInputs(
   env: Record<string, string | undefined>,
-  variables: Record<string, unknown>
+  variables: Record<string, unknown>,
+  configuredInputsJson?: string
 ): Record<string, unknown> | undefined;
 
 export function interpolateLocalComfyTemplate<T>(value: T, variables: Record<string, unknown>): T;

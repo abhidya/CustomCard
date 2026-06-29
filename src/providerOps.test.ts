@@ -6,14 +6,22 @@ import { summarizeProviderGovernance } from "./providerGovernance";
 import { buildProviderCallEvent } from "./providerOperations";
 import { getProviderRuntimeReadiness } from "./providerRuntime";
 import { buildProviderOpsModel, validateProviderOpsModel } from "./providerOps";
+import type { AiFlowAdminConfig } from "./aiFlowConfig";
 
 const cloudflareEnv = {
   CLOUDFLARE_ACCOUNT_ID: "acct_123",
   CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
-  CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
-  CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "token_image",
-  CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning"
+  CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "token_image"
 };
+const cloudflareAiFlowAdminConfig: Partial<AiFlowAdminConfig>[] = [
+  {
+    flowId: "card-image",
+    primaryAdapterId: "cloudflare-workers-ai-image",
+    fallbackAdapterId: "cloudflare-workers-ai-image",
+    model: "@cf/bytedance/stable-diffusion-xl-lightning",
+    liveProviderCallsEnabled: true
+  }
+];
 const nowIso = "2026-06-12T04:00:00.000Z";
 
 function buildRuntimeReadiness(env: Record<string, string | undefined> = {}) {
@@ -43,7 +51,7 @@ describe("provider ops", () => {
     expect(JSON.stringify(providerOps)).not.toContain("token_text");
   });
 
-  it("marks env-configured AI providers as available while keeping live gated by safety evidence", () => {
+  it("marks credential-configured AI providers as available while keeping live gated by safety evidence", () => {
     const cloudflareChat = getProviderAdapter("cloudflare-workers-ai-chat");
     expect(cloudflareChat).toBeDefined();
     const usageEvents = [
@@ -62,7 +70,7 @@ describe("provider ops", () => {
       model: buildAdminPanelModel(),
       providerGovernance: summarizeProviderGovernance(),
       runtimeReadiness: buildRuntimeReadiness(cloudflareEnv),
-      aiFlowSummary: summarizeAiFlowConfigs(cloudflareEnv),
+      aiFlowSummary: summarizeAiFlowConfigs(cloudflareEnv, cloudflareAiFlowAdminConfig),
       readiness: buildReadinessSummary(),
       env: cloudflareEnv,
       usageEvents,
@@ -77,7 +85,7 @@ describe("provider ops", () => {
       expect.arrayContaining(["cloudflare-workers-ai-chat", "cloudflare-workers-ai-image"])
     );
     expect(cloudflareChatOps).toMatchObject({
-      availability: "env-configured",
+      availability: "credential-configured",
       missingEnv: [],
       queueRequired: true,
       metricSource: {
@@ -117,14 +125,22 @@ describe("provider ops", () => {
     const deepAi = getProviderAdapter("deepai-text2img-image");
     const deepAiEnv = {
       DEEPAI_API_KEY: "deepai-token",
-      CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "deepai-text2img-image",
     };
+    const deepAiAdminConfig: Partial<AiFlowAdminConfig>[] = [
+      {
+        flowId: "card-image",
+        primaryAdapterId: "deepai-text2img-image",
+        fallbackAdapterId: "cloudflare-workers-ai-image",
+        model: "text2img",
+        liveProviderCallsEnabled: true
+      }
+    ];
     expect(deepAi).toBeDefined();
     const providerOps = buildProviderOpsModel({
       model: buildAdminPanelModel(),
       providerGovernance: summarizeProviderGovernance(),
       runtimeReadiness: buildRuntimeReadiness(deepAiEnv),
-      aiFlowSummary: summarizeAiFlowConfigs(deepAiEnv),
+      aiFlowSummary: summarizeAiFlowConfigs(deepAiEnv, deepAiAdminConfig),
       readiness: buildReadinessSummary(),
       env: deepAiEnv,
       usageEvents: [
@@ -146,7 +162,7 @@ describe("provider ops", () => {
     expect(validateProviderOpsModel(providerOps)).toEqual([]);
     expect(providerOps.env.configuredProviders).toEqual(expect.arrayContaining(["deepai-text2img-image"]));
     expect(deepAiOps).toMatchObject({
-      availability: "env-configured",
+      availability: "credential-configured",
       missingEnv: [],
       selectedForFlow: true,
       metricSource: {

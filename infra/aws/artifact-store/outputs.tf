@@ -21,7 +21,6 @@ output "runtime_environment" {
     OBJECT_STORE_REGION             = data.aws_region.current.name
     OBJECT_STORE_SIGNING_SECRET     = "set-in-secret-manager"
     ARTIFACT_SIGNED_URL_TTL_MINUTES = "15"
-    REAL_ORDER_KILL_SWITCH          = "disabled"
   }
 }
 

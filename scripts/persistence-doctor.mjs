@@ -256,11 +256,11 @@ const postgresIntegrationSignals = [
   "persists real Postgres data request repository mutation",
   "SELECT COUNT(*)::int AS count FROM data_requests",
   "DROP DATABASE IF EXISTS",
-  "CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR"
+  "--confirm-live-postgres-integration-doctor"
 ];
 const postgresApiHttpSignals = [
   "customcard-postgres-api-http-doctor",
-  "CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR",
+  "--confirm-live-postgres-api-http-doctor",
   "spawn(\"node\", [\"scripts/api-server.mjs\"]",
   "serves public Postgres health and route catalog over HTTP",
   "enforces Postgres HTTP auth on admin and customer routes",
@@ -291,7 +291,7 @@ const accountAuthDoctorSignals = [
   "account_identities",
   "account_recovery_challenges",
   "raw_profile_stored = FALSE",
-  "CUSTOMCARD_ACCOUNT_AUTH_DOCTOR"
+  "--confirm-live-account-auth-doctor"
 ];
 const artifactStoreSignals = [
   "customcard-artifact-store",
@@ -316,7 +316,7 @@ const artifactStoreDoctorSignals = [
 ];
 const artifactStoreS3LiveDoctorSignals = [
   "customcard-artifact-store-s3-live-doctor",
-  "CUSTOMCARD_S3_ARTIFACT_DOCTOR",
+  "--confirm-live-s3-artifact-doctor",
   "OBJECT_STORE_ACCESS_KEY_ID",
   "OBJECT_STORE_SECRET_ACCESS_KEY",
   "AWS4-HMAC-SHA256",

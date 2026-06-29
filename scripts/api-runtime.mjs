@@ -33,7 +33,6 @@ const generatedImageWebpQuality = 82;
 const generatedImageWebpEffort = 4;
 const generatedImageMaxEdgePixels = 2100;
 const generatedImageRasterMimeTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
-const localAuthFallbackOptInEnvName = "CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS";
 const routeMutationRuntime = createRouteMutationRuntime({
   missingRetailPrinterCouponPortalEvidenceFields,
   mutationBodyContractSpecs,
@@ -54,13 +53,20 @@ function hasStrongAuthSessionSecret(env) {
   return hasStrongEnvSecret(env, "AUTH_SESSION_SECRET");
 }
 
-export function createApiRuntime({ env = process.env, routes = [], postgresPoolFactory } = {}) {
+export function createApiRuntime({ env = process.env, routes = [], postgresPoolFactory, localAuthFallbacksEnabled = false } = {}) {
+  const allowLocalAuthFallbacks = Boolean(localAuthFallbacksEnabled);
   const objectStoreRuntime = createObjectStoreRuntime({ env });
   const adapter = resolveApiRuntimeModeAdapter({
     env,
     factories: {
       contract: (input) => createContractApiRuntime({ env: input.env, routes: input.routes, objectStoreRuntime: input.objectStoreRuntime }),
-      memory: (input) => createMemoryApiRuntime({ env: input.env, routes: input.routes, objectStoreRuntime: input.objectStoreRuntime }),
+      memory: (input) =>
+        createMemoryApiRuntime({
+          env: input.env,
+          routes: input.routes,
+          objectStoreRuntime: input.objectStoreRuntime,
+          localAuthFallbacksEnabled: allowLocalAuthFallbacks
+        }),
       postgres: (input) =>
         createPostgresApiRuntime({
           env: input.env,
@@ -304,7 +310,8 @@ function createInvalidApiRuntime({ requestedMode, routes, objectStoreRuntime, va
   };
 }
 
-function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
+function createMemoryApiRuntime({ env, routes, objectStoreRuntime, localAuthFallbacksEnabled = false }) {
+  const allowLocalAuthFallbacks = Boolean(localAuthFallbacksEnabled);
   const sessions = new Map();
   const idempotencyRecords = new Map();
   const auditRecords = [];
@@ -324,7 +331,7 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
   const cardGalleryEntries = new Map();
   const adminRuntimeConfigs = new Map();
 
-  if (localAuthFallbacksEnabled(env)) {
+  if (allowLocalAuthFallbacks) {
     addSession(sessions, env.CUSTOMCARD_CUSTOMER_SESSION_TOKEN, "customer", "user-demo", env.AUTH_SESSION_SECRET);
     addSession(sessions, env.CUSTOMCARD_ADMIN_SESSION_TOKEN, "admin", "admin-demo", env.AUTH_SESSION_SECRET);
   }
@@ -360,9 +367,9 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
     },
     validate() {
       const blockers = [];
-      if (!memoryAuthConfigured(env)) {
+      if (!memoryAuthConfigured(env, allowLocalAuthFallbacks)) {
         blockers.push(
-          `Memory API runtime requires Clerk JWT verification config or ${localAuthFallbackOptInEnvName}=enabled with CUSTOMCARD_CUSTOMER_SESSION_TOKEN plus CUSTOMCARD_ADMIN_SESSION_TOKEN.`
+          "Memory API runtime requires Clerk JWT verification config or explicit local auth fallback runtime config with CUSTOMCARD_CUSTOMER_SESSION_TOKEN plus CUSTOMCARD_ADMIN_SESSION_TOKEN."
         );
       }
       blockers.push(...objectStoreRuntime.validate());
@@ -379,7 +386,15 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
       if (!token || !looksLikeJwt(token)) return sessionResult;
       const verification = verifyClerkSessionToken(token, env);
       if (!verification.ok) {
-        const localSessionResult = authorizeLocalMemoryClerkCustomer({ route, request, sessions, env, token, verification });
+        const localSessionResult = authorizeLocalMemoryClerkCustomer({
+          route,
+          request,
+          sessions,
+          env,
+          token,
+          verification,
+          localAuthFallbacksEnabled: allowLocalAuthFallbacks
+        });
         return localSessionResult ?? sessionResult;
       }
       const sessionId = stableRuntimeId("session", "clerk", verification.clerkUserId, verification.clerkSessionId);
@@ -578,10 +593,18 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
   };
 }
 
-function authorizeLocalMemoryClerkCustomer({ route, request, sessions, env, token, verification }) {
+function authorizeLocalMemoryClerkCustomer({
+  route,
+  request,
+  sessions,
+  env,
+  token,
+  verification,
+  localAuthFallbacksEnabled = false
+}) {
   if (verification?.status !== "clerk-not-configured") return undefined;
   if (isProductionRuntimeEnv(env)) return undefined;
-  if (!localAuthFallbacksEnabled(env)) return undefined;
+  if (!localAuthFallbacksEnabled) return undefined;
   if (route.auth !== "customer-session") return undefined;
   const preview = readLocalClerkJwtPreview(token);
   if (!preview) return undefined;
@@ -598,15 +621,11 @@ function authorizeLocalMemoryClerkCustomer({ route, request, sessions, env, toke
   return authorizeFromSessions(route, request, sessions, env.AUTH_SESSION_SECRET);
 }
 
-function memoryAuthConfigured(env) {
+function memoryAuthConfigured(env, localAuthFallbacksEnabled = false) {
   return Boolean(
     clerkVerificationConfigured(env) ||
-      (localAuthFallbacksEnabled(env) && env.CUSTOMCARD_CUSTOMER_SESSION_TOKEN && env.CUSTOMCARD_ADMIN_SESSION_TOKEN)
+      (localAuthFallbacksEnabled && env.CUSTOMCARD_CUSTOMER_SESSION_TOKEN && env.CUSTOMCARD_ADMIN_SESSION_TOKEN)
   );
-}
-
-function localAuthFallbacksEnabled(env) {
-  return String(env?.[localAuthFallbackOptInEnvName] ?? "").trim().toLowerCase() === "enabled";
 }
 
 function readLocalClerkJwtPreview(token, { nowMs = Date.now() } = {}) {

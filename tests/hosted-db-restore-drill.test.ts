@@ -60,7 +60,7 @@ describe("hosted DB restore drill", () => {
     });
     expect(report.blockers).toEqual(
       expect.arrayContaining([
-        "CUSTOMCARD_HOSTED_DB_RESTORE_DRILL=enabled is required before hosted restore drills run.",
+        "--confirm-hosted-db-restore-drill is required before hosted restore drills run.",
         "CUSTOMCARD_RESTORE_DATABASE_URL is required.",
         "CUSTOMCARD_RESTORE_SOURCE is required.",
         "CUSTOMCARD_RESTORE_POINT_IN_TIME must be an ISO timestamp.",
@@ -79,6 +79,7 @@ describe("hosted DB restore drill", () => {
         DATABASE_URL: databaseUrl,
         CUSTOMCARD_RESTORE_DATABASE_URL: databaseUrl
       }),
+      enabled: true,
       pgModule: { Pool }
     });
 
@@ -100,6 +101,7 @@ describe("hosted DB restore drill", () => {
 
     const report = await runHostedDbRestoreDrill({
       env: validEnv(),
+      enabled: true,
       pgModule: { Pool },
       now: new Date("2026-06-15T14:15:00.000Z")
     });
@@ -150,7 +152,6 @@ describe("hosted DB restore drill", () => {
 
 function validEnv(overrides: Record<string, string> = {}) {
   return {
-    CUSTOMCARD_HOSTED_DB_RESTORE_DRILL: "enabled",
     DATABASE_URL: "postgres://customcard:secret@prod.neon.tech/customcard",
     CUSTOMCARD_RESTORE_DATABASE_URL: "postgres://customcard:secret@restore.neon.tech/customcard_restore_drill",
     CUSTOMCARD_RESTORE_SOURCE: "neon-branch",

@@ -164,7 +164,7 @@ export const readinessDomainDefinitions = [
       ...minimum(summary, "repoLocalReady", 2, "Cloud artifact proof readiness must keep static IaC and plan-review contracts ready."),
       ...minimum(summary, "appliedCloudRequired", 6, "Cloud artifact proof readiness must identify applied cloud proof requirements."),
       ...minimum(summary, "terraformFileContracts", 3, "Cloud artifact proof readiness must cover artifact-store Terraform files."),
-      ...minimum(summary, "envOutputContracts", 6, "Cloud artifact proof readiness must track runtime object-store env outputs."),
+      ...minimum(summary, "envOutputContracts", 5, "Cloud artifact proof readiness must track runtime object-store env outputs."),
       ...zero(summary, "terraformApplyExecutions", "Cloud artifact proof readiness cannot claim Terraform apply execution."),
       ...zero(summary, "appliedBucketArnProofs", "Cloud artifact proof readiness cannot claim applied bucket ARN proof."),
       ...zero(summary, "iamPolicyOutputProofs", "Cloud artifact proof readiness cannot claim IAM policy output proof."),

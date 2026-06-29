@@ -337,9 +337,9 @@ function withServiceEvidence(result, serviceEvidence) {
   };
 }
 
-function validateProductionTextPlannerForService({ copyFlow, imageFlow, env }) {
-  const active = isProductionTextServiceMode({ imageFlow, env });
-  const runtime = productionTextPlannerRuntimeForService(copyFlow, env, {
+function validateProductionTextPlannerForService({ copyFlow, imageFlow }) {
+  const active = isProductionTextServiceMode({ imageFlow });
+  const runtime = productionTextPlannerRuntimeForService(copyFlow, {
     requireRuntimeBudget: active && copyFlow.primaryAdapterId === "local-openai-compatible-chat"
   });
   const policy = {
@@ -367,17 +367,12 @@ function validateProductionTextPlannerForService({ copyFlow, imageFlow, env }) {
   };
 }
 
-function productionTextPlannerRuntimeForService(flow, env, { requireRuntimeBudget = false } = {}) {
-  const allowSmallPlanner = truthyEnv(env.CUSTOMCARD_ALLOW_SMALL_PRODUCTION_PLANNER);
-  const allowUnknownProductionModel = truthyEnv(env.CUSTOMCARD_ALLOW_UNKNOWN_PRODUCTION_PLANNER);
-  const model = productionTextPlannerModelForService(flow, env);
-  const contextTokens = boundedIntegerEnv(env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_CONTEXT_TOKENS, 0, 1_000_000, 0);
-  const maxOutputTokens = boundedIntegerEnv(
-    flow.maxTokens || env.CUSTOMCARD_PRODUCTION_TEXT_PLANNER_MAX_TOKENS,
-    0,
-    4000,
-    0
-  );
+function productionTextPlannerRuntimeForService(flow, { requireRuntimeBudget = false } = {}) {
+  const allowSmallPlanner = false;
+  const allowUnknownProductionModel = false;
+  const model = productionTextPlannerModelForService(flow);
+  const contextTokens = boundedIntegerEnv(flow.contextWindowTokens, 0, 1_000_000, 0);
+  const maxOutputTokens = boundedIntegerEnv(flow.maxTokens, 0, 4000, 0);
   const classification = classifyProductionTextPlanner(model, {
     allowSmall: allowSmallPlanner,
     allowUnknownProductionModel,
@@ -402,18 +397,13 @@ function productionTextPlannerRuntimeForService(flow, env, { requireRuntimeBudge
   };
 }
 
-function productionTextPlannerModelForService(flow, env) {
+function productionTextPlannerModelForService(flow) {
   const configuredModel = String(flow.model || "").trim();
-  if (configuredModel && configuredModel !== "local-default") return configuredModel;
-  return firstUsableEnv(env, ["CUSTOMCARD_LOCAL_LLM_MODEL", "LMSTUDIO_MODEL", "KOBOLDCPP_MODEL"]) || configuredModel;
+  return configuredModel;
 }
 
-function isProductionTextServiceMode({ imageFlow, env }) {
-  return (
-    imageRenderingModeForFlow(imageFlow, env) === "final-text-composited" ||
-    truthyEnv(env.CUSTOMCARD_PRODUCTION_TEXT_MODE) ||
-    truthyEnv(env.CUSTOMCARD_REQUIRE_PRODUCTION_TEXT_PLANNER)
-  );
+function isProductionTextServiceMode({ imageFlow }) {
+  return imageRenderingModeForFlow(imageFlow) === "final-text-composited";
 }
 
 function buildServiceGenerationEvidence({ draftInput, cardCopy, imagePromptPlan, copyFlow, imageFlow, env, productionTextGate }) {
@@ -423,7 +413,7 @@ function buildServiceGenerationEvidence({ draftInput, cardCopy, imagePromptPlan,
     service_contract: "customcard-ai-card-generation-v2",
     production_text: {
       active: Boolean(productionTextGate.active),
-      rendering_mode: imageRenderingModeForFlow(imageFlow, env) || imageFlow.renderingMode || "",
+      rendering_mode: imageRenderingModeForFlow(imageFlow) || imageFlow.renderingMode || "",
       deterministic_text_compositor: imageFlow.primaryAdapterId === "local-comfyui-api-image" && Boolean(productionTextGate.active),
       planner: productionTextGate.runtime,
       manual_visual_grade_required_before_promotion: Boolean(productionTextGate.active),
@@ -534,7 +524,7 @@ function aiCostGateInput({ flow, requestContext, routeId, requestUnits, phase, m
 }
 
 function isAiEnvKey(key) {
-  return /^(CUSTOMCARD_AI_|CUSTOMCARD_RUNCOMFY_|CUSTOMCARD_LOCAL_LLM_|CUSTOMCARD_COMFYUI_|ANTHROPIC_|OPENAI_|CLOUDFLARE_|COMFYUI_|GOOGLE_|GEMINI_|HUGGINGFACE_|GROQ_|TOGETHER_|MISTRAL_|DEEPSEEK_|DEEPAI_|FIREWORKS_|PERPLEXITY_|XAI_|REPLICATE_|STABILITY_|FAL_|BFL_|RUNCOMFY_|LMSTUDIO_|KOBOLDCPP_)/.test(key);
+  return /^(CUSTOMCARD_AI_IMAGE_DOWNLOAD_ALLOWED_HOSTS|CUSTOMCARD_RUNCOMFY_|CUSTOMCARD_LOCAL_LLM_|CUSTOMCARD_COMFYUI_|ANTHROPIC_|OPENAI_|CLOUDFLARE_|COMFYUI_|GOOGLE_|GEMINI_|HUGGINGFACE_|GROQ_|TOGETHER_|MISTRAL_|DEEPSEEK_|DEEPAI_|FIREWORKS_|PERPLEXITY_|XAI_|REPLICATE_|STABILITY_|FAL_|BFL_|RUNCOMFY_|LMSTUDIO_|KOBOLDCPP_)/.test(key);
 }
 
 const textProviderExecutors = {
@@ -825,7 +815,7 @@ async function executeImageProviderBatchWithFallback({
         });
         const imageRecord = normalizeImageProviderResult(imageUrl);
         if (!imageRecord?.image_url) continue;
-        const renderingMode = imageRenderingModeForFlow(attempt.flow, env);
+        const renderingMode = imageRenderingModeForFlow(attempt.flow);
         images.push({
           panel_id: panelPrompt.panel_id,
           image_url: imageRecord.image_url,
@@ -1025,12 +1015,14 @@ async function executeImageProvider(input) {
   return providerExecutionAdapter.executeImage(input);
 }
 
-function imageRenderingModeForFlow(flow, env) {
+function imageRenderingModeForFlow(flow) {
+  if (flow.renderingMode === "final-text-composited") return "final-text-composited";
   if (flow.primaryAdapterId !== "local-comfyui-api-image") return undefined;
   const workflowSignal = [
-    localComfyWorkflowId(env),
-    firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_WORKFLOW_PATH", "COMFYUI_WORKFLOW_PATH"]),
-    firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_WORKFLOW_JSON", "COMFYUI_WORKFLOW_JSON"])
+    localComfyWorkflowId(flow),
+    flow.workflowPath,
+    flow.workflowJson,
+    flow.workflowInputsJson
   ].join(" ");
   return /customcard-production-text-overlay|production-text-overlay|CustomCardTextComposer/i.test(workflowSignal)
     ? "final-text-composited"
@@ -1149,12 +1141,12 @@ async function executeLocalComfyUiImage({ flow, env, fetchImpl, panelId, prompt,
     seed,
     steps,
     width,
-    workflowId: localComfyWorkflowId(env),
+    workflowId: localComfyWorkflowId(flow),
     ...localComfyTypographyVariables({ panelId, panelCopy, width, height })
   };
-  const workflow = buildLocalComfyWorkflow({ env, variables });
+  const workflow = buildLocalComfyWorkflow({ flow, variables });
   const promptResponse = await postJson(fetchImpl, localComfyUiApiUrl(comfyUrl, "/prompt"), {
-    body: buildLocalComfyPromptBody({ env, workflow, variables })
+    body: buildLocalComfyPromptBody({ env, flow, workflow, variables })
   });
   const promptId = String(promptResponse.prompt_id || "").trim();
   if (!promptId) throw new Error("Local ComfyUI did not return a prompt_id.");
@@ -1177,9 +1169,9 @@ async function executeLocalComfyUiImage({ flow, env, fetchImpl, panelId, prompt,
   };
 }
 
-function buildLocalComfyWorkflow({ env, variables }) {
-  const workflowSource = firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_WORKFLOW_JSON", "COMFYUI_WORKFLOW_JSON"]);
-  const workflowPath = firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_WORKFLOW_PATH", "COMFYUI_WORKFLOW_PATH"]);
+function buildLocalComfyWorkflow({ flow, variables }) {
+  const workflowSource = String(flow.workflowJson || "").trim();
+  const workflowPath = String(flow.workflowPath || "").trim();
   if (workflowSource || workflowPath) {
     const rawWorkflow = workflowSource || readLocalComfyWorkflowFile(workflowPath);
     try {
@@ -1197,9 +1189,9 @@ function readLocalComfyWorkflowFile(workflowPath) {
   return readFileSync(resolvedPath, "utf8");
 }
 
-function buildLocalComfyPromptBody({ env, workflow, variables }) {
-  const workflowId = localComfyWorkflowId(env);
-  const workflowInputs = localComfyWorkflowInputsForMetadata(env, variables);
+function buildLocalComfyPromptBody({ env, flow, workflow, variables }) {
+  const workflowId = localComfyWorkflowId(flow);
+  const workflowInputs = localComfyWorkflowInputsForMetadata(env, variables, flow.workflowInputsJson);
   const customcardExtraData = Object.fromEntries(
     Object.entries({
       workflow_id: workflowId,
@@ -1221,8 +1213,8 @@ function buildLocalComfyPromptBody({ env, workflow, variables }) {
   };
 }
 
-function localComfyWorkflowId(env) {
-  return firstUsableEnv(env, ["CUSTOMCARD_COMFYUI_WORKFLOW_ID", "COMFYUI_WORKFLOW_ID"]);
+function localComfyWorkflowId(flow) {
+  return String(flow.workflowId || "").trim();
 }
 
 async function executeDeepAiText2ImgImage({ flow, env, fetchImpl, panelId, prompt, negativePrompt }) {
@@ -1555,18 +1547,17 @@ function parseRunComfyError(value) {
   }
 }
 
-function buildRunComfyImageRequestBody({ flow, env, panelId, prompt, negativePrompt }) {
+function buildRunComfyImageRequestBody({ flow, panelId, prompt, negativePrompt }) {
   const seed = numericSeed(`${flow.model}:${panelId}:${prompt}`) % 2147483647;
   const body = {
     prompt: truncate(prompt, 2048),
-    image_size: String(env.CUSTOMCARD_RUNCOMFY_IMAGE_SIZE || "portrait_4_3"),
-    ...runComfyInputOverrides(env, { prompt, negativePrompt, panelId, seed })
+    image_size: "portrait_4_3",
+    ...runComfyInputOverrides(flow.workflowInputsJson, { prompt, negativePrompt, panelId, seed })
   };
   return Object.fromEntries(Object.entries(body).filter(([, value]) => value !== undefined && value !== null && value !== ""));
 }
 
-function runComfyInputOverrides(env, variables) {
-  const raw = env.CUSTOMCARD_RUNCOMFY_IMAGE_INPUT_JSON || env.RUNCOMFY_IMAGE_INPUT_JSON;
+function runComfyInputOverrides(raw, variables) {
   if (!raw) return {};
   try {
     return interpolateRunComfyInput(JSON.parse(String(raw)), variables);

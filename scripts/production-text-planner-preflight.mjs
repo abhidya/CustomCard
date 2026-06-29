@@ -27,12 +27,7 @@ export async function runProductionTextPlannerPreflight(args = {}, options = {})
   const outputRoot = resolve(String(args["output-root"] || defaultOutputRoot));
   const reportDir = resolve(String(args["output-dir"] || `${outputRoot}/production-text-planner-preflight-${timestamp()}`));
   const timeoutMs = boundedInteger(args["timeout-ms"], 500, 60_000, 5_000);
-  const explicitModel = firstUsableValue(
-    args.model,
-    process.env.CUSTOMCARD_LOCAL_LLM_MODEL,
-    process.env.LMSTUDIO_MODEL,
-    process.env.KOBOLDCPP_MODEL
-  );
+  const explicitModel = firstUsableValue(args.model);
   const apiKey = firstUsableValue(
     args["api-key"],
     process.env.CUSTOMCARD_LOCAL_LLM_API_KEY,

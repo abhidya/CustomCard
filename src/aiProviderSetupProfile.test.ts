@@ -41,15 +41,10 @@ describe("AI provider setup profile drift guards", () => {
       ["CLOUDFLARE_ACCOUNT_ID"],
       ["CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", "CLOUDFLARE_API_TOKEN"]
     ]);
-    expect(cloudflareTextModelEnvKeys).toEqual([
-      "CUSTOMCARD_CLOUDFLARE_TEXT_MODEL",
-      "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"
-    ]);
-    expect(cloudflareTextModelEnvKeys).not.toContain(productionCardCopyModelOverrideEnvKey);
+    expect(productionCardCopyModelOverrideEnvKey).toBe("");
+    expect(cloudflareTextModelEnvKeys).toEqual([]);
     expect(profile.cardCopy.requiredCredentialGroups).toEqual(cloudflareTextRequiredCredentialGroups);
-    expect(profile.cardCopy.modelEnvKeys).toEqual(
-      expect.arrayContaining([productionCardCopyModelOverrideEnvKey, ...cloudflareTextModelEnvKeys])
-    );
+    expect(profile.cardCopy.modelEnvKeys).toEqual([]);
     expect(profile.localProductionTextComfy.requiresHostedImageKeys).toBe(false);
 
     expect(flowConfigSource).toMatch(/flowId: "card-copy"[\s\S]*defaultPrimaryAdapterId: "cloudflare-workers-ai-chat"/);
@@ -77,11 +72,9 @@ describe("AI provider setup profile drift guards", () => {
       modelId: productionCardCopyModel
     });
 
-    expect(cloudflareSetupDoc).toContain(`${productionCardCopyModelOverrideEnvKey}=${productionCardCopyModel}`);
-    expect(cloudflareSetupDoc).toContain(`CUSTOMCARD_CLOUDFLARE_TEXT_MODEL=${productionCardCopyModel}`);
-    expect(cloudflareSetupDoc).toContain(`CLOUDFLARE_WORKERS_AI_TEXT_MODEL=${productionCardCopyModel}`);
-    expect(envExample).toContain(`${productionCardCopyModelOverrideEnvKey}=${productionCardCopyModel}`);
-    expect(envExample).toContain(`CUSTOMCARD_CLOUDFLARE_TEXT_MODEL=${productionCardCopyModel}`);
-    expect(envExample).toContain(`CLOUDFLARE_WORKERS_AI_TEXT_MODEL=${productionCardCopyModel}`);
+    expect(cloudflareSetupDoc).toContain("Configure that model in Admin Providers, not env.");
+    expect(envExample).toContain("Admin Providers panel");
+    expect(envExample).not.toMatch(/CUSTOMCARD_AI_[A-Z_]+MODEL=/);
+    expect(envExample).not.toMatch(/CLOUDFLARE_WORKERS_AI_[A-Z_]+MODEL=/);
   });
 });

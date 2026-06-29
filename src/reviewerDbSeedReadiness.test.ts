@@ -29,7 +29,7 @@ describe("reviewer DB seed readiness", () => {
       sqlPreviewOnly: 8,
       tableContracts: 15,
       routeContracts: 5,
-      requiredEnvVars: 7,
+      requiredEnvVars: 6,
       hostedSeedProofs: 0,
       hostedTokenProbeProofs: 0,
       vercelEnvSyncProofs: 0,
@@ -63,7 +63,6 @@ describe("reviewer DB seed readiness", () => {
     expect(seedPlan?.tableNames).toEqual(expect.arrayContaining(Array.from(new Set(plan.rows.map((row) => row.table)))));
     expect(tokenContract?.envVarNames).toEqual(
       expect.arrayContaining([
-        "CUSTOMCARD_ENABLE_LOCAL_AUTH_FALLBACKS",
         "CUSTOMCARD_CUSTOMER_SESSION_TOKEN",
         "CUSTOMCARD_ADMIN_SESSION_TOKEN",
         "AUTH_SESSION_SECRET"

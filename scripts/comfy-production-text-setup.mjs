@@ -54,8 +54,6 @@ export function resolveProductionTextSetup({
 } = {}) {
   const workflowPath = resolve(String(
     args["workflow-path"] ||
-    env.CUSTOMCARD_COMFYUI_WORKFLOW_PATH ||
-    env.COMFYUI_WORKFLOW_PATH ||
     defaultProductionTextWorkflowPath(root)
   ));
   const nodeSource = resolve(String(args["node-source"] || defaultProductionTextNodeSource(root)));

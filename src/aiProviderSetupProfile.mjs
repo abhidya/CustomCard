@@ -1,14 +1,8 @@
 export const productionCardCopyProviderId = "cloudflare-workers-ai-chat";
 export const productionCardCopyModel = "@cf/qwen/qwen3-30b-a3b-fp8";
-export const productionCardCopyModelOverrideEnvKey = "CUSTOMCARD_AI_CARD_COPY_MODEL";
-export const cloudflareTextModelEnvKeys = Object.freeze([
-  "CUSTOMCARD_CLOUDFLARE_TEXT_MODEL",
-  "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"
-]);
-export const cloudflareCardCopyTextModelEnvKeys = Object.freeze([
-  productionCardCopyModelOverrideEnvKey,
-  ...cloudflareTextModelEnvKeys
-]);
+export const productionCardCopyModelOverrideEnvKey = "";
+export const cloudflareTextModelEnvKeys = Object.freeze([]);
+export const cloudflareCardCopyTextModelEnvKeys = Object.freeze([]);
 export const cloudflareTextRequiredCredentialGroups = Object.freeze([
   Object.freeze(["CLOUDFLARE_ACCOUNT_ID"]),
   Object.freeze(["CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", "CLOUDFLARE_API_TOKEN"])
@@ -16,8 +10,7 @@ export const cloudflareTextRequiredCredentialGroups = Object.freeze([
 export const hostedAiCardCopySetupKeys = Object.freeze([
   "CLOUDFLARE_ACCOUNT_ID",
   "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
-  "CLOUDFLARE_API_TOKEN",
-  ...cloudflareCardCopyTextModelEnvKeys
+  "CLOUDFLARE_API_TOKEN"
 ]);
 export const localProductionTextComfyGuidance = Object.freeze({
   workflow: "local-production-text-comfy",
@@ -34,7 +27,7 @@ export function buildAiProviderSetupProfile() {
       accountEnvKey: "CLOUDFLARE_ACCOUNT_ID",
       tokenEnvKeys: ["CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", "CLOUDFLARE_API_TOKEN"],
       requiredCredentialGroups: [...cloudflareTextRequiredCredentialGroups],
-      modelEnvKeys: [...cloudflareCardCopyTextModelEnvKeys],
+      modelEnvKeys: [],
       modelOverrideEnvKey: productionCardCopyModelOverrideEnvKey
     },
     localProductionTextComfy: {
@@ -44,5 +37,5 @@ export function buildAiProviderSetupProfile() {
 }
 
 export function isProductionCardCopyModelOverrideKey(envKey) {
-  return String(envKey ?? "").trim() === productionCardCopyModelOverrideEnvKey;
+  return Boolean(productionCardCopyModelOverrideEnvKey) && String(envKey ?? "").trim() === productionCardCopyModelOverrideEnvKey;
 }

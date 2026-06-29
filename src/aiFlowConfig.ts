@@ -50,7 +50,7 @@ export function saveBrowserAiFlowAdminConfigs(configs: AiFlowAdminConfig[]): voi
   try {
     browserSessionStorage()?.setItem(aiFlowAdminConfigStorageKey, JSON.stringify(normalized));
   } catch {
-    /* Admin profile drafts are optional; the server-owned env profile remains authoritative. */
+    /* Admin profile drafts are optional; the server-owned admin profile remains authoritative. */
   }
 }
 
