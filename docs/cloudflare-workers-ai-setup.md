@@ -122,7 +122,7 @@ evidence.
 
 Set the same Cloudflare secret env vars in Vercel for Production, Preview, and
 Development before promoting a live AI path. For the benchmark-backed card-image
-route, set `local-comfyui-api-image`, `sd_xl_turbo_1.0_fp16.safetensors`, and
-`customcard-production-text-overlay` in Admin Providers, then enable the
-card-image flow from the Admin provider controls. Do not commit `.env`,
-`.env.local`, or copied Cloudflare API tokens.
+route, set `local-comfyui-api-image`, `DreamShaper_8_pruned.safetensors`,
+`customcard-production-text-overlay`, and workflow inputs for `960x1344` panels
+in Admin Providers, then enable the card-image flow from the Admin provider
+controls. Do not commit `.env`, `.env.local`, or copied Cloudflare API tokens.

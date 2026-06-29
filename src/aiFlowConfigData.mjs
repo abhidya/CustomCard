@@ -39,14 +39,14 @@ const imageProviderAdapterIds = [
 
 export const benchmarkLocalComfyWorkflowInputsJson = JSON.stringify(
   {
-    width: 512,
-    height: 704,
+    width: 960,
+    height: 1344,
     steps: 18,
     cfg: 6.5,
     sampler: "euler",
     scheduler: "normal",
     poll_ms: 1500,
-    timeout_ms: 360000,
+    timeout_ms: 900000,
     client_id: "customcard-local-comfyui-provider"
   },
   null,
@@ -54,18 +54,19 @@ export const benchmarkLocalComfyWorkflowInputsJson = JSON.stringify(
 );
 
 export const benchmarkBestAiWorkflow = {
-  id: "cloudflare-qwen3-30b-local-comfy-production-text-v8",
+  id: "cloudflare-qwen3-30b-local-comfy-production-text-normal-size-20260629",
   label: "Cloudflare Qwen3 30B + Comfy production text composer",
   status: "structural-pass-needs-manual-visual-gate",
   evidencePath:
-    "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8/production-text-workflow-README.md",
+    "docs/evidence/generated-card-comparisons/production-text-workflow-20260629-cloudflare-guard-fix-normal-size/production-text-workflow-summary.json",
   summaryPath:
-    "docs/evidence/generated-card-comparisons/production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8/production-text-workflow-summary.json",
+    "docs/evidence/generated-card-comparisons/benchmark-aggregate-20260629-cloudflare-guard-fix-normal-size/aggregate-summary.json",
   rationale:
-    "All three required local-production-text fixtures completed with four panels, Cloudflare Qwen3 30B card copy, local ComfyUI image generation, and CustomCardTextComposer final text composition. Manual visual QA still gates customer promotion.",
+    "The 2026-06-29 normal-size proof completed all three local-production-text fixtures at 960x1344 with Cloudflare Qwen3 30B card copy, local ComfyUI image generation, and CustomCardTextComposer final text composition. Manual visual QA still gates customer promotion.",
   blockers: [
     "Manual visual QA and aggregate promotion gates still decide customer promotion.",
-    "The selected Comfy runtime must expose CustomCardTextComposer before live image work."
+    "The selected Comfy runtime must expose CustomCardTextComposer before live image work.",
+    "Current local Comfy checkpoint can still introduce unwanted figures or objects; production approval must grade visual quality separately from blank-panel prevention."
   ],
   flowExpectations: [
     {
@@ -81,7 +82,7 @@ export const benchmarkBestAiWorkflow = {
       flowId: "card-image",
       primaryAdapterId: "local-comfyui-api-image",
       fallbackAdapterId: "cloudflare-workers-ai-image",
-      model: "sd_xl_turbo_1.0_fp16.safetensors",
+      model: "DreamShaper_8_pruned.safetensors",
       renderingMode: "final-text-composited",
       workflowId: "customcard-production-text-overlay",
       workflowPath: "comfyui-workflows/customcard-production-text-overlay.json",
@@ -230,7 +231,7 @@ const defaultModelsByAdapter = {
   "xai-chat": "grok-3-mini",
   "self-hosted-openai-compatible-chat": "local-default",
   "local-openai-compatible-chat": "local-default",
-  "local-comfyui-api-image": "sd_xl_turbo_1.0_fp16.safetensors",
+  "local-comfyui-api-image": "DreamShaper_8_pruned.safetensors",
   "stability-stable-image": "stable-image-core",
   "replicate-image": "black-forest-labs/flux-schnell",
   "fal-image": "fal-ai/flux/schnell",
@@ -245,12 +246,12 @@ export const aiProviderModelPresets = {
     { id: "qwen3-8b-instruct-q4", label: "Qwen3 8B Instruct Q4 local" }
   ],
   "local-comfyui-api-image": [
+    { id: "DreamShaper_8_pruned.safetensors", label: "Local ComfyUI DreamShaper 8" },
     {
       id: "sd_xl_turbo_1.0_fp16.safetensors",
       label: "SDXL Turbo production text composer proof",
-      detail: "Used by the Cloudflare Qwen3 30B local-production-text benchmark evidence"
-    },
-    { id: "DreamShaper_8_pruned.safetensors", label: "Local ComfyUI DreamShaper 8" }
+      detail: "Older production text composer checkpoint; keep selectable for comparison runs."
+    }
   ],
   "runcomfy-model-api-image": [
     {

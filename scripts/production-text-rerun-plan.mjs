@@ -51,11 +51,11 @@ export function buildProductionTextRerunPlan(args = {}) {
     requestTimeoutMs: numberOr(args["request-timeout-ms"], 1_200_000),
     gpuId: numberOr(args["gpu-id"], 0),
     gpuLayers: numberOr(args["gpu-layers"], 999),
-    checkpoint: String(args.checkpoint || "sd_xl_turbo_1.0_fp16.safetensors"),
-    steps: numberOr(args.steps, 2),
-    cfg: numberOr(args.cfg, 1.5),
-    sampler: String(args.sampler || "euler_ancestral"),
-    scheduler: String(args.scheduler || "sgm_uniform")
+    checkpoint: String(args.checkpoint || "DreamShaper_8_pruned.safetensors"),
+    steps: numberOr(args.steps, 18),
+    cfg: numberOr(args.cfg, 6.5),
+    sampler: String(args.sampler || "euler"),
+    scheduler: String(args.scheduler || "normal")
   };
   const recommended = selectPlannerRuntimeRecommendation({ args, baseRecommended, latestPlannerGpuFeasibility });
   const paths = {

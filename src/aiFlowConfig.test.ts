@@ -67,21 +67,21 @@ describe("AI flow config", () => {
     expect(cardCopy?.perRequestBudgetCents).toBe(5);
     expect(cardCopy?.liveProviderCallsEnabled).toBe(true);
     expect(cardImage?.primaryAdapterId).toBe("local-comfyui-api-image");
-    expect(cardImage?.model).toBe("sd_xl_turbo_1.0_fp16.safetensors");
+    expect(cardImage?.model).toBe("DreamShaper_8_pruned.safetensors");
     expect(cardImage?.fallbackAdapterId).toBe("cloudflare-workers-ai-image");
     expect(cardImage?.fallbackQueueEnabled).toBe(true);
     expect(cardImage?.renderingMode).toBe("final-text-composited");
     expect(cardImage?.workflowId).toBe("customcard-production-text-overlay");
     expect(cardImage?.workflowPath).toBe("comfyui-workflows/customcard-production-text-overlay.json");
     expect(JSON.parse(cardImage?.workflowInputsJson ?? "{}")).toMatchObject({
-      width: 512,
-      height: 704,
+      width: 960,
+      height: 1344,
       steps: 18,
       cfg: 6.5,
       sampler: "euler",
       scheduler: "normal",
       poll_ms: 1500,
-      timeout_ms: 360000
+      timeout_ms: 900000
     });
     expect(cardImage?.rateLimitPerMinute).toBe(8);
     expect(cardImage?.perRequestBudgetCents).toBe(1);
@@ -278,7 +278,7 @@ describe("AI flow config", () => {
 
     expect(defaultParity.status).toBe("matched");
     expect(defaultParity.matched).toBe(defaultParity.total);
-    expect(defaultParity.evidencePath).toContain("production-text-workflow-20260627-cloudflare-qwen3-30b-text-local-comfy-v8");
+    expect(defaultParity.evidencePath).toContain("production-text-workflow-20260629-cloudflare-guard-fix-normal-size");
     expect(runComfyParity.status).toBe("drift");
     expect(runComfyParity.rows.find((row) => row.flowId === "card-image")?.missing).toEqual(
       expect.arrayContaining(["Provider", "Model", "Rendering"])

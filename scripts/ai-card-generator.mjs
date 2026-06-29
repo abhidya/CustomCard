@@ -1117,8 +1117,8 @@ async function executeHuggingFaceImage({ flow, env, fetchImpl, panelId, prompt, 
 async function executeLocalComfyUiImage({ flow, env, fetchImpl, panelId, prompt, negativePrompt, panelCopy = {} }) {
   const comfyUrl = localComfyUiBaseUrl(env);
   const runtimeInputs = runtimeInputsForFlow(flow);
-  const width = configuredInteger(runtimeInputs, ["width", "image_width", "imageWidth"], 256, 2048, 512);
-  const height = configuredInteger(runtimeInputs, ["height", "image_height", "imageHeight"], 256, 2048, 704);
+  const width = configuredInteger(runtimeInputs, ["width", "image_width", "imageWidth"], 256, 2048, 960);
+  const height = configuredInteger(runtimeInputs, ["height", "image_height", "imageHeight"], 256, 2048, 1344);
   const steps = configuredInteger(runtimeInputs, ["steps", "num_steps", "numSteps"], 1, 80, 18);
   const cfg = configuredNumber(runtimeInputs, ["cfg", "cfg_scale", "cfgScale"], 1, 20, 6.5);
   const sampler = configuredString(runtimeInputs, ["sampler", "sampler_name", "samplerName"], "euler");
@@ -1150,7 +1150,7 @@ async function executeLocalComfyUiImage({ flow, env, fetchImpl, panelId, prompt,
   if (!promptId) throw new Error("Local ComfyUI did not return a prompt_id.");
   const output = await waitForLocalComfyImage(fetchImpl, comfyUrl, promptId, {
     pollMs: configuredInteger(runtimeInputs, ["poll_ms", "pollMs", "poll_interval_ms", "pollIntervalMs"], 250, 30_000, 1500),
-    timeoutMs: configuredInteger(runtimeInputs, ["timeout_ms", "timeoutMs"], 10_000, 900_000, 360_000)
+    timeoutMs: configuredInteger(runtimeInputs, ["timeout_ms", "timeoutMs"], 10_000, 900_000, 900_000)
   });
   const imageUrl = new URL(localComfyUiApiUrl(comfyUrl, "/view"));
   imageUrl.searchParams.set("filename", output.filename);

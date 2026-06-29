@@ -50,6 +50,29 @@ $PreflightScript = Join-Path $RepoRoot "scripts\comfyui-production-text-prefligh
 $PlannerPreflightScript = Join-Path $RepoRoot "scripts\production-text-planner-preflight.mjs"
 $BenchmarkScript = Join-Path $RepoRoot "scripts\model-benchmark-loop.mjs"
 $StartPlannerScript = Join-Path $PSScriptRoot "start-local-card-planner.ps1"
+$BenchmarkEnvFromFiles = @{}
+foreach ($EnvFile in @(".env.local", "infra/env/.env")) {
+  $EnvPath = Join-Path $RepoRoot $EnvFile
+  if (-not (Test-Path -LiteralPath $EnvPath)) {
+    continue
+  }
+  foreach ($Line in Get-Content -LiteralPath $EnvPath) {
+    if ($Line -notmatch "^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$") {
+      continue
+    }
+    $Key = $Matches[1]
+    $Value = $Matches[2].Trim()
+    if (
+      ($Value.StartsWith('"') -and $Value.EndsWith('"')) -or
+      ($Value.StartsWith("'") -and $Value.EndsWith("'"))
+    ) {
+      $Value = $Value.Substring(1, $Value.Length - 2)
+    }
+    if (-not $BenchmarkEnvFromFiles.ContainsKey($Key)) {
+      $BenchmarkEnvFromFiles[$Key] = $Value
+    }
+  }
+}
 
 if ([string]::IsNullOrWhiteSpace($OutputDir)) {
   $Stamp = (Get-Date).ToUniversalTime().ToString("yyyyMMdd-HHmmss")
@@ -125,6 +148,9 @@ function Get-FirstUsableEnvValue {
     $Item = Get-Item -Path "Env:$Key" -ErrorAction SilentlyContinue
     if ($null -ne $Item -and (Test-UsableEnvValue $Item.Value)) {
       return $Item.Value.Trim()
+    }
+    if ($BenchmarkEnvFromFiles.ContainsKey($Key) -and (Test-UsableEnvValue $BenchmarkEnvFromFiles[$Key])) {
+      return $BenchmarkEnvFromFiles[$Key].Trim()
     }
   }
   return ""
@@ -234,9 +260,17 @@ $ResolvedLocalLlmBaseUrl = Get-FirstUsableEnvValue @(
   "LMSTUDIO_BASE_URL",
   "KOBOLDCPP_BASE_URL"
 )
+$CloudflareAccountId = Get-FirstUsableEnvValue @("CLOUDFLARE_ACCOUNT_ID")
+$CloudflareTextToken = Get-FirstUsableEnvValue @(
+  "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
+  "CLOUDFLARE_API_TOKEN"
+)
+$HasCloudflareProductionText = (Test-UsableEnvValue $CloudflareAccountId) -and (Test-UsableEnvValue $CloudflareTextToken)
+$NeedsLocalPlanner = -not $HasCloudflareProductionText
 $HasLocalLlm = Test-UsableEnvValue $ResolvedLocalLlmBaseUrl
 $RequestedLocalPlannerUri = if ($HasLocalLlm) { Get-EndpointUri $ResolvedLocalLlmBaseUrl } else { $null }
-$RequestedDedicatedPlannerMissing = $HasLocalLlm -and
+$RequestedDedicatedPlannerMissing = $NeedsLocalPlanner -and
+  $HasLocalLlm -and
   -not $DryRun -and
   -not $NoAutoStartPlanner -and
   -not $AllowCompositorFixtureFallback -and
@@ -244,7 +278,7 @@ $RequestedDedicatedPlannerMissing = $HasLocalLlm -and
   $RequestedLocalPlannerUri.Port -eq $PlannerPort -and
   @(Get-LocalKoboldPlannerProcess $PlannerPort).Count -eq 0
 
-if (((-not $HasLocalLlm) -or $RequestedDedicatedPlannerMissing) -and -not $DryRun -and -not $AllowCompositorFixtureFallback -and -not $NoAutoStartPlanner) {
+if ($NeedsLocalPlanner -and ((-not $HasLocalLlm) -or $RequestedDedicatedPlannerMissing) -and -not $DryRun -and -not $AllowCompositorFixtureFallback -and -not $NoAutoStartPlanner) {
   if ((Test-Path -LiteralPath $StartPlannerScript) -and (Test-Path -LiteralPath $ProductionPlannerModelPath)) {
     if ($RequestedDedicatedPlannerMissing) {
       Write-Host "Local LLM planner: $ResolvedLocalLlmBaseUrl is configured but no KoboldCPP listener was found on port $PlannerPort; auto-starting the configured production planner."
@@ -270,12 +304,12 @@ if (((-not $HasLocalLlm) -or $RequestedDedicatedPlannerMissing) -and -not $DryRu
   }
 }
 
-if (-not $HasLocalLlm -and -not $AllowCompositorFixtureFallback) {
-  [Console]::Error.WriteLine("local-production-text requires a production-suitable LLM planner for the LLM-planned customer request matrix. Let this script auto-start $ProductionPlannerModelPath, pass -LocalLlmBaseUrl and -LocalLlmModel for a stronger hosted/self-hosted endpoint, set CUSTOMCARD_LOCAL_LLM_BASE_URL/LMSTUDIO_BASE_URL/KOBOLDCPP_BASE_URL, or pass -AllowCompositorFixtureFallback to run only the structural compositor fixture.")
+if ($NeedsLocalPlanner -and -not $HasLocalLlm -and -not $AllowCompositorFixtureFallback) {
+  [Console]::Error.WriteLine("local-production-text requires Cloudflare Workers AI text credentials or a production-suitable local LLM planner for the LLM-planned customer request matrix. Configure CLOUDFLARE_ACCOUNT_ID plus CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN/CLOUDFLARE_API_TOKEN, let this script auto-start $ProductionPlannerModelPath, pass -LocalLlmBaseUrl and -LocalLlmModel for a stronger hosted/self-hosted endpoint, or pass -AllowCompositorFixtureFallback to run only the structural compositor fixture.")
   exit 2
 }
 
-if ($HasLocalLlm) {
+if ($NeedsLocalPlanner -and $HasLocalLlm) {
   Assert-LocalKoboldPlannerUsesGpu $ResolvedLocalLlmBaseUrl
 }
 
@@ -283,19 +317,25 @@ Write-Host "Production text benchmark output: $OutputDir"
 if (-not [string]::IsNullOrWhiteSpace($Checkpoint)) {
   Write-Host "Checkpoint override: $Checkpoint"
 }
-if ($HasLocalLlm) {
+if ($HasCloudflareProductionText) {
+  Write-Host "Cloudflare Qwen3 text planner: enabled"
+  if ($HasLocalLlm) {
+    Write-Host "Local LLM planner: skipped because Cloudflare text planner is configured"
+  }
+}
+if ($NeedsLocalPlanner -and $HasLocalLlm) {
   Write-Host "Local LLM planner: enabled"
   Write-Host "Local LLM planner request timeout: $PlannerRequestTimeoutMs ms"
   Write-Host "Local Kobold planner GPU requirement: GPU $PlannerGpuId, gpulayers $PlannerGpuLayers"
 }
-if ($AllowCompositorFixtureFallback -and -not $HasLocalLlm) {
+if ($NeedsLocalPlanner -and $AllowCompositorFixtureFallback -and -not $HasLocalLlm) {
   Write-Host "Local LLM planner: missing; compositor fixture fallback explicitly allowed"
 }
 if ($DryRun) {
   Write-Host "Dry run: enabled"
 }
 
-if ($HasLocalLlm -and -not $DryRun) {
+if ($NeedsLocalPlanner -and $HasLocalLlm -and -not $DryRun) {
   try {
     $LocalLlmApiKeyValue = Get-FirstUsableEnvValue @(
       "CUSTOMCARD_LOCAL_LLM_API_KEY",
@@ -342,8 +382,31 @@ $BenchmarkArgs = @(
   $BenchmarkScript,
   "--phase", "local-production-text",
   "--phase-dir", $PhaseDir,
-  "--output-dir", $OutputDir
+  "--output-dir", $OutputDir,
+  "--workflow-id", $WorkflowId,
+  "--workflow-path", $ResolvedWorkflowPath.Path,
+  "--comfy-width", [string]$Width,
+  "--comfy-height", [string]$Height,
+  "--comfy-timeout-ms", [string]$TimeoutMs
 )
+if ($Steps -gt 0) {
+  $BenchmarkArgs += @("--comfy-steps", [string]$Steps)
+}
+if ($Cfg -ge 0) {
+  $BenchmarkArgs += @("--comfy-cfg", [string]$Cfg)
+}
+if (-not [string]::IsNullOrWhiteSpace($Sampler)) {
+  $BenchmarkArgs += @("--comfy-sampler", $Sampler)
+}
+if (-not [string]::IsNullOrWhiteSpace($Scheduler)) {
+  $BenchmarkArgs += @("--comfy-scheduler", $Scheduler)
+}
+if ($Seed -ge 0) {
+  $BenchmarkArgs += @("--comfy-seed", [string]$Seed)
+}
+if (-not [string]::IsNullOrWhiteSpace($Checkpoint)) {
+  $BenchmarkArgs += @("--comfy-checkpoint", $Checkpoint)
+}
 if (-not $DryRun) {
   $BenchmarkArgs += @("--live", "true")
 }

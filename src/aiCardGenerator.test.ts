@@ -407,7 +407,7 @@ describe("AI card generator service", () => {
     });
     expect(payload.images).toHaveLength(4);
     expect(payload.images.every((image) => image.image_url.startsWith("data:image/png;base64,"))).toBe(true);
-    expect(payload.images.every((image) => image.width === 512 && image.height === 704)).toBe(true);
+    expect(payload.images.every((image) => image.width === 960 && image.height === 1344)).toBe(true);
   });
 
   it("uses the service-owned local LLM request timeout for OpenAI-compatible planner calls", async () => {

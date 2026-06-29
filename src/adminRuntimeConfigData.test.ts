@@ -37,6 +37,31 @@ const legacyRunComfyDefaults = [
   }
 ];
 
+const legacyLocalComfyDefaults = [
+  legacyRunComfyDefaults[0],
+  {
+    ...legacyRunComfyDefaults[1],
+    primaryAdapterId: "local-comfyui-api-image",
+    fallbackAdapterId: "cloudflare-workers-ai-image",
+    model: "sd_xl_turbo_1.0_fp16.safetensors",
+    renderingMode: "final-text-composited",
+    workflowId: "customcard-production-text-overlay",
+    workflowPath: "comfyui-workflows/customcard-production-text-overlay.json",
+    workflowJson: "",
+    workflowInputsJson: JSON.stringify({
+      width: 512,
+      height: 704,
+      steps: 18,
+      cfg: 6.5,
+      sampler: "euler",
+      scheduler: "normal",
+      poll_ms: 1500,
+      timeout_ms: 360000,
+      client_id: "customcard-local-comfyui-provider"
+    })
+  }
+];
+
 describe("admin runtime AI flow config data", () => {
   it("migrates persisted legacy defaults to the benchmark-best workflow on read", () => {
     const payload = buildAdminAiFlowConfigPayload({
@@ -54,18 +79,44 @@ describe("admin runtime AI flow config data", () => {
     expect(cardImage).toMatchObject({
       primaryAdapterId: "local-comfyui-api-image",
       fallbackAdapterId: "cloudflare-workers-ai-image",
-      model: "sd_xl_turbo_1.0_fp16.safetensors",
+      model: "DreamShaper_8_pruned.safetensors",
       renderingMode: "final-text-composited",
       workflowId: "customcard-production-text-overlay",
       workflowPath: "comfyui-workflows/customcard-production-text-overlay.json"
     });
     expect(JSON.parse(cardImage?.workflowInputsJson ?? "{}")).toMatchObject({
-      width: 512,
-      height: 704,
+      width: 960,
+      height: 1344,
       steps: 18,
       cfg: 6.5,
       poll_ms: 1500,
-      timeout_ms: 360000
+      timeout_ms: 900000
+    });
+  });
+
+  it("migrates stale local Comfy production-text defaults to the normal-size benchmark path", () => {
+    const payload = buildAdminAiFlowConfigPayload({
+      input: { configs: legacyLocalComfyDefaults },
+      migrateLegacyDefaults: true
+    });
+    const cardImage = payload.configs.find((config) => config.flowId === "card-image");
+
+    expect(payload.aiFlowDefaultsVersion).toBe(benchmarkBestAiWorkflow.id);
+    expect(cardImage).toMatchObject({
+      primaryAdapterId: "local-comfyui-api-image",
+      fallbackAdapterId: "cloudflare-workers-ai-image",
+      model: "DreamShaper_8_pruned.safetensors",
+      renderingMode: "final-text-composited",
+      workflowId: "customcard-production-text-overlay",
+      workflowPath: "comfyui-workflows/customcard-production-text-overlay.json"
+    });
+    expect(JSON.parse(cardImage?.workflowInputsJson ?? "{}")).toMatchObject({
+      width: 960,
+      height: 1344,
+      steps: 18,
+      cfg: 6.5,
+      poll_ms: 1500,
+      timeout_ms: 900000
     });
   });
 

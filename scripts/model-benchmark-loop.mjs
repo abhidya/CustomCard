@@ -888,7 +888,7 @@ function withAvailability(candidate, env, args = {}) {
     configuredCandidate.workflowId = firstNonEmpty(args.workflowId, "customcard-hybrid-reserved-layout");
     configuredCandidate.workflowPath = firstNonEmpty(args.workflowPath, "");
     configuredCandidate.workflowJson = firstNonEmpty(args.workflowJson, "");
-    configuredCandidate.workflowInputsJson = firstNonEmpty(args.workflowInputsJson, "");
+    configuredCandidate.workflowInputsJson = firstNonEmpty(args.workflowInputsJson, localComfyWorkflowInputsJsonFromArgs(args), "");
   }
   if (candidate.adapterId === "local-openai-compatible-chat") {
     configuredCandidate.contextWindowTokens = boundedIntegerEnv(args.contextTokens, 0, 1_000_000, 0);
@@ -910,6 +910,24 @@ function candidateModelFromAdminInput(candidate, args = {}) {
     return firstNonEmpty(args.comfyCheckpoint, args.checkpoint, candidate.model);
   }
   return candidate.model || "";
+}
+
+function localComfyWorkflowInputsJsonFromArgs(args = {}) {
+  const inputs = {};
+  assignFirstInput(inputs, "width", args.comfyWidth, args.imageWidth);
+  assignFirstInput(inputs, "height", args.comfyHeight, args.imageHeight);
+  assignFirstInput(inputs, "steps", args.comfySteps);
+  assignFirstInput(inputs, "cfg", args.comfyCfg);
+  assignFirstInput(inputs, "sampler", args.comfySampler);
+  assignFirstInput(inputs, "scheduler", args.comfyScheduler);
+  assignFirstInput(inputs, "seed", args.comfySeed);
+  assignFirstInput(inputs, "timeout_ms", args.comfyTimeoutMs);
+  return Object.keys(inputs).length > 0 ? JSON.stringify(inputs) : "";
+}
+
+function assignFirstInput(target, key, ...values) {
+  const value = firstNonEmpty(...values);
+  if (value !== "") target[key] = value;
 }
 
 function missingEnvGroups(groups, env) {
@@ -3260,18 +3278,28 @@ function parseArgs(values) {
     const value = values[index];
     if (!value.startsWith("--")) continue;
     const [rawKey, inlineValue] = value.slice(2).split("=");
+    const key = normalizeArgKey(rawKey);
     if (inlineValue !== undefined) {
-      parsed[rawKey] = inlineValue;
+      setParsedArg(parsed, rawKey, key, inlineValue);
       continue;
     }
     if (values[index + 1] && !values[index + 1].startsWith("--")) {
-      parsed[rawKey] = values[index + 1];
+      setParsedArg(parsed, rawKey, key, values[index + 1]);
       index += 1;
     } else {
-      parsed[rawKey] = true;
+      setParsedArg(parsed, rawKey, key, true);
     }
   }
   return parsed;
+}
+
+function setParsedArg(parsed, rawKey, normalizedKey, value) {
+  parsed[rawKey] = value;
+  parsed[normalizedKey] = value;
+}
+
+function normalizeArgKey(value) {
+  return String(value || "").replace(/-([a-zA-Z0-9])/g, (_match, character) => character.toUpperCase());
 }
 
 function loadBenchmarkEnv() {

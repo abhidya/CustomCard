@@ -125,6 +125,11 @@ describe("production text rerun plan", () => {
     expect(plan.commands[6].command).toContain("-PlannerGpuId 0");
     expect(plan.commands[6].command).toContain("-PlannerGpuLayers 999");
     expect(plan.commands[6].command).toContain("-ProductionPlannerModelPath D:\\models\\gemma-4-31B-it-Q4_K_M.gguf");
+    expect(plan.commands[6].command).toContain("-Checkpoint DreamShaper_8_pruned.safetensors");
+    expect(plan.commands[6].command).toContain("-Steps 18");
+    expect(plan.commands[6].command).toContain("-Cfg 6.5");
+    expect(plan.commands[6].command).toContain("-Sampler euler");
+    expect(plan.commands[6].command).toContain("-Scheduler normal");
     expect(plan.commands[6].command).not.toContain("-AllowSmallPlanner");
     expect(plan.commands[8].command).toContain("production-text-manual-grade-checklist.mjs");
     expect(plan.commands[9].command).toContain("production-text-visual-qa-gate.mjs");
@@ -263,6 +268,11 @@ describe("production text rerun plan", () => {
     expect(plan.commands[0].why).toContain("hardware-blocked");
     expect(plan.commands[1].command).not.toContain("production-text-planner-gpu-feasibility.mjs");
     expect(plan.commands[5].command).toContain("-NoAutoStartPlanner");
+    expect(plan.commands[5].command).toContain("-Checkpoint DreamShaper_8_pruned.safetensors");
+    expect(plan.commands[5].command).toContain("-Steps 18");
+    expect(plan.commands[5].command).toContain("-Cfg 6.5");
+    expect(plan.commands[5].command).toContain("-Sampler euler");
+    expect(plan.commands[5].command).toContain("-Scheduler normal");
     expect(plan.commands[5].command).not.toContain("-ProductionPlannerModelPath");
     expect(plan.commands[5].command).not.toContain("-PlannerGpuId");
     expect(plan.commands[5].command).not.toContain("-PlannerGpuLayers");

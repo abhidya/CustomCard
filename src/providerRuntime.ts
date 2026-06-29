@@ -1007,7 +1007,7 @@ function defaultImageModel(adapterId: string): string {
     "together-image": "black-forest-labs/FLUX.1-schnell-Free",
     "fal-image": "fal-ai/flux/schnell",
     "bfl-flux-image": "flux-pro",
-    "local-comfyui-api-image": "sd_xl_turbo_1.0_fp16.safetensors",
+    "local-comfyui-api-image": "DreamShaper_8_pruned.safetensors",
     "luma-image": "photon-1",
     "replicate-image": "black-forest-labs/flux-schnell"
   };
@@ -1687,8 +1687,8 @@ function buildSinglePanelImageRequest(
         workflow: "customcard-production-text-overlay",
         checkpoint: model,
         prompt,
-        width: 512,
-        height: 704,
+        width: 960,
+        height: 1344,
         metadata: { ...metadata, local_only: true }
       }
     );

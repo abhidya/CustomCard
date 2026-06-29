@@ -174,7 +174,21 @@ export function migrateLegacyBenchmarkAiFlowDefaults(configs) {
         ...config,
         primaryAdapterId: expectation?.primaryAdapterId ?? "local-comfyui-api-image",
         fallbackAdapterId: expectation?.fallbackAdapterId ?? "cloudflare-workers-ai-image",
-        model: expectation?.model ?? "sd_xl_turbo_1.0_fp16.safetensors",
+        model: expectation?.model ?? "DreamShaper_8_pruned.safetensors",
+        renderingMode: expectation?.renderingMode ?? "final-text-composited",
+        workflowId: expectation?.workflowId ?? "customcard-production-text-overlay",
+        workflowPath: expectation?.workflowPath ?? "comfyui-workflows/customcard-production-text-overlay.json",
+        workflowJson: "",
+        workflowInputsJson: expectation?.workflowInputsJson ?? ""
+      };
+    }
+    if (config.flowId === "card-image" && isLegacyLocalComfyProductionTextDefault(config)) {
+      const expectation = benchmarkFlowExpectation("card-image");
+      return {
+        ...config,
+        primaryAdapterId: expectation?.primaryAdapterId ?? "local-comfyui-api-image",
+        fallbackAdapterId: expectation?.fallbackAdapterId ?? "cloudflare-workers-ai-image",
+        model: expectation?.model ?? "DreamShaper_8_pruned.safetensors",
         renderingMode: expectation?.renderingMode ?? "final-text-composited",
         workflowId: expectation?.workflowId ?? "customcard-production-text-overlay",
         workflowPath: expectation?.workflowPath ?? "comfyui-workflows/customcard-production-text-overlay.json",
@@ -260,6 +274,37 @@ function isLegacyRunComfyImageDefault(config) {
     blankOptional(config.workflowJson) &&
     blankOptional(config.workflowInputsJson)
   );
+}
+
+function isLegacyLocalComfyProductionTextDefault(config) {
+  const inputs = parseWorkflowInputs(config.workflowInputsJson);
+  const legacySmallCanvas =
+    blankOptional(config.workflowInputsJson) ||
+    (Number(inputs.width) === 512 && Number(inputs.height) === 704);
+  return (
+    matchesOptional(config.primaryAdapterId, "local-comfyui-api-image") &&
+    matchesOptional(config.fallbackAdapterId, "cloudflare-workers-ai-image") &&
+    (
+      matchesOptional(config.model, "sd_xl_turbo_1.0_fp16.safetensors") ||
+      matchesOptional(config.model, "DreamShaper_8_pruned.safetensors")
+    ) &&
+    matchesOptional(config.renderingMode, "final-text-composited") &&
+    matchesOptional(config.workflowId, "customcard-production-text-overlay") &&
+    matchesOptional(config.workflowPath, "comfyui-workflows/customcard-production-text-overlay.json") &&
+    blankOptional(config.workflowJson) &&
+    legacySmallCanvas
+  );
+}
+
+function parseWorkflowInputs(value) {
+  const raw = String(value ?? "").trim();
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
 }
 
 function matchesOptional(value, expected) {
