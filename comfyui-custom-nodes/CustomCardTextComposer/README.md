@@ -27,4 +27,4 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/install-comf
 ```
 
 Then restart ComfyUI and use
-`comfyui-workflows/customcard-production-text-overlay.json`.
+`comfyui-workflows/customcard-flux2-klein-production-text-overlay.json`.

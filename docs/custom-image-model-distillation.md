@@ -54,7 +54,7 @@ LM Studio is preferred for schema/JSON experiments because it exposes OpenAI-com
 
 ### Image Renderer
 
-Current installed baseline:
+Legacy installed baseline:
 
 - `DreamShaper_8_pruned.safetensors`
 
@@ -85,7 +85,7 @@ Production text workflow tracking:
 - Benchmark fallback workflow:
   `comfyui-workflows/customcard-hybrid-reserved-layout.json`
 - Production Comfy-side text candidate:
-  `comfyui-workflows/customcard-production-text-overlay.json`
+  `comfyui-workflows/customcard-flux2-klein-production-text-overlay.json`
 - Production Comfy custom text node:
   `comfyui-custom-nodes/CustomCardTextComposer`
 - Production preflight:

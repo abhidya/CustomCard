@@ -1,5 +1,7 @@
-export const productionTextWorkflowId: "customcard-production-text-overlay";
-export const productionTextWorkflowRelativePath: "comfyui-workflows/customcard-production-text-overlay.json";
+export const productionTextWorkflowId: "customcard-flux2-klein-production-text-overlay";
+export const productionTextWorkflowRelativePath: "comfyui-workflows/customcard-flux2-klein-production-text-overlay.json";
+export const legacyProductionTextWorkflowIds: readonly string[];
+export const legacyProductionTextWorkflowRelativePaths: readonly string[];
 export const productionTextNodeSourceRelativePath: "comfyui-custom-nodes/CustomCardTextComposer";
 export const productionTextRequiredNodeClass: "CustomCardTextComposer";
 export const productionTextRequiredCompositorInputs: readonly string[];

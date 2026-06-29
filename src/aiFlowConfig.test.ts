@@ -62,24 +62,23 @@ describe("AI flow config", () => {
     expect(cardCopy?.fallbackAdapterId).toBe("huggingface-chat");
     expect(cardCopy?.fallbackQueueEnabled).toBe(true);
     expect(cardCopy?.model).toBe(productionCardCopyModel);
-    expect(cardCopy?.maxTokens).toBe(3200);
+    expect(cardCopy?.maxTokens).toBe(4096);
     expect(cardCopy?.rateLimitPerMinute).toBe(4);
     expect(cardCopy?.perRequestBudgetCents).toBe(5);
     expect(cardCopy?.liveProviderCallsEnabled).toBe(true);
     expect(cardImage?.primaryAdapterId).toBe("local-comfyui-api-image");
-    expect(cardImage?.model).toBe("DreamShaper_8_pruned.safetensors");
+    expect(cardImage?.model).toBe("flux-2-klein-4b.safetensors");
     expect(cardImage?.fallbackAdapterId).toBe("cloudflare-workers-ai-image");
     expect(cardImage?.fallbackQueueEnabled).toBe(true);
     expect(cardImage?.renderingMode).toBe("final-text-composited");
-    expect(cardImage?.workflowId).toBe("customcard-production-text-overlay");
-    expect(cardImage?.workflowPath).toBe("comfyui-workflows/customcard-production-text-overlay.json");
+    expect(cardImage?.workflowId).toBe("customcard-flux2-klein-production-text-overlay");
+    expect(cardImage?.workflowPath).toBe("comfyui-workflows/customcard-flux2-klein-production-text-overlay.json");
     expect(JSON.parse(cardImage?.workflowInputsJson ?? "{}")).toMatchObject({
       width: 960,
       height: 1344,
-      steps: 18,
-      cfg: 6.5,
+      steps: 4,
+      cfg: 1,
       sampler: "euler",
-      scheduler: "normal",
       poll_ms: 1500,
       timeout_ms: 900000
     });
@@ -278,7 +277,7 @@ describe("AI flow config", () => {
 
     expect(defaultParity.status).toBe("matched");
     expect(defaultParity.matched).toBe(defaultParity.total);
-    expect(defaultParity.evidencePath).toContain("production-text-workflow-20260629-cloudflare-guard-fix-normal-size");
+    expect(defaultParity.evidencePath).toContain("production-text-workflow-20260629-flux2-klein-prod-normal-size");
     expect(runComfyParity.status).toBe("drift");
     expect(runComfyParity.rows.find((row) => row.flowId === "card-image")?.missing).toEqual(
       expect.arrayContaining(["Provider", "Model", "Rendering"])

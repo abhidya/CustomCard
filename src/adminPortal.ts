@@ -717,7 +717,7 @@ function buildAiLoopArea(input: AdminPortalModelInput, runtimeBlocked: number, r
       id: "local-ai-queue-botanical-birthday",
       storyId: "botanical-birthday",
       textModel: "Qwen3 local chat via LM Studio or KoboldCPP",
-      imageModel: "DreamShaper, SDXL, or FLUX checkpoint via ComfyUI",
+      imageModel: "Flux2 Klein, DreamShaper, SDXL, or FLUX checkpoint via ComfyUI",
       provider: "local-openai-compatible-chat + local-comfyui-api-image",
       queueStatus: "planned",
       humanReview: "pending",

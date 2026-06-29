@@ -67,8 +67,8 @@ function writeBaseEvidence(root: string, options: { ready: boolean }) {
       productionSuitable: options.ready,
       minContextTokens: 8192,
       reportedContextTokens: options.ready ? 8192 : 4096,
-      minOutputTokens: 3200,
-      maxOutputTokens: 3200
+      minOutputTokens: 4096,
+      maxOutputTokens: 4096
     },
     blockers: options.ready ? [] : ["Planner model is smoke-only."]
   });

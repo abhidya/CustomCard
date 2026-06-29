@@ -269,7 +269,7 @@ describe("model benchmark typography experiment", () => {
         "output-dir": outputDir,
         plannerModel: "koboldcpp/gemma-4-31B-it-Q4_K_M",
         contextTokens: "8192",
-        maxTokens: "3200",
+        maxTokens: "4096",
         checkpoint: "sd_xl_turbo_1.0_fp16.safetensors"
       });
       const dryRun = JSON.parse(readFileSync(join(outputDir, "production-text-workflow-dry-run.json"), "utf8"));
@@ -280,7 +280,7 @@ describe("model benchmark typography experiment", () => {
         baseUrl: "http://127.0.0.1:5003/v1",
         model: "koboldcpp/gemma-4-31B-it-Q4_K_M",
         contextTokens: 8192,
-        maxOutputTokens: 3200,
+        maxOutputTokens: 4096,
         requestTimeoutMs: 1200000,
         classification: "production-suitable",
         productionSuitable: true,
@@ -292,7 +292,7 @@ describe("model benchmark typography experiment", () => {
       });
       expect(dryRun.productionTextPlannerRuntime.policy).toMatchObject({
         minContextTokens: 8192,
-        minOutputTokens: 3200
+        minOutputTokens: 4096
       });
       expect(dryRun.plannedRuns.map((run: { storyId: string }) => run.storyId)).toEqual(
         productionTextRequestFixtures.map((story) => story.id)
@@ -333,7 +333,7 @@ describe("model benchmark typography experiment", () => {
           live: "true",
           plannerModel: "koboldcpp/Qwen3-8B-Q4_K_M",
           contextTokens: "4096",
-          maxTokens: "3200",
+          maxTokens: "4096",
           checkpoint: "sd_xl_turbo_1.0_fp16.safetensors"
         })
       ).rejects.toThrow(/correct production planner/);
@@ -374,7 +374,7 @@ describe("model benchmark typography experiment", () => {
             live: "true",
             plannerModel: "koboldcpp/gemma-4-31B-it-Q4_K_M",
             contextTokens: "8192",
-            maxTokens: "3200",
+            maxTokens: "4096",
             checkpoint: "sd_xl_turbo_1.0_fp16.safetensors"
           },
           {
@@ -817,7 +817,7 @@ describe("model benchmark typography experiment", () => {
                 headline_text: panelId === "front" ? frontCopy.headline : "",
                 body_text: panelId === "front" ? frontCopy.body : "",
                 artwork_guard: { x: 76, y: 268, width: 806, height: 860 },
-                artwork_guard_opacity: 0.74,
+                artwork_guard_opacity: 0.28,
                 artwork_guard_style: panelId === "back" ? "box" : "panel",
                 headline_box: { x: 86, y: 376, width: 788, height: 296 },
                 headline_box_background_color: panelId === "front" ? "#111715" : "",

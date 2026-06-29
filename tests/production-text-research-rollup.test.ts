@@ -47,7 +47,7 @@ describe("production text research rollup", () => {
           activeModel: "koboldcpp/Qwen3-4B-Instruct-2507-Q4_K_S",
           classification: "smoke-only",
           reportedContextTokens: 4096,
-          maxOutputTokens: 3200,
+          maxOutputTokens: 4096,
           blockers: ["Planner context 4096 is below the production minimum 8192."]
         }
       ],
@@ -106,7 +106,7 @@ describe("production text research rollup", () => {
           productionSuitable: true,
           runAllowed: true,
           contextTokens: 8192,
-          maxOutputTokens: 3200,
+          maxOutputTokens: 4096,
           requestTimeoutMs: 1200000,
           creativeContract: "full-production-card-copy-json",
           blockers: []
@@ -241,7 +241,7 @@ describe("production text research rollup", () => {
         {
           step: 2,
           title: "Write planner preflight evidence",
-          command: "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-preflight.mjs --base-url http://127.0.0.1:5013/v1 --model koboldcpp/gemma-4-31B-it-Q4_K_M --reported-context-tokens 8192 --max-output-tokens 3200",
+          command: "rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-preflight.mjs --base-url http://127.0.0.1:5013/v1 --model koboldcpp/gemma-4-31B-it-Q4_K_M --reported-context-tokens 8192 --max-output-tokens 4096",
           why: "Proves the loaded model and budget."
         }
       ]
@@ -310,7 +310,7 @@ describe("production text research rollup", () => {
       plannerClassification: "production-suitable",
       productionSuitable: true,
       contextTokens: 8192,
-      maxOutputTokens: 3200,
+      maxOutputTokens: 4096,
       requestTimeoutMs: 1200000,
       creativeContract: "full-production-card-copy-json"
     });
@@ -373,7 +373,7 @@ describe("production text research rollup", () => {
           activeModel: "koboldcpp/gemma-4-31B-it-Q4_K_M",
           classification: "production-suitable",
           reportedContextTokens: 8192,
-          maxOutputTokens: 3200,
+          maxOutputTokens: 4096,
           blockers: ["Planner /models preflight failed: fetch failed"]
         }
       ],

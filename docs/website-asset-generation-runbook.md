@@ -40,13 +40,14 @@ Checked-in Comfy workflows:
 - `comfyui-workflows/customcard-sdxl-checkpoint.json`
 - `comfyui-workflows/customcard-sdxl-lightning-lora.json`
 - `comfyui-workflows/customcard-hybrid-reserved-layout.json`
+- `comfyui-workflows/customcard-flux2-klein-production-text-overlay.json`
 - `comfyui-workflows/customcard-production-text-overlay.json`
 - `comfyui-workflows/customcard-flux1-schnell.json`
 - `comfyui-workflows/customcard-flux2-klein-4b.json`
 - `comfyui-workflows/customcard-z-image-turbo.json`
 - `comfyui-workflows/customcard-qwen-image-research.json`
 
-Important constraint: `customcard-production-text-overlay.json` can render exact copy with the checked-in `CustomCardTextComposer` node and is the admin default for the benchmark-backed production text lane. Use it only where the target Comfy runtime has the custom node installed, then manually grade outputs before customer promotion.
+Important constraint: `customcard-flux2-klein-production-text-overlay.json` can render exact copy with the checked-in `CustomCardTextComposer` node and is the admin default for the benchmark-backed production text lane. Use it only where the target Comfy runtime has the Flux2 Klein files and custom node installed, then manually grade outputs before customer promotion.
 
 ## Safe Prompt Contract
 

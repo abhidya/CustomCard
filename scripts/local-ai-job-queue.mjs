@@ -293,11 +293,11 @@ function resolveLocalEndpoints(env, args = {}) {
     llmBaseUrl: firstNonEmpty(env.CUSTOMCARD_LOCAL_LLM_BASE_URL, env.LMSTUDIO_BASE_URL, env.KOBOLDCPP_BASE_URL),
     llmModel: firstNonEmpty(args.llmModel, args.model, "local-default"),
     llmContextTokens: boundedInteger(args.contextTokens, 0, 1_000_000, 8192),
-    llmMaxTokens: boundedInteger(args.maxTokens, 0, 4000, 3200),
+    llmMaxTokens: boundedInteger(args.maxTokens, 0, 8192, 4096),
     comfyUrl: firstNonEmpty(env.CUSTOMCARD_COMFYUI_URL, env.COMFYUI_URL, "http://127.0.0.1:8188"),
-    comfyCheckpoint: firstNonEmpty(args.comfyCheckpoint, args.checkpoint, "DreamShaper_8_pruned.safetensors"),
-    comfyWorkflowId: firstNonEmpty(args.workflowId, "api-sdxl-checkpoint-card-v1"),
-    comfyWorkflowPath: firstNonEmpty(args.workflowPath, ""),
+    comfyCheckpoint: firstNonEmpty(args.comfyCheckpoint, args.checkpoint, "flux-2-klein-4b.safetensors"),
+    comfyWorkflowId: firstNonEmpty(args.workflowId, "customcard-flux2-klein-production-text-overlay"),
+    comfyWorkflowPath: firstNonEmpty(args.workflowPath, "comfyui-workflows/customcard-flux2-klein-production-text-overlay.json"),
     codeVersion: firstNonEmpty(env.CUSTOMCARD_CODE_VERSION, env.VERCEL_GIT_COMMIT_SHA, "local-worktree")
   };
 }

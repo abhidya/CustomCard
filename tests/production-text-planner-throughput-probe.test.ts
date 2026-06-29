@@ -107,7 +107,7 @@ describe("production text planner throughput probe", () => {
         "base-url": "http://127.0.0.1:5013/v1",
         model,
         "reported-context-tokens": "8192",
-        "max-output-tokens": "3200",
+        "max-output-tokens": "4096",
         "output-dir": root
       },
       { fetchImpl, gpuResidencyProbe }
@@ -134,7 +134,7 @@ describe("production text planner throughput probe", () => {
         "base-url": "http://127.0.0.1:5013/v1",
         model,
         "reported-context-tokens": "8192",
-        "max-output-tokens": "3200",
+        "max-output-tokens": "4096",
         "output-dir": root
       },
       { fetchImpl, gpuResidencyProbe }

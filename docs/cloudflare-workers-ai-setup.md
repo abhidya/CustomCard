@@ -63,14 +63,14 @@ inpainting workflow is explicitly needed.
 Configure provider, model, workflow, budget, queue, and live-call behavior in
 Admin Providers. Use `cloudflare-workers-ai-image` there when validating the
 hosted Cloudflare image lane; keep `local-comfyui-api-image` with
-`customcard-production-text-overlay` for the benchmark-backed production text
+`customcard-flux2-klein-production-text-overlay` for the benchmark-backed production text
 workflow.
 
 ## Fallback Order
 
 1. Cloudflare LLM JSON Mode default: `@cf/qwen/qwen3-30b-a3b-fp8`.
 2. Cloudflare LLM low-cost fallback: `@cf/meta/llama-3.1-8b-instruct-fast`.
-3. Benchmark-backed image/default composition lane: `local-comfyui-api-image` with `customcard-production-text-overlay` in Admin Providers.
+3. Benchmark-backed image/default composition lane: `local-comfyui-api-image` with `customcard-flux2-klein-production-text-overlay` in Admin Providers.
 4. Hosted image fallback: `cloudflare-workers-ai-image` in Admin Providers.
 5. Cloudflare image quality experiment: `@cf/black-forest-labs/flux-1-schnell`.
 6. Hugging Face specialty image fallback for non-commercial typography/layout experiments, especially Ideogram 4.
@@ -122,7 +122,8 @@ evidence.
 
 Set the same Cloudflare secret env vars in Vercel for Production, Preview, and
 Development before promoting a live AI path. For the benchmark-backed card-image
-route, set `local-comfyui-api-image`, `DreamShaper_8_pruned.safetensors`,
-`customcard-production-text-overlay`, and workflow inputs for `960x1344` panels
+route, set `local-comfyui-api-image`, `flux-2-klein-4b.safetensors`,
+`customcard-flux2-klein-production-text-overlay`, and workflow inputs for `960x1344`
+panels with the distilled 4-step Flux2 Klein preset
 in Admin Providers, then enable the card-image flow from the Admin provider
 controls. Do not commit `.env`, `.env.local`, or copied Cloudflare API tokens.

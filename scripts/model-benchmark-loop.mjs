@@ -651,9 +651,9 @@ const textCandidates = [
 const imageCandidates = [
   {
     id: "image-local-comfyui",
-    label: "Local ComfyUI checkpoint",
+    label: "Local ComfyUI Flux2 Klein",
     adapterId: "local-comfyui-api-image",
-    model: "DreamShaper_8_pruned.safetensors",
+    model: "flux-2-klein-4b.safetensors",
     requiredEnv: [["CUSTOMCARD_COMFYUI_URL", "COMFYUI_URL"]]
   },
   {
@@ -895,7 +895,7 @@ function withAvailability(candidate, env, args = {}) {
     configuredCandidate.maxTokens = boundedIntegerEnv(
       args.maxTokens,
       productionTextPlannerPolicy.minOutputTokens,
-      4000,
+      8192,
       productionTextPlannerPolicy.recommendedOutputTokens
     );
   }
@@ -959,7 +959,7 @@ function productionTextPlannerConfigForRuns(plannedRuns = [], args = {}) {
     maxOutputTokens: boundedIntegerEnv(
       args.maxTokens,
       productionTextPlannerPolicy.minOutputTokens,
-      4000,
+      8192,
       productionTextPlannerPolicy.recommendedOutputTokens
     )
   };
@@ -971,7 +971,7 @@ function productionTextPlannerRuntimeSummary(env, config = {}) {
   const maxOutputTokens = boundedIntegerEnv(
     config.maxOutputTokens,
     productionTextPlannerPolicy.minOutputTokens,
-    4000,
+    8192,
     productionTextPlannerPolicy.recommendedOutputTokens
   );
   const allowSmallPlanner = false;
@@ -2245,7 +2245,7 @@ async function executeLocalComfyTypographyImage({ image, panelId, prompt, negati
   const cfg = boundedNumberEnv(workflowInputs.cfg, 0, 30, 6.5);
   const sampler = String(workflowInputs.sampler || "euler").trim() || "euler";
   const scheduler = String(workflowInputs.scheduler || "normal").trim() || "normal";
-  const checkpoint = image.model || "DreamShaper_8_pruned.safetensors";
+  const checkpoint = image.model || "flux-2-klein-4b.safetensors";
   const deterministicSeed = numericSeed(`${checkpoint}:${panelId}:${prompt}`);
   const seed = boundedIntegerEnv(
     workflowInputs.seed ?? deterministicSeed,

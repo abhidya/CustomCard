@@ -1,7 +1,7 @@
 export const productionTextPlannerPolicy = Object.freeze({
   minContextTokens: 8192,
-  minOutputTokens: 3200,
-  recommendedOutputTokens: 3200,
+  minOutputTokens: 4096,
+  recommendedOutputTokens: 4096,
   minimumOpenWeightPlannerClass: "14B+ dense/open-weight planner or stronger hosted model",
   recommendedModels: [
     "koboldcpp/gemma-4-31B-it-Q4_K_M",

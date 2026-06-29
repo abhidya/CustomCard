@@ -148,7 +148,7 @@ describe("production text readiness doctor", () => {
       "model-root": modelRoot,
       "local-llm-base-url": "http://127.0.0.1:5003/v1",
       "planner-context-tokens": 8192,
-      "planner-max-output-tokens": 3200,
+      "planner-max-output-tokens": 4096,
       "output-dir": join(root, "readiness")
     }, { gpuResidencyProbe });
 
@@ -223,7 +223,7 @@ describe("production text readiness doctor", () => {
       "model-root": modelRoot,
       "local-llm-base-url": "http://127.0.0.1:5003/v1",
       "planner-context-tokens": 8192,
-      "planner-max-output-tokens": 3200,
+      "planner-max-output-tokens": 4096,
       "output-dir": join(root, "readiness")
     }, { gpuResidencyProbe });
 
@@ -268,7 +268,7 @@ describe("production text readiness doctor", () => {
       "model-root": modelRoot,
       "local-llm-base-url": "http://127.0.0.1:5003/v1",
       "planner-context-tokens": 8192,
-      "planner-max-output-tokens": 3200,
+      "planner-max-output-tokens": 4096,
       "output-dir": join(root, "readiness")
     }, {
       gpuResidencyProbe: () => ({
@@ -323,7 +323,7 @@ describe("production text readiness doctor", () => {
       "local-llm-base-url": "https://planner.example/v1",
       "local-llm-api-key": "test-hosted-key",
       "planner-context-tokens": 8192,
-      "planner-max-output-tokens": 3200,
+      "planner-max-output-tokens": 4096,
       "output-dir": join(root, "readiness")
     });
 
@@ -372,7 +372,7 @@ describe("production text readiness doctor", () => {
       "model-root": modelRoot,
       "local-llm-base-url": "http://127.0.0.1:5003/v1",
       "planner-context-tokens": 8192,
-      "planner-max-output-tokens": 3200,
+      "planner-max-output-tokens": 4096,
       "output-dir": join(root, "readiness")
     }, { gpuResidencyProbe });
 

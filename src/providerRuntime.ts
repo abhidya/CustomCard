@@ -1007,7 +1007,7 @@ function defaultImageModel(adapterId: string): string {
     "together-image": "black-forest-labs/FLUX.1-schnell-Free",
     "fal-image": "fal-ai/flux/schnell",
     "bfl-flux-image": "flux-pro",
-    "local-comfyui-api-image": "DreamShaper_8_pruned.safetensors",
+    "local-comfyui-api-image": "flux-2-klein-4b.safetensors",
     "luma-image": "photon-1",
     "replicate-image": "black-forest-labs/flux-schnell"
   };
@@ -1397,8 +1397,8 @@ function buildCardImagePromptPlan(sanitized: SanitizedText, input: ImageRuntimeI
           "",
           "Generate only the BACK COVER image.",
           "This is one standalone portrait 5x7 print file, not a preview of the whole card.",
-          "Create a mostly blank coordinating back cover with the same border and decorative style.",
-          "No large text. Leave the center mostly empty. Add only subtle matching ornamentation near the bottom or corners."
+          "Create a finished coordinating back cover with the same border language, visible small mark, and subtle paper texture.",
+          "No large text. Keep the center calm and low-detail, with matching ornamentation near the bottom, edges, or corners."
         ].join("\n")
       },
       {
@@ -1684,7 +1684,7 @@ function buildSinglePanelImageRequest(
       "{CUSTOMCARD_COMFYUI_URL}/prompt",
       ["CUSTOMCARD_COMFYUI_URL"],
       {
-        workflow: "customcard-production-text-overlay",
+        workflow: "customcard-flux2-klein-production-text-overlay",
         checkpoint: model,
         prompt,
         width: 960,

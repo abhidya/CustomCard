@@ -1,0 +1,191 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "flux-2-klein-4b.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "2": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen_3_4b.safetensors",
+      "device": "default",
+      "type": "flux2"
+    }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "flux2-vae.safetensors"
+    }
+  },
+  "4": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "2",
+        0
+      ],
+      "text": "{{prompt}}"
+    }
+  },
+  "5": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "2",
+        0
+      ],
+      "text": "{{negative_prompt}}"
+    }
+  },
+  "6": {
+    "class_type": "CFGGuider",
+    "inputs": {
+      "cfg": "{{cfg}}",
+      "model": [
+        "1",
+        0
+      ],
+      "negative": [
+        "5",
+        0
+      ],
+      "positive": [
+        "4",
+        0
+      ]
+    }
+  },
+  "7": {
+    "class_type": "KSamplerSelect",
+    "inputs": {
+      "sampler_name": "{{sampler}}"
+    }
+  },
+  "8": {
+    "class_type": "Flux2Scheduler",
+    "inputs": {
+      "height": "{{height}}",
+      "steps": "{{steps}}",
+      "width": "{{width}}"
+    }
+  },
+  "9": {
+    "class_type": "RandomNoise",
+    "inputs": {
+      "noise_seed": "{{seed}}"
+    }
+  },
+  "10": {
+    "class_type": "EmptyFlux2LatentImage",
+    "inputs": {
+      "batch_size": 1,
+      "height": "{{height}}",
+      "width": "{{width}}"
+    }
+  },
+  "11": {
+    "class_type": "SamplerCustomAdvanced",
+    "inputs": {
+      "guider": [
+        "6",
+        0
+      ],
+      "latent_image": [
+        "10",
+        0
+      ],
+      "noise": [
+        "9",
+        0
+      ],
+      "sampler": [
+        "7",
+        0
+      ],
+      "sigmas": [
+        "8",
+        0
+      ]
+    }
+  },
+  "12": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "11",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ]
+    }
+  },
+  "13": {
+    "class_type": "CustomCardTextComposer",
+    "inputs": {
+      "alignment": "{{text_alignment}}",
+      "artwork_guard_color": "{{artwork_guard_color}}",
+      "artwork_guard_height": "{{artwork_guard_height}}",
+      "artwork_guard_opacity": "{{artwork_guard_opacity}}",
+      "artwork_guard_radius": "{{artwork_guard_radius}}",
+      "artwork_guard_style": "{{artwork_guard_style}}",
+      "artwork_guard_width": "{{artwork_guard_width}}",
+      "artwork_guard_x": "{{artwork_guard_x}}",
+      "artwork_guard_y": "{{artwork_guard_y}}",
+      "body": "{{body_text}}",
+      "body_box_height": "{{body_box_height}}",
+      "body_box_background_color": "{{body_box_background_color}}",
+      "body_box_background_padding": "{{body_box_background_padding}}",
+      "body_box_background_radius": "{{body_box_background_radius}}",
+      "body_box_background_opacity": "{{body_box_background_opacity}}",
+      "body_box_background_style": "{{body_box_background_style}}",
+      "body_box_width": "{{body_box_width}}",
+      "body_box_x": "{{body_box_x}}",
+      "body_box_y": "{{body_box_y}}",
+      "body_fill_color": "{{body_fill_color}}",
+      "body_font": "{{body_font}}",
+      "body_font_size": "{{body_font_size}}",
+      "body_line_spacing": "{{body_line_spacing}}",
+      "body_stroke_color": "{{body_stroke_color}}",
+      "body_stroke_width": "{{body_stroke_width}}",
+      "body_vertical_alignment": "{{body_vertical_alignment}}",
+      "debug_boxes": "{{text_debug_boxes}}",
+      "headline": "{{headline_text}}",
+      "headline_box_height": "{{headline_box_height}}",
+      "headline_box_background_color": "{{headline_box_background_color}}",
+      "headline_box_background_padding": "{{headline_box_background_padding}}",
+      "headline_box_background_radius": "{{headline_box_background_radius}}",
+      "headline_box_background_opacity": "{{headline_box_background_opacity}}",
+      "headline_box_background_style": "{{headline_box_background_style}}",
+      "headline_box_width": "{{headline_box_width}}",
+      "headline_box_x": "{{headline_box_x}}",
+      "headline_box_y": "{{headline_box_y}}",
+      "headline_fill_color": "{{headline_fill_color}}",
+      "headline_font": "{{headline_font}}",
+      "headline_font_size": "{{headline_font_size}}",
+      "headline_line_spacing": "{{headline_line_spacing}}",
+      "headline_stroke_color": "{{headline_stroke_color}}",
+      "headline_stroke_width": "{{headline_stroke_width}}",
+      "headline_vertical_alignment": "{{headline_vertical_alignment}}",
+      "image": [
+        "12",
+        0
+      ],
+      "min_font_size": "{{min_font_size}}"
+    }
+  },
+  "14": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "customcard/{{workflow_id}}/{{panel_id}}",
+      "images": [
+        "13",
+        0
+      ]
+    }
+  }
+}

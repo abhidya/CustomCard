@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 import { buildCardCopyPrompt, requiredPanelIds } from "./ai-card-draft-policy.mjs";
 import { inspectLocalKoboldGpuResidency } from "./local-kobold-gpu-residency.mjs";
 import { productionTextRequestFixtures } from "./model-benchmark-loop.mjs";
-import { classifyProductionTextPlanner } from "./production-text-planner-policy.mjs";
+import { classifyProductionTextPlanner, productionTextPlannerPolicy } from "./production-text-planner-policy.mjs";
 import { getAiFlowDefinition } from "../src/aiFlowConfigData.mjs";
 
 const repoRoot = resolve(import.meta.dirname, "..");
@@ -36,7 +36,7 @@ export async function runProductionTextPlannerThroughputProbe(args = {}, options
   const apiKey = firstUsableValue(args["api-key"], process.env.CUSTOMCARD_LOCAL_LLM_API_KEY, process.env.LMSTUDIO_API_KEY, process.env.KOBOLDCPP_API_KEY);
   const requestTimeoutMs = boundedInteger(args["request-timeout-ms"], 10_000, 3_600_000, defaultRequestTimeoutMs);
   const reportedContextTokens = boundedInteger(args["reported-context-tokens"], 0, 1_000_000, 0);
-  const maxOutputTokens = boundedInteger(args["max-output-tokens"], 1, 64_000, 3200);
+  const maxOutputTokens = boundedInteger(args["max-output-tokens"], 1, 64_000, productionTextPlannerPolicy.recommendedOutputTokens);
   const fixtureId = String(args.fixture || args["fixture-id"] || "aquarium-lover-birthday");
   const fixture = productionTextRequestFixtures.find((item) => item.id === fixtureId) || productionTextRequestFixtures[0];
   const draftInput = {

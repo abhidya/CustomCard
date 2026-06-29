@@ -74,21 +74,21 @@ describe("admin runtime AI flow config data", () => {
     expect(payload.aiFlowDefaultsVersion).toBe(benchmarkBestAiWorkflow.id);
     expect(cardCopy).toMatchObject({
       primaryAdapterId: "cloudflare-workers-ai-chat",
-      maxTokens: 3200
+      maxTokens: 4096
     });
     expect(cardImage).toMatchObject({
       primaryAdapterId: "local-comfyui-api-image",
       fallbackAdapterId: "cloudflare-workers-ai-image",
-      model: "DreamShaper_8_pruned.safetensors",
+      model: "flux-2-klein-4b.safetensors",
       renderingMode: "final-text-composited",
-      workflowId: "customcard-production-text-overlay",
-      workflowPath: "comfyui-workflows/customcard-production-text-overlay.json"
+      workflowId: "customcard-flux2-klein-production-text-overlay",
+      workflowPath: "comfyui-workflows/customcard-flux2-klein-production-text-overlay.json"
     });
     expect(JSON.parse(cardImage?.workflowInputsJson ?? "{}")).toMatchObject({
       width: 960,
       height: 1344,
-      steps: 18,
-      cfg: 6.5,
+      steps: 4,
+      cfg: 1,
       poll_ms: 1500,
       timeout_ms: 900000
     });
@@ -105,18 +105,57 @@ describe("admin runtime AI flow config data", () => {
     expect(cardImage).toMatchObject({
       primaryAdapterId: "local-comfyui-api-image",
       fallbackAdapterId: "cloudflare-workers-ai-image",
-      model: "DreamShaper_8_pruned.safetensors",
+      model: "flux-2-klein-4b.safetensors",
       renderingMode: "final-text-composited",
-      workflowId: "customcard-production-text-overlay",
-      workflowPath: "comfyui-workflows/customcard-production-text-overlay.json"
+      workflowId: "customcard-flux2-klein-production-text-overlay",
+      workflowPath: "comfyui-workflows/customcard-flux2-klein-production-text-overlay.json"
     });
     expect(JSON.parse(cardImage?.workflowInputsJson ?? "{}")).toMatchObject({
       width: 960,
       height: 1344,
-      steps: 18,
-      cfg: 6.5,
+      steps: 4,
+      cfg: 1,
       poll_ms: 1500,
       timeout_ms: 900000
+    });
+  });
+
+  it("migrates the previous normal-size DreamShaper production-text default to Flux2 Klein", () => {
+    const previousNormalSizeDefaults = [
+      legacyRunComfyDefaults[0],
+      {
+        ...legacyLocalComfyDefaults[1],
+        model: "DreamShaper_8_pruned.safetensors",
+        workflowInputsJson: JSON.stringify({
+          width: 960,
+          height: 1344,
+          steps: 18,
+          cfg: 6.5,
+          sampler: "euler",
+          scheduler: "normal",
+          poll_ms: 1500,
+          timeout_ms: 900000,
+          client_id: "customcard-local-comfyui-provider"
+        })
+      }
+    ];
+
+    const payload = buildAdminAiFlowConfigPayload({
+      input: { configs: previousNormalSizeDefaults },
+      migrateLegacyDefaults: true
+    });
+    const cardImage = payload.configs.find((config) => config.flowId === "card-image");
+
+    expect(cardImage).toMatchObject({
+      model: "flux-2-klein-4b.safetensors",
+      workflowId: "customcard-flux2-klein-production-text-overlay",
+      workflowPath: "comfyui-workflows/customcard-flux2-klein-production-text-overlay.json"
+    });
+    expect(JSON.parse(cardImage?.workflowInputsJson ?? "{}")).toMatchObject({
+      width: 960,
+      height: 1344,
+      steps: 4,
+      cfg: 1
     });
   });
 

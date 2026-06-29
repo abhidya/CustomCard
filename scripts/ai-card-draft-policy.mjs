@@ -79,7 +79,7 @@ export const panelDefaults = {
     visual_cue: "One dominant front-cover symbol with a clean upper or lower text-safe area.",
     text_layout: panelTextLayoutDefaults.front,
     image_prompt:
-      "Full-bleed flat 2D artwork layer for a premium 5x7 vertical front print panel, one clear hero visual idea, disciplined negative space for app-added typography, restrained edge ornament, refined print stationery composition, no all-over wallpaper pattern, no words, no letters, no typography, no logos, no watermark.",
+      "Full-bleed flat 2D artwork layer for a premium 5x7 vertical front print panel, one clear hero visual idea, disciplined low-detail space for app-added typography, visible coordinated edge ornament, refined print stationery composition, not a blank template, no all-over wallpaper pattern, no words, no letters, no typography, no logos, no watermark.",
     image_negative_prompt:
       "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait"
   },
@@ -90,7 +90,7 @@ export const panelDefaults = {
     visual_cue: "Quiet left-interior opening panel with border detail and a calm center for the first note.",
     text_layout: panelTextLayoutDefaults["inside-left"],
     image_prompt:
-      "Full-bleed flat 2D artwork layer for a soft 5x7 vertical inside-left print panel, border-first stationery layout, thin refined frame, sparse corner or lower-edge motif, large quiet blank center for app-added typography, no all-over wallpaper pattern, no words, no letters, no typography, no logos, no watermark.",
+      "Full-bleed flat 2D artwork layer for a soft 5x7 vertical inside-left print panel, border-first stationery layout, thin refined frame, visible corner or lower-edge motif, subtle paper texture, large calm low-detail center for app-added typography, not a blank template, no all-over wallpaper pattern, no words, no letters, no typography, no logos, no watermark.",
     image_negative_prompt:
       "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait"
   },
@@ -101,7 +101,7 @@ export const panelDefaults = {
     visual_cue: "Quiet right-interior message panel with matching border detail and generous open space for the main note.",
     text_layout: panelTextLayoutDefaults["inside-right"],
     image_prompt:
-      "Full-bleed flat 2D artwork layer for a clean 5x7 vertical inside-right print panel, matching border-first stationery layout, thin refined frame, sparse corner or lower-edge motif, generous quiet text-safe center for app-added typography, no all-over wallpaper pattern, no words, no letters, no typography, no logos, no watermark.",
+      "Full-bleed flat 2D artwork layer for a clean 5x7 vertical inside-right print panel, matching border-first stationery layout, thin refined frame, visible corner or lower-edge motif, subtle paper texture, generous calm low-detail text-safe center for app-added typography, not a blank template, no all-over wallpaper pattern, no words, no letters, no typography, no logos, no watermark.",
     image_negative_prompt:
       "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait"
   },
@@ -112,7 +112,7 @@ export const panelDefaults = {
     visual_cue: "Minimal back-cover echo with one small coordinating mark and a clean lower text-safe area.",
     text_layout: panelTextLayoutDefaults.back,
     image_prompt:
-      "Full-bleed flat 2D artwork layer for a minimal 5x7 vertical back print panel, mostly negative space, one small coordinating lower mark or border echo, refined print stationery finish, no all-over wallpaper pattern, no words, no letters, no typography, no logos, no watermark.",
+      "Full-bleed flat 2D artwork layer for a finished 5x7 vertical back print panel, open breathing room, one visible coordinating lower mark plus faint border echo or edge texture, refined print stationery finish, not a plain blank field, no all-over wallpaper pattern, no words, no letters, no typography, no logos, no watermark.",
     image_negative_prompt:
       "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait"
   }
@@ -199,13 +199,13 @@ export function buildCardCopyPrompt(input) {
         "text_layout must use only these values: headline_zone top/upper/center/lower; body_zone upper/center/lower/bottom; alignment left/center/right; font_pairing serif-sans/bold-editorial/minimal-sans/soft-serif; color_mode dark-ink/light-ink/accent-ink/high-contrast; scale compact/standard/large.",
         "front and back should visually match each other; the front carries the strongest hero idea and the back repeats a small quiet echo.",
         "inside-left and inside-right should visually match each other and feel like the opened interior spread.",
-        "inside-left and inside-right must keep a calm blank/low-contrast center reserved for app-rendered text; use edge-led artwork, not a generic note-template.",
+        "inside-left and inside-right must keep a calm low-contrast center reserved for app-rendered text; use visible edge-led artwork, subtle paper texture, and coordinated ornament so the panel does not read as a generic blank note-template.",
         "Interior panels should usually be lighter, warmer, and more paper-like than the front/back covers; avoid using the same dark cover field on all four panels.",
         "Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.",
         "Artwork should read as flat editorial stationery: clean print surfaces, integrated negative space, and restrained edge/corner ornament rather than ornate central decoration.",
-        "Keep the text-safe field blank, simple, and integrated into the artwork; do not surround it with a central medallion, halo, ornate frame, or decorative ring.",
+        "Keep the text-safe field simple, low-detail, and integrated into the artwork; do not surround it with a central medallion, halo, ornate frame, or decorative ring.",
         "Never rely on a large opaque caption plaque, text box, label, banner, or card-within-card; text-safe space means natural negative space in the artwork.",
-        "Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, edge-led gallery illustration, lower-corner object cluster, or mostly blank back mark.",
+        "Prefer one of these composition archetypes per panel: cinematic single-object cover, expressive line-art cover, edge-led gallery illustration, lower-corner object cluster, or open back cover with a visible coordinated mark and border echo.",
         "Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.",
         "Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative."
       ],
@@ -219,11 +219,11 @@ export function buildCardCopyPrompt(input) {
         "Reserve clean text-safe space for the app overlay where the panel copy belongs.",
         "Do not describe the app overlay as a recipient name, headline, body, quote, blessing, verse, poem, short message, personal message, or scene-setting message; say only clean text-safe area.",
         "Text-safe areas must stay plain and low-detail: no central medallion, no halo, no ornate frame around copy, no rays behind copy, and no decorative ring under typography.",
-        "Do not create a caption plaque, inner card rectangle, blank label, sticky note, banner, or text box; text-safe must be integrated negative space, soft open field, or quiet blank center.",
+        "Do not create a caption plaque, inner card rectangle, blank label, sticky note, banner, or text box; text-safe must be integrated low-detail space, soft open field, or quiet center.",
         "image_prompt must stay visual: concrete motifs, palette, border/frame treatment, background texture, ornament density, composition archetype, and hierarchy only.",
-        "For the front, explicitly choose one dominant hero composition or sparse line-art composition with a clean lower or central text-safe area and edge/corner ornament only.",
-        "For inside-left and inside-right, explicitly include: quiet center, clean text-safe area, generous margins, light low-contrast interior, and sparse edge/corner or lower-edge artwork only.",
-        "For the back, explicitly include mostly negative space and one small coordinating lower mark or border echo.",
+        "For the front, explicitly choose one dominant hero composition or expressive line-art composition with a clean lower or central text-safe area and visible edge/corner ornament.",
+        "For inside-left and inside-right, explicitly include: quiet low-detail center, clean text-safe area, generous margins, light low-contrast interior, subtle paper texture, and visible edge/corner or lower-edge artwork.",
+        "For the back, explicitly include open breathing room plus one visible coordinating lower mark, faint border echo, or edge texture so it is not plain blank.",
         "Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.",
         "Coordinate palette, border style, motifs, and spacing across all four image_prompt values.",
         "For B2B CTA cards, reserve a clean app-overlay area for any QR code or account-manager CTA; do not ask the image model to draw QR codes, labels, or interface elements.",

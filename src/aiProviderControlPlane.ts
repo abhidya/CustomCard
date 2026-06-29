@@ -195,7 +195,7 @@ export const aiProviderModelCatalog: AiProviderCatalogEntry[] = [
     defaultPromptProfileId: "card-copy-json-v1",
     docsUrl: "https://huggingface.co/docs/inference-providers/index",
     sourceUrl: "docs/evidence/generated-card-comparisons/model-benchmark-20260613-210706-deepai-hf-text-live",
-    requestDefaults: { maxTokens: 3200, temperature: 0.62 },
+    requestDefaults: { maxTokens: 4096, temperature: 0.62 },
     cost: {
       pricingSourceUrl: "https://huggingface.co/docs/inference-providers/pricing",
       unitLabel: "tokens",
@@ -217,7 +217,7 @@ export const aiProviderModelCatalog: AiProviderCatalogEntry[] = [
     defaultPromptProfileId: "card-copy-json-v1",
     docsUrl: "https://developers.cloudflare.com/workers-ai/models/qwen3-30b-a3b-fp8/",
     sourceUrl: "https://developers.cloudflare.com/workers-ai/platform/pricing/",
-    requestDefaults: { maxTokens: 3200, temperature: 0.62 },
+    requestDefaults: { maxTokens: 4096, temperature: 0.62 },
     cost: {
       pricingSourceUrl: "https://developers.cloudflare.com/workers-ai/platform/pricing/",
       unitLabel: "input/output tokens",
@@ -241,7 +241,7 @@ export const aiProviderModelCatalog: AiProviderCatalogEntry[] = [
     defaultPromptProfileId: "card-copy-json-v1",
     docsUrl: "https://developers.cloudflare.com/workers-ai/models/",
     sourceUrl: "docs/evidence/generated-card-comparisons/model-benchmark-20260614-fixed-provider-requests",
-    requestDefaults: { maxTokens: 3200, temperature: 0.62 },
+    requestDefaults: { maxTokens: 4096, temperature: 0.62 },
     cost: {
       pricingSourceUrl: "https://developers.cloudflare.com/workers-ai/platform/pricing/",
       unitLabel: "input/output tokens",
@@ -408,7 +408,7 @@ export const aiPromptProfiles: AiPromptProfile[] = [
     promptPurpose: "Turn sanitized customer story inputs into a four-panel greeting-card plan.",
     systemPromptSummary:
       "Return strict JSON for front, inside-left, inside-right, and back panels; use only approved memories; reserve final typography for app overlays.",
-    requestDefaults: { maxTokens: 3200, temperature: 0.62 },
+    requestDefaults: { maxTokens: 4096, temperature: 0.62 },
     schemaContract: "four-panel-card-copy-json"
   },
   {

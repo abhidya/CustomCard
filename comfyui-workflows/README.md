@@ -4,10 +4,19 @@ These files are API-format ComfyUI prompt graphs for `local-comfyui-api-image`.
 Set `CUSTOMCARD_COMFYUI_WORKFLOW_PATH` to one of these JSON files before running
 the local worker or benchmark loop.
 
+## Production Text Default
+
+- `customcard-flux2-klein-production-text-overlay.json`
+  - Current admin/default production text workflow.
+  - Uses `flux-2-klein-4b.safetensors`, `qwen_3_4b.safetensors`, and `flux2-vae.safetensors`.
+  - Runs the Flux2 Klein artwork graph first, then sends the decoded image through `CustomCardTextComposer` before `SaveImage`.
+  - Recommended distilled-queue settings: `CUSTOMCARD_COMFYUI_STEPS=4`, `CUSTOMCARD_COMFYUI_CFG=1`, `CUSTOMCARD_COMFYUI_SAMPLER=euler`.
+  - Admin can switch the checkpoint to `flux-2-klein-base-4b.safetensors` for slower reviewed quality experiments without changing env vars.
+
 ## Local SDXL Candidates
 
 - `customcard-production-text-overlay.json`
-  - Production candidate for Comfy-side deterministic text compositing.
+  - Legacy SDXL production-text candidate for Comfy-side deterministic text compositing.
   - Requires the checked-in `CustomCardTextComposer` node from `comfyui-custom-nodes/CustomCardTextComposer`.
   - The diffusion model still generates artwork only; exact card copy, deterministic soft text-hug safe fields, and broader `panel` artwork guards are rendered before `SaveImage`.
   - Restart ComfyUI after updating or relinking the custom node; `/object_info` for `CustomCardTextComposer` should include `panel` in `artwork_guard_style`.
@@ -159,10 +168,13 @@ The production candidate keeps deterministic text inside Comfy instead of the
 benchmark preview compositor:
 
 ```powershell
-$env:CUSTOMCARD_COMFYUI_WORKFLOW_PATH = "comfyui-workflows/customcard-production-text-overlay.json"
-$env:CUSTOMCARD_COMFYUI_WORKFLOW_ID = "customcard-production-text-overlay"
+$env:CUSTOMCARD_COMFYUI_WORKFLOW_PATH = "comfyui-workflows/customcard-flux2-klein-production-text-overlay.json"
+$env:CUSTOMCARD_COMFYUI_WORKFLOW_ID = "customcard-flux2-klein-production-text-overlay"
 $env:CUSTOMCARD_COMFYUI_IMAGE_WIDTH = "960"
 $env:CUSTOMCARD_COMFYUI_IMAGE_HEIGHT = "1344"
+$env:CUSTOMCARD_COMFYUI_STEPS = "4"
+$env:CUSTOMCARD_COMFYUI_CFG = "1"
+$env:CUSTOMCARD_COMFYUI_SAMPLER = "euler"
 ```
 
 Prerequisites:
@@ -203,7 +215,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scr
 Readiness doctor before collecting promotion evidence:
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-readiness-doctor.mjs --advisory --local-llm-base-url http://127.0.0.1:5003/v1 --planner-context-tokens 8192 --planner-max-output-tokens 3200
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-readiness-doctor.mjs --advisory --local-llm-base-url http://127.0.0.1:5003/v1 --planner-context-tokens 8192 --planner-max-output-tokens 4096
 ```
 
 The doctor checks the production workflow, live Comfy node, latest aggregate,
@@ -214,7 +226,7 @@ a Qwen3-4B/8B smoke model or when the production budget is not reported.
 Planner runtime preflight:
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-preflight.mjs --base-url http://127.0.0.1:5003/v1 --model koboldcpp/gemma-4-31B-it-Q4_K_M --reported-context-tokens 8192 --max-output-tokens 3200
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/production-text-planner-preflight.mjs --base-url http://127.0.0.1:5003/v1 --model koboldcpp/gemma-4-31B-it-Q4_K_M --reported-context-tokens 8192 --max-output-tokens 4096
 ```
 
 This checks the planner model class, verifies `/v1/models` reports the requested
@@ -327,7 +339,7 @@ path.
 Checkpoint comparison example:
 
 ```powershell
-rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5003/v1 -LocalLlmModel koboldcpp/gemma-4-31B-it-Q4_K_M -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 3200 -PlannerContextSize 8192
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/run-production-text-benchmark.ps1 -LocalLlmBaseUrl http://127.0.0.1:5003/v1 -LocalLlmModel koboldcpp/gemma-4-31B-it-Q4_K_M -Checkpoint sd_xl_turbo_1.0_fp16.safetensors -Steps 2 -Cfg 1.5 -Sampler euler_ancestral -Scheduler sgm_uniform -PlannerMaxTokens 4096 -PlannerContextSize 8192
 ```
 
 This helper uses the benchmark `local-production-text` phase rather than
@@ -357,12 +369,12 @@ Latest live evidence:
 - Current readiness doctor:
   `docs/evidence/generated-card-comparisons/production-text-readiness-20260627-production-planner`
   - Live Comfy and Gemma 31B planner probes are reachable with the production
-    8192 context / 3200 output budget.
+    8192 context / 4096 output budget.
   - Readiness now blocks only on the stale failed Qwen3-4B LLM-planned
     aggregate; the runtime setup blockers are cleared.
 - Current planner preflight:
   `docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-production-planner`
-  - Promotion-ready: `/v1/models` reports Gemma 31B with 8192 context and 3200
+  - Promotion-ready: `/v1/models` reports Gemma 31B with 8192 context and 4096
     max output as the active production-suitable planner.
 - Current local model coverage:
   `docs/evidence/generated-card-comparisons/local-model-coverage-20260627-current`

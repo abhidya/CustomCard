@@ -40,7 +40,7 @@ describe("local Comfy production text contract", () => {
     expect(variables.headlineFont).toBe("arialbd.ttf");
     expect(variables.bodyFont).toBe("arial.ttf");
     expect(variables.artworkGuardStyle).toBe("panel");
-    expect(variables.artworkGuardOpacity).toBe(0.74);
+    expect(variables.artworkGuardOpacity).toBe(0.28);
     expect(variables.artworkGuardX).toBeGreaterThan(0);
     expect(variables.artworkGuardY).toBeGreaterThan(0);
     expect(variables.artworkGuardWidth).toBeLessThan(960);
@@ -83,7 +83,7 @@ describe("local Comfy production text contract", () => {
 
     expect(summary.workflow_id).toBe("customcard-production-text-overlay");
     expect(summary.artwork_guard_style).toBe("panel");
-    expect(summary.artwork_guard_opacity).toBe(0.74);
+    expect(summary.artwork_guard_opacity).toBe(0.28);
     expect(summary.headline_box_background_style).toBe("text-hug");
     expect(merged.panel_id).toBe("inside-right");
     expect(merged.width).toBe(960);
@@ -125,9 +125,9 @@ describe("local Comfy production text contract", () => {
       staleVariables
     );
 
-    expect(safeGuard).toMatchObject({ x: 77, width: 806, opacity: 0.74 });
+    expect(safeGuard).toMatchObject({ x: 77, width: 806, opacity: 0.28 });
     expect(safeGuard.height).toBeLessThan(1344);
-    expect(rendered).toMatchObject({ x: 77, width: 806, opacity: 0.74 });
+    expect(rendered).toMatchObject({ x: 77, width: 806, opacity: 0.28 });
   });
 
   it("interpolates nested workflow templates while preserving exact placeholder types", () => {

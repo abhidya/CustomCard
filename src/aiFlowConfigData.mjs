@@ -37,14 +37,17 @@ const imageProviderAdapterIds = [
   "runcomfy-model-api-image"
 ];
 
+export const benchmarkLocalComfyModel = "flux-2-klein-4b.safetensors";
+export const benchmarkLocalComfyWorkflowId = "customcard-flux2-klein-production-text-overlay";
+export const benchmarkLocalComfyWorkflowPath = "comfyui-workflows/customcard-flux2-klein-production-text-overlay.json";
+
 export const benchmarkLocalComfyWorkflowInputsJson = JSON.stringify(
   {
     width: 960,
     height: 1344,
-    steps: 18,
-    cfg: 6.5,
+    steps: 4,
+    cfg: 1,
     sampler: "euler",
-    scheduler: "normal",
     poll_ms: 1500,
     timeout_ms: 900000,
     client_id: "customcard-local-comfyui-provider"
@@ -54,19 +57,19 @@ export const benchmarkLocalComfyWorkflowInputsJson = JSON.stringify(
 );
 
 export const benchmarkBestAiWorkflow = {
-  id: "cloudflare-qwen3-30b-local-comfy-production-text-normal-size-20260629",
-  label: "Cloudflare Qwen3 30B + Comfy production text composer",
-  status: "structural-pass-needs-manual-visual-gate",
+  id: "cloudflare-qwen3-30b-flux2-klein-production-text-normal-size-20260629",
+  label: "Cloudflare Qwen3 30B + Flux2 Klein production text composer",
+  status: "configured-needs-live-benchmark-and-manual-visual-gate",
   evidencePath:
-    "docs/evidence/generated-card-comparisons/production-text-workflow-20260629-cloudflare-guard-fix-normal-size/production-text-workflow-summary.json",
+    "docs/evidence/generated-card-comparisons/production-text-workflow-20260629-flux2-klein-prod-normal-size/production-text-workflow-summary.json",
   summaryPath:
-    "docs/evidence/generated-card-comparisons/benchmark-aggregate-20260629-cloudflare-guard-fix-normal-size/aggregate-summary.json",
+    "docs/evidence/generated-card-comparisons/benchmark-aggregate-20260629-flux2-klein-prod-normal-size/aggregate-summary.json",
   rationale:
-    "The 2026-06-29 normal-size proof completed all three local-production-text fixtures at 960x1344 with Cloudflare Qwen3 30B card copy, local ComfyUI image generation, and CustomCardTextComposer final text composition. Manual visual QA still gates customer promotion.",
+    "The production lane uses Cloudflare Qwen3 30B card copy, local Flux2 Klein 4B image generation, and CustomCardTextComposer final text composition at 960x1344. Manual visual QA still gates customer promotion.",
   blockers: [
     "Manual visual QA and aggregate promotion gates still decide customer promotion.",
     "The selected Comfy runtime must expose CustomCardTextComposer before live image work.",
-    "Current local Comfy checkpoint can still introduce unwanted figures or objects; production approval must grade visual quality separately from blank-panel prevention."
+    "The selected Comfy runtime must have flux-2-klein-4b.safetensors, qwen_3_4b.safetensors, flux2-vae.safetensors, and Flux2 nodes installed."
   ],
   flowExpectations: [
     {
@@ -74,7 +77,7 @@ export const benchmarkBestAiWorkflow = {
       primaryAdapterId: "cloudflare-workers-ai-chat",
       model: productionCardCopyModel,
       contextWindowTokens: 8192,
-      maxTokens: 3200,
+      maxTokens: 4096,
       temperature: 0.62,
       evidenceLabel: "Full card-copy JSON contract"
     },
@@ -82,12 +85,12 @@ export const benchmarkBestAiWorkflow = {
       flowId: "card-image",
       primaryAdapterId: "local-comfyui-api-image",
       fallbackAdapterId: "cloudflare-workers-ai-image",
-      model: "DreamShaper_8_pruned.safetensors",
+      model: benchmarkLocalComfyModel,
       renderingMode: "final-text-composited",
-      workflowId: "customcard-production-text-overlay",
-      workflowPath: "comfyui-workflows/customcard-production-text-overlay.json",
+      workflowId: benchmarkLocalComfyWorkflowId,
+      workflowPath: benchmarkLocalComfyWorkflowPath,
       workflowInputsJson: benchmarkLocalComfyWorkflowInputsJson,
-      evidenceLabel: "CustomCardTextComposer final images"
+      evidenceLabel: "Flux2 Klein + CustomCardTextComposer final images"
     }
   ]
 };
@@ -128,10 +131,10 @@ export const aiFlowDefinitions = [
     perRequestBudgetCents: 5,
     maxRetries: 1,
     contextWindowTokens: 8192,
-    maxTokens: 3200,
+    maxTokens: 4096,
     temperature: 0.62,
     promptInstructions:
-      "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan, panel-specific visual cues, and safe text-layout plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, visual_cue composition notes, text_layout enum choices, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+      "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan, panel-specific visual cues, and safe text-layout plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, visual_cue composition notes, text_layout enum choices, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve clean low-detail text-safe space instead of asking the image model to render final words. Do not make blank template cards: every panel, including the back, needs visible coordinated non-text artwork outside the text-safe field."
   },
   {
     flowId: "card-image",
@@ -151,11 +154,11 @@ export const aiFlowDefinitions = [
     maxTokens: 0,
     temperature: 0,
     renderingMode: "final-text-composited",
-    workflowId: "customcard-production-text-overlay",
-    workflowPath: "comfyui-workflows/customcard-production-text-overlay.json",
+    workflowId: benchmarkLocalComfyWorkflowId,
+    workflowPath: benchmarkLocalComfyWorkflowPath,
     workflowInputsJson: benchmarkLocalComfyWorkflowInputsJson,
     promptInstructions:
-      "Create one portrait 5x7 print panel at a time from the card-copy flow's literal image_prompt. Do not use internal form labels as art direction, do not make a collage or folded mockup, and reserve exact typography for the CustomCardTextComposer final text workflow."
+      "Create one portrait 5x7 print panel at a time from the card-copy flow's literal image_prompt. Do not use internal form labels as art direction, do not make a collage or folded mockup, and reserve exact typography for the CustomCardTextComposer final text workflow. Favor finished editorial stationery with visible motif, border, texture, or object-system artwork outside the protected copy area; avoid plain blank card-template panels."
   }
 ];
 
@@ -231,7 +234,7 @@ const defaultModelsByAdapter = {
   "xai-chat": "grok-3-mini",
   "self-hosted-openai-compatible-chat": "local-default",
   "local-openai-compatible-chat": "local-default",
-  "local-comfyui-api-image": "DreamShaper_8_pruned.safetensors",
+  "local-comfyui-api-image": benchmarkLocalComfyModel,
   "stability-stable-image": "stable-image-core",
   "replicate-image": "black-forest-labs/flux-schnell",
   "fal-image": "fal-ai/flux/schnell",
@@ -246,6 +249,16 @@ export const aiProviderModelPresets = {
     { id: "qwen3-8b-instruct-q4", label: "Qwen3 8B Instruct Q4 local" }
   ],
   "local-comfyui-api-image": [
+    {
+      id: benchmarkLocalComfyModel,
+      label: "Flux2 Klein 4B production text composer",
+      detail: "Default distilled queue lane; requires Flux2 Klein UNET, Qwen CLIP, Flux2 VAE, and CustomCardTextComposer."
+    },
+    {
+      id: "flux-2-klein-base-4b.safetensors",
+      label: "Flux2 Klein Base 4B quality composer",
+      detail: "Admin-selectable higher-quality Flux2 Klein base UNET for slower reviewed batches; use with the same text-composer workflow after visual benchmarking."
+    },
     { id: "DreamShaper_8_pruned.safetensors", label: "Local ComfyUI DreamShaper 8" },
     {
       id: "sd_xl_turbo_1.0_fp16.safetensors",
@@ -507,7 +520,7 @@ function normalizeAiFlowOverride(input, definition, env) {
     liveProviderCallsEnabled: normalizeBoolean(input.liveProviderCallsEnabled, fallback.liveProviderCallsEnabled),
     maxRetries: normalizeNumber(input.maxRetries, fallback.maxRetries, 0, 3),
     contextWindowTokens: normalizeNumber(input.contextWindowTokens, fallback.contextWindowTokens, 0, 1_000_000),
-    maxTokens: normalizeNumber(input.maxTokens, fallback.maxTokens, 0, 4000),
+    maxTokens: normalizeNumber(input.maxTokens, fallback.maxTokens, 0, 8192),
     temperature: normalizeNumber(input.temperature, fallback.temperature, 0, 2),
     renderingMode,
     workflowId: supportsLocalWorkflow ? normalizeOptionalString(input.workflowId, fallback.workflowId, 160) : "",

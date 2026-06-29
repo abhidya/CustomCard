@@ -31,7 +31,7 @@ describe("production text planner preflight", () => {
       {
         "base-url": "http://127.0.0.1:5001/v1",
         "reported-context-tokens": "4096",
-        "max-output-tokens": "3200",
+        "max-output-tokens": "4096",
         "output-dir": root
       },
       { fetchImpl, gpuResidencyProbe }
@@ -74,7 +74,7 @@ describe("production text planner preflight", () => {
       {
         "base-url": "http://127.0.0.1:5002/v1",
         "reported-context-tokens": "8192",
-        "max-output-tokens": "3200",
+        "max-output-tokens": "4096",
         "output-dir": root
       },
       { fetchImpl, gpuResidencyProbe }
@@ -95,7 +95,7 @@ describe("production text planner preflight", () => {
         "base-url": "http://127.0.0.1:5003/v1",
         model: "koboldcpp/gemma-4-31B-it-Q4_K_M",
         "reported-context-tokens": "8192",
-        "max-output-tokens": "3200",
+        "max-output-tokens": "4096",
         "output-dir": root
       },
       { fetchImpl, gpuResidencyProbe }
@@ -116,7 +116,7 @@ describe("production text planner preflight", () => {
       {
         "base-url": "http://127.0.0.1:5003/v1",
         "reported-context-tokens": "8192",
-        "max-output-tokens": "3200",
+        "max-output-tokens": "4096",
         "output-dir": root
       },
       { fetchImpl, gpuResidencyProbe }
@@ -131,7 +131,7 @@ describe("production text planner preflight", () => {
     });
     expect(report.classification.classification).toBe("production-suitable");
     expect(report.classification.minimumOpenWeightPlannerClass).toContain("14B+");
-    expect(report.classification.minOutputTokens).toBe(3200);
+    expect(report.classification.minOutputTokens).toBe(4096);
     expect(report.blockers).toEqual([]);
   });
 
@@ -142,7 +142,7 @@ describe("production text planner preflight", () => {
     const report = await runProductionTextPlannerPreflight(
       {
         "base-url": "http://127.0.0.1:5003/v1",
-        "max-output-tokens": "3200",
+        "max-output-tokens": "4096",
         "output-dir": root
       },
       { fetchImpl, gpuResidencyProbe }
@@ -164,7 +164,7 @@ describe("production text planner preflight", () => {
 
     expect(result.productionSuitable).toBe(false);
     expect(result.blockers.join("\n")).toContain("PlannerMaxTokens 2200");
-    expect(result.blockers.join("\n")).toContain("production minimum 3200");
+    expect(result.blockers.join("\n")).toContain("production minimum 4096");
   });
 
   it("blocks a local production planner when GPU residency is not proven", async () => {
@@ -175,7 +175,7 @@ describe("production text planner preflight", () => {
       {
         "base-url": "http://127.0.0.1:5003/v1",
         "reported-context-tokens": "8192",
-        "max-output-tokens": "3200",
+        "max-output-tokens": "4096",
         "output-dir": root
       },
       {

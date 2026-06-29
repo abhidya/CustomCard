@@ -2,8 +2,10 @@ import { basename, resolve } from "node:path";
 
 const repoRoot = resolve(import.meta.dirname, "..");
 
-export const productionTextWorkflowId = "customcard-production-text-overlay";
-export const productionTextWorkflowRelativePath = "comfyui-workflows/customcard-production-text-overlay.json";
+export const productionTextWorkflowId = "customcard-flux2-klein-production-text-overlay";
+export const productionTextWorkflowRelativePath = "comfyui-workflows/customcard-flux2-klein-production-text-overlay.json";
+export const legacyProductionTextWorkflowIds = ["customcard-production-text-overlay"];
+export const legacyProductionTextWorkflowRelativePaths = ["comfyui-workflows/customcard-production-text-overlay.json"];
 export const productionTextNodeSourceRelativePath = "comfyui-custom-nodes/CustomCardTextComposer";
 export const productionTextRequiredNodeClass = "CustomCardTextComposer";
 export const productionTextRequiredCompositorInputs = [
@@ -92,9 +94,12 @@ export function isProductionTextWorkflowConfigured({
 } = {}) {
   const normalizedId = String(workflowId || "").trim().toLowerCase();
   if (normalizedId === productionTextWorkflowId) return true;
+  if (legacyProductionTextWorkflowIds.includes(normalizedId)) return true;
   const normalizedPath = String(workflowPath || "").trim();
   if (!normalizedPath) return false;
-  return resolve(normalizedPath) === defaultProductionTextWorkflowPath(root);
+  const resolvedPath = resolve(normalizedPath);
+  return resolvedPath === defaultProductionTextWorkflowPath(root) ||
+    legacyProductionTextWorkflowRelativePaths.some((relativeWorkflowPath) => resolvedPath === resolve(root, relativeWorkflowPath));
 }
 
 export function relativePath(filePath, root = repoRoot) {

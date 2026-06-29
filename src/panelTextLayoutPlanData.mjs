@@ -580,7 +580,7 @@ function localComfyArtworkGuard({ panelId, lightInk, width, height, headlineBox,
     width: Math.max(1, right - x),
     height: Math.max(1, bottomWithPadding - y),
     color: lightInk ? "#111715" : "#fff6df",
-    opacity: 0.74,
+    opacity: 0.28,
     radius: Math.max(20, Math.round(imageWidth * 0.035)),
     style: panelId === "back" ? "box" : "panel"
   };

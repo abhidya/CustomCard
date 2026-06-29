@@ -126,7 +126,7 @@ rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/install-comf
 
 Restart ComfyUI after linking and confirm `/object_info` contains
 `CustomCardTextComposer` before using
-`comfyui-workflows/customcard-production-text-overlay.json`.
+`comfyui-workflows/customcard-flux2-klein-production-text-overlay.json`.
 
 Preflight the production text workflow with:
 

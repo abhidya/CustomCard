@@ -45,8 +45,8 @@ describe("production text evidence index", () => {
         productionSuitable: false,
         minContextTokens: 8192,
         reportedContextTokens: 4096,
-        minOutputTokens: 3200,
-        maxOutputTokens: 3200
+        minOutputTokens: 4096,
+        maxOutputTokens: 4096
       },
       blockers: ["Planner model is smoke-only.", "Planner context 4096 is below the production minimum 8192."]
     });
@@ -59,7 +59,7 @@ describe("production text evidence index", () => {
       fixtureId: "aquarium-lover-birthday",
       requestTimeoutMs: 300000,
       reportedContextTokens: 4096,
-      maxOutputTokens: 3200,
+      maxOutputTokens: 4096,
       durationMs: 300000,
       finishReason: "length",
       jsonParseOk: false,
@@ -175,7 +175,7 @@ describe("production text evidence index", () => {
       productionTextPlannerRuntime: {
         model: "koboldcpp/gemma-4-31B-it-Q4_K_M",
         contextTokens: 8192,
-        maxOutputTokens: 3200,
+        maxOutputTokens: 4096,
         requestTimeoutMs: 1200000,
         classification: "production-suitable",
         productionSuitable: true,
@@ -376,7 +376,7 @@ describe("production text evidence index", () => {
       plannerModel: "koboldcpp/gemma-4-31B-it-Q4_K_M",
       plannerClassification: "production-suitable",
       contextTokens: 8192,
-      maxOutputTokens: 3200,
+      maxOutputTokens: 4096,
       requestTimeoutMs: 1200000,
       creativeContract: "full-production-card-copy-json",
       storyIds: ["aquarium-lover-birthday", "koi-fish-lover-encouragement", "dog-lover-thank-you"]

@@ -419,7 +419,7 @@ describe("AI card generator service", () => {
         timeoutLabel: "Local LLM chat completion request",
         timeoutMs: 1200000
       });
-      expect(body.max_tokens).toBe(3200);
+      expect(body.max_tokens).toBe(4096);
       expect(body.response_format).toBeUndefined();
       expect(userPrompt.task).toContain("The LLM owns the creative concept");
       return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
@@ -447,7 +447,7 @@ describe("AI card generator service", () => {
             fallbackAdapterId: "",
             model: "koboldcpp/gemma-4-31B-it-Q4_K_M",
             liveProviderCallsEnabled: true,
-            maxTokens: 3200
+            maxTokens: 4096
           };
         }
         if (config.flowId === "card-image") return { ...config, liveProviderCallsEnabled: false };
@@ -457,7 +457,7 @@ describe("AI card generator service", () => {
 
     const result = await service.generateCard(cardRequest, { rateKey: "test-local-planner-timeout" });
 
-    expect(result.statusCode).toBe(200);
+    expect(result.statusCode, JSON.stringify(result.payload)).toBe(200);
     expect(localProviderFetch).toHaveBeenCalledTimes(1);
     expect(fetchImpl).not.toHaveBeenCalled();
     expect(JSON.stringify(result.payload)).toContain("Happy Birthday Sara");
@@ -507,7 +507,7 @@ describe("AI card generator service", () => {
 
     const result = await service.generateCard(cardRequest, { rateKey: "test-local-planner-env-flags" });
 
-    expect(result.statusCode).toBe(200);
+    expect(result.statusCode, JSON.stringify(result.payload)).toBe(200);
     expect(localProviderFetch).toHaveBeenCalledTimes(1);
     expect(fetchImpl).not.toHaveBeenCalled();
     expect(JSON.stringify(result.payload)).toContain("Happy Birthday Sara");
@@ -525,7 +525,7 @@ describe("AI card generator service", () => {
       fetchImpl,
       aiFlowAdminConfig: localAiFlowConfig().map((config) => {
         if (config.flowId === "card-copy") {
-          return { ...config, contextWindowTokens: 8192, maxTokens: 3200 };
+          return { ...config, contextWindowTokens: 8192, maxTokens: 4096 };
         }
         if (config.flowId === "card-image") {
           return {
@@ -662,7 +662,7 @@ describe("AI card generator service", () => {
               ...config,
               model: "koboldcpp/gemma-4-31B-it-Q4_K_M",
               contextWindowTokens: 8192,
-              maxTokens: 3200
+              maxTokens: 4096
             };
           }
           if (config.flowId === "card-image") {
@@ -776,7 +776,7 @@ describe("AI card generator service", () => {
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(String(firstCall[0])).toContain("/ai/v1/chat/completions");
     expect(requestBody.model).toBe(cloudflareTextModel);
-    expect(requestBody.max_tokens).toBe(3200);
+    expect(requestBody.max_tokens).toBe(4096);
     expect(requestBody.messages[0].content).toContain("theme, layout, and copy plan");
     expect(userPrompt.task).toContain("The LLM owns the creative concept");
     expect(userPrompt.section_order).toEqual(
@@ -810,10 +810,10 @@ describe("AI card generator service", () => {
     );
     expect(userPrompt.layout_requirements).toEqual(
       expect.arrayContaining([
-        "Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, edge-led gallery illustration, lower-corner object cluster, or mostly blank back mark.",
+        "Prefer one of these composition archetypes per panel: cinematic single-object cover, expressive line-art cover, edge-led gallery illustration, lower-corner object cluster, or open back cover with a visible coordinated mark and border echo.",
         "Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.",
         "Artwork should read as flat editorial stationery: clean print surfaces, integrated negative space, and restrained edge/corner ornament rather than ornate central decoration.",
-        "Keep the text-safe field blank, simple, and integrated into the artwork; do not surround it with a central medallion, halo, ornate frame, or decorative ring.",
+        "Keep the text-safe field simple, low-detail, and integrated into the artwork; do not surround it with a central medallion, halo, ornate frame, or decorative ring.",
         "visual_cue is binding for the image prompt: make front, inside-left, inside-right, and back visually distinct while still coordinated.",
         "text_layout controls app-rendered typography only. Choose zones that match the clean text-safe area in visual_cue; never ask the image model to draw the text."
       ])
@@ -1823,7 +1823,7 @@ describe("AI card generator service", () => {
       card_copy: { panels: Array<{ id: string; headline: string; body: string }> };
     };
 
-    expect(result.statusCode).toBe(200);
+    expect(result.statusCode, JSON.stringify(result.payload)).toBe(200);
     expect(payload.card_copy.panels[0].headline).toMatch(/^Happy Birthday,? Papa$/);
     expect(payload.card_copy.panels[1].headline).toBe("A Little Sunshine");
     expect(payload.card_copy.panels[2].body).toContain("Wishing you a year");

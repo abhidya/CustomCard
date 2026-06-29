@@ -16,8 +16,9 @@ repeatable print output.
 - `customcard-hybrid-reserved-layout.json` is a benchmark workflow. It renders
   text-safe artwork in Comfy, then the benchmark script flattens text with
   Sharp/SVG outside Comfy.
-- `customcard-production-text-overlay.json` is the production candidate. It adds
-  the repo-owned `CustomCardTextComposer` node after `VAEDecode` and before
+- `customcard-flux2-klein-production-text-overlay.json` is the current
+  production candidate. It runs the Flux2 Klein artwork graph, then adds the
+  repo-owned `CustomCardTextComposer` node after `VAEDecode` and before
   `SaveImage`.
 - `scripts/comfy-production-text-setup.mjs` is the shared setup facts module
   for this workflow. Keep the workflow path, `CustomCardTextComposer` node
@@ -139,7 +140,7 @@ The production path is now a checked-in custom node:
 
 - `comfyui-custom-nodes/CustomCardTextComposer`
 - class type: `CustomCardTextComposer`
-- workflow: `comfyui-workflows/customcard-production-text-overlay.json`
+- workflow: `comfyui-workflows/customcard-flux2-klein-production-text-overlay.json`
 
 The node draws exact headline and body copy into explicit pixel safe boxes. It
 can draw deterministic safe-field backgrounds behind text, including rounded
@@ -202,10 +203,12 @@ https://docs.comfy.org/development/core-concepts/custom-nodes
 
 Production implication:
 
-- `customcard-production-text-overlay.json` is the admin default because it is
+- `customcard-flux2-klein-production-text-overlay.json` is the admin default because it is
   the best structural benchmark lane, but live image work must stay blocked
   until the target Comfy runtime includes `CustomCardTextComposer` and the
-  pinned fonts.
+  pinned fonts and Flux2 Klein model files.
+- Admin workflow inputs should use the distilled Flux2 Klein queue preset:
+  `width=960`, `height=1344`, `steps=4`, `cfg=1`, and `sampler=euler`.
 - Use `tools/install-comfy-customcard-text-node.ps1` to link the checked-in node
   into the target ComfyUI `custom_nodes` directory.
 - The worker should fail fast when `CustomCardTextComposer` is missing instead
@@ -286,9 +289,10 @@ Comfy template variables exposed by the local adapter include:
   - Benchmark fallback.
   - Comfy creates artwork only.
   - Benchmark compositor creates final previews outside Comfy.
-- `comfyui-workflows/customcard-production-text-overlay.json`
-  - Production candidate.
+- `comfyui-workflows/customcard-flux2-klein-production-text-overlay.json`
+  - Current production candidate.
   - Requires checked-in `CustomCardTextComposer`.
+  - Requires `flux-2-klein-4b.safetensors`, `qwen_3_4b.safetensors`, and `flux2-vae.safetensors`.
   - Comfy returns the final panel image with exact copy rendered.
 - `scripts/comfyui-production-text-preflight.mjs`
   - Offline/live preflight.
@@ -296,7 +300,7 @@ Comfy template variables exposed by the local adapter include:
     `/object_info` when requested.
 - `scripts/comfy-production-text-setup.mjs`
   - Shared setup facts for the production-text workflow.
-  - Pins `comfyui-workflows/customcard-production-text-overlay.json`,
+  - Pins `comfyui-workflows/customcard-flux2-klein-production-text-overlay.json`,
     `comfyui-custom-nodes/CustomCardTextComposer`, required class
     `CustomCardTextComposer`, default Comfy URL, and operator setup steps.
 - `scripts/production-text-readiness-doctor.mjs`
@@ -454,17 +458,17 @@ customer-theme quality.
    and confirm the selected GGUF fully fits the assigned GPU. Skip this only
    for a hosted/self-hosted production endpoint where local GPU feasibility is
    not applicable.
-5. Run `npm run comfy:production-text:planner -- --base-url ... --model ... --reported-context-tokens 8192 --max-output-tokens 3200`
+5. Run `npm run comfy:production-text:planner -- --base-url ... --model ... --reported-context-tokens 8192 --max-output-tokens 4096`
    and confirm the active planner is production-suitable. Qwen3-4B/8B and
    4096-context planners should be run only with `--allow-small` for failure
    evidence.
-6. Run `npm run comfy:production-text:doctor -- --advisory --local-llm-base-url ... --planner-context-tokens 8192 --planner-max-output-tokens 3200`
+6. Run `npm run comfy:production-text:doctor -- --advisory --local-llm-base-url ... --planner-context-tokens 8192 --planner-max-output-tokens 4096`
    and confirm the configured planner endpoint is reachable and
    production-suitable with the declared runtime budget. The doctor should not
    be satisfied by Qwen3-4B/8B smoke planners or by a model name without
    context/output proof. For protected hosted endpoints, set
    `CUSTOMCARD_LOCAL_LLM_API_KEY` or pass `--local-llm-api-key`.
-7. Run `npm run comfy:production-text:planner-throughput -- --base-url ... --model ... --reported-context-tokens 8192 --max-output-tokens 3200 --request-timeout-ms 1200000`
+7. Run `npm run comfy:production-text:planner-throughput -- --base-url ... --model ... --reported-context-tokens 8192 --max-output-tokens 4096 --request-timeout-ms 1200000`
    and confirm the planner can finish the full card-copy JSON contract before
    spending Comfy image work.
 8. Run `npm run comfy:production-text:rerun-plan -- --output-dir docs/evidence/generated-card-comparisons/production-text-rerun-plan-YYYYMMDD-current`
@@ -496,7 +500,7 @@ Current status: the 2026-06-27 GPU-backed evidence proves the correct runtime
 path but still blocks promotion on planner GPU-only fit and throughput. The current planner
 preflight is
 `docs/evidence/generated-card-comparisons/production-text-planner-preflight-20260627-gpu-proof-magistral-5013`:
-Magistral Small is promotion-ready with 8192 context, 3200 output tokens, and
+Magistral Small is promotion-ready with 8192 context, 4096 output tokens, and
 local GPU residency proven for the KoboldCPP PID on GPU 1. The matching
 readiness report is
 `docs/evidence/generated-card-comparisons/production-text-readiness-20260627-gpu-proof-magistral-5013`:
@@ -518,7 +522,7 @@ The full GPU-backed matrix attempt is
 `docs/evidence/generated-card-comparisons/production-text-workflow-20260627-gpu-proof-magistral-5013-rerun`.
 It ran aquarium, koi, and dog customer requests against
 `http://127.0.0.1:5013/v1` with `koboldcpp/Magistral-Small-2509-Q4_K_M`, the
-full production card-copy JSON contract, 8192 context, 3200 output tokens, and
+full production card-copy JSON contract, 8192 context, 4096 output tokens, and
 a 1200000ms request timeout. All three runs failed before image generation
 because the local LLM chat completion timed out after 1200000ms. This is not a
 CPU fallback, not a small-model benchmark, and not a reduced-prompt run. It is

@@ -372,7 +372,7 @@ function productionTextPlannerRuntimeForService(flow, { requireRuntimeBudget = f
   const allowUnknownProductionModel = false;
   const model = productionTextPlannerModelForService(flow);
   const contextTokens = boundedIntegerEnv(flow.contextWindowTokens, 0, 1_000_000, 0);
-  const maxOutputTokens = boundedIntegerEnv(flow.maxTokens, 0, 4000, 0);
+  const maxOutputTokens = boundedIntegerEnv(flow.maxTokens, 0, 8192, 0);
   const classification = classifyProductionTextPlanner(model, {
     allowSmall: allowSmallPlanner,
     allowUnknownProductionModel,
@@ -1128,7 +1128,7 @@ async function executeLocalComfyUiImage({ flow, env, fetchImpl, panelId, prompt,
   const seed = configuredInteger(runtimeInputs, ["seed"], 0, 2 ** 32 - 1, deterministicSeed);
   const variables = {
     cfg,
-    checkpoint: flow.model || "DreamShaper_8_pruned.safetensors",
+    checkpoint: flow.model || "flux-2-klein-4b.safetensors",
     clientId,
     height,
     negativePrompt,
@@ -2078,13 +2078,13 @@ function buildPanelImagePrompt(input, panelId, panel) {
       }
     : {
         front:
-          "Full-bleed flat 2D artwork layer with editorial stationery restraint for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, use edge/corner ornament only, no central medallion, no ornate frame around copy, no caption plaque, and avoid all-over motif wallpaper.",
+          "Full-bleed flat 2D artwork layer with editorial stationery restraint for the front of a premium vertical 5x7 print panel; choose one dominant hero visual with visible coordinated edge/corner artwork, keep an integrated clean lower or central text-safe area as a soft low-detail field rather than a blank rectangle, no central medallion, no ornate frame around copy, no caption plaque, and avoid all-over motif wallpaper.",
         "inside-left":
-          "Full-bleed flat 2D artwork layer with editorial stationery restraint for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast unmarked paper field, edge-led stationery layout, thin perimeter rule, sparse edge/corner or lower-edge motifs only, quiet blank center, clean text-safe area, generous safe margins, no central medallion, no ornate frame around copy, no inner text box.",
+          "Full-bleed flat 2D artwork layer with editorial stationery restraint for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast paper field with subtle texture, edge-led stationery layout, thin perimeter rule, visible coordinated corner or lower-edge motifs, calm low-detail center for app-rendered text, generous safe margins, no central medallion, no ornate frame around copy, no inner text box.",
         "inside-right":
-          "Full-bleed flat 2D artwork layer with editorial stationery restraint for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast unmarked paper field, edge-led stationery layout, thin perimeter rule, sparse edge/corner or lower-edge motifs only, quiet blank center, clean text-safe area, generous safe margins, no central medallion, no ornate frame around copy, no inner text box.",
+          "Full-bleed flat 2D artwork layer with editorial stationery restraint for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast paper field with subtle texture, edge-led stationery layout, thin perimeter rule, visible coordinated corner or lower-edge motifs, calm low-detail center for app-rendered text, generous safe margins, no central medallion, no ornate frame around copy, no inner text box.",
         back:
-          "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque."
+          "Full-bleed flat 2D artwork layer for a finished vertical 5x7 back print panel; use open breathing room with a visible coordinating lower mark, border echo, or subtle edge texture tied to the front cover, not a plain blank field, no caption plaque."
       })[panelId];
   const visualBrief = buildVisualBrief(input, panel);
   const visualCue = normalizeVisualCue(panel.visual_cue || panel.visualCue, panelId, input);
@@ -2149,7 +2149,7 @@ function normalizeImagePrompt(prompt, panelId, input, panel) {
   if (!/\bno logos?\b/i.test(base)) guardrails.push("No logos.");
   if (!/\bno watermark\b/i.test(base)) guardrails.push("No watermark.");
   if (!/\b(?:no all-over|avoid all-over|not an all-over|mostly negative space|sparse|restrained)\b/i.test(base)) {
-    guardrails.push("Avoid all-over repeating wallpaper patterns; use restrained hierarchy and negative space.");
+    guardrails.push("Avoid all-over repeating wallpaper patterns; use restrained hierarchy with visible non-text artwork outside the text-safe field.");
   }
   if (!/\b(?:not a plain blank|not plain blank|visible non-text artwork|visible artwork|visible coordinating mark)\b/i.test(base)) {
     guardrails.push(visibleArtworkGuardrail(panelId));
@@ -2166,8 +2166,8 @@ function normalizeImagePrompt(prompt, panelId, input, panel) {
   if (panelId.startsWith("inside") && !/\b(?:ivory|cream|paper|note-sheet|light|low-contrast)\b/i.test(base)) {
     guardrails.push(
       isSympathyInput(input)
-        ? "Use a light warm-ivory low-contrast open field for the interior; keep artwork on edges and preserve a quiet blank center."
-        : "Use a light ivory or cream low-contrast unmarked paper field for the interior unless the user explicitly requested a dark interior."
+        ? "Use a light warm-ivory low-contrast open field for the interior; keep artwork on edges and preserve a quiet low-detail center."
+        : "Use a light ivory or cream low-contrast paper field with subtle texture for the interior unless the user explicitly requested a dark interior."
     );
   }
   if (!/\b(?:camera-free|flat artwork layer|artwork layer only|not (?:a )?(?:physical|photographed|photo))\b/i.test(base)) {
@@ -2178,10 +2178,10 @@ function normalizeImagePrompt(prompt, panelId, input, panel) {
 
 function visibleArtworkGuardrail(panelId) {
   if (panelId === "back") {
-    return "Include one small visible coordinating non-text mark near an edge or lower corner while keeping most of the back panel as negative space; not a plain blank field.";
+    return "Include one small visible coordinating non-text mark plus a faint border echo or edge texture while keeping the back panel open; not a plain blank field.";
   }
   if (panelId.startsWith("inside")) {
-    return "Include sparse but visible edge/corner non-text artwork outside the quiet center; not a plain blank stationery field.";
+    return "Include visible edge/corner or lower-edge non-text artwork plus subtle paper texture outside the quiet center; not a plain blank stationery field.";
   }
   return "Include visible non-text artwork outside the text-safe field: one clear hero motif or object system, not a plain blank stationery field.";
 }
@@ -2474,7 +2474,7 @@ function buildVisualBrief(input, panel) {
     return "Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy.";
   }
   if (/\b(birthday|cake|candles|party)\b/.test(source) && !/\b(aquarium|freshwater|koi|pond|dog)\b/.test(contract)) {
-    return "Warm birthday stationery: botanical greenery and soft flowers as elegant side or corner border, small candle accents, morning-light palette, generous blank field, no dense confetti wallpaper.";
+    return "Warm birthday stationery: botanical greenery and soft flowers as elegant side or corner border, small candle accents, morning-light palette, generous low-detail text-safe field, no dense confetti wallpaper.";
   }
   if (/\b(thank|grateful|appreciat)\b/.test(source) && !/\b(aquarium|freshwater|koi|pond|dog)\b/.test(contract)) {
     return "Elegant thank-you stationery: ribbon curves, botanical sprigs, soft paper texture, warm accents, border-first layout, quiet premium composition, large clean message field.";
@@ -2714,8 +2714,8 @@ function themeGuide({ title, palette, motifs, border }) {
     palette,
     motifs,
     border_style: border,
-    front_back_pairing: "Front carries the strongest motif and title area; back repeats the same border language with mostly negative space.",
-    interior_pairing: "Inside-left and inside-right use the same decorative border/frame, sparse edge motifs, quiet blank center, and generous text-safe margins."
+    front_back_pairing: "Front carries the strongest motif and title area; back repeats the same border language with open breathing room plus a visible coordinated mark.",
+    interior_pairing: "Inside-left and inside-right use the same decorative border/frame, visible edge motifs, calm low-detail center, and generous text-safe margins."
   };
 }
 
@@ -2758,7 +2758,7 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
       front: "Elegant aquarium birthday cover with soft tank light, one tiny fish path, freshwater plant silhouettes, and a clean upper text-safe field; refined print stationery, not aquarium merchandise.",
       "inside-left": "Quiet left interior with pale freshwater blue wash, sparse aquatic plant border, one tiny fish detail near the lower edge, and generous center-left message space.",
       "inside-right": "Matching right interior with a soft ripple line and small aquarium-glass highlight, restrained negative space for the main message, no busy full-tank scene.",
-      back: "Minimal back cover with one tiny fish or ripple mark on warm paper, mostly negative space, and no visible copy."
+      back: "Open back cover with one tiny fish or ripple mark, faint aquatic edge texture, warm paper, and no visible copy."
     };
     return cues[panelId];
   }
@@ -2767,16 +2767,16 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
       front: "Serene koi encouragement cover with one slow koi arc beneath a wide quiet water field, muted pond green and warm ivory palette, and clean upper text-safe area.",
       "inside-left": "Left interior with sparse pond-ripple border, a single koi-scale accent, and calm center-left writing space; steady and hopeful, not decorative wallpaper.",
       "inside-right": "Matching right interior with soft water rings and one small koi silhouette near the lower edge, broad open message field, restrained encouragement tone.",
-      back: "Minimal back cover with one small koi-ripple mark, mostly untouched paper, and quiet lower text-safe space."
+      back: "Open back cover with one small koi-ripple mark, faint pond-edge texture, warm paper, and quiet lower text-safe space."
     };
     return cues[panelId];
   }
   if (/\b(dog|dogs|dog-loving|dog lover|dog-trust|leash|good neighbor)\b/.test(contract)) {
     const cues = {
       front: "Dog-lover thank-you cover with one abstract leash curve beside a neighborly doorstep, warm cream paper, and clean lower text-safe space; no dog portrait and no paw-print wallpaper.",
-      "inside-left": "Left interior with a tiny dog-tag-shaped mark, subtle sidewalk line, and generous blank center for the opening thank-you.",
+      "inside-left": "Left interior with a tiny dog-tag-shaped mark, subtle sidewalk line, paper texture, and generous low-detail center for the opening thank-you.",
       "inside-right": "Matching right interior with a quiet leash-curve border and neighborly trust motif near the bottom, broad open field for the main message.",
-      back: "Minimal back cover with one small dog-tag mark and mostly negative space."
+      back: "Open back cover with one small dog-tag mark, faint leash-curve border echo, and warm paper texture."
     };
     return cues[panelId];
   }
@@ -2798,7 +2798,7 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
       front: "Tender recovery cover with a basil sprig, small soup bowl curve, and tiny walking-path line; warm ivory field with clay and basil accents; clean upper text-safe area.",
       "inside-left": "Soft interior note sheet with a small soup spoon and basil corner cluster, quiet paper texture, and wide center text-safe area for encouragement.",
       "inside-right": "Matching interior panel with tiny walking-path linework along the lower edge, calm blank center, and practical-care warmth without hospital-room imagery.",
-      back: "Minimal back mark using a basil leaf and tiny path line on warm ivory paper; mostly negative space."
+      back: "Open back cover using a basil leaf, tiny path line, faint edge texture, and warm ivory paper."
     };
     return cues[panelId];
   }
@@ -2807,7 +2807,7 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
       front: "Premium customer-success cover with clean white and deep teal fields, subtle sterile-supply geometry, and a calm lower text-safe area; polished B2B stationery.",
       "inside-left": "Left interior with thin teal frame, soft metallic accent line, small calendar/partnership motif, and a quiet center for the thank-you note.",
       "inside-right": "Right interior with a clean app-overlay zone for QR or account-manager CTA, sparse teal geometry, generous margins, and no actual QR code or interface art.",
-      back: "Minimal back cover with one small teal-and-metallic partnership mark and ample negative space."
+      back: "Open back cover with one small teal-and-metallic partnership mark, faint frame echo, and ample low-detail space."
     };
     return cues[panelId];
   }
@@ -2816,7 +2816,7 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
       front: "Restrained wedding cover with paired sage stems, soft ivory field, quiet ribbon arc, restrained gold detail, and a clean central text-safe area.",
       "inside-left": "Elegant border-first interior with sage corner stems, warm ivory paper, and calm center space for a short blessing.",
       "inside-right": "Matching interior with generous open lower area for handwritten words, subtle ribbon arc, and sparse botanical corners; no fake script.",
-      back: "Minimal back cover echoing paired stems and one small gold dot with mostly blank ivory space."
+      back: "Open back cover echoing paired stems, one small gold dot, faint botanical edge texture, and calm ivory space."
     };
     return cues[panelId];
   }
@@ -2834,7 +2834,7 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
       front: "Funny bold-type birthday cover using abstract editorial blocks, a tiny cake-slice mark, lively offset rhythm, warm accent color, and a clean central text-safe area; no rendered letters.",
       "inside-left": "Left interior with sparse editorial rules, one small milestone dot, bright accent corner, and open message field for the affectionate setup.",
       "inside-right": "Right interior with matching bold-rule structure, offset accent block near the lower edge, and generous text-safe area for the punchline and sign-off.",
-      back: "Minimal back cover with a tiny cake-slice mark and one clean editorial rule, mostly blank."
+      back: "Open back cover with a tiny cake-slice mark, one clean editorial rule, and warm low-detail paper."
     };
     return cues[panelId];
   }
@@ -2843,16 +2843,16 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
       front: "Sentimental anniversary cover with paired basil sprigs, a Sunday-walk path line, warm morning light, and a clean central text-safe field.",
       "inside-left": "Soft cream left interior with a balcony-basil corner, paired leaves, quiet paper texture, and open center space for the first reflection.",
       "inside-right": "Matching right interior with a subtle walking-path line along the lower edge, small window-light shape, and calm main-message area.",
-      back: "Small paired-basil back mark with warm cream negative space and a quiet lower text-safe area."
+      back: "Small paired-basil back mark with warm cream open space, faint edge texture, and a quiet lower text-safe area."
     };
     return cues[panelId];
   }
   if (/\b(water(?:ed|ing)? the plants?|plant care|looked after .*plants?|neighbor plant|away.*plants?)\b/.test(source) && !/\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source)) {
     const cues = {
       front: "Simple minimal thank-you cover with one small plant mark, clean white and warm ivory field, fine leaf-green rule, and lower text-safe space.",
-      "inside-left": "Minimal left interior with a tiny water-drop mark, fine rule, generous blank center, and no floral pattern.",
+      "inside-left": "Minimal left interior with a tiny water-drop mark, fine rule, subtle paper texture, generous low-detail center, and no floral pattern.",
       "inside-right": "Matching minimal right interior with one small plant-related mark near the lower edge and calm main-message space.",
-      back: "Clean back cover with a single plant mark and mostly white negative space."
+      back: "Clean back cover with a single plant mark, faint fine-rule echo, and open white paper."
     };
     return cues[panelId];
   }
@@ -2860,8 +2860,8 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
     const cues = {
       front: "Warm local-shop thank-you cover with controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, kraft paper texture, and open text-safe center.",
       "inside-left": "Cream interior note sheet with a thin editorial border, small citrus corner, and quiet center-left space for the opening thank-you.",
-      "inside-right": "Matching interior with subtle boutique awning silhouette near the lower edge, sparse leaves, and generous blank message area.",
-      back: "Small citrus-and-leaf back mark on warm cream paper with mostly negative space."
+      "inside-right": "Matching interior with subtle boutique awning silhouette near the lower edge, sparse leaves, and generous low-detail message area.",
+      back: "Small citrus-and-leaf back mark on warm cream paper with a faint handmade border echo."
     };
     return cues[panelId];
   }
@@ -2893,7 +2893,7 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
     front: `${themeGuide.theme_title} front cover with one dominant composition built from ${motifs}; ${palette} palette; clean upper or central text-safe area.`,
     "inside-left": `${themeGuide.theme_title} left interior as a border-first note sheet with sparse ${motifs} edge detail, light paper field, and quiet center text-safe area.`,
     "inside-right": `${themeGuide.theme_title} right interior matching the left panel with generous main-message space and sparse lower or corner motif detail.`,
-    back: `${themeGuide.theme_title} back cover with one small coordinating mark from ${motifs}, mostly negative space, and clean lower text-safe area.`
+    back: `${themeGuide.theme_title} back cover with one small coordinating mark from ${motifs}, faint border echo, open low-detail paper, and clean lower text-safe area.`
   };
   return truncate(cues[panelId] || cues.front, 360);
 }

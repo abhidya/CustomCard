@@ -204,7 +204,7 @@ export function localComfySafeArtworkGuard(variables = {}) {
   return {
     ...guard,
     ...recovered,
-    opacity: 0.74,
+    opacity: 0.28,
     radius: guard.radius || Math.max(20, Math.round(imageWidth * 0.035))
   };
 }
@@ -282,7 +282,7 @@ function localComfyWorkflowInputsWithSafeGuard(inputs, defaults) {
   return {
     ...inputs,
     artwork_guard: defaults.artwork_guard,
-    artwork_guard_opacity: Math.min(boundedNumber(defaults.artwork_guard_opacity, 0, 1, 0.74), 0.74),
+    artwork_guard_opacity: Math.min(boundedNumber(defaults.artwork_guard_opacity, 0, 1, 0.28), 0.28),
     artwork_guard_radius: defaults.artwork_guard_radius,
     artwork_guard_style: defaults.artwork_guard_style
   };

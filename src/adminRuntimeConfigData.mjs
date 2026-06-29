@@ -166,7 +166,7 @@ export function migrateLegacyBenchmarkAiFlowDefaults(configs) {
   return configs.map((config) => {
     if (!config || typeof config !== "object") return config;
     if (config.flowId === "card-copy" && isLegacyCardCopyDefault(config)) {
-      return { ...config, maxTokens: benchmarkFlowExpectation("card-copy")?.maxTokens ?? 3200 };
+      return { ...config, maxTokens: benchmarkFlowExpectation("card-copy")?.maxTokens ?? 4096 };
     }
     if (config.flowId === "card-image" && isLegacyRunComfyImageDefault(config)) {
       const expectation = benchmarkFlowExpectation("card-image");
@@ -174,10 +174,10 @@ export function migrateLegacyBenchmarkAiFlowDefaults(configs) {
         ...config,
         primaryAdapterId: expectation?.primaryAdapterId ?? "local-comfyui-api-image",
         fallbackAdapterId: expectation?.fallbackAdapterId ?? "cloudflare-workers-ai-image",
-        model: expectation?.model ?? "DreamShaper_8_pruned.safetensors",
+        model: expectation?.model ?? "flux-2-klein-4b.safetensors",
         renderingMode: expectation?.renderingMode ?? "final-text-composited",
-        workflowId: expectation?.workflowId ?? "customcard-production-text-overlay",
-        workflowPath: expectation?.workflowPath ?? "comfyui-workflows/customcard-production-text-overlay.json",
+        workflowId: expectation?.workflowId ?? "customcard-flux2-klein-production-text-overlay",
+        workflowPath: expectation?.workflowPath ?? "comfyui-workflows/customcard-flux2-klein-production-text-overlay.json",
         workflowJson: "",
         workflowInputsJson: expectation?.workflowInputsJson ?? ""
       };
@@ -188,10 +188,10 @@ export function migrateLegacyBenchmarkAiFlowDefaults(configs) {
         ...config,
         primaryAdapterId: expectation?.primaryAdapterId ?? "local-comfyui-api-image",
         fallbackAdapterId: expectation?.fallbackAdapterId ?? "cloudflare-workers-ai-image",
-        model: expectation?.model ?? "DreamShaper_8_pruned.safetensors",
+        model: expectation?.model ?? "flux-2-klein-4b.safetensors",
         renderingMode: expectation?.renderingMode ?? "final-text-composited",
-        workflowId: expectation?.workflowId ?? "customcard-production-text-overlay",
-        workflowPath: expectation?.workflowPath ?? "comfyui-workflows/customcard-production-text-overlay.json",
+        workflowId: expectation?.workflowId ?? "customcard-flux2-klein-production-text-overlay",
+        workflowPath: expectation?.workflowPath ?? "comfyui-workflows/customcard-flux2-klein-production-text-overlay.json",
         workflowJson: "",
         workflowInputsJson: expectation?.workflowInputsJson ?? ""
       };
@@ -278,9 +278,15 @@ function isLegacyRunComfyImageDefault(config) {
 
 function isLegacyLocalComfyProductionTextDefault(config) {
   const inputs = parseWorkflowInputs(config.workflowInputsJson);
-  const legacySmallCanvas =
+  const legacyKnownCanvas =
     blankOptional(config.workflowInputsJson) ||
-    (Number(inputs.width) === 512 && Number(inputs.height) === 704);
+    (Number(inputs.width) === 512 && Number(inputs.height) === 704) ||
+    (
+      Number(inputs.width) === 960 &&
+      Number(inputs.height) === 1344 &&
+      numberMatches(inputs.steps, 18) &&
+      numberMatches(inputs.cfg, 6.5)
+    );
   return (
     matchesOptional(config.primaryAdapterId, "local-comfyui-api-image") &&
     matchesOptional(config.fallbackAdapterId, "cloudflare-workers-ai-image") &&
@@ -292,7 +298,7 @@ function isLegacyLocalComfyProductionTextDefault(config) {
     matchesOptional(config.workflowId, "customcard-production-text-overlay") &&
     matchesOptional(config.workflowPath, "comfyui-workflows/customcard-production-text-overlay.json") &&
     blankOptional(config.workflowJson) &&
-    legacySmallCanvas
+    legacyKnownCanvas
   );
 }
 

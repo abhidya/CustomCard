@@ -51,9 +51,9 @@ export function buildProductionTextRerunPlan(args = {}) {
     requestTimeoutMs: numberOr(args["request-timeout-ms"], 1_200_000),
     gpuId: numberOr(args["gpu-id"], 0),
     gpuLayers: numberOr(args["gpu-layers"], 999),
-    checkpoint: String(args.checkpoint || "DreamShaper_8_pruned.safetensors"),
-    steps: numberOr(args.steps, 18),
-    cfg: numberOr(args.cfg, 6.5),
+    checkpoint: String(args.checkpoint || "flux-2-klein-4b.safetensors"),
+    steps: numberOr(args.steps, 4),
+    cfg: numberOr(args.cfg, 1),
     sampler: String(args.sampler || "euler"),
     scheduler: String(args.scheduler || "normal")
   };
