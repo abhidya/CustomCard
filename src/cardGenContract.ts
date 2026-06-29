@@ -3,9 +3,9 @@
  *
  * Mirrors card_gen/card_gen/domain.py — keep these in sync when domain.py changes.
  *
- * Gate: liveProviderCallsEnabled is false. The sidecar is wired but won't be
- * called until VITE_CARD_GEN_URL is set in the environment. Set it to the
- * sidecar URL (e.g. http://localhost:8001) to enable.
+ * Browser traffic uses the same-origin `/api/ai/card/generate` route. The
+ * legacy sidecar remains a local development contract, but browser env no
+ * longer flips runtime behavior.
  *
  * Sidecar startup:
  *   cd card_gen
@@ -91,8 +91,8 @@ export interface CardGenHealthResponse {
 
 /**
  * Integration contract between the React app and the card gen sidecar.
- * liveProviderCallsEnabled and externalNetworkCalls are false — gates that
- * must be flipped at runtime by setting VITE_CARD_GEN_URL.
+ * liveProviderCallsEnabled and externalNetworkCalls stay false here because
+ * provider behavior is owned by the same-origin API and Admin configuration.
  */
 export interface CardGenSidecarContract {
   generateEndpoint: "/generate";
@@ -102,21 +102,11 @@ export interface CardGenSidecarContract {
   externalNetworkCalls: false;
   imageGenEnabled: boolean;
   noNetworkProof: true;
-  frontendRequiredEnv: ["VITE_CARD_GEN_URL"];
+  frontendRequiredEnv: [];
   sidecarRequiredEnv: ["ANTHROPIC_API_KEY", "CARD_GEN_API_TOKEN"];
   sidecarOptionalEnv: [
     "CARD_GEN_ALLOWED_ORIGINS",
-    "CARD_GEN_RATE_LIMIT_PER_MINUTE",
-    "CARD_GEN_MONTHLY_BUDGET_CENTS",
-    "CARD_GEN_PER_REQUEST_BUDGET_CENTS",
-    "CARD_GEN_MAX_BODY_BYTES",
-    "OPENAI_API_KEY",
-    "CARD_TEXT_MODEL",
-    "CARD_TEXT_MAX_TOKENS",
-    "CARD_TEXT_REQUEST_LIMIT",
-    "CARD_TEXT_UNIT_COST_CENTS",
-    "CARD_IMAGE_UNIT_COST_CENTS",
-    "CARD_IMAGE_MODEL"
+    "OPENAI_API_KEY"
   ];
   blockedReasons: string[];
 }
@@ -124,7 +114,7 @@ export interface CardGenSidecarContract {
 export const requiredCardPanelIds: CardPanelId[] = [...renderPacketPanelIds];
 const cardGenGeneratedByModes = new Set<string>(cardGenSchemaContract.response.generatedBy);
 
-/** Build the sidecar contract from env. baseUrl null = gate closed. */
+/** Build the legacy sidecar contract; same-origin API routing is the browser default. */
 export function buildCardGenSidecarContract(env: {
   cardGenUrl: string | null;
   imageGenEnabled: boolean;
@@ -137,24 +127,13 @@ export function buildCardGenSidecarContract(env: {
     externalNetworkCalls: false,
     imageGenEnabled: env.imageGenEnabled,
     noNetworkProof: true,
-    frontendRequiredEnv: ["VITE_CARD_GEN_URL"],
+    frontendRequiredEnv: [],
     sidecarRequiredEnv: ["ANTHROPIC_API_KEY", "CARD_GEN_API_TOKEN"],
     sidecarOptionalEnv: [
       "CARD_GEN_ALLOWED_ORIGINS",
-      "CARD_GEN_RATE_LIMIT_PER_MINUTE",
-      "CARD_GEN_MONTHLY_BUDGET_CENTS",
-      "CARD_GEN_PER_REQUEST_BUDGET_CENTS",
-      "CARD_GEN_MAX_BODY_BYTES",
-      "OPENAI_API_KEY",
-      "CARD_TEXT_MODEL",
-      "CARD_TEXT_MAX_TOKENS",
-      "CARD_TEXT_REQUEST_LIMIT",
-      "CARD_TEXT_UNIT_COST_CENTS",
-      "CARD_IMAGE_UNIT_COST_CENTS",
-      "CARD_IMAGE_MODEL"
+      "OPENAI_API_KEY"
     ],
     blockedReasons: [
-      ...(env.cardGenUrl ? [] : ["VITE_CARD_GEN_URL is not set — sidecar URL required to enable AI generation."]),
       ...(env.imageGenEnabled ? [] : ["Sidecar health reports image generation disabled; configure an image provider credential before expecting image panels."])
     ]
   };

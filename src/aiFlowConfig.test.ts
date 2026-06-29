@@ -351,10 +351,21 @@ describe("AI flow config", () => {
   });
 
   it("keeps docs and env examples pinned to the shared production card-copy setup profile", () => {
+    const rootEnvExample = readFileSync(resolve("D:/manny/Documents/CustomCard/.env.example"), "utf8");
     const envExample = readFileSync(resolve("D:/manny/Documents/CustomCard/infra/env/.env.example"), "utf8");
     const infraReadme = readFileSync(resolve("D:/manny/Documents/CustomCard/infra/README.md"), "utf8");
     const cloudflareSetupDoc = readFileSync(resolve("D:/manny/Documents/CustomCard/docs/cloudflare-workers-ai-setup.md"), "utf8");
+    const forbiddenRuntimeConfigEnv = [
+      "VITE_CARD_GEN_URL",
+      "CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED",
+      "CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED",
+      "CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID",
+      "CUSTOMCARD_RUNCOMFY_IMAGE_INPUT_JSON",
+      "CLOUDFLARE_WORKERS_AI_TEXT_MODEL",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL"
+    ];
 
+    for (const envName of forbiddenRuntimeConfigEnv) expect(rootEnvExample).not.toContain(envName);
     expect(envExample).not.toMatch(/CUSTOMCARD_AI_[A-Z_]+MODEL=/);
     expect(envExample).not.toMatch(/CLOUDFLARE_WORKERS_AI_[A-Z_]+MODEL=/);
     expect(infraReadme).toContain("Set provider, model, budget, queue, and");

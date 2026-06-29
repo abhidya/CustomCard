@@ -110,8 +110,8 @@ at 320–390px and ≥40px touch targets. To make it genuinely mobile-first:
 
 | Feature | What it needs | State |
 | --- | --- | --- |
-| **AI card text** | `ANTHROPIC_API_KEY` on the deployed `card_gen` FastAPI sidecar + `VITE_CARD_GEN_URL` in the web env | Sidecar is fully built (PydanticAI); the Studio button is wired and currently disabled. **Highest-leverage unlock in the repo.** |
-| **AI card images** | `OPENAI_API_KEY` on the same sidecar (optional flag) | Built; panel `imageUrl` rendering already handled |
+| **AI card text** | Provider credentials plus Admin Providers policy for the same-origin API | Studio routes through the server-owned API; browser env no longer flips AI behavior. |
+| **AI card images** | Provider credentials plus Admin Providers policy | Built; panel `imageUrl` rendering already handled |
 | **Durable storage** | `DATABASE_URL` (hosted Postgres) | Postgres runtime, migrations, and doctors all exist; needs a hosted instance + seed proof |
 | **Artifact handoff** | AWS keys + bucket (`OBJECT_STORE_SIGNING_SECRET`, S3 env) | Store + signed-URL code and IaC docs exist; cloud proof missing |
 | **Transactional email** | `RESEND_API_KEY` (or SendGrid/Postmark/Mailgun) | Contracts exist; no sender wired into a customer flow yet |
@@ -155,7 +155,7 @@ at 320–390px and ≥40px touch targets. To make it genuinely mobile-first:
 ## Suggested sequence
 
 1. **Now (no keys):** occasion-first hub + persisted event queue + bottom tab bar + PWA manifest.
-2. **One key:** deploy card_gen with `ANTHROPIC_API_KEY`, set `VITE_CARD_GEN_URL` → "AI-drafted
+2. **Provider setup:** add credentials, configure Admin Providers, then "AI-drafted
    in seconds" becomes true and the landing page hero is honest.
 3. **Landing site:** static occasion pages + hero per Section 2 (decide Next.js migration here).
 4. **Hosted Postgres + auth broker** → cross-device sync becomes the upgrade moment.

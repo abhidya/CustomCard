@@ -69,7 +69,7 @@ The current repo is honest about what it does not prove yet.
 | Area | Boundary |
 | --- | --- |
 | Live auth and OAuth | Credential-gated. Local review uses browser-local workspace state. |
-| Live AI/image generation | Optional sidecar/server routes exist, but the default app uses deterministic no-cost generation. |
+| Live AI/image generation | Same-origin server routes exist; provider/model policy is configured in Admin and falls back to deterministic no-cost generation when credentials are absent. |
 | Retail ordering | Disabled by design. The kill switch stays off until vendor certification, payment, refund, and physical print proof exist. |
 | Live quotes and coupons | Public observations and same-cart proof contracts are modeled; checkout confirmation is still required. |
 | Payments | Readiness contracts exist; live charge, refund, capture, PCI, and settlement proof are not claimed. |
@@ -110,9 +110,8 @@ Vite mobile route is the browser review path.
 
 The tracked `.env.example` uses placeholders only. It includes the public Clerk
 publishable-key placeholder, Clerk JWKS public-key verification slots,
-legal-policy link slots, optional AI sidecar URL, server-owned Cloudflare
-Workers AI settings, and Google Calendar OAuth start settings such as
-`GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY`.
+legal-policy link slots, server-owned provider credentials, and Google Calendar
+OAuth start settings such as `GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY`.
 
 Full backend/runtime variables live in `infra/env/.env.example`, including
 Postgres, queue, object storage, signed artifact URLs, API runtime mode, session

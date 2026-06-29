@@ -1,4 +1,3 @@
-export const cardGenerationUrlEnvName = "VITE_CARD_GEN_URL";
 export const localAdminPreviewTokenEnvName = "VITE_CUSTOMCARD_ADMIN_PREVIEW_TOKEN";
 export const defaultLocalAdminPreviewToken = "test-admin-session-token";
 export const sameOriginCardGenerationPath = "/api/ai/card/generate";
@@ -98,11 +97,11 @@ export function resolveCardGenerationEndpoint(
   env: BrowserGateEnv,
   sameOriginPath = sameOriginCardGenerationPath
 ): CardGenerationEndpoint {
-  const legacyBaseUrl = stringEnvValue(env, cardGenerationUrlEnvName).trim();
+  void env;
 
   return {
-    legacyBaseUrl,
-    requestUrl: legacyBaseUrl ? `${legacyBaseUrl}/generate` : sameOriginPath,
+    legacyBaseUrl: "",
+    requestUrl: sameOriginPath,
     sameOriginPath
   };
 }

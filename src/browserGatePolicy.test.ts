@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  cardGenerationUrlEnvName,
   defaultLocalAdminPreviewToken,
   resolveLocalAdminPreview,
   resolveLocalAdminPreviewToken,
@@ -106,14 +105,14 @@ describe("browser gate policy", () => {
     });
   });
 
-  it("resolves AI card generation to the legacy sidecar endpoint when configured", () => {
+  it("ignores legacy browser sidecar env and keeps AI card generation on the same-origin API", () => {
     expect(
       resolveCardGenerationEndpoint({
-        [cardGenerationUrlEnvName]: " https://card-gen.example.test "
+        LEGACY_CARD_GEN_URL: " https://card-gen.example.test "
       })
     ).toEqual({
-      legacyBaseUrl: "https://card-gen.example.test",
-      requestUrl: "https://card-gen.example.test/generate",
+      legacyBaseUrl: "",
+      requestUrl: sameOriginCardGenerationPath,
       sameOriginPath: sameOriginCardGenerationPath
     });
   });

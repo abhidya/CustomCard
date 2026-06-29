@@ -76,8 +76,8 @@ ANTHROPIC_API_KEY=sk-ant-... CARD_GEN_API_TOKEN=<32+ char secret> \
   CARD_GEN_ALLOWED_ORIGINS=http://127.0.0.1:5173,http://localhost:5173 \
   uv run uvicorn card_gen.app:app --reload --port 8001
 
-# Terminal 2 — app with sidecar URL
-VITE_CARD_GEN_URL=http://localhost:8001 npm run dev
+# Terminal 2 — app; Studio uses the same-origin API route
+npm run dev
 ```
 
 Image generation (optional, requires OpenAI key):
@@ -142,8 +142,8 @@ Optional — AI sidecar on QA. Deploy the sidecar to [Railway](https://railway.a
 #   CARD_GEN_API_TOKEN=<32+ char secret>
 #   CARD_GEN_ALLOWED_ORIGINS=https://your-preview.vercel.app
 #   PORT=8001
-# Add VITE_CARD_GEN_URL only when requests go through a trusted backend/proxy
-# that attaches Authorization: Bearer $CARD_GEN_API_TOKEN.
+# Keep browser env clean. Route AI generation through the same-origin API and
+# configure provider/model policy in Admin.
 ```
 
 ### 2c. Deploy to QA
@@ -205,7 +205,6 @@ vercel env add CLERK_AUTHORIZED_PARTIES production    # value: https://customcar
 vercel env add DATABASE_URL production           # Neon production connection string
 vercel env add CUSTOMCARD_API_RUNTIME production # value: postgres
 vercel env add NODE_ENV production               # value: production
-vercel env add VITE_CARD_GEN_URL production      # optional: https://your-sidecar.railway.app
 ```
 
 ### 3d. Deploy to production
@@ -238,8 +237,8 @@ curl https://customcard-three.vercel.app/api/health
 #    CARD_GEN_API_TOKEN=<32+ char secret>
 #    CARD_GEN_ALLOWED_ORIGINS=https://customcard-three.vercel.app
 #    OPENAI_API_KEY=sk-...       (optional, for image gen)
-# 3. Keep VITE_CARD_GEN_URL unset in production until a trusted backend/proxy
-#    can attach Authorization: Bearer $CARD_GEN_API_TOKEN.
+# 3. Keep the sidecar behind server-owned routing. Do not expose its URL as a
+#    browser env switch.
 ```
 
 ---
@@ -253,16 +252,13 @@ All gates are `false` by default. Flip them one at a time after the required evi
 **Easiest gate — unlockable today.**
 
 ```bash
-# Locally:
-VITE_CARD_GEN_URL=http://localhost:8001 npm run dev
-
-# On Vercel (production):
-# keep VITE_CARD_GEN_URL unset until the sidecar is called through a trusted backend/proxy
+# Configure provider/model policy in Admin > Providers. Browser builds call the
+# same-origin `/api/ai/card/generate` route.
 ```
 
-The sidecar requires `Authorization: Bearer $CARD_GEN_API_TOKEN` outside the
-explicit localhost-only development opt-in, so do not point browser builds
-directly at a hosted sidecar without a trusted proxy.
+The legacy sidecar requires `Authorization: Bearer $CARD_GEN_API_TOKEN` outside
+the explicit localhost-only development opt-in, so keep it behind same-origin
+server routing instead of pointing browser builds directly at it.
 
 Required: `ANTHROPIC_API_KEY` on the sidecar server only. It never touches the browser.
 
@@ -468,7 +464,6 @@ DATABASE_URL="postgres://..." node scripts/hosted-api-readiness-doctor.mjs
 | `VITE_CLERK_PUBLISHABLE_KEY` | Vercel / `.env.local` | Yes | Clerk React publishable key |
 | `CLERK_JWT_KEY` | Vercel / `.env.local` | Yes for Clerk-backed API auth | Clerk JWKS public key used to verify session JWTs server-side |
 | `CLERK_AUTHORIZED_PARTIES` | Vercel / `.env.local` | Yes for Clerk-backed API auth | Comma-separated allowed `azp` origins for Clerk session JWTs |
-| `VITE_CARD_GEN_URL` | Vercel / `.env.local` | No | AI sidecar URL — enables Generate with AI button |
 | `DATABASE_URL` | Vercel / shell | For API | Postgres connection string |
 | `CUSTOMCARD_API_RUNTIME` | Vercel / shell | For API | `postgres` in production; `contract`/`memory` only for local reviewer checks |
 | `CUSTOMCARD_TRUST_PROXY_HEADERS` | Server env only | No | Defaults to `false`; set `true` only behind a trusted proxy before using `X-Forwarded-For` for rate limits |
@@ -527,8 +522,8 @@ DATABASE_URL="postgres://..." node scripts/hosted-api-readiness-doctor.mjs
 | Render artifact persistence | 🔑 Needs `OBJECT_STORE_*` + `CUSTOMCARD_API_RUNTIME=memory` or `postgres` | Object store credentials |
 | Fulfillment estimates | ✅ Public prices, local | — |
 | Manual vendor handoff | ✅ Link + checklist | — |
-| AI card generation | 🔑 Needs `VITE_CARD_GEN_URL` + sidecar | `liveProviderCallsEnabled` |
-| AI image generation | 🔑 Needs `OPENAI_API_KEY` on sidecar | `liveProviderCallsEnabled` |
+| AI card generation | 🔑 Needs provider credentials + Admin Providers policy | `liveProviderCallsEnabled` |
+| AI image generation | 🔑 Needs provider credentials + Admin Providers policy | `liveProviderCallsEnabled` |
 | Google Calendar/Gmail OAuth | 🔑 Needs Google Cloud app | `liveOAuthEnabled` |
 | Outlook OAuth | 🔑 Needs Azure app | `liveOAuthEnabled` |
 | Live model chat | 🔑 Needs prompt audit + API key | `liveModelCallsEnabled` |

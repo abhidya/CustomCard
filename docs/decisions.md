@@ -329,7 +329,7 @@ Decision: add `src/browserGatePolicy.ts` as the browser bootstrap policy for
 Clerk metadata interpretation, local admin preview, and AI card-generation
 endpoint resolution. The app shell, admin probe view, and customer app-state
 orchestrator consume this module instead of reading Clerk admin metadata or
-`VITE_CARD_GEN_URL` directly. Browser admin access must not depend on a bundled
+browser-side AI endpoint env directly. Browser admin access must not depend on a bundled
 email allowlist; production admin role comes from Clerk `publicMetadata.role` or
 `publicMetadata.roles`, with any email backstop kept server-only.
 

@@ -123,9 +123,10 @@ describe("buildCardGenSidecarContract", () => {
     expect(contract.baseUrl).toBe("http://localhost:8001");
   });
 
-  it("reports VITE_CARD_GEN_URL blocker when url is null", () => {
+  it("does not use browser env as the sidecar gate", () => {
     const contract = buildCardGenSidecarContract({ cardGenUrl: null, imageGenEnabled: false });
-    expect(contract.blockedReasons.join(" ")).toContain("VITE_CARD_GEN_URL");
+    expect(contract.frontendRequiredEnv).toEqual([]);
+    expect(contract.blockedReasons).toEqual(["Sidecar health reports image generation disabled; configure an image provider credential before expecting image panels."]);
   });
 
   it("reports image gen blocker when sidecar health says images are unavailable", () => {
@@ -154,10 +155,8 @@ describe("buildCardGenSidecarContract", () => {
     const contract = buildCardGenSidecarContract({ cardGenUrl: null, imageGenEnabled: false });
     expect(contract.sidecarRequiredEnv).toContain("ANTHROPIC_API_KEY");
     expect(contract.sidecarRequiredEnv).toContain("CARD_GEN_API_TOKEN");
-    expect(contract.sidecarOptionalEnv).toEqual(
-      expect.arrayContaining(["CARD_GEN_ALLOWED_ORIGINS", "CARD_GEN_RATE_LIMIT_PER_MINUTE", "CARD_GEN_MAX_BODY_BYTES"])
-    );
-    expect(contract.frontendRequiredEnv).toContain("VITE_CARD_GEN_URL");
+    expect(contract.sidecarOptionalEnv).toEqual(["CARD_GEN_ALLOWED_ORIGINS", "OPENAI_API_KEY"]);
+    expect(contract.frontendRequiredEnv).toEqual([]);
   });
 });
 
