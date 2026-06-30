@@ -166,6 +166,24 @@ export function createApiRouteFamilies(deps) {
       return true;
     }
 
+    const heartbeatMatch = path.match(/^\/api\/provider\/jobs\/([^/]+)\/heartbeat$/);
+    if (heartbeatMatch) {
+      let body;
+      try {
+        body = parseStrictJsonBody(await readRequestBody(request, 64_000));
+      } catch {
+        sendJson(response, 400, { service: "customcard-api", status: "invalid-json", path });
+        return true;
+      }
+      const result = await apiRuntime.renewProviderJobLease({
+        authContext,
+        jobId: decodeURIComponent(heartbeatMatch[1]),
+        body
+      });
+      sendJson(response, result.statusCode, result.payload);
+      return true;
+    }
+
     const completeMatch = path.match(/^\/api\/provider\/jobs\/([^/]+)\/complete$/);
     if (!completeMatch) return false;
     let body;

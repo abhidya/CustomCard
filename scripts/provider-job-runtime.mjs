@@ -202,6 +202,81 @@ export function createProviderJobRuntime({
         }
       };
     },
+    async renewJobLease({ authContext, jobId, body } = {}) {
+      const selectedWorkerId = safeProviderWorkerId(body?.worker_id ?? body?.workerId);
+      const selectedJobId = safeId(jobId ?? body?.job_id ?? body?.jobId, "");
+      const leaseToken = String(body?.lease_token ?? body?.leaseToken ?? "").trim();
+      if (!selectedWorkerId || !selectedJobId || !leaseToken) {
+        return {
+          statusCode: 400,
+          payload: {
+            service: "customcard-api",
+            status: "invalid-provider-heartbeat",
+            detail: "worker_id, job id, and lease_token are required."
+          }
+        };
+      }
+
+      const pool = await getPool();
+      const selected = await pool.query(
+        `SELECT id, user_id, route_id, status, payload, result, attempt_count, max_attempts, locked_by, locked_at
+         FROM api_jobs
+         WHERE id = $1
+         LIMIT 1`,
+        [selectedJobId]
+      );
+      const row = selected.rows[0];
+      if (!row) {
+        return { statusCode: 404, payload: { service: "customcard-api", status: "job-not-found", job_id: selectedJobId } };
+      }
+      const config = await readWorkerConfig(pool);
+      if (!allowedProviderRouteIds(config.providerWorker.routeIds, [row.route_id]).includes(row.route_id)) {
+        return {
+          statusCode: 403,
+          payload: { service: "customcard-api", status: "provider-route-not-allowed", job_id: selectedJobId, route_id: row.route_id }
+        };
+      }
+      const lockCheck = validateProviderLease({
+        row,
+        workerId: selectedWorkerId,
+        leaseToken,
+        env,
+        leaseSeconds: config.providerWorker.leaseSeconds
+      });
+      if (!lockCheck.ok) {
+        return {
+          statusCode: lockCheck.statusCode,
+          payload: { service: "customcard-api", status: lockCheck.status, job_id: selectedJobId, route_id: row.route_id }
+        };
+      }
+
+      const renewed = await pool.query(
+        `UPDATE api_jobs
+         SET locked_at = NOW(),
+             updated_at = NOW()
+         WHERE id = $1
+           AND status = 'running'
+           AND locked_by = $2
+         RETURNING id, route_id, attempt_count, max_attempts, locked_at`,
+        [selectedJobId, selectedWorkerId]
+      );
+      const renewedRow = renewed.rows[0];
+      if (!renewedRow) {
+        return {
+          statusCode: 409,
+          payload: { service: "customcard-api", status: "job-lock-not-renewed", job_id: selectedJobId, route_id: row.route_id }
+        };
+      }
+      return {
+        statusCode: 200,
+        payload: providerLeaseRenewalPayload({
+          row: renewedRow,
+          workerId: selectedWorkerId,
+          leaseSeconds: config.providerWorker.leaseSeconds,
+          env
+        })
+      };
+    },
     async completeJob({ authContext, jobId, body, now = () => new Date() } = {}) {
       const selectedWorkerId = safeProviderWorkerId(body?.worker_id ?? body?.workerId);
       const selectedJobId = safeId(jobId ?? body?.job_id ?? body?.jobId, "");
@@ -431,10 +506,29 @@ export function providerLeasePayload({ row, workerId, leaseSeconds, env, aiFlowA
     attempt_count: job.attemptCount,
     max_attempts: job.maxAttempts,
     payload,
-    lease_token: providerLeaseToken({ jobId: job.id, workerId, lockedAtIso, attemptCount: job.attemptCount, env }),
+    lease_token: providerLeaseToken({ jobId: job.id, workerId, attemptCount: job.attemptCount, env }),
     lease_expires_at: expiresAtIso,
     lease_ttl_seconds: leaseSeconds,
     artifact_upload: providerArtifactUploadContract()
+  };
+}
+
+function providerLeaseRenewalPayload({ row, workerId, leaseSeconds, env }) {
+  const lockedAtIso = safeDateIso(row.locked_at);
+  const expiresAtIso = new Date(new Date(lockedAtIso).getTime() + leaseSeconds * 1000).toISOString();
+  const jobId = safeId(row.id, "");
+  const attemptCount = Number(row.attempt_count ?? 1);
+  return {
+    service: "customcard-api",
+    status: "lease-renewed",
+    job_id: jobId,
+    route_id: safeId(row.route_id, "unknown"),
+    attempt_count: attemptCount,
+    max_attempts: Number(row.max_attempts ?? 3),
+    lease_token: providerLeaseToken({ jobId, workerId, attemptCount, env }),
+    lease_expires_at: expiresAtIso,
+    lease_ttl_seconds: leaseSeconds,
+    heartbeat_at: lockedAtIso
   };
 }
 
@@ -507,7 +601,13 @@ async function updateExpiredProviderJobs(pool, leaseSeconds, exhaustedPhysicalSt
   );
 }
 
-function providerLeaseToken({ jobId, workerId, lockedAtIso, attemptCount, env }) {
+function providerLeaseToken({ jobId, workerId, attemptCount, env }) {
+  return createHmac("sha256", providerLeaseSigningSecret(env))
+    .update([jobId, workerId, attemptCount].join(":"))
+    .digest("hex");
+}
+
+function legacyProviderLeaseToken({ jobId, workerId, lockedAtIso, attemptCount, env }) {
   return createHmac("sha256", providerLeaseSigningSecret(env))
     .update([jobId, workerId, lockedAtIso, attemptCount].join(":"))
     .digest("hex");
@@ -528,15 +628,29 @@ function validateProviderLease({ row, workerId, leaseToken, env, leaseSeconds })
   const expected = providerLeaseToken({
     jobId: row.id,
     workerId,
+    attemptCount: Number(row.attempt_count ?? 1),
+    env
+  });
+  const legacyExpected = legacyProviderLeaseToken({
+    jobId: row.id,
+    workerId,
     lockedAtIso,
     attemptCount: Number(row.attempt_count ?? 1),
     env
   });
   if (!/^[a-f0-9]{64}$/i.test(leaseToken)) return { ok: false, statusCode: 403, status: "invalid-lease-token" };
-  if (!timingSafeEqual(Buffer.from(expected, "hex"), Buffer.from(leaseToken, "hex"))) {
+  if (!leaseTokenMatches(leaseToken, [expected, legacyExpected])) {
     return { ok: false, statusCode: 403, status: "invalid-lease-token" };
   }
   return { ok: true };
+}
+
+function leaseTokenMatches(leaseToken, expectedTokens) {
+  const actual = Buffer.from(leaseToken, "hex");
+  return expectedTokens.some((expected) => {
+    const candidate = Buffer.from(expected, "hex");
+    return candidate.length === actual.length && timingSafeEqual(candidate, actual);
+  });
 }
 
 function normalizeProviderJobRow(row) {

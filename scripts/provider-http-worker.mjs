@@ -20,13 +20,14 @@ const providerCompletionRasterMimeTypes = new Set(["image/png", "image/jpeg", "i
 let sharpCodecPromise;
 
 export function resolveProviderHttpWorkerEnv(env = process.env) {
+  const configuredWorkerId = String(env.CUSTOMCARD_WORKER_ID ?? "").trim();
   const resolved = resolveLocalComfyWorkerEnv(env);
   resolved.CUSTOMCARD_PROVIDER_API_BASE_URL =
     resolved.CUSTOMCARD_PROVIDER_API_BASE_URL ||
     resolved.CUSTOMCARD_HOSTED_API_BASE_URL ||
     resolved.PUBLIC_APP_ORIGIN ||
     "";
-  if (!resolved.CUSTOMCARD_WORKER_ID) {
+  if (!configuredWorkerId) {
     resolved.CUSTOMCARD_WORKER_ID = `provider-http:${resolved.COMPUTERNAME ?? resolved.HOSTNAME ?? "machine"}:${process.pid}`;
   }
   return resolved;
@@ -158,15 +159,17 @@ export function createProviderHttpWorkerRuntime({
 
 async function processProviderJob({ aiService, baseUrl, env, fetchImpl, job, now, token, workerId }) {
   const startedAt = Date.now();
+  const heartbeat = startProviderJobHeartbeat({ baseUrl, fetchImpl, job, token, workerId });
   try {
     const result = await executeLeasedJob({ aiService, env, fetchImpl, job });
+    heartbeat.stop();
     const completion = await postJson({
       fetchImpl,
       token,
       url: `${baseUrl}/api/provider/jobs/${encodeURIComponent(job.job_id)}/complete`,
       body: {
         worker_id: workerId,
-        lease_token: job.lease_token,
+        lease_token: heartbeat.leaseToken(),
         status: "succeeded",
         result
       }
@@ -180,6 +183,7 @@ async function processProviderJob({ aiService, baseUrl, env, fetchImpl, job, now
       completed_at: now().toISOString()
     };
   } catch (error) {
+    heartbeat.stop();
     const message = errorMessage(error);
     await postJson({
       fetchImpl,
@@ -187,7 +191,7 @@ async function processProviderJob({ aiService, baseUrl, env, fetchImpl, job, now
       url: `${baseUrl}/api/provider/jobs/${encodeURIComponent(job.job_id)}/complete`,
       body: {
         worker_id: workerId,
-        lease_token: job.lease_token,
+        lease_token: heartbeat.leaseToken(),
         status: "failed",
         error: message
       }
@@ -200,6 +204,61 @@ async function processProviderJob({ aiService, baseUrl, env, fetchImpl, job, now
       reason: message
     };
   }
+}
+
+function startProviderJobHeartbeat({ baseUrl, fetchImpl, job, token, workerId }) {
+  let currentLeaseToken = String(job?.lease_token ?? "");
+  let stopped = false;
+  let inFlight = false;
+  let lastError = null;
+  const intervalMs = providerHeartbeatIntervalMs(job?.lease_ttl_seconds);
+
+  async function renew() {
+    if (stopped || inFlight) return;
+    inFlight = true;
+    try {
+      const response = await postJson({
+        fetchImpl,
+        token,
+        url: `${baseUrl}/api/provider/jobs/${encodeURIComponent(job.job_id)}/heartbeat`,
+        body: {
+          worker_id: workerId,
+          lease_token: currentLeaseToken
+        }
+      });
+      if (response.ok) {
+        currentLeaseToken = String(response.payload.lease_token ?? currentLeaseToken);
+        lastError = null;
+      } else {
+        lastError = `Heartbeat request failed with HTTP ${response.status}: ${response.text}`;
+      }
+    } catch (error) {
+      lastError = errorMessage(error);
+    } finally {
+      inFlight = false;
+    }
+  }
+
+  const timer = setInterval(renew, intervalMs);
+  timer.unref?.();
+  return {
+    stop() {
+      stopped = true;
+      clearInterval(timer);
+    },
+    leaseToken() {
+      return currentLeaseToken;
+    },
+    lastError() {
+      return lastError;
+    }
+  };
+}
+
+function providerHeartbeatIntervalMs(leaseTtlSeconds) {
+  const ttlMs = Number(leaseTtlSeconds) * 1000;
+  if (!Number.isFinite(ttlMs) || ttlMs <= 0) return 60_000;
+  return Math.max(500, Math.min(60_000, Math.floor(ttlMs / 3)));
 }
 
 async function executeLeasedJob({ aiService, env, fetchImpl, job }) {

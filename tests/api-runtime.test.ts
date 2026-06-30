@@ -7,6 +7,7 @@ const renderPacketsRoute = apiRouteContracts.find((route) => route.id === "rende
 const calendarConnectionStartRoute = apiRouteContracts.find((route) => route.id === "calendar-connection-start")!;
 const providerJobLeaseRoute = apiRouteContracts.find((route) => route.id === "provider-job-lease")!;
 const providerJobStatusRoute = apiRouteContracts.find((route) => route.id === "provider-job-status")!;
+const providerJobHeartbeatRoute = apiRouteContracts.find((route) => route.id === "provider-job-heartbeat")!;
 const adminAiFlowConfigsSaveRoute = apiRouteContracts.find((route) => route.id === "admin-ai-flow-configs-save")!;
 const adminWorkerConfigSaveRoute = apiRouteContracts.find((route) => route.id === "admin-worker-config-save")!;
 const persistedMutationRouteIds = [
@@ -476,6 +477,12 @@ test-clerk-jwt-key
       ok: true,
       role: "provider"
     });
+    await expect(
+      runtime.authorize(providerJobHeartbeatRoute, { headers: { authorization: `Bearer ${providerToken}` } })
+    ).resolves.toMatchObject({
+      ok: true,
+      role: "provider"
+    });
   });
 
   it("leases and completes provider jobs without exposing database or object-store credentials to the worker", async () => {
@@ -549,6 +556,27 @@ test-clerk-jwt-key
     expect(queries.some((query) => query.sql.includes("FROM admin_runtime_configs") && query.params.includes("ai-flow-configs"))).toBe(true);
     expect(queries.some((query) => query.sql.includes("FOR UPDATE SKIP LOCKED"))).toBe(true);
 
+    const heartbeat = await runtime.renewProviderJobLease({
+      authContext,
+      jobId: leasedJob.job_id,
+      body: {
+        worker_id: "manny-comfy-01",
+        lease_token: leasedJob.lease_token
+      }
+    });
+
+    expect(heartbeat).toMatchObject({
+      statusCode: 200,
+      payload: {
+        status: "lease-renewed",
+        job_id: "job-ai-provider-1",
+        route_id: "ai-card-generate",
+        lease_ttl_seconds: 300
+      }
+    });
+    expect(heartbeat.payload.lease_token).toMatch(/^[a-f0-9]{64}$/);
+    expect(queries.some((query) => query.sql.includes("SET locked_at = NOW()"))).toBe(true);
+
     const status = await runtime.readProviderJobStatus({
       authContext,
       routeIds: ["ai-card-generate", "manual-vendor-handoff"]
@@ -591,7 +619,7 @@ test-clerk-jwt-key
       jobId: leasedJob.job_id,
       body: {
         worker_id: "manny-comfy-01",
-        lease_token: leasedJob.lease_token,
+        lease_token: heartbeat.payload.lease_token,
         status: "succeeded",
         result: {
           status: "ai-result-ready",
@@ -772,10 +800,33 @@ function createProviderPool(queries: Array<{ sql: string; params: unknown[] }>, 
       if (sql.includes("FOR UPDATE SKIP LOCKED")) {
         if (leaseUsed) return { rows: [], rowCount: 0 };
         leaseUsed = true;
-        return { rows: leasedRows, rowCount: leasedRows.length };
+        const workerId = String(params[2] ?? "manny-comfy-01");
+        for (const row of currentRows) {
+          row.status = "running";
+          row.locked_by = workerId;
+        }
+        return { rows: currentRows, rowCount: currentRows.length };
       }
       if (sql.includes("FROM api_jobs") && sql.includes("WHERE id = $1")) {
-        return { rows: currentRows.filter((row) => row.id === params[0]), rowCount: 1 };
+        const rows = currentRows.filter((row) => row.id === params[0]);
+        return { rows, rowCount: rows.length };
+      }
+      if (sql.includes("SET locked_at = NOW()") && sql.includes("RETURNING id, route_id")) {
+        const row = currentRows.find((candidate) => candidate.id === params[0] && candidate.locked_by === params[1]);
+        if (!row) return { rows: [], rowCount: 0 };
+        row.locked_at = new Date().toISOString();
+        return {
+          rows: [
+            {
+              id: row.id,
+              route_id: row.route_id,
+              attempt_count: row.attempt_count,
+              max_attempts: row.max_attempts,
+              locked_at: row.locked_at
+            }
+          ],
+          rowCount: 1
+        };
       }
       return { rows: [], rowCount: 1 };
     },

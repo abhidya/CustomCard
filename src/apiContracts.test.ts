@@ -30,6 +30,7 @@ describe("api contracts", () => {
         "ai-card-generate",
         "provider-job-lease",
         "provider-job-status",
+        "provider-job-heartbeat",
         "admin-provider-job-status",
         "provider-job-complete",
         "customer-bootstrap",
@@ -94,6 +95,7 @@ describe("api contracts", () => {
     const aiJobStatus = apiRouteContracts.find((route) => route.id === "ai-job-status");
     const providerJobLease = apiRouteContracts.find((route) => route.id === "provider-job-lease");
     const providerJobStatus = apiRouteContracts.find((route) => route.id === "provider-job-status");
+    const providerJobHeartbeat = apiRouteContracts.find((route) => route.id === "provider-job-heartbeat");
     const adminProviderJobStatus = apiRouteContracts.find((route) => route.id === "admin-provider-job-status");
     const providerJobComplete = apiRouteContracts.find((route) => route.id === "provider-job-complete");
     const adminLocalAiLoopRun = apiRouteContracts.find((route) => route.id === "admin-local-ai-loop-run");
@@ -341,6 +343,18 @@ describe("api contracts", () => {
     });
     expect(providerJobStatus?.responseSchema).toEqual(
       expect.arrayContaining(["queued_total", "running_total", "stale_running_total", "dead_lettered_total", "oldest_queued_age_seconds", "queue.items"])
+    );
+    expect(providerJobHeartbeat).toMatchObject({
+      method: "POST",
+      path: "/api/provider/jobs/:id/heartbeat",
+      audience: "provider",
+      auth: "provider-token",
+      idempotencyKeyRequired: false,
+      externalNetworkCalls: false,
+      realOrdersEnabled: false
+    });
+    expect(providerJobHeartbeat?.responseSchema).toEqual(
+      expect.arrayContaining(["lease_token", "lease_expires_at", "heartbeat_at"])
     );
     expect(adminProviderJobStatus).toMatchObject({
       method: "GET",

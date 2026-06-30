@@ -41,6 +41,8 @@ function inspectMobileSources() {
       path: "src/customerExperience.ts",
       patterns: [
         "requiredMobileCapabilities",
+        "mobileBootstrap",
+        "mobileExperienceManifest",
         "mobileAccountOptions",
         "mobileImportActions",
         "mobileExperienceSections",
@@ -67,11 +69,25 @@ function inspectMobileSources() {
         "collectMobileCustomerCopy",
         "validateMobileExperience",
         "Confirm before checkout",
+        "repo-local-contract",
+        "native-emulator-render",
+        "signed-native-artifact",
+        "app-store-review",
+        "live-retail-order",
+        "customer-session",
+        "ar-EG",
+        "ur-PK"
+      ]
+    },
+    {
+      path: "../../src/mobileBootstrapData.mjs",
+      patterns: [
+        "Confirm before checkout",
         "Cards to review",
         "Card actions",
         "Start with an event",
-        "Card assistant",
-        "Printing options",
+        "Customer chat",
+        "Print options",
         "Saved offline",
         "Finish at a print shop",
         "repo-local-contract",

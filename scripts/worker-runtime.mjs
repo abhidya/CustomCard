@@ -8,7 +8,7 @@ import {
   createAiCardGenerationService,
 } from "./ai-card-generator.mjs";
 import { createAiFlowCostGate, createPostgresAiFlowCostStore } from "./ai-flow-cost-gate.mjs";
-import { persistGeneratedImageArtifacts as persistGeneratedImageArtifactsToObjectStore } from "./api-runtime.mjs";
+import { persistGeneratedImageArtifacts as persistGeneratedImageArtifactsToObjectStore } from "./generated-image-artifacts.mjs";
 import { createObjectStoreRuntime } from "./object-store-runtime.mjs";
 import { createPostgresRuntime } from "./postgres-runtime.mjs";
 import {

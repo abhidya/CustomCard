@@ -10,6 +10,7 @@ const files = {
   apiServer: "scripts/api-server.mjs",
   apiRouteFamilies: "scripts/api-route-families.mjs",
   mobileExperience: "apps/mobile/src/customerExperience.ts",
+  mobileBootstrap: "src/mobileBootstrapData.mjs",
   mobileApp: "apps/mobile/src/App.tsx",
   mobileDoctor: "apps/mobile/scripts/doctor.mjs",
   packageJson: "package.json",
@@ -24,7 +25,7 @@ const contents = Object.fromEntries(
 const localeCount = countMatches(contents.localization, /\n\s+locale: "/g);
 const rtlCount = countMatches(contents.localization, /writingDirection: "rtl"/g);
 const reviewRequiredCount = countMatches(contents.localization, /reviewState: "human-review-required"/g);
-const mobileLocaleBlock = contents.mobileExperience.match(/export const mobileLocaleOptions: MobileLocaleOption\[] = \[([\s\S]*?)\n\];/)?.[1] ?? "";
+const mobileLocaleBlock = contents.mobileBootstrap.match(/localeOptions: \[([\s\S]*?)\n  \],/)?.[1] ?? "";
 const mobileLocaleCount = countMatches(mobileLocaleBlock, /\n\s+locale: "/g);
 
 const checks = [
@@ -55,7 +56,7 @@ const checks = [
     "Localization cannot require a live translation provider"
   ]),
   checkExact("mobile", "mobile-locale-count", mobileLocaleCount, 4),
-  checkIncludes("mobile", "mobile-localization-parity", `${contents.mobileExperience}\n${contents.mobileApp}\n${contents.mobileDoctor}`, [
+  checkIncludes("mobile", "mobile-localization-parity", `${contents.mobileBootstrap}\n${contents.mobileExperience}\n${contents.mobileApp}\n${contents.mobileDoctor}`, [
     "mobileLocaleOptions",
     "cardLanguage",
     "copyReviewRequired",
@@ -71,7 +72,7 @@ const checks = [
     "npm run localization:doctor",
     "src/localization.ts"
   ]),
-  checkAbsent("safety", "no-live-localization-provider", `${contents.localization}\n${contents.apiServer}\n${contents.apiRouteFamilies}\n${contents.mobileExperience}`, [
+  checkAbsent("safety", "no-live-localization-provider", `${contents.localization}\n${contents.apiServer}\n${contents.apiRouteFamilies}\n${contents.mobileBootstrap}\n${contents.mobileExperience}`, [
     "liveTranslationProvider: true"
   ])
 ];

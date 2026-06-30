@@ -1,10 +1,27 @@
 {
   "text": [
     {
+      "id": "text-local-openai-compatible",
+      "label": "Local LM Studio/KoboldCPP OpenAI-compatible card-copy",
+      "adapterId": "local-openai-compatible-chat",
+      "model": "local-default",
+      "requiredEnv": [
+        [
+          "CUSTOMCARD_LOCAL_LLM_BASE_URL",
+          "LMSTUDIO_BASE_URL",
+          "KOBOLDCPP_BASE_URL"
+        ]
+      ],
+      "configured": true,
+      "missingEnv": [],
+      "contextWindowTokens": 0,
+      "maxTokens": 3200
+    },
+    {
       "id": "text-cloudflare-baseline",
       "label": "Current Cloudflare text baseline",
       "adapterId": "cloudflare-workers-ai-chat",
-      "modelFromEnv": "CLOUDFLARE_WORKERS_AI_TEXT_MODEL",
+      "model": "@cf/qwen/qwen3-30b-a3b-fp8",
       "requiredEnv": [
         "CLOUDFLARE_ACCOUNT_ID",
         [
@@ -12,7 +29,21 @@
           "CLOUDFLARE_API_TOKEN"
         ]
       ],
-      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "configured": true,
+      "missingEnv": []
+    },
+    {
+      "id": "text-cloudflare-qwen3-30b-a3b-fp8",
+      "label": "Cloudflare Qwen3 30B A3B FP8 card-copy planner",
+      "adapterId": "cloudflare-workers-ai-chat",
+      "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+      "requiredEnv": [
+        "CLOUDFLARE_ACCOUNT_ID",
+        [
+          "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
+          "CLOUDFLARE_API_TOKEN"
+        ]
+      ],
       "configured": true,
       "missingEnv": []
     },
@@ -91,10 +122,28 @@
   ],
   "image": [
     {
+      "id": "image-local-comfyui",
+      "label": "Local ComfyUI checkpoint",
+      "adapterId": "local-comfyui-api-image",
+      "model": "DreamShaper_8_pruned.safetensors",
+      "requiredEnv": [
+        [
+          "CUSTOMCARD_COMFYUI_URL",
+          "COMFYUI_URL"
+        ]
+      ],
+      "configured": true,
+      "missingEnv": [],
+      "workflowId": "customcard-production-text-overlay",
+      "workflowPath": "D:\\manny\\Documents\\CustomCard\\comfyui-workflows\\customcard-production-text-overlay.json",
+      "workflowJson": "",
+      "workflowInputsJson": "{width:960,height:1344,timeout_ms:900000}"
+    },
+    {
       "id": "image-cloudflare-sdxl-lightning",
       "label": "Current Cloudflare SDXL Lightning baseline",
       "adapterId": "cloudflare-workers-ai-image",
-      "modelFromEnv": "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
       "requiredEnv": [
         "CLOUDFLARE_ACCOUNT_ID",
         [
@@ -102,7 +151,6 @@
           "CLOUDFLARE_API_TOKEN"
         ]
       ],
-      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
       "configured": true,
       "missingEnv": []
     },
@@ -128,6 +176,17 @@
       "model": "text2img",
       "requiredEnv": [
         "DEEPAI_API_KEY"
+      ],
+      "configured": true,
+      "missingEnv": []
+    },
+    {
+      "id": "image-runcomfy-flux-2-dev-free",
+      "label": "RunComfy Flux 2 Dev Free",
+      "adapterId": "runcomfy-model-api-image",
+      "model": "blackforestlabs/flux-2/dev/text-to-image",
+      "requiredEnv": [
+        "RUNCOMFY_API_TOKEN"
       ],
       "configured": true,
       "missingEnv": []
@@ -225,15 +284,19 @@
   ],
   "executableAdapters": {
     "text": [
+      "local-openai-compatible-chat",
+      "cloudflare-workers-ai-chat",
       "cloudflare-workers-ai-chat",
       "huggingface-chat",
       "huggingface-chat",
       "huggingface-chat"
     ],
     "image": [
+      "local-comfyui-api-image",
       "cloudflare-workers-ai-image",
       "cloudflare-workers-ai-image",
       "deepai-text2img-image",
+      "runcomfy-model-api-image",
       "huggingface-image",
       "huggingface-image",
       "huggingface-image",

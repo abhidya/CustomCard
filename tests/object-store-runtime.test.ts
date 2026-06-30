@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { apiRouteContracts } from "../src/apiRouteContractsData.mjs";
 import { createApiRuntime } from "../scripts/api-runtime.mjs";
+import { persistGeneratedImageArtifacts } from "../scripts/generated-image-artifacts.mjs";
 import { createObjectStoreRuntime } from "../scripts/object-store-runtime.mjs";
 
 const objectStoreEnv = {
@@ -334,6 +335,52 @@ describe("object store runtime", () => {
     expect(downloaded.contentType).toBe("image/webp");
     expect(downloaded.body.length).toBe(persisted?.payload.images[0].image_byte_length);
     expect(downloaded.body.equals(pngBuffer)).toBe(false);
+  });
+
+  it("persists generated image artifacts through the generated image artifact module", async () => {
+    const objectStoreRuntime = createObjectStoreRuntime({ env: objectStoreEnv });
+    const { buffer: pngBuffer, dataUrl: pngDataUrl } = await buildCompressiblePngDataUrl();
+
+    const persisted = await persistGeneratedImageArtifacts({
+      objectStoreRuntime,
+      authContext: { userId: "user-direct-images", role: "customer", sessionId: "session-direct-images" },
+      payload: {
+        draft_id: "ai-draft-direct-storage",
+        images: [
+          {
+            panel_id: "front",
+            image_url: pngDataUrl,
+            width: 1500,
+            height: 2100
+          }
+        ]
+      }
+    });
+
+    expect(persisted?.payload.generated_image_persistence).toMatchObject({
+      status: "stored",
+      inlineImageBytesPersisted: false,
+      compression: {
+        attemptedArtifactCount: 1,
+        compressedArtifactCount: 1,
+        algorithms: ["sharp-webp-v1"]
+      }
+    });
+    expect(persisted?.payload.images[0]).toMatchObject({
+      image_storage_provider: "s3-compatible",
+      image_inline_bytes_persisted: false,
+      image_object_key: "projects/ai-user-direct-images/render-packets/ai-draft-direct-storage/provider-01-front.webp"
+    });
+
+    const signedUrl = new URL(persisted!.payload.images[0].image_url);
+    const downloaded = await objectStoreRuntime.readSignedArtifact({
+      objectKey: signedUrl.pathname.replace(/^\/api\/artifacts\//, ""),
+      query: signedUrl.searchParams
+    });
+
+    expect(downloaded.statusCode).toBe(200);
+    expect(downloaded.contentType).toBe("image/webp");
+    expect(downloaded.body.length).toBeLessThan(pngBuffer.length);
   });
 
   it("losslessly compresses generated SVG images before object storage", async () => {

@@ -4,7 +4,9 @@
 
 | Candidate | Adapter | Model | Configured | Missing env |
 | --- | --- | --- | --- | --- |
-| `text-cloudflare-baseline` | `cloudflare-workers-ai-chat` | `@cf/meta/llama-3.1-8b-instruct-fast` | yes | none |
+| `text-local-openai-compatible` | `local-openai-compatible-chat` | `local-default` | yes | none |
+| `text-cloudflare-baseline` | `cloudflare-workers-ai-chat` | `@cf/qwen/qwen3-30b-a3b-fp8` | yes | none |
+| `text-cloudflare-qwen3-30b-a3b-fp8` | `cloudflare-workers-ai-chat` | `@cf/qwen/qwen3-30b-a3b-fp8` | yes | none |
 | `text-hf-qwen3-235b-a22b` | `huggingface-chat` | `Qwen/Qwen3-235B-A22B-Instruct-2507` | yes | none |
 | `text-hf-deepseek-v4-flash` | `huggingface-chat` | `deepseek-ai/DeepSeek-V4-Flash` | yes | none |
 | `text-hf-gpt-oss-20b` | `huggingface-chat` | `openai/gpt-oss-20b` | yes | none |
@@ -16,9 +18,11 @@
 
 | Candidate | Adapter | Model | Configured | Missing env |
 | --- | --- | --- | --- | --- |
+| `image-local-comfyui` | `local-comfyui-api-image` | `DreamShaper_8_pruned.safetensors` | yes | none |
 | `image-cloudflare-sdxl-lightning` | `cloudflare-workers-ai-image` | `@cf/bytedance/stable-diffusion-xl-lightning` | yes | none |
 | `image-cloudflare-flux-schnell` | `cloudflare-workers-ai-image` | `@cf/black-forest-labs/flux-1-schnell` | yes | none |
 | `image-deepai-text2img` | `deepai-text2img-image` | `text2img` | yes | none |
+| `image-runcomfy-flux-2-dev-free` | `runcomfy-model-api-image` | `blackforestlabs/flux-2/dev/text-to-image` | yes | none |
 | `image-openai-gpt-image-2` | `openai-images` | `gpt-image-2` | no | OPENAI_API_KEY |
 | `image-gemini-supported` | `google-gemini-image` | `gemini-3.1-flash-image` | no | GOOGLE_GENERATIVE_AI_API_KEY |
 | `image-hf-flux-schnell` | `huggingface-image` | `black-forest-labs/FLUX.1-schnell` | yes | none |

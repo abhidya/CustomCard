@@ -244,6 +244,7 @@ export const apiPersistenceRouteContracts: ApiRoutePersistenceContract[] = [
   routePersistence("ai-job-status", "read-only", "customer", ["auth_sessions", "api_jobs"], true, false, false),
   routePersistence("provider-job-lease", "mutation", "provider", ["api_jobs", "audit_log"], false, false, false),
   routePersistence("provider-job-status", "read-only", "provider", ["api_jobs"], false, false, false),
+  routePersistence("provider-job-heartbeat", "mutation", "provider", ["api_jobs"], false, false, false, false),
   routePersistence("admin-provider-job-status", "read-only", "admin", ["auth_sessions", "api_jobs"], true, false, false),
   routePersistence("provider-job-complete", "mutation", "provider", ["api_jobs", "audit_log"], false, false, false),
   routePersistence("admin-readiness", "read-only", "admin", ["auth_sessions", "account_identities", "account_recovery_challenges", "provider_connections", "provider_call_events", "audit_log"], true, false, false),
@@ -566,7 +567,8 @@ function routePersistence(
   persistedTables: PersistenceTableName[],
   sessionRequired: boolean,
   idempotencyReplayRequired: boolean,
-  queueBacked: boolean
+  queueBacked: boolean,
+  auditRequired = mode === "mutation"
 ): ApiRoutePersistenceContract {
   return {
     routeId,
@@ -575,7 +577,7 @@ function routePersistence(
     persistedTables,
     sessionRequired,
     idempotencyReplayRequired,
-    auditRequired: mode === "mutation",
+    auditRequired,
     queueBacked
   };
 }

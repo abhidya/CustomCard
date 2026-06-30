@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { buildFulfillmentRecommendations } from "../src/fulfillmentRecommendation";
+import { mobileBootstrap } from "../src/mobileBootstrapData.mjs";
 import { buildPrinterPricingComparison } from "../src/printerPricing";
 import {
   buildMobileAccountOptions,
@@ -65,6 +66,7 @@ describe("mobile customer experience contract", () => {
   it("covers the required customer app capabilities with visible sections", () => {
     const summary = summarizeMobileExperience();
 
+    expect(mobileExperience).toBe(mobileBootstrap);
     expect(validateMobileExperience()).toEqual([]);
     expect(summary.capabilityCount).toBe(requiredMobileCapabilities.length);
     expect(summary.customerVisibleSections).toBe(requiredMobileCapabilities.length);

@@ -3,6 +3,7 @@ import {
   type CalendarConnectionStartMode,
   type CalendarConnectionStartPacket
 } from "../../../src/onboardingCalendar";
+import { mobileBootstrap } from "../../../src/mobileBootstrapData.mjs";
 
 export const requiredMobileCapabilities = [
   "account-import",
@@ -295,129 +296,30 @@ export interface MobileRenderSnapshot {
   footerSafetyMessages: string[];
 }
 
-export const mobileSafetyBanner = {
-  label: "Confirm before checkout",
-  detail: "Confirm price, pickup, payment, and ordering on the print shop site before ordering."
-} as const;
-
-export const mobileProofBoundary: MobileProofBoundary = {
-  deterministicProofMode: "repo-local-contract",
-  currentStage: "proof-review",
-  proofApproved: false,
-  printOptionsUnlocked: false,
-  webCustomerFlowStages: [
-    "account-import",
-    "event-review",
-    "card-approval",
-    "proof-review",
-    "fulfillment-review",
-    "checkout-confirmation"
-  ],
-  repoLocalEvidence: ["mobile contract tests", "mobile render readiness data", "mobile doctor scripts"],
-  blockedLiveProofs: ["native-emulator-render", "signed-native-artifact", "app-store-review", "live-retail-order"],
-  emulatorProofClaimed: false,
-  signedArtifactClaimed: false,
-  liveOrderClaimed: false
+const mobileExperienceManifest = mobileBootstrap as MobileExperienceModel & {
+  service: 'customcard-api';
+  realOrdersEnabled: false;
 };
-
-export const mobileTodaySummary: MobileTodaySummary = {
-  cardQueueItemId: "card_anniversary_sara_ahmed",
-  recipientLabel: "Sara and Ahmed",
-  eventLabel: "Anniversary",
-  dueLabel: "Today by 5:00 PM",
-  primaryAction: "approve",
-  riskBadge: "Ready to review",
-  panelCount: 4,
-  offlineReady: true,
-  realOrdersEnabled: false,
-  customerVisible: true
-};
-
-export const mobileExperienceSections: MobileExperienceSection[] = [
-  {
-    id: "account-import",
-    title: "Start with an event",
-    detail: "Paste invite or ICS details now; secure Google Calendar connection is still pending.",
-    status: "Ready",
-    customerVisible: true
-  },
-  {
-    id: "card-queue",
-    title: "Cards to review",
-    detail: "Upcoming card candidates show event source, approval state, due date, and next customer action.",
-    status: "Ready",
-    customerVisible: true
-  },
-  {
-    id: "approval-controls",
-    title: "Card actions",
-    detail: "Approve, adjust tone, snooze, dismiss, or request a fresh draft before print review.",
-    status: "Ready",
-    customerVisible: true
-  },
-  {
-    id: "memory-review",
-    title: "Memory review",
-    detail: "Only approved relationship notes are eligible for reuse.",
-    status: "Approved",
-    customerVisible: true
-  },
-  {
-    id: "text-chat",
-    title: "Customer chat",
-    detail: "The card assistant explains event, memory, artwork, and checkout state.",
-    status: "Ready",
-    customerVisible: true
-  },
-  {
-    id: "image-render",
-    title: "Card proof path",
-    detail: "Card proof preview is ready now; AI artwork waits for account, review, and spend controls.",
-    status: "Ready",
-    customerVisible: true
-  },
-  {
-    id: "pricing-preview",
-    title: "Print options",
-    detail: "The app compares current estimates, pickup speed, shipping, and same-cart coupon proof before checkout.",
-    status: "Ready",
-    customerVisible: true
-  },
-  {
-    id: "handoff",
-    title: "Finish at a print shop",
-    detail: "Print package export stays active while automatic checkout remains blocked.",
-    status: "Ready",
-    customerVisible: true
-  },
-  {
-    id: "offline-sync",
-    title: "Saved offline",
-    detail: "Customer actions stay saved on this device and replay safely when the session is available.",
-    status: "Ready",
-    customerVisible: true
-  }
-];
 
 export const mobileCalendarConnectionStartPackets = buildCalendarConnectionStartPackets().filter(
-  (packet) => packet.id === "google-calendar-events" || packet.id === "icloud-ics-fallback"
+  (packet) => packet.id === 'google-calendar-events' || packet.id === 'icloud-ics-fallback'
 );
 
 export function buildMobileAccountOptions(
   startPackets: CalendarConnectionStartPacket[] = mobileCalendarConnectionStartPackets
 ): MobileAccountOption[] {
   return startPackets.map((packet) => {
-    const provider = packet.id === "google-calendar-events" ? "Google" : "Apple";
+    const provider = packet.id === 'google-calendar-events' ? 'Google' : 'Apple';
 
     return {
       provider,
-      label: provider === "Google" ? "Google Calendar" : "Apple Calendar ICS export",
+      label: provider === 'Google' ? 'Google Calendar' : 'Apple Calendar ICS export',
       detail:
-        provider === "Google"
-          ? "Google Calendar can be reviewed here; until secure connection is enabled, paste invite or ICS details."
-          : "Copy event details from an Apple Calendar export, then paste selected details.",
-      sourceMode: packet.sourceMode === "manual-export" ? "manual-export" : "oauth-readiness",
-      startMode: packet.startMode === "manual-export-guide" ? "manual-export-guide" : "oauth-evidence-required",
+        provider === 'Google'
+          ? 'Google Calendar can be reviewed here; until secure connection is enabled, paste invite or ICS details.'
+          : 'Copy event details from an Apple Calendar export, then paste selected details.',
+      sourceMode: packet.sourceMode === 'manual-export' ? 'manual-export' : 'oauth-readiness',
+      startMode: packet.startMode === 'manual-export-guide' ? 'manual-export-guide' : 'oauth-evidence-required',
       startRoute: packet.apiRoute,
       nextApiRoute: packet.nextApiRoute,
       clientMayPrepareProviderRequest: false,
@@ -434,350 +336,24 @@ export function buildMobileAccountOptions(
   });
 }
 
-export const mobileAccountOptions: MobileAccountOption[] = buildMobileAccountOptions();
-
-export const mobileImportActions: MobileImportAction[] = [
-  {
-    kind: "calendar",
-    label: "Review calendar options",
-    detail: "Paste invite or ICS details now; secure Google Calendar connection is still pending.",
-    sourceMode: "contract-gated",
-    customerVisible: true
-  },
-  {
-    kind: "email",
-    label: "Email receipts later",
-    detail: "Email receipt review requires consent, metadata limits, and retention review.",
-    sourceMode: "contract-gated",
-    customerVisible: true
-  },
-  {
-    kind: "invite",
-    label: "Import an invite",
-    detail: "Paste an email invite, event link, or calendar export.",
-    sourceMode: "local-paste",
-    customerVisible: true
-  }
-];
-
-export const mobileCardQueueItems: MobileCardQueueItem[] = [
-  {
-    id: "card_anniversary_sara_ahmed",
-    recipientLabel: "Sara and Ahmed",
-    eventLabel: "Anniversary",
-    dueIso: "2026-06-03T17:00:00.000Z",
-    status: "needs-approval",
-    nextAction: "approve",
-    panelCount: 4,
-    source: "ics-import",
-    customerVisible: true
-  },
-  {
-    id: "card_birthday_mom",
-    recipientLabel: "Mom",
-    eventLabel: "Birthday",
-    dueIso: "2026-07-10T12:00:00.000Z",
-    status: "approved",
-    nextAction: "edit-tone",
-    panelCount: 4,
-    source: "manual-entry",
-    customerVisible: true
-  }
-];
-
-export const mobileApprovalActions: MobileApprovalAction[] = [
-  {
-    kind: "approve",
-    label: "Approve card",
-    detail: "Moves the prepared card to print review.",
-    mutationType: "approve-card",
-    idempotencyRequired: true,
-    networkMode: "local-first-api",
-    requiresCustomerConfirmation: true
-  },
-  {
-    kind: "edit-tone",
-    label: "Edit tone",
-    detail: "Stores a customer-approved tone adjustment without calling paid generation.",
-    mutationType: "update-tone",
-    idempotencyRequired: true,
-    networkMode: "local-first-api",
-    requiresCustomerConfirmation: true
-  },
-  {
-    kind: "snooze",
-    label: "Snooze",
-    detail: "Keeps the opportunity in the queue for later review.",
-    mutationType: "snooze-card",
-    idempotencyRequired: true,
-    networkMode: "local-first-api",
-    requiresCustomerConfirmation: false
-  },
-  {
-    kind: "dismiss",
-    label: "Dismiss",
-    detail: "Marks the opportunity inactive without deleting relationship memory.",
-    mutationType: "dismiss-card",
-    idempotencyRequired: true,
-    networkMode: "local-first-api",
-    requiresCustomerConfirmation: true
-  },
-  {
-    kind: "request-regeneration",
-    label: "Draft again",
-    detail: "Creates another draft from approved event and memory details before paid generation is enabled.",
-    mutationType: "update-tone",
-    idempotencyRequired: true,
-    networkMode: "local-only",
-    requiresCustomerConfirmation: false
-  }
-];
-
-export const mobileChatTranscript: MobileChatMessage[] = [
-  {
-    speaker: "assistant",
-    source: "local-script",
-    text: "I found one anniversary card candidate from your pasted invite."
-  },
-  {
-    speaker: "customer",
-    source: "customer-approval",
-    text: "Use the approved memory about their first apartment, but keep it short."
-  },
-  {
-    speaker: "assistant",
-    source: "local-script",
-    text: "The card assistant can draft and explain the card before any paid generation is connected."
-  },
-  {
-    speaker: "assistant",
-    source: "local-script",
-    text: "AI artwork and automatic orders stay off until account, review, and certification gates pass."
-  }
-];
-
-export const mobileMemoryReviewItems: MobileMemoryReviewItem[] = [
-  {
-    id: "memory_sara_ahmed_first_apartment",
-    cardQueueItemId: "card_anniversary_sara_ahmed",
-    recipientLabel: "Sara and Ahmed",
-    memoryLabel: "First apartment note",
-    usage: "approved",
-    approvalRequired: false,
-    rawContentStored: false,
-    customerVisible: true
-  },
-  {
-    id: "memory_mom_garden",
-    cardQueueItemId: "card_birthday_mom",
-    recipientLabel: "Mom",
-    memoryLabel: "Garden hobby note",
-    usage: "review-required",
-    approvalRequired: true,
-    rawContentStored: false,
-    customerVisible: true
-  }
-];
-
-export const mobileRenderChoices: MobileRenderChoice[] = [
-  {
-    label: "Template card proof",
-    detail: "Included 5x7 panel rendering mirrors the web customer path.",
-    mode: "free-local"
-  },
-  {
-    label: "AI artwork",
-    detail: "AI artwork is available later after account, budget, and review controls are ready.",
-    mode: "credential-gated"
-  }
-];
-
-export const mobilePricingPreviews: MobilePricingPreview[] = [
-  {
-    vendor: "Walgreens",
-    product: "5x7 folded card",
-    estimatedTotalCents: 349,
-    sourceMode: "review-only-public-price",
-    manualConfirmationRequired: true,
-    liveQuote: false
-  },
-  {
-    vendor: "CVS",
-    product: "5x7 folded card",
-    estimatedTotalCents: 898,
-    sourceMode: "review-only-public-price",
-    manualConfirmationRequired: true,
-    liveQuote: false
-  },
-  {
-    vendor: "FedEx",
-    product: "5x7 card print option",
-    estimatedTotalCents: 329,
-    sourceMode: "review-only-public-price",
-    manualConfirmationRequired: true,
-    liveQuote: false
-  }
-];
-
-export const mobileFulfillmentRecommendations: MobileFulfillmentRecommendation[] = [
-  {
-    kind: "lowest-current-estimate",
-    label: "Lowest current estimate",
-    vendorName: "Walmart Photo",
-    totalCents: 56,
-    etaLabel: "same-day pickup candidate",
-    confirmationCopy:
-      "Public prices and source-listed coupons are only estimates until the print shop accepts them in the same cart.",
-    subtotalIncludesCoupon: false,
-    priceProofStatus: "public-estimate-only",
-    priceProofLabel: "Estimate only",
-    liveQuote: false,
-    liveOrder: false,
-    customerVisible: true
-  },
-  {
-    kind: "fastest-pickup",
-    label: "Fastest pickup candidate",
-    vendorName: "Walmart Photo",
-    totalCents: 56,
-    etaLabel: "same-day pickup candidate",
-    confirmationCopy: "Closest store ETA needs live location and inventory confirmation.",
-    subtotalIncludesCoupon: false,
-    priceProofStatus: "public-estimate-only",
-    priceProofLabel: "Estimate only",
-    liveQuote: false,
-    liveOrder: false,
-    customerVisible: true
-  },
-  {
-    kind: "cheapest-shipped",
-    label: "Cheapest shipped option",
-    vendorName: "FedEx Office",
-    totalCents: 2299,
-    etaLabel: "ships in days",
-    confirmationCopy: "Shipping dates and delivery fees require checkout confirmation.",
-    subtotalIncludesCoupon: false,
-    priceProofStatus: "public-estimate-only",
-    priceProofLabel: "Estimate only",
-    liveQuote: false,
-    liveOrder: false,
-    customerVisible: true
-  }
-];
-
-export const mobilePrintProofChecks: MobilePrintProofCheck[] = [
-  {
-    id: "proof-size",
-    label: "5x7 format",
-    detail: "Four SVG panels match the customer print package.",
-    passed: true,
-    realOrderState: "manual",
-    customerVisible: true
-  },
-  {
-    id: "proof-resolution",
-    label: "300 DPI export",
-    detail: "The print package keeps print dimensions and checksum evidence together.",
-    passed: true,
-    realOrderState: "manual",
-    customerVisible: true
-  },
-  {
-    id: "proof-safe-zone",
-    label: "Safe zone",
-    detail: "Panel text stays inside the tested SVG print area.",
-    passed: true,
-    realOrderState: "manual",
-    customerVisible: true
-  },
-  {
-    id: "proof-order-gate",
-    label: "Checkout review",
-    detail: "Automatic checkout stays off; confirm print shop, price, and pickup before ordering.",
-    passed: true,
-    realOrderState: "disabled",
-    customerVisible: true
-  }
-];
-
-export const mobileHandoffSteps: MobileHandoffStep[] = [
-  {
-    label: "Download print package",
-    detail: "Download the 5x7 PDF proof and four SVG panels for print shop upload.",
-    realOrderState: "manual"
-  },
-  {
-    label: "Confirm pickup or shipping",
-    detail: "Automatic checkout is blocked; confirm pickup, shipping, price, and payment on the print shop site.",
-    realOrderState: "disabled"
-  }
-];
-
-export const mobileLocaleOptions: MobileLocaleOption[] = [
-  {
-    locale: "en-US",
-    label: "English (US)",
-    cardLanguage: "English",
-    writingDirection: "ltr",
-    copyReviewRequired: false,
-    customerVisible: true
-  },
-  {
-    locale: "es-US",
-    label: "Spanish (US)",
-    cardLanguage: "Spanish",
-    writingDirection: "ltr",
-    copyReviewRequired: true,
-    customerVisible: true
-  },
-  {
-    locale: "ur-PK",
-    label: "Urdu (RTL)",
-    cardLanguage: "Urdu",
-    writingDirection: "rtl",
-    copyReviewRequired: true,
-    customerVisible: true
-  },
-  {
-    locale: "ar-EG",
-    label: "Arabic (RTL)",
-    cardLanguage: "Arabic",
-    writingDirection: "rtl",
-    copyReviewRequired: true,
-    customerVisible: true
-  }
-];
-
-export const mobileSyncState: MobileSyncState = {
-  apiBaseUrlRequired: true,
-  authMode: "customer-session",
-  offlineQueueEnabled: true,
-  idempotencyRequired: true,
-  pendingMutationTypes: ["approve-card", "update-tone", "snooze-card", "dismiss-card", "prepare-handoff"],
-  forbiddenMutationTypes: ["submit-live-order", "charge-payment", "upload-raw-memory"],
-  retryPolicy: "exponential-backoff"
-};
-
-export const mobileExperience: MobileExperienceModel = {
-  safetyBanner: mobileSafetyBanner,
-  proofBoundary: mobileProofBoundary,
-  todaySummary: mobileTodaySummary,
-  sections: mobileExperienceSections,
-  accountOptions: mobileAccountOptions,
-  importActions: mobileImportActions,
-  queueItems: mobileCardQueueItems,
-  approvalActions: mobileApprovalActions,
-  chatTranscript: mobileChatTranscript,
-  memoryReviewItems: mobileMemoryReviewItems,
-  renderChoices: mobileRenderChoices,
-  pricingPreviews: mobilePricingPreviews,
-  fulfillmentRecommendations: mobileFulfillmentRecommendations,
-  printProofChecks: mobilePrintProofChecks,
-  handoffSteps: mobileHandoffSteps,
-  localeOptions: mobileLocaleOptions,
-  syncState: mobileSyncState
-};
-
+export const mobileSafetyBanner: MobileSafetyBanner = mobileExperienceManifest.safetyBanner;
+export const mobileProofBoundary: MobileProofBoundary = mobileExperienceManifest.proofBoundary;
+export const mobileTodaySummary: MobileTodaySummary = mobileExperienceManifest.todaySummary;
+export const mobileExperienceSections: MobileExperienceSection[] = mobileExperienceManifest.sections;
+export const mobileAccountOptions: MobileAccountOption[] = mobileExperienceManifest.accountOptions;
+export const mobileImportActions: MobileImportAction[] = mobileExperienceManifest.importActions;
+export const mobileCardQueueItems: MobileCardQueueItem[] = mobileExperienceManifest.queueItems;
+export const mobileApprovalActions: MobileApprovalAction[] = mobileExperienceManifest.approvalActions;
+export const mobileChatTranscript: MobileChatMessage[] = mobileExperienceManifest.chatTranscript;
+export const mobileMemoryReviewItems: MobileMemoryReviewItem[] = mobileExperienceManifest.memoryReviewItems;
+export const mobileRenderChoices: MobileRenderChoice[] = mobileExperienceManifest.renderChoices;
+export const mobilePricingPreviews: MobilePricingPreview[] = mobileExperienceManifest.pricingPreviews;
+export const mobileFulfillmentRecommendations: MobileFulfillmentRecommendation[] = mobileExperienceManifest.fulfillmentRecommendations;
+export const mobilePrintProofChecks: MobilePrintProofCheck[] = mobileExperienceManifest.printProofChecks;
+export const mobileHandoffSteps: MobileHandoffStep[] = mobileExperienceManifest.handoffSteps;
+export const mobileLocaleOptions: MobileLocaleOption[] = mobileExperienceManifest.localeOptions;
+export const mobileSyncState: MobileSyncState = mobileExperienceManifest.syncState;
+export const mobileExperience: MobileExperienceModel = mobileExperienceManifest;
 export const mobileRenderSnapshot = buildMobileRenderSnapshot();
 
 export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileExperience): MobileRenderSnapshot {

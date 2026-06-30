@@ -1577,6 +1577,7 @@ describe("production infrastructure contract", () => {
     const mobileRootApp = read("apps/mobile/App.tsx");
     const mobileApp = read("apps/mobile/src/App.tsx");
     const mobileExperience = read("apps/mobile/src/customerExperience.ts");
+    const mobileBootstrap = read("src/mobileBootstrapData.mjs");
 
     expect(mobilePackage).toContain("\"expo\"");
     expect(mobilePackage).toContain("\"react-native\"");
@@ -1621,9 +1622,6 @@ describe("production infrastructure contract", () => {
     expect(mobileExperience).toContain("secondaryActions");
     expect(mobileExperience).toContain("tappableActionCount");
     expect(mobileExperience).toContain("disabledActionCount");
-    expect(mobileExperience).toContain("Card assistant");
-    expect(mobileExperience).toContain("Start with an event");
-    expect(mobileExperience).toContain("Printing options");
     expect(mobileExperience).toContain("mobileChatTranscript");
     expect(mobileExperience).toContain("mobileRenderChoices");
     expect(mobileExperience).toContain("mobileAccountOptions");
@@ -1632,6 +1630,10 @@ describe("production infrastructure contract", () => {
     expect(mobileExperience).toContain("mobileHandoffSteps");
     expect(mobileExperience).toContain("requiredMobileCapabilities");
     expect(mobileExperience).toContain("validateMobileExperience");
+    expect(mobileExperience).toContain("mobileExperienceManifest");
+    expect(mobileBootstrap).toContain("Customer chat");
+    expect(mobileBootstrap).toContain("Start with an event");
+    expect(mobileBootstrap).toContain("Print options");
     expect(mobileExperience).toContain("automatic orders stay off");
     const doctorOutput = execFileSync("node", ["apps/mobile/scripts/doctor.mjs"], {
       encoding: "utf8",
@@ -1720,7 +1722,7 @@ describe("production infrastructure contract", () => {
       providerUsageLedger: true,
       queueJobs: true
     });
-    expect(report.readiness.api).toMatchObject({ statefulRoutes: 41, idempotentMutations: 23 });
+    expect(report.readiness.api).toMatchObject({ statefulRoutes: 42, idempotentMutations: 24 });
     expect(report.readiness.localBrowserState).toMatchObject({
       auditItems: 6,
       dbRequiredItems: 0,

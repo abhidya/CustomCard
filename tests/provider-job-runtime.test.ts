@@ -147,6 +147,58 @@ describe("provider job runtime", () => {
     expect(queries.some((query) => Array.isArray(query.params[1]) && query.params[1].includes("render-packets"))).toBe(false);
   });
 
+  it("renews a running provider job lease by heartbeat without returning the job payload", async () => {
+    const queries: Array<{ sql: string; params: unknown[] }> = [];
+    const runtime = createProviderJobRuntime({
+      env: providerEnv,
+      getPool: async () =>
+        createProviderPool(queries, [
+          {
+            id: "job-provider-heartbeat-1",
+            user_id: "user-demo",
+            route_id: "ai-card-generate",
+            idempotency_key_id: "idem-provider-heartbeat-1",
+            payload: {
+              body: { sender: "Manny", recipient: "Sara", occasion: "birthday" }
+            },
+            attempt_count: 1,
+            max_attempts: 3,
+            locked_at: new Date().toISOString()
+          }
+        ]),
+      workerConfig: providerWorkerConfig
+    });
+
+    const lease = await runtime.leaseJobs({
+      authContext: { ok: true, role: "provider", userId: "provider-worker" },
+      workerId: "local-comfy-01",
+      routeIds: ["ai-card-generate"],
+      limit: 1
+    });
+    const leasedJob = lease.payload.jobs[0];
+    const heartbeat = await runtime.renewJobLease({
+      authContext: { ok: true, role: "provider", userId: "provider-worker" },
+      jobId: leasedJob.job_id,
+      body: {
+        worker_id: "local-comfy-01",
+        lease_token: leasedJob.lease_token
+      }
+    });
+
+    expect(heartbeat).toMatchObject({
+      statusCode: 200,
+      payload: {
+        status: "lease-renewed",
+        job_id: "job-provider-heartbeat-1",
+        route_id: "ai-card-generate",
+        lease_ttl_seconds: 300
+      }
+    });
+    expect(heartbeat.payload.lease_token).toMatch(/^[a-f0-9]{64}$/);
+    expect(JSON.stringify(heartbeat.payload)).not.toContain("Sara");
+    expect(queries.some((query) => query.sql.includes("SET locked_at = NOW()"))).toBe(true);
+  });
+
   it("falls back to failed physical status when an older DB rejects dead_lettered", async () => {
     const queries: Array<{ sql: string; params: unknown[] }> = [];
     let expiredUpdateAttempts = 0;
@@ -230,11 +282,47 @@ describe("provider job runtime", () => {
 });
 
 function createProviderPool(queries: Array<{ sql: string; params: unknown[] }>, leasedRows: unknown[] = []) {
+  let leaseUsed = false;
+  const currentRows = leasedRows.map((row) => ({
+    ...(row as Record<string, unknown>),
+    status: "running",
+    locked_by: "local-comfy-01"
+  }));
   return {
     async query(sql: string, params: unknown[] = []) {
       queries.push({ sql: compactSql(sql), params });
       if (sql.includes("locked_at < NOW()")) return { rows: [], rowCount: 0 };
-      if (sql.includes("FOR UPDATE SKIP LOCKED")) return { rows: leasedRows, rowCount: leasedRows.length };
+      if (sql.includes("FOR UPDATE SKIP LOCKED")) {
+        if (leaseUsed) return { rows: [], rowCount: 0 };
+        leaseUsed = true;
+        const workerId = String(params[2] ?? "local-comfy-01");
+        for (const row of currentRows) {
+          row.status = "running";
+          row.locked_by = workerId;
+        }
+        return { rows: currentRows, rowCount: currentRows.length };
+      }
+      if (sql.includes("FROM api_jobs") && sql.includes("WHERE id = $1")) {
+        const rows = currentRows.filter((row) => row.id === params[0]);
+        return { rows, rowCount: rows.length };
+      }
+      if (sql.includes("SET locked_at = NOW()") && sql.includes("RETURNING id, route_id")) {
+        const row = currentRows.find((candidate) => candidate.id === params[0] && candidate.locked_by === params[1]);
+        if (!row) return { rows: [], rowCount: 0 };
+        row.locked_at = new Date().toISOString();
+        return {
+          rows: [
+            {
+              id: row.id,
+              route_id: row.route_id,
+              attempt_count: row.attempt_count,
+              max_attempts: row.max_attempts,
+              locked_at: row.locked_at
+            }
+          ],
+          rowCount: 1
+        };
+      }
       return { rows: [], rowCount: 0 };
     }
   };

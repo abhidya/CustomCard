@@ -34,12 +34,13 @@ describe("persistence contracts", () => {
     );
     const mutationContracts = apiPersistenceRouteContracts.filter((contract) => contract.mode === "mutation");
     const idempotentMutationContracts = mutationContracts.filter((contract) => contract.requiredRole !== "provider");
+    const auditedMutationContracts = mutationContracts.filter((contract) => contract.auditRequired);
     const queueBackedRouteIds = apiRouteContracts.filter((route) => route.runtimeMode === "queue-backed").map((route) => route.id);
 
     expect(idempotentMutationContracts).toHaveLength(mutationRoutes.length);
     expect(idempotentMutationContracts.every((contract) => contract.idempotencyReplayRequired)).toBe(true);
     expect(idempotentMutationContracts.every((contract) => contract.persistedTables.includes("idempotency_keys"))).toBe(true);
-    expect(mutationContracts.every((contract) => contract.persistedTables.includes("audit_log"))).toBe(true);
+    expect(auditedMutationContracts.every((contract) => contract.persistedTables.includes("audit_log"))).toBe(true);
     expect(apiPersistenceRouteContracts.find((contract) => contract.routeId === "provider-job-lease")).toMatchObject({
       requiredRole: "provider",
       sessionRequired: false,
@@ -51,6 +52,14 @@ describe("persistence contracts", () => {
       requiredRole: "provider",
       sessionRequired: false,
       idempotencyReplayRequired: false,
+      persistedTables: ["api_jobs"]
+    });
+    expect(apiPersistenceRouteContracts.find((contract) => contract.routeId === "provider-job-heartbeat")).toMatchObject({
+      mode: "mutation",
+      requiredRole: "provider",
+      sessionRequired: false,
+      idempotencyReplayRequired: false,
+      auditRequired: false,
       persistedTables: ["api_jobs"]
     });
     expect(apiPersistenceRouteContracts.find((contract) => contract.routeId === "admin-provider-job-status")).toMatchObject({
@@ -109,7 +118,7 @@ describe("persistence contracts", () => {
       requiredRole: "customer",
       persistedTables: expect.arrayContaining(["auth_sessions", "idempotency_keys", "draft_states", "audit_log"])
     });
-    expect(summary.routes.schemaBacked).toBe(41);
+    expect(summary.routes.schemaBacked).toBe(42);
     expect(summary.routes.idempotentMutations).toBe(summary.routes.mutations);
     expect(apiPersistenceRouteContracts.find((contract) => contract.routeId === "admin-demo-reset")).toMatchObject({
       requiredRole: "admin",

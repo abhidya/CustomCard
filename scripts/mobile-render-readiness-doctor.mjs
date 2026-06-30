@@ -32,6 +32,7 @@ const doctorManifest = defineDoctorManifest({
     readinessTest: "src/mobileRenderReadiness.test.ts",
     mobileApp: "apps/mobile/src/App.tsx",
     mobileExperience: "apps/mobile/src/customerExperience.ts",
+    mobileBootstrap: "src/mobileBootstrapData.mjs",
     mobileDoctor: "apps/mobile/scripts/doctor.mjs",
     mobileReleaseDoctor: "apps/mobile/scripts/release-doctor.mjs",
     mobileNativeInstallProof: "apps/mobile/scripts/native-install-proof.mjs",
@@ -218,7 +219,7 @@ const checks = [
   checkDoctorSourceSignals(doctorManifest, contents, {
     lane: "mobile-source",
     id: "native-mobile-render-source-signals",
-    sourceKeys: ["mobileApp", "mobileExperience"],
+    sourceKeys: ["mobileApp", "mobileExperience", "mobileBootstrap"],
     signals: [
       "SafeAreaView",
       "ScrollView",

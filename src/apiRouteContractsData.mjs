@@ -298,6 +298,29 @@ export const apiRouteContracts = [
     backedBy: ["api_jobs", "provider-token auth", "postgres aggregate status", "sanitized queue diagnostics"]
   },
   {
+    id: "provider-job-heartbeat",
+    method: "POST",
+    path: "/api/provider/jobs/:id/heartbeat",
+    audience: "provider",
+    auth: "provider-token",
+    runtimeMode: "durable-api",
+    requestSchema: ["Authorization: Bearer provider token", "worker_id", "lease_token"],
+    responseSchema: [
+      "job_id",
+      "route_id",
+      "lease_token",
+      "lease_expires_at",
+      "lease_ttl_seconds",
+      "heartbeat_at"
+    ],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Provider-token-protected workers renew only their currently leased jobs by signed lease token; no customer payload, credentials, or inline image bytes are returned.",
+    backedBy: ["api_jobs", "provider-token auth", "postgres lease lock"]
+  },
+  {
     id: "admin-provider-job-status",
     method: "GET",
     path: "/api/admin/provider/jobs/status",
@@ -1160,6 +1183,7 @@ export const persistedTablesByRouteId = Object.freeze({
   "ai-job-status": ["auth_sessions", "api_jobs"],
   "provider-job-lease": ["api_jobs", "audit_log"],
   "provider-job-status": ["api_jobs"],
+  "provider-job-heartbeat": ["api_jobs", "audit_log"],
   "admin-provider-job-status": ["auth_sessions", "api_jobs"],
   "provider-job-complete": ["api_jobs", "audit_log"],
   "admin-ai-flow-configs": ["auth_sessions", "admin_runtime_configs", "audit_log"],

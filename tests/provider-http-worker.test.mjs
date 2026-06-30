@@ -120,7 +120,9 @@ describe("provider HTTP worker", () => {
 
   it("uses the leased server admin route config for generator execution", async () => {
     const completionBodies = [];
+    const heartbeatBodies = [];
     const { base64: imageBase64 } = await buildCompressiblePngBase64();
+    let delayedImageGeneration = false;
     const env = {
       CUSTOMCARD_PROVIDER_API_BASE_URL: "https://customcard.example",
       CUSTOMCARD_PROVIDER_WORKER_TOKEN: "test-provider-worker-token-32-chars",
@@ -167,6 +169,8 @@ describe("provider HTTP worker", () => {
               {
                 job_id: "job_123",
                 lease_token: "lease_123",
+                lease_ttl_seconds: 1,
+                lease_expires_at: "2030-01-01T00:00:01.000Z",
                 route_id: "ai-card-generate",
                 payload: {
                   body: {
@@ -200,10 +204,27 @@ describe("provider HTTP worker", () => {
         );
       }
       if (requestUrl === "https://api.openai.com/v1/images/generations") {
+        if (!delayedImageGeneration) {
+          delayedImageGeneration = true;
+          await new Promise((resolve) => setTimeout(resolve, 700));
+        }
         return new Response(JSON.stringify({ data: [{ b64_json: imageBase64 }] }), {
           status: 200,
           headers: { "content-type": "application/json" }
         });
+      }
+      if (requestUrl === "https://customcard.example/api/provider/jobs/job_123/heartbeat") {
+        heartbeatBodies.push(JSON.parse(String(init?.body)));
+        return new Response(
+          JSON.stringify({
+            status: "lease-renewed",
+            lease_token: "lease_renewed",
+            lease_ttl_seconds: 1,
+            lease_expires_at: "2030-01-01T00:00:02.000Z",
+            heartbeat_at: "2030-01-01T00:00:01.000Z"
+          }),
+          { status: 200, headers: { "content-type": "application/json" } }
+        );
       }
       if (requestUrl === "https://customcard.example/api/provider/jobs/job_123/complete") {
         completionBodies.push(JSON.parse(String(init?.body)));
@@ -244,11 +265,18 @@ describe("provider HTTP worker", () => {
       succeeded: 1,
       failed: 0
     });
+    expect(heartbeatBodies.length).toBeGreaterThan(0);
+    expect(heartbeatBodies[0]).toMatchObject({
+      worker_id: expect.any(String),
+      lease_token: "lease_123"
+    });
     expect(JSON.parse(String(fetchImpl.mock.calls[0][1]?.body))).toMatchObject({
       routes: ["ai-card-generate"],
       limit: 1
     });
     expect(completion).toMatchObject({
+      worker_id: heartbeatBodies[0].worker_id,
+      lease_token: "lease_renewed",
       status: "succeeded",
       result: {
         httpStatusCode: 200,

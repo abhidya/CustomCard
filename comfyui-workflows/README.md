@@ -121,6 +121,26 @@ cd D:\ComfyUI-Easy-Install\ComfyUI-Easy-Install\ComfyUI\custom_nodes
 git clone https://github.com/pollockjj/ComfyUI-MultiGPU.git
 ```
 
+Recommended client startup for the 1080 Ti + 1080 box:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/start-local-comfyui.ps1 -CudaDevices "0,1" -ExpectedGpuCount 2 -PreviewMethod none -CacheMode classic -ReserveVramGb 0.5
+```
+
+If startup is still slow, keep the process warm between queue jobs and measure
+the log line `ComfyUI startup duration seconds` in `.codex/tmp/`. Most startup
+cost comes from Python imports, custom node imports, and first model discovery;
+restarting per job will swamp any workflow tuning. To isolate custom-node cost,
+run a diagnostic restart with only the required nodes enabled:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/start-local-comfyui.ps1 -CudaDevices "0,1" -ExpectedGpuCount 2 -DisableAllCustomNodes -WhitelistCustomNodes "CustomCardTextComposer","ComfyUI-MultiGPU"
+```
+
+Only keep the whitelist mode if `/object_info` still exposes
+`CustomCardTextComposer` plus the MultiGPU loader classes; otherwise revert to a
+normal custom-node load and remove unused nodes from the ComfyUI install.
+
 Regenerate/check the workflow variants:
 
 ```powershell
@@ -137,6 +157,14 @@ Run a tiny SDXL Turbo execution smoke test:
 
 ```powershell
 rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/comfyui-multigpu-smoke.mjs
+```
+
+For client proof, require telemetry for both GPU indexes. This records
+`nvidia-smi` samples before, during, and after the prompt and fails when either
+GPU is missing or below the minimum observed memory threshold:
+
+```powershell
+rtk proxy powershell -NoProfile -ExecutionPolicy Bypass -File tools/node.ps1 scripts/comfyui-multigpu-smoke.mjs --require-gpu-telemetry true --require-gpu-indexes 0,1 --min-gpu-memory-mib 128
 ```
 
 Production-text benchmark with the MultiGPU loader:
