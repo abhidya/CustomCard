@@ -1,9 +1,9 @@
 export function providerArtifactUploadContract() {
   return {
-    mode: "api-complete-inline-data-url",
+    mode: "api-complete-compressed-data-url",
     r2CredentialsExposed: false,
     directR2UploadPlanned: true,
-    detail: "The provider posts generated image data to complete; the production API persists artifacts to object storage."
+    detail: "The provider posts compressed generated image data to complete; the production API persists artifacts to object storage."
   };
 }
 

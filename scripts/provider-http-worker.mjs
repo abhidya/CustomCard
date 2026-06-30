@@ -13,6 +13,12 @@ import {
   hasLiveProviderNetworkCall
 } from "./provider-worker-payload-contract.mjs";
 
+const providerCompletionWebpQuality = 82;
+const providerCompletionWebpEffort = 4;
+const providerCompletionMaxEdgePixels = 2100;
+const providerCompletionRasterMimeTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
+let sharpCodecPromise;
+
 export function resolveProviderHttpWorkerEnv(env = process.env) {
   const resolved = resolveLocalComfyWorkerEnv(env);
   resolved.CUSTOMCARD_PROVIDER_API_BASE_URL =
@@ -213,15 +219,94 @@ async function executeLeasedJob({ aiService, env, fetchImpl, job }) {
     throw new Error(`Provider failed with HTTP ${generated.statusCode}${failure ? `: ${failure}` : ""}.`);
   }
   const liveNetworkCalls = hasLiveProviderNetworkCall(generated.payload);
+  const completionPayload = await compactProviderCompletionPayloadForPost(generated.payload);
   return buildProviderWorkerResult({
     status: "ai-result-ready",
     routeId: job.route_id,
     httpStatusCode: generated.statusCode,
     providerCallMode: liveNetworkCalls ? "live-provider" : "provider-disabled",
-    payload: generated.payload,
+    payload: completionPayload,
     liveNetworkCalls,
     evidence: "Provider HTTP worker completed queued AI flow with scoped provider-token auth."
   });
+}
+
+export async function compactProviderCompletionPayloadForPost(payload = {}) {
+  if (!payload || typeof payload !== "object" || !Array.isArray(payload.images)) return payload;
+  const images = await Promise.all(payload.images.map((image) => compactProviderCompletionImageForPost(image)));
+  return {
+    ...payload,
+    images
+  };
+}
+
+async function compactProviderCompletionImageForPost(image) {
+  if (!image || typeof image !== "object") return image;
+  const dataUrl = String(image.image_url ?? image.imageUrl ?? "");
+  const parsed = parseProviderCompletionImageDataUrl(dataUrl);
+  if (!parsed || !providerCompletionRasterMimeTypes.has(parsed.mimeType)) return image;
+  try {
+    const sharp = await loadSharpCodec();
+    const result = await sharp(parsed.buffer, {
+      failOn: "none",
+      limitInputPixels: providerCompletionMaxEdgePixels * providerCompletionMaxEdgePixels * 2
+    })
+      .rotate()
+      .resize({
+        width: providerCompletionMaxEdgePixels,
+        height: providerCompletionMaxEdgePixels,
+        fit: "inside",
+        withoutEnlargement: true
+      })
+      .webp({
+        quality: providerCompletionWebpQuality,
+        effort: providerCompletionWebpEffort,
+        smartSubsample: true
+      })
+      .toBuffer({ resolveWithObject: true });
+
+    if (!result?.data || result.data.length <= 0 || result.data.length >= parsed.buffer.length) return image;
+    return {
+      ...image,
+      image_url: `data:image/webp;base64,${result.data.toString("base64")}`,
+      provider_completion_compression: {
+        status: "compressed",
+        algorithm: "sharp-webp-v1",
+        originalMimeType: parsed.mimeType,
+        storedMimeType: "image/webp",
+        originalByteLength: parsed.buffer.length,
+        storedByteLength: result.data.length,
+        savedBytes: parsed.buffer.length - result.data.length,
+        width: result.info?.width,
+        height: result.info?.height,
+        quality: providerCompletionWebpQuality
+      }
+    };
+  } catch (error) {
+    return {
+      ...image,
+      provider_completion_compression: {
+        status: "skipped",
+        algorithm: "sharp-webp-v1",
+        reason: "raster-compression-failed",
+        detail: errorMessage(error).slice(0, 160)
+      }
+    };
+  }
+}
+
+function parseProviderCompletionImageDataUrl(value) {
+  const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,([\s\S]*)$/i.exec(String(value));
+  if (!match) return undefined;
+  const mimeType = match[1].toLowerCase();
+  const buffer = Buffer.from(match[2], "base64");
+  if (buffer.length <= 0) return undefined;
+  return { mimeType, buffer };
+}
+
+async function loadSharpCodec() {
+  if (!sharpCodecPromise) sharpCodecPromise = import("sharp").then((module) => module.default ?? module);
+  return sharpCodecPromise;
 }
 
 function providerFailureFromPayload(payload) {

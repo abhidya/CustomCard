@@ -24,7 +24,7 @@ const defaultWorkerConfig = Object.freeze({
 const defaultProviderWorkerConfig = Object.freeze({
   routeIds: ["ai-card-generate"],
   batchSize: 1,
-  leaseSeconds: 300,
+  leaseSeconds: 3600,
   retryBackoffSeconds: 60,
   pollIntervalMs: 5000
 });

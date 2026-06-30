@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  compactProviderCompletionPayloadForPost,
   createProviderHttpWorkerRuntime,
   loadProviderWorkerEnvFiles
 } from "../scripts/provider-http-worker.mjs";
@@ -119,6 +120,7 @@ describe("provider HTTP worker", () => {
 
   it("uses the leased server admin route config for generator execution", async () => {
     const completionBodies = [];
+    const { base64: imageBase64 } = await buildCompressiblePngBase64();
     const env = {
       CUSTOMCARD_PROVIDER_API_BASE_URL: "https://customcard.example",
       CUSTOMCARD_PROVIDER_WORKER_TOKEN: "test-provider-worker-token-32-chars",
@@ -198,7 +200,7 @@ describe("provider HTTP worker", () => {
         );
       }
       if (requestUrl === "https://api.openai.com/v1/images/generations") {
-        return new Response(JSON.stringify({ data: [{ b64_json: "iVBORw0KGgo=" }] }), {
+        return new Response(JSON.stringify({ data: [{ b64_json: imageBase64 }] }), {
           status: 200,
           headers: { "content-type": "application/json" }
         });
@@ -260,10 +262,31 @@ describe("provider HTTP worker", () => {
               adapter_id: "openai-images",
               model: "gpt-image-lease"
             })
-          }
+          },
+          images: expect.arrayContaining([
+            expect.objectContaining({
+              image_url: expect.stringMatching(/^data:image\/webp;base64,/),
+              provider_completion_compression: expect.objectContaining({
+                status: "compressed",
+                algorithm: "sharp-webp-v1",
+                originalMimeType: "image/png",
+                storedMimeType: "image/webp"
+              })
+            })
+          ])
         }
       }
     });
+    expect(JSON.stringify(completion)).not.toContain(`data:image/png;base64,${imageBase64}`);
+  });
+
+  it("leaves completion payloads unchanged when there are no inline image data URLs", async () => {
+    const payload = {
+      generated_by: "ai-text-only",
+      images: [{ panel_id: "front", image_url: "/api/artifacts/front.webp" }]
+    };
+
+    await expect(compactProviderCompletionPayloadForPost(payload)).resolves.toEqual(payload);
   });
 
   it("keeps raw node mjs runtime files off TypeScript-only control-plane imports", () => {
@@ -279,3 +302,18 @@ describe("provider HTTP worker", () => {
     }
   });
 });
+
+async function buildCompressiblePngBase64() {
+  const sharp = (await import("sharp")).default;
+  const buffer = await sharp({
+    create: {
+      width: 256,
+      height: 256,
+      channels: 3,
+      background: "#f7ead1"
+    }
+  })
+    .png()
+    .toBuffer();
+  return { buffer, base64: buffer.toString("base64") };
+}
