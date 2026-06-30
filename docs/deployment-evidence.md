@@ -85,8 +85,8 @@ Verification:
   512x512 JPEG response for
   `@cf/bytedance/stable-diffusion-xl-lightning` image generation.
   This is historical smoke evidence; the current documented default text model
-  is `@cf/meta/llama-3.1-8b-instruct-fast` because the live card-copy path uses
-  JSON Schema response format support.
+  is `@cf/qwen/qwen3-30b-a3b-fp8` because the live card-copy path uses JSON
+  Schema response format support.
 
 Conclusion:
 

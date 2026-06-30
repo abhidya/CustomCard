@@ -11,11 +11,16 @@ zero credentials for the free local workflow.
 
 | Tool | Version | Install |
 |---|---|---|
-| Node.js | 22 LTS | [nodejs.org](https://nodejs.org/) or `brew install node` |
-| npm | 10+ | Bundled with Node |
+| Node.js | 24+ | [nodejs.org](https://nodejs.org/) or the tracked `tools/node.ps1` wrapper |
+| npm | Bundled with Node 24+ | Bundled with Node or the tracked `tools/npm.ps1` wrapper |
 | Git | any | `brew install git` |
 
-Optional for AI card generation:
+The root package declares `engines.node >=24`. On this Windows checkout, the
+tracked wrappers install/use Node `v24.18.0` under `.codex/runtime/node/`; use
+the normal `npm ...` examples below as logical script names, or run them through
+`tools/npm.ps1` when there is no global Node/npm on PATH.
+
+Optional for the legacy Python sidecar:
 
 | Tool | Version | Install |
 |---|---|---|
@@ -61,13 +66,36 @@ publishable key:
 ### Run tests
 
 ```bash
-npm test                     # 530 tests, ~25 s
+npm test                     # current Vitest suite
 npm run check                # tests + coverage + build + audit (CI gate)
 ```
 
-### Optional: AI card generation sidecar
+### AI card generation
 
-When you want the "Generate with AI" button to work:
+The current web app calls the same-origin `/api/ai/card/generate` route. Provider
+selection, model IDs, budget controls, queue behavior, and live-call policy are
+owned by **Admin > Providers** and the server environment. No browser env var
+points directly at a provider or sidecar.
+
+For the default production-shaped path:
+
+```bash
+# Card-copy default: Cloudflare Workers AI
+CLOUDFLARE_ACCOUNT_ID=replace-me
+CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN=replace-me
+# or use CLOUDFLARE_API_TOKEN as the shared Workers AI token
+
+# Card-image default: local ComfyUI production-text workflow
+CUSTOMCARD_COMFYUI_URL=http://127.0.0.1:8188
+```
+
+Then configure the `card-copy` and `card-image` flows in Admin Providers. The
+source defaults are Cloudflare Qwen3 30B for card copy and
+`local-comfyui-api-image` with the Flux2 Klein production-text workflow for card
+images, with Cloudflare image generation available as a hosted fallback.
+
+The Python `card_gen/` service is now a legacy local sidecar contract. Use it
+only when intentionally testing that contract:
 
 ```bash
 # Terminal 1 — sidecar
@@ -76,7 +104,7 @@ ANTHROPIC_API_KEY=sk-ant-... CARD_GEN_API_TOKEN=<32+ char secret> \
   CARD_GEN_ALLOWED_ORIGINS=http://127.0.0.1:5173,http://localhost:5173 \
   uv run uvicorn card_gen.app:app --reload --port 8001
 
-# Terminal 2 — app; Studio uses the same-origin API route
+# Terminal 2 — app; Studio still uses the same-origin API route
 npm run dev
 ```
 
@@ -88,7 +116,9 @@ ANTHROPIC_API_KEY=sk-ant-... CARD_GEN_API_TOKEN=<32+ char secret> \
   uv run uvicorn card_gen.app:app --reload --port 8001
 ```
 
-Sidecar health check: `curl http://localhost:8001/health` → `{"status":"ok","image_gen":"enabled"}`
+Sidecar health check: `curl http://localhost:8001/health` returns
+`{"status":"ok","image_gen":"enabled"}` when optional image generation is
+configured.
 
 ### Mobile web preview
 
@@ -134,7 +164,9 @@ vercel env add CUSTOMCARD_API_RUNTIME preview   # value: postgres
 vercel env add NODE_ENV preview              # value: production
 ```
 
-Optional — AI sidecar on QA. Deploy the sidecar to [Railway](https://railway.app/) or [Render](https://render.com/):
+Optional legacy sidecar on QA. Prefer the same-origin API route plus Admin
+Providers for new QA work; deploy the sidecar only when exercising the
+`card_gen/` contract:
 
 ```bash
 # On Railway: add a new service, point to card_gen/, set:
@@ -176,7 +208,7 @@ DATABASE_URL="postgres://..." node scripts/demo-reset.mjs
 |---|---|---|
 | Vercel | Hosting | [vercel.com](https://vercel.com/) |
 | Neon / Supabase / Railway Postgres | Database | [neon.tech](https://neon.tech/) |
-| Anthropic API | AI card generation | [console.anthropic.com](https://console.anthropic.com/) |
+| Cloudflare Workers AI or another configured provider | AI card generation | [developers.cloudflare.com/workers-ai](https://developers.cloudflare.com/workers-ai/) |
 
 Live vendor APIs (unlock when gates are ready — see §4):
 
@@ -227,7 +259,7 @@ curl https://customcard-three.vercel.app/api/health
 # Dashboard: Settings → Deployment Protection → Disable or add bypass token
 ```
 
-### 3f. Deploy the AI sidecar (optional)
+### 3f. Deploy the legacy AI sidecar (optional)
 
 ```bash
 # Railway (recommended — zero-config Python deployment)
@@ -237,15 +269,19 @@ curl https://customcard-three.vercel.app/api/health
 #    CARD_GEN_API_TOKEN=<32+ char secret>
 #    CARD_GEN_ALLOWED_ORIGINS=https://customcard-three.vercel.app
 #    OPENAI_API_KEY=sk-...       (optional, for image gen)
-# 3. Keep the sidecar behind server-owned routing. Do not expose its URL as a
-#    browser env switch.
+# 3. Keep the sidecar behind server-owned routing. The browser still calls
+#    /api/ai/card/generate.
 ```
 
 ---
 
 ## 4. Unlock live integration gates
 
-All gates are `false` by default. Flip them one at a time after the required evidence is in place.
+Production write/order gates fail closed by default. AI flow live-call settings
+are resolved from Admin Providers and still require usable server-side
+credentials, model policy, and spend controls before the route can make live
+provider calls. Flip high-risk gates one at a time after the required evidence
+is in place.
 
 ### Gate: AI card generation (`liveProviderCallsEnabled`)
 
@@ -260,7 +296,13 @@ The legacy sidecar requires `Authorization: Bearer $CARD_GEN_API_TOKEN` outside
 the explicit localhost-only development opt-in, so keep it behind same-origin
 server routing instead of pointing browser builds directly at it.
 
-Required: `ANTHROPIC_API_KEY` on the sidecar server only. It never touches the browser.
+Default hosted card copy requires `CLOUDFLARE_ACCOUNT_ID` plus
+`CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN` or `CLOUDFLARE_API_TOKEN`. The default
+image lane requires `CUSTOMCARD_COMFYUI_URL`/`COMFYUI_URL` for the local ComfyUI
+adapter; hosted image fallbacks use their own server-side credentials such as
+`CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN` or `RUNCOMFY_API_TOKEN`. Legacy sidecar
+text generation uses `ANTHROPIC_API_KEY` on the sidecar server only. None of
+these secrets touch the browser.
 
 ---
 
@@ -471,6 +513,7 @@ DATABASE_URL="postgres://..." node scripts/hosted-api-readiness-doctor.mjs
 | `CLOUDFLARE_API_TOKEN` | Server env only | For live AI route | Shared Workers AI API token if lane-specific tokens are unset |
 | `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN` | Server env only | No | Optional text-lane Workers AI token |
 | `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN` | Server env only | No | Optional image-lane Workers AI token |
+| `CUSTOMCARD_COMFYUI_URL` / `COMFYUI_URL` | Server/provider worker env only | For default local image lane | Local ComfyUI API base URL used by `local-comfyui-api-image` |
 | `RUNCOMFY_API_TOKEN` | Server env only | For RunComfy image route | RunComfy Model API bearer token; never expose through `VITE_*` |
 | `ANTHROPIC_API_KEY` | Sidecar server only | For AI gen | Text generation model — never in browser |
 | `CARD_GEN_API_TOKEN` | Sidecar server only | For AI gen | Bearer token required by `/generate` outside local dev |
@@ -487,8 +530,9 @@ DATABASE_URL="postgres://..." node scripts/hosted-api-readiness-doctor.mjs
 | `EVENTBRITE_CLIENT_ID` / `EVENTBRITE_CLIENT_SECRET` | Vercel / ignored env files | For event import contract | Eventbrite OAuth app credentials; live import remains gated |
 | `LUMA_API_KEY` | Vercel / ignored env files | For event import contract | Luma calendar API key; live import remains gated |
 | `MEETUP_CLIENT_ID` / `MEETUP_CLIENT_SECRET` | Vercel / ignored env files | For event import contract | Meetup OAuth app credentials; live import remains gated |
-| `VITE_MICROSOFT_CLIENT_ID` | Vercel / `.env.local` | For Outlook OAuth | Microsoft Entra client ID |
-| `MICROSOFT_TENANT_ID` | Vercel (server only) | For Outlook OAuth | Microsoft tenant ID |
+| `VITE_MICROSOFT_CLIENT_ID` | Vercel / `.env.local` | For Outlook OAuth contract | Browser-visible Microsoft Entra client ID used by the metadata-only Outlook OAuth contract |
+| `MICROSOFT_CLIENT_ID` / `MICROSOFT_CLIENT_SECRET` | Vercel / ignored env files | For Microsoft Graph provider contracts | Server-side Microsoft Graph credentials for contact/CRM adapters |
+| `MICROSOFT_TENANT_ID` | Vercel / ignored env files | For Microsoft OAuth and Graph contracts | Microsoft tenant ID |
 
 `.env.local` template is in `.env.example`.
 

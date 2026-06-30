@@ -14,7 +14,8 @@ every purchase is confirmed by the customer on the print shop's own site.
 
 ## Requirements
 
-- Node 20+ and npm
+- Node 24+ and npm when working from this monorepo. The root package engine is
+  `>=24`, and the tracked root wrappers use Node `v24.18.0`.
 - For device/simulator runs: the Expo tooling (installed as a dev dependency)
   plus Xcode (iOS) and/or Android Studio (Android)
 - A running QA or production CustomCard API over HTTPS

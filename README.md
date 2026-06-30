@@ -185,7 +185,7 @@ flowchart LR
   API["API contracts and routes"]
   Persistence["Postgres and memory runtimes"]
   Artifacts["Render packet object store"]
-  Providers["No-network provider runtime"]
+  Providers["Provider contracts and gated AI routes"]
   Doctors["Readiness doctors"]
 
   Web --> Domain
@@ -200,10 +200,12 @@ flowchart LR
   Artifacts --> Doctors
 ```
 
-The important boundary is deliberate: provider adapters and retail-printer paths
-prepare redacted request contracts and handoff packets in this stage. They do
-not make live calls, charge cards, send messages, ingest telemetry, or place
-orders unless a future release explicitly unlocks those gates with evidence.
+The important boundary is deliberate: generic provider adapters and
+retail-printer paths prepare redacted request contracts and handoff packets by
+default. Same-origin AI routes can make live text/image calls only when
+server-owned credentials, Admin Providers policy, auth, and cost gates allow
+them. Retail ordering, payments, messages, telemetry, and vendor mutations stay
+blocked until a future release explicitly unlocks those gates with evidence.
 
 ## Verification
 
@@ -292,7 +294,7 @@ DB doctor evidence.
 | `api/[...path].js` | Vercel serverless API entrypoint. |
 | `infra/` | Docker, Kubernetes, migration, env, and AWS artifact-store IaC contracts. |
 | `apps/mobile/` | Expo mobile customer shell and release doctor. |
-| `card_gen/` | Optional Python card-generation sidecar. |
+| `card_gen/` | Legacy optional Python card-generation sidecar contract. |
 | `docs/` | Product brief, decisions, verification, deployment evidence, roadmap, requirements, and operational notes. |
 | `docs/evidence/` | Screenshot and generated-card comparison artifacts used for review. |
 

@@ -50,15 +50,12 @@ Cloudflare Qwen3 30B card copy plus local ComfyUI image generation with
 stays available in Admin Providers as the hosted image fallback and experiment
 lane, not as an env-selected feature flag.
 
-Use `@cf/bytedance/stable-diffusion-xl-lightning` as the current Cloudflare image
-default. It is the cheapest practical image default on Cloudflare Workers AI and
-is fast enough for iteration; keep deterministic typography in app overlays and
-review generated images for fake lettering or physical mockup artifacts.
-
-Use `@cf/black-forest-labs/flux-1-schnell` as the image quality fallback when
-prompt adherence matters more than the absolute lowest cost. Use
-`@cf/runwayml/stable-diffusion-v1-5-inpainting` only when an edit or mask-based
-inpainting workflow is explicitly needed.
+Use `@cf/black-forest-labs/flux-1-schnell` as the current
+`cloudflare-workers-ai-image` default. `@cf/bytedance/stable-diffusion-xl-lightning`
+remains an Admin-selectable fast iteration preset, but it is no longer the source
+default. Keep deterministic typography in app/export overlays unless the local
+production-text Comfy workflow is active, and review generated images for fake
+lettering or physical mockup artifacts.
 
 Configure provider, model, workflow, budget, queue, and live-call behavior in
 Admin Providers. Use `cloudflare-workers-ai-image` there when validating the
@@ -69,10 +66,11 @@ workflow.
 ## Fallback Order
 
 1. Cloudflare LLM JSON Mode default: `@cf/qwen/qwen3-30b-a3b-fp8`.
-2. Cloudflare LLM low-cost fallback: `@cf/meta/llama-3.1-8b-instruct-fast`.
+2. Card-copy fallback adapter: `huggingface-chat` by default, or another
+   Admin-selected configured text adapter.
 3. Benchmark-backed image/default composition lane: `local-comfyui-api-image` with `customcard-flux2-klein-production-text-overlay` in Admin Providers.
 4. Hosted image fallback: `cloudflare-workers-ai-image` in Admin Providers.
-5. Cloudflare image quality experiment: `@cf/black-forest-labs/flux-1-schnell`.
+5. Cloudflare hosted image default: `@cf/black-forest-labs/flux-1-schnell`.
 6. Hugging Face specialty image fallback for non-commercial typography/layout experiments, especially Ideogram 4.
 7. DeepAI `text2img` as a simple last-resort image API fallback.
 
