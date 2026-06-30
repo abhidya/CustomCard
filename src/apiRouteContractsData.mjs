@@ -1183,7 +1183,7 @@ export const persistedTablesByRouteId = Object.freeze({
   "ai-job-status": ["auth_sessions", "api_jobs"],
   "provider-job-lease": ["api_jobs", "audit_log"],
   "provider-job-status": ["api_jobs"],
-  "provider-job-heartbeat": ["api_jobs", "audit_log"],
+  "provider-job-heartbeat": ["api_jobs"],
   "admin-provider-job-status": ["auth_sessions", "api_jobs"],
   "provider-job-complete": ["api_jobs", "audit_log"],
   "admin-ai-flow-configs": ["auth_sessions", "admin_runtime_configs", "audit_log"],

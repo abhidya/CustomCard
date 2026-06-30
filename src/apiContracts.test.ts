@@ -18,6 +18,7 @@ describe("api contracts", () => {
     expect(persistedTablesForRouteId("render-packets")).toEqual(
       expect.arrayContaining(["render_packets", "provider_call_events", "api_jobs"])
     );
+    expect(persistedTablesForRouteId("provider-job-heartbeat")).toEqual(["api_jobs"]);
   });
 
   it("defines customer, admin, mobile, render, and handoff API routes with safe defaults", () => {
