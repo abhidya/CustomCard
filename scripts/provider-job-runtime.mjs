@@ -1,6 +1,7 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import {
   adminRuntimeConfigKeys,
+  normalizeAdminAiFlowConfigInput,
   normalizeAdminWorkerConfigInput
 } from "../src/adminRuntimeConfigData.mjs";
 import {
@@ -35,6 +36,7 @@ export function createProviderJobRuntime({
       const selectedWorkerId = safeProviderWorkerId(workerId);
       const pool = await getPool();
       const config = await readWorkerConfig(pool);
+      const aiFlowAdminConfig = await readProviderAdminAiFlowConfig({ pool, env });
       const selectedRouteIds = allowedProviderRouteIds(config.providerWorker.routeIds, routeIds);
       if (!selectedWorkerId) {
         return {
@@ -77,7 +79,8 @@ export function createProviderJobRuntime({
           row,
           workerId: selectedWorkerId,
           leaseSeconds,
-          env
+          env,
+          aiFlowAdminConfig
         })
       );
       return {
@@ -362,6 +365,21 @@ async function readProviderAdminWorkerConfig({ pool, workerConfig }) {
   }
 }
 
+async function readProviderAdminAiFlowConfig({ pool, env }) {
+  try {
+    const result = await pool.query(
+      `SELECT payload
+       FROM admin_runtime_configs
+       WHERE key = $1
+       LIMIT 1`,
+      [adminRuntimeConfigKeys.aiFlowConfigs]
+    );
+    return normalizeAdminAiFlowConfigInput(result.rows[0]?.payload ?? {}, env, { migrateLegacyDefaults: true });
+  } catch {
+    return normalizeAdminAiFlowConfigInput({}, env, { migrateLegacyDefaults: true });
+  }
+}
+
 export function authorizeProviderToken({ env, route, request }) {
   const token = readBearerToken(request);
   if (!token) return authError(401, "auth-required", route);
@@ -399,16 +417,20 @@ export function allowedProviderRouteIds(allowedRouteIds, requestedRouteIds) {
   return requested.filter((routeId) => allowed.has(routeId));
 }
 
-export function providerLeasePayload({ row, workerId, leaseSeconds, env }) {
+export function providerLeasePayload({ row, workerId, leaseSeconds, env, aiFlowAdminConfig = [] }) {
   const lockedAtIso = safeDateIso(row.locked_at);
   const expiresAtIso = new Date(new Date(lockedAtIso).getTime() + leaseSeconds * 1000).toISOString();
   const job = normalizeProviderJobRow(row);
+  const payload = sanitizeProviderJobPayload({
+    ...job.payload,
+    aiFlowAdminConfig
+  });
   return {
     job_id: job.id,
     route_id: job.routeId,
     attempt_count: job.attemptCount,
     max_attempts: job.maxAttempts,
-    payload: sanitizeProviderJobPayload(job.payload),
+    payload,
     lease_token: providerLeaseToken({ jobId: job.id, workerId, lockedAtIso, attemptCount: job.attemptCount, env }),
     lease_expires_at: expiresAtIso,
     lease_ttl_seconds: leaseSeconds,

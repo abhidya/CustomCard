@@ -103,7 +103,7 @@ export function createProviderHttpWorkerRuntime({
         results: []
       };
       for (const job of jobs) {
-        const result = await processProviderJob({ aiService, baseUrl, fetchImpl, job, now, token, workerId });
+        const result = await processProviderJob({ aiService, baseUrl, env: resolvedEnv, fetchImpl, job, now, token, workerId });
         report.processed += 1;
         if (result.status === "succeeded") report.succeeded += 1;
         else report.failed += 1;
@@ -150,10 +150,10 @@ export function createProviderHttpWorkerRuntime({
   };
 }
 
-async function processProviderJob({ aiService, baseUrl, fetchImpl, job, now, token, workerId }) {
+async function processProviderJob({ aiService, baseUrl, env, fetchImpl, job, now, token, workerId }) {
   const startedAt = Date.now();
   try {
-    const result = await executeLeasedJob({ aiService, job });
+    const result = await executeLeasedJob({ aiService, env, fetchImpl, job });
     const completion = await postJson({
       fetchImpl,
       token,
@@ -196,13 +196,17 @@ async function processProviderJob({ aiService, baseUrl, fetchImpl, job, now, tok
   }
 }
 
-async function executeLeasedJob({ aiService, job }) {
+async function executeLeasedJob({ aiService, env, fetchImpl, job }) {
   if (job.route_id !== "ai-card-generate") throw new Error(`Unsupported provider route: ${job.route_id}`);
   const payload = job.payload && typeof job.payload === "object" ? job.payload : {};
   const body = payload.body && typeof payload.body === "object" ? payload.body : undefined;
   if (!body) throw new Error("Leased AI card job is missing a body.");
   const requestContext = payload.requestContext && typeof payload.requestContext === "object" ? payload.requestContext : {};
-  const generated = await aiService.generateCard(body, requestContext);
+  const jobAiFlowAdminConfig = leasedJobAiFlowAdminConfig(payload);
+  const selectedAiService = jobAiFlowAdminConfig
+    ? createAiCardGenerationService({ env, fetchImpl, aiFlowAdminConfig: jobAiFlowAdminConfig })
+    : aiService;
+  const generated = await selectedAiService.generateCard(body, requestContext);
   if (generated.statusCode === 429) throw new Error("Provider rate limited.");
   if (generated.statusCode >= 500) {
     const failure = providerFailureFromPayload(generated.payload);
@@ -296,6 +300,12 @@ function parseDotenv(text) {
 function isProviderWorkerEnvKey(key) {
   return /^(CUSTOMCARD_PROVIDER_.+|CUSTOMCARD_HOSTED_API_BASE_URL|PUBLIC_APP_ORIGIN|CUSTOMCARD_RUNCOMFY_|CUSTOMCARD_COMFYUI_|COMFYUI_|CLOUDFLARE_|RUNCOMFY_)/
     .test(key);
+}
+
+function leasedJobAiFlowAdminConfig(payload) {
+  const config = payload?.aiFlowAdminConfig ?? payload?.ai_flow_admin_config;
+  if (!Array.isArray(config) || config.length === 0) return undefined;
+  return config.filter((item) => item && typeof item === "object" && !Array.isArray(item));
 }
 
 function providerAiFlowReadiness(env, aiFlowAdminConfig = []) {

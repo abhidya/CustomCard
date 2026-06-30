@@ -117,7 +117,7 @@ describe("provider HTTP worker", () => {
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
-  it("uses the same admin route config for readiness and leased generator execution", async () => {
+  it("uses the leased server admin route config for generator execution", async () => {
     const completionBodies = [];
     const env = {
       CUSTOMCARD_PROVIDER_API_BASE_URL: "https://customcard.example",
@@ -137,6 +137,22 @@ describe("provider HTTP worker", () => {
         primaryAdapterId: "openai-images",
         fallbackAdapterId: "openai-images",
         model: "gpt-image-2",
+        liveProviderCallsEnabled: true
+      }
+    ];
+    const leasedAiFlowAdminConfig = [
+      {
+        flowId: "card-copy",
+        primaryAdapterId: "openai-responses-chat",
+        fallbackAdapterId: "openai-responses-chat",
+        model: "gpt-4.1-mini-lease",
+        liveProviderCallsEnabled: true
+      },
+      {
+        flowId: "card-image",
+        primaryAdapterId: "openai-images",
+        fallbackAdapterId: "openai-images",
+        model: "gpt-image-lease",
         liveProviderCallsEnabled: true
       }
     ];
@@ -164,7 +180,8 @@ describe("provider HTTP worker", () => {
                   },
                   requestContext: {
                     rateKey: "provider-worker-route-config"
-                  }
+                  },
+                  aiFlowAdminConfig: leasedAiFlowAdminConfig
                 }
               }
             ]
@@ -237,11 +254,11 @@ describe("provider HTTP worker", () => {
           ai_flow: {
             card_copy: expect.objectContaining({
               adapter_id: "openai-responses-chat",
-              model: "gpt-4.1-mini"
+              model: "gpt-4.1-mini-lease"
             }),
             card_image: expect.objectContaining({
               adapter_id: "openai-images",
-              model: "gpt-image-2"
+              model: "gpt-image-lease"
             })
           }
         }

@@ -533,8 +533,20 @@ test-clerk-jwt-key
       }
     });
     expect(leasedJob.payload.requestContext.authContext.sessionId).toBe("provider-lease");
+    expect(leasedJob.payload.aiFlowAdminConfig).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          flowId: "card-image",
+          primaryAdapterId: "local-comfyui-api-image",
+          model: "flux-2-klein-4b.safetensors",
+          workflowId: "customcard-flux2-klein-production-text-overlay",
+          workflowPath: "comfyui-workflows/customcard-flux2-klein-production-text-overlay.json"
+        })
+      ])
+    );
     expect(leasedJob.lease_token).toMatch(/^[a-f0-9]{64}$/);
     expect(queries.some((query) => query.sql.includes("FROM admin_runtime_configs") && query.params.includes("worker-config"))).toBe(true);
+    expect(queries.some((query) => query.sql.includes("FROM admin_runtime_configs") && query.params.includes("ai-flow-configs"))).toBe(true);
     expect(queries.some((query) => query.sql.includes("FOR UPDATE SKIP LOCKED"))).toBe(true);
 
     const status = await runtime.readProviderJobStatus({
@@ -677,6 +689,30 @@ function createProviderPool(queries: Array<{ sql: string; params: unknown[] }>, 
   const client = {
     async query(sql: string, params: unknown[] = []) {
       queries.push({ sql: compactSql(sql), params });
+      if (sql.includes("FROM admin_runtime_configs") && params.includes("ai-flow-configs")) {
+        return {
+          rows: [
+            {
+              payload: {
+                configs: [
+                  {
+                    flowId: "card-image",
+                    primaryAdapterId: "local-comfyui-api-image",
+                    fallbackAdapterId: "local-comfyui-api-image",
+                    model: "flux-2-klein-4b.safetensors",
+                    liveProviderCallsEnabled: true,
+                    queueEnabled: true,
+                    renderingMode: "final-text-composited",
+                    workflowId: "customcard-flux2-klein-production-text-overlay",
+                    workflowPath: "comfyui-workflows/customcard-flux2-klein-production-text-overlay.json"
+                  }
+                ]
+              }
+            }
+          ],
+          rowCount: 1
+        };
+      }
       if (sql.includes("FROM admin_runtime_configs")) {
         return {
           rows: [
