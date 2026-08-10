@@ -57,6 +57,17 @@ Write-WorkerLog "Repo: $RepoRoot"
 Write-WorkerLog "URL: $Url"
 
 while ($true) {
+  # rig manual gate: owner paused automated GPU jobs (dashboard/widget/CLI).
+  # Missing/unreadable file == not paused. Only prevents (re)starting the
+  # ComfyUI + queue loop; an already-running node loop is not interrupted.
+  $GatePaused = $false
+  try { $GatePaused = [bool]((Get-Content -LiteralPath 'D:\rig\state\manual-gate.json' -Raw -ErrorAction Stop | ConvertFrom-Json).paused) } catch { }
+  if ($GatePaused) {
+    Write-WorkerLog "rig manual gate is paused; holding queue worker for $RetryDelaySec seconds."
+    Start-Sleep -Seconds $RetryDelaySec
+    continue
+  }
+
   try {
     if (-not $SkipComfyStart) {
       Write-WorkerLog "Ensuring local ComfyUI is running."
